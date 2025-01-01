@@ -1,5 +1,8 @@
-import {IToken} from "./IToken";
 import {TokenCharacter} from "./tokenCharacter";
+
+export interface IToken {
+  firstCharacter: TokenCharacter;
+}
 
 export abstract class Token implements IToken {
 

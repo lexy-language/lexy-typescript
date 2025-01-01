@@ -1,98 +1,109 @@
-
+import {SourceFile} from "./sourceFile";
+import {IParserLogger} from "./IParserLogger";
+import {SourceReference} from "./sourceReference";
+import {TokenizeResult} from "./tokens/tokenizeResult";
+import {ITokenizer} from "./tokens/tokenizer";
+import {TokenList} from "./tokens/tokenList";
 
 export class Line {
-   public number Index
+  public index: number;
+  public content: string;
+  public file: SourceFile;
+  public tokens: TokenList | null = null;
 
-   internal string Content
-   public SourceFile File
+  constructor(index: number, content: string, file: SourceFile) {
+    this.index = index;
+    this.content = content;
+    this.file = file;
+  }
 
-   public TokenList Tokens { get; private set; }
+  public indent(logger: IParserLogger): number | null {
+    let spaces: number = 0;
+    let tabs = 0;
 
-   constructor(index: number, line: string, file: SourceFile) {
-     Index = index;
-     Content = line ?? throw new Error(nameof(line));
-     File = file ?? throw new Error(nameof(file));
-   }
+    let index = 0;
 
-   public numberindent(logger: IParserLogger): ? {
-     let spaces = 0;
-     let tabs = 0;
+    for (; index < this.content.length; index++) {
+      let value = this.content[index];
+      if (value == ' ') {
+        spaces++;
+      } else if (value == '\t') {
+        tabs++;
+      } else {
+        break;
+      }
+    }
 
-     let index = 0;
-     for (; index < Content.Length; index++) {
-       let value = Content[index];
-       if (value == ' ')
-         spaces++;
-       else if (value == '\t')
-         tabs++;
-       else
-         break;
-     }
+    if (spaces > 0 && tabs > 0) {
+      logger.fail(this.lineReference(index),
+        `Don't mix spaces and tabs for indentations. Use 2 spaces or tabs.`);
+      return null;
+    }
 
-     if (spaces > 0 && tabs > 0) {
-       logger.Fail(LineReference(index),
-         `Don't mix spaces and tabs for indentations. Use 2 spaces or tabs.`);
-       return null;
-     }
+    if (spaces % 2 != 0) {
+      logger.fail(this.lineReference(index),
+        `Wrong number of indent spaces {spaces}. Should be multiplication of 2. (line: ${this.index} line: ${this.content})`);
+      return null;
+    }
 
-     if (spaces % 2 != 0) {
-       logger.Fail(LineReference(index),
-         $`Wrong number of indent spaces {spaces}. Should be multiplication of 2 (line: {Index} line: {Content})`);
-       return null;
-     }
+    return tabs > 0 ? tabs : spaces / 2;
+  }
 
-     return tabs > 0 ? tabs : spaces / 2;
-   }
+  public toString(): string {
+    return `${this.index + 1}: ${this.content}`;
+  }
 
-   public override toString(): string {
-     return $`{Index + 1}: {Content}`;
-   }
+  public isEmpty(): boolean {
+    return this.tokens != null && this.tokens.length == 0;
+  }
 
-   public isEmpty(): boolean {
-     return Tokens.Length == 0;
-   }
+  public firstCharacter(): number {
 
-   public firstCharacter(): number {
-     for (let index = 0; index < Content.Length; index++) {
-       if (Content[index] != ' ' && Content[index] != '\\') {
-         return index;
-       }
-     }
+    for (let index = 0; index < this.content.length; index++) {
+      if (this.content[index] != ' ' && this.content[index] != '\\') {
+        return index;
+      }
+    }
 
-     return 0;
-   }
+    return 0;
+  }
 
-   public tokenReference(tokenIndex: number): SourceReference {
-     return new SourceReference(
-       File,
-       Index + 1,
-       Tokens.CharacterPosition(tokenIndex) + 1);
-   }
+  public tokenReference(tokenIndex: number): SourceReference {
+    return new SourceReference(
+      this.file,
+      this.index + 1,
+      this.tokens != null
+        ? (this.tokens.characterPosition(tokenIndex) ?? 0) + 1
+        : 1);
+  }
 
-   public lineEndReference(): SourceReference {
-     return new SourceReference(File,
-       Index + 1,
-       Content.Length);
-   }
+  public lineEndReference(): SourceReference {
+    return new SourceReference(
+      this.file,
+      this.index + 1,
+      this.content.length);
+  }
 
-   public lineStartReference(): SourceReference {
-     let lineStart = FirstCharacter();
-     return new SourceReference(File,
-       Index + 1,
-       lineStart + 1);
-   }
+  public lineStartReference(): SourceReference {
+    let lineStart = this.firstCharacter();
+    return new SourceReference(
+      this.file,
+      this.index + 1,
+      lineStart + 1);
+  }
 
-   public lineReference(characterIndex: number): SourceReference {
-     return new SourceReference(File ?? new SourceFile(`runtime`),
-       Index + 1,
-       characterIndex + 1);
-   }
+  public lineReference(characterIndex: number): SourceReference {
+    return new SourceReference(
+      this.file ?? new SourceFile('runtime'),
+      this.index + 1,
+      characterIndex + 1);
+  }
 
-   public tokenize(tokenizer: ITokenizer): TokenizeResult {
-     let tokenizeResult = tokenizer.Tokenize(this);
-     if (tokenizeResult.IsSuccess) {
-       Tokens = tokenizeResult.Result;
-     }
-     return tokenizeResult;
-   }
+  public tokenize(tokenizer: ITokenizer): TokenizeResult {
+    let tokenizeResult = tokenizer.tokenize(this);
+    if (tokenizeResult.state == 'success') {
+      this.tokens = tokenizeResult.result;
+    }
+    return tokenizeResult;
+  }
 }

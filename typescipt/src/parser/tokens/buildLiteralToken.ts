@@ -1,65 +1,93 @@
+import {ParsableToken} from "./parsableToken";
+import {TokenValues} from "./tokenValues";
+import {TokenCharacter} from "./tokenCharacter";
+import {
+  newParseTokenFinishedResult,
+  newParseTokenInProgressResult,
+  newParseTokenInvalidResult,
+  ParseTokenResult
+} from "./parseTokenResult";
+import {DateTimeLiteral} from "./dateTimeLiteral";
+import {KeywordToken} from "./keywordToken";
+import {MemberAccessLiteral} from "./memberAccessLiteral";
+import {StringLiteralToken} from "./stringLiteralToken";
+import {BooleanLiteral} from "./booleanLiteral";
+import {Token} from "./token";
+import {Keywords} from "../Keywords";
+import {isDigitOrLetter} from "./character";
 
+const point = '.'.charCodeAt(0);
+const colon = ':'.charCodeAt(0);
 
 export class BuildLiteralToken extends ParsableToken {
-   private static readonly char[] TerminatorValues = {
-     TokenValues.Space,
-     TokenValues.OpenParentheses,
-     TokenValues.OpenBrackets,
-     TokenValues.CloseParentheses,
-     TokenValues.CloseBrackets,
-     TokenValues.ArgumentSeparator
-   };
 
-   private boolean hasMemberAccessor;
-   private boolean lastMemberAccessor;
+  private static terminatorValues = [
+    TokenValues.Space,
+    TokenValues.OpenParentheses,
+    TokenValues.OpenBrackets,
+    TokenValues.CloseParentheses,
+    TokenValues.CloseBrackets,
+    TokenValues.ArgumentSeparator
+  ];
 
-   public BuildLiteralToken(TokenCharacter character) : base(character) {
-   }
+  public tokenIsLiteral: boolean = false;
+  public tokenType: string = 'BuildLiteralToken';
 
-   public override parse(character: TokenCharacter): ParseTokenResult {
-     let value = character.Value;
+  private hasMemberAccessor: boolean = false;
+  private lastMemberAccessor: boolean = false;
 
-     if (TerminatorValues.Contains(value)) return ParseTokenResult.Finished(false, SealLiteral());
+  constructor(character: TokenCharacter) {
+    super(character);
+  }
 
-     if (value == '.') {
-       if (lastMemberAccessor)
-         return ParseTokenResult.Invalid(
-           $`Unexpected character: '{value}'. Member accessor should be followed by member name.`);
+  public parse(character: TokenCharacter): ParseTokenResult {
+    let value = character.value;
 
-       hasMemberAccessor = true;
-       lastMemberAccessor = true;
-       AppendValue(value);
-       return ParseTokenResult.InProgress();
-     }
+    if (BuildLiteralToken.terminatorValues.findIndex(terminator => terminator == value) >= 0) {
+      return newParseTokenFinishedResult(false, this.sealLiteral());
+    }
 
-     if (char.IsLetterOrDigit(value) || value == ':') {
-       lastMemberAccessor = false;
+    if (value == point) {
+      if (this.lastMemberAccessor) {
+        return newParseTokenInvalidResult(
+          `Unexpected character: '${String.fromCharCode(value)}'. Member accessor should be followed by member name.`);
+      }
 
-       AppendValue(value);
-       return ParseTokenResult.InProgress();
-     }
+      this.hasMemberAccessor = true;
+      this.lastMemberAccessor = true;
+      this.appendValue(value);
 
-     if (value == TokenValues.Quote && Value == TokenValues.DateTimeStarter)
-       return ParseTokenResult.InProgress(new DateTimeLiteral(FirstCharacter));
+      return newParseTokenInProgressResult();
+    }
 
-     return ParseTokenResult.Invalid($`Unexpected character: '{value}'`);
-   }
+    if (isDigitOrLetter(value) || value == colon) {
+      this.lastMemberAccessor = false;
 
-   public override finalize(): ParseTokenResult {
-     if (lastMemberAccessor)
-       return ParseTokenResult.Invalid(
-         `Unexpected end of line. Member accessor should be followed by member name.`);
+      this.appendValue(value);
+      return newParseTokenInProgressResult();
+    }
 
-     return ParseTokenResult.Finished(true, SealLiteral());
-   }
+    if (value == TokenValues.Quote && this.value == TokenValues.DateTimeStarter)
+      return newParseTokenInProgressResult(new DateTimeLiteral(this.firstCharacter));
 
-   private sealLiteral(): Token {
-     let value = Value;
-     if (Keywords.Contains(value)) return new KeywordToken(value, FirstCharacter);
-     if (BooleanLiteral.IsValid(value)) return BooleanLiteral.Parse(value, FirstCharacter);
+    return newParseTokenInvalidResult(`Unexpected character: '${String.fromCharCode(value)}'`);
+  }
 
-     if (hasMemberAccessor) return new MemberAccessLiteral(value, FirstCharacter);
+  public finalize(): ParseTokenResult {
+    if (this.lastMemberAccessor)
+      return newParseTokenInvalidResult(
+        "Unexpected end of line. Member accessor should be followed by member name.");
 
-     return new StringLiteralToken(value, FirstCharacter);
-   }
+    return newParseTokenFinishedResult(true, this.sealLiteral());
+  }
+
+  private sealLiteral(): Token {
+    let value = this.value;
+    if (Keywords.contains(value)) return new KeywordToken(value, this.firstCharacter);
+    if (BooleanLiteral.isValid(value)) return BooleanLiteral.parse(value, this.firstCharacter);
+
+    if (this.hasMemberAccessor) return new MemberAccessLiteral(value, this.firstCharacter);
+
+    return new StringLiteralToken(value, this.firstCharacter);
+  }
 }

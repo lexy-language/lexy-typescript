@@ -1,16 +1,27 @@
-
-public sealed class ParseExpressionResult : ParseResult<Expression> {
-   private ParseExpressionResult(Expression result) : base(result) {
-   }
-
-   private ParseExpressionResult(boolean success, string errorMessage) : base(success, errorMessage) {
-   }
-
-   public static invalid<T>(error: string): ParseExpressionResult {
-     return new ParseExpressionResult(false, $`({typeof(T).Name}) {error}`);
-   }
-
-   public static success(expression: Expression): ParseExpressionResult {
-     return new ParseExpressionResult(expression);
-   }
+type ParseExpressionFailed = {
+  state: "failed";
+  errorMessage: string;
+  reference: SourceReference;
 }
+
+export function newParseExpressionFailed(reference: SourceReference, errorMessage: string): ParseExpressionFailed {
+  return {
+    state: "failed",
+    errorMessage: errorMessage,
+    reference: reference
+  } as const;
+}
+
+type ParseExpressionSuccess = {
+  state: "success";
+  result: Expression;
+}
+
+export function newParseExpressionSuccess(result: Expression) {
+  return {
+    state: "success",
+    result: result
+  } as const;
+}
+
+export type ParseExpressionResult = ParseExpressionFailed | ParseExpressionSuccess;

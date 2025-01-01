@@ -1,32 +1,50 @@
+import {Token} from "./token";
+import {ILiteralToken} from "./ILiteralToken";
+import {TokenCharacter} from "./tokenCharacter";
+import {TokenValues} from "./tokenValues";
+import {IValidationContext} from "../IValidationContext";
+import {VariableType} from "../../language/variableTypes";
 
+export class MemberAccessLiteral extends Token implements ILiteralToken {
 
-export class MemberAccessLiteral extends Token, ILiteralToken {
-   public string Parent => Parts.Length >= 1 ? Parts[0] : null;
-   public string Member => Parts.Length >= 2 ? Parts[1] : null;
+  public get parent() {
+    return this.parts.length >= 1 ? this.parts[0] : null;
+  }
 
-   public string[] Parts
+  public get member() {
+    return this.parts.length >= 2 ? this.parts[1] : null;
+  }
 
-   public MemberAccessLiteral(string value, TokenCharacter character) : base(character) {
-     Value = value ?? throw new Error(nameof(value));
-     Parts = Value.Split(TokenValues.MemberAccess);
-   }
+  public readonly parts: string[];
 
-   public override string Value
+  public tokenIsLiteral: boolean = true;
+  public tokenType: string = 'MemberAccessLiteral';
 
-   public object TypedValue => Parts;
+  constructor(value: string, character: TokenCharacter) {
+    super(character);
+    this.value = value;
+    this.parts = value.split(TokenValues.MemberAccessString);
+  }
 
-   public deriveType(context: IValidationContext): VariableType {
-     let variableReference = new VariableReference(Parts);
-     let variableType = context.VariableContext.GetVariableType(variableReference, context);
-     if (variableType != null) return variableType;
+  public value: string;
 
-     if (Parts.Length != 2) return null;
+  public get typedValue() {
+    return this.value;
+  }
 
-     let rootType = context.RootNodes.GetType(Parent);
-     return rootType is not ITypeWithMembers typeWithMembers ? null : typeWithMembers.MemberType(Member, context);
-   }
+  public deriveType(context: IValidationContext): VariableType {
+    /* let variableReference = new VariableReference(Parts);
+    let variableType = context.VariableContext.GetVariableType(variableReference, context);
+    if (variableType != null) return variableType;
 
-   public override toString(): string {
-     return Value;
-   }
+    if (this.parts.Length != 2) return null;
+
+    let rootType = context.RootNodes.GetType(Parent);
+    return rootType is not ITypeWithMembers typeWithMembers ? null : typeWithMembers.MemberType(Member, context);*/
+    throw Error("Not implemented.")
+  }
+
+  public toString() {
+    return this.value;
+  }
 }

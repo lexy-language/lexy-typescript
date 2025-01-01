@@ -1,19 +1,30 @@
+import {Token} from "./token";
+import {ILiteralToken} from "./ILiteralToken";
+import {TokenCharacter} from "./tokenCharacter";
+import {IValidationContext} from "../IValidationContext";
+import {VariableType} from "../../language/variableTypes";
 
+export class StringLiteralToken extends Token implements ILiteralToken {
 
-export class StringLiteralToken extends Token, ILiteralToken {
-   public StringLiteralToken(string value, TokenCharacter character) : base(character) {
-     Value = value;
-   }
+  public value: string;
 
-   public override string Value
+  public tokenIsLiteral: boolean = true;
+  public tokenType: string = 'StringLiteralToken';
 
-   public object TypedValue => Value;
+  constructor(value: string, character: TokenCharacter) {
+    super(character);
+    this.value = value;
+  }
 
-   public deriveType(context: IValidationContext): VariableType {
-     throw new Error(`Not supported. Type should be defined by node or expression.`);
-   }
+  public get typedValue() {
+    return this.value;
+  }
 
-   public override toString(): string {
-     return Value;
-   }
+  public deriveType(context: IValidationContext): VariableType {
+    throw new Error("Not supported. Type should be defined by node or expression.");
+  }
+
+  public toString() {
+    return this.value;
+  }
 }

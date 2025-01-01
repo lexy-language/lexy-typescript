@@ -1,21 +1,18 @@
-import {IParserLogger} from "./tokens/IParserLogger";
-import {Line} from "./tokens/line";
+import {IParserLogger} from "./IParserLogger";
+import {Line} from "./line";
 import {TokenList} from "./tokens/tokenList";
-import {
-  BooleanLiteral,
-  CommentToken,
-  DateTimeLiteral,
-  KeywordToken,
-  MemberAccessLiteral,
-  NumberLiteralToken,
-  OperatorToken,
-  QuotedLiteralToken,
-  StringLiteralToken,
-
-} from "./tokens/tokens";
+import {BooleanLiteral} from "./tokens/BooleanLiteral";
+import {DateTimeLiteral} from "./tokens/DateTimeLiteral";
+import {KeywordToken} from "./tokens/KeywordToken";
+import {MemberAccessLiteral} from "./tokens/MemberAccessLiteral";
+import {QuotedLiteralToken} from "./tokens/QuotedLiteralToken";
+import {StringLiteralToken} from "./tokens/StringLiteralToken";
 import {OperatorType} from "./tokens/operatorType";
 import {ILiteralToken} from "./tokens/ILiteralToken";
 import {Token} from "./tokens/token";
+import {OperatorToken} from "./tokens/operatorToken";
+import {NumberLiteralToken} from "./tokens/numberLiteralToken";
+import {CommentToken} from "./tokens/commentToken";
 
 export class TokenValidator {
 

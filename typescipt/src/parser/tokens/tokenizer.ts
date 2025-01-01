@@ -1,17 +1,57 @@
-import {
-  CommentToken,
-  KnownTokens,
-  TokensValidators,
-  WhitespaceToken
-} from "./tokens";
-import {Line} from "./line";
-import {ITokenizer} from "./ITokenizer";
-import {newParsableTokenFailed, ParsableTokenResult, newParsableTokenSuccess} from "./parsableTokenFailed";
+import {Line} from "../line";
+import {newParsableTokenFailed, ParsableTokenResult, newParsableTokenSuccess} from "./parsableTokenResult";
 import {newTokenizeFailed, TokenizeResult, newTokenizeSuccess} from "./tokenizeResult";
 import {ParsableToken} from "./parsableToken";
 import {TokenList} from "./tokenList";
 import {TokenCharacter} from "./tokenCharacter";
 import {Token} from "./token";
+import {CommentToken} from "./commentToken";
+import {TokenValues} from "./tokenValues";
+import {QuotedLiteralToken} from "./quotedLiteralToken";
+import {OperatorToken} from "./operatorToken";
+import {NumberLiteralToken} from "./numberLiteralToken";
+import {BuildLiteralToken} from "./buildLiteralToken";
+import {WhitespaceToken} from "./whitespaceToken";
+import {Character, isCharacter, isDigit, isWhitespace} from "./character";
+
+const KnownTokens: Array<{value: number, factory: ((character: TokenCharacter) => ParsableToken)}> = [
+  {value: TokenValues.CommentChar, factory: value => new CommentToken(value)},
+  {value: TokenValues.Quote, factory: value => new QuotedLiteralToken(value)},
+
+  {value: TokenValues.Assignment, factory: value => new OperatorToken(value)},
+  {value: TokenValues.Addition, factory: value => new OperatorToken(value)},
+  {value: TokenValues.Subtraction, factory: value => new OperatorToken(value)},
+  {value: TokenValues.Multiplication, factory: value => new OperatorToken(value)},
+  {value: TokenValues.Division, factory: value => new OperatorToken(value)},
+  {value: TokenValues.Modulus, factory: value => new OperatorToken(value)},
+  {value: TokenValues.ArgumentSeparator, factory: value => new OperatorToken(value)},
+
+  {value: TokenValues.OpenParentheses, factory: value => new OperatorToken(value)},
+  {value: TokenValues.CloseParentheses, factory: value => new OperatorToken(value)},
+  {value: TokenValues.OpenBrackets, factory: value => new OperatorToken(value)},
+  {value: TokenValues.CloseBrackets, factory: value => new OperatorToken(value)},
+
+  {value: TokenValues.GreaterThan, factory: value => new OperatorToken(value)},
+  {value: TokenValues.LessThan, factory: value => new OperatorToken(value)},
+
+  {value: TokenValues.NotEqualStart, factory: value => new OperatorToken(value)},
+
+  {value: TokenValues.And, factory: value => new OperatorToken(value)},
+  {value: TokenValues.Or, factory: value => new OperatorToken(value)}
+];
+
+const TokensValidators: Array<{
+  isValid: ((character: Character) => boolean),
+  factory: ((character: TokenCharacter) => ParsableToken)}> = [
+  { isValid: isDigit, factory: value => new NumberLiteralToken(null, value) },
+  { isValid: isCharacter, factory: value => new BuildLiteralToken(value) },
+  { isValid: isWhitespace, factory: value => new WhitespaceToken(value) },
+];
+
+
+export interface ITokenizer {
+  tokenize(line: Line): TokenizeResult;
+}
 
 export class Tokenizer implements ITokenizer {
 

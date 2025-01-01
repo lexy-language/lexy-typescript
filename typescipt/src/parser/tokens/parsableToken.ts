@@ -1,5 +1,5 @@
 import {ParseTokenResult} from "./parseTokenResult";
-import {Character} from "./tokens";
+import {Character} from "./character";
 import {TokenCharacter} from "./tokenCharacter";
 import {Token} from "./token";
 

@@ -1,7 +1,8 @@
 import {ILiteralToken} from "./ILiteralToken";
 import {OperatorType} from "./operatorType";
-import {CommentToken, OperatorToken} from "./tokens";
 import {Token} from "./token";
+import {OperatorToken} from "./operatorToken";
+import {CommentToken} from "./commentToken";
 
 export class TokenList {
   private readonly values: Array<Token>;

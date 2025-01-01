@@ -1,4 +1,4 @@
-import {Character} from "./tokens";
+import {Character} from "./character";
 
 export class TokenCharacter {
   public position: number = 0;

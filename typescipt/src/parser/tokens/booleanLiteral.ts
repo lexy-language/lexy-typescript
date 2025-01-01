@@ -1,33 +1,49 @@
+import {Token} from "./token";
+import {ILiteralToken} from "./ILiteralToken";
+import {TokenCharacter} from "./tokenCharacter";
+import {TokenValues} from "./tokenValues";
+import {IValidationContext} from "../IValidationContext";
+import {PrimitiveType, VariableType} from "../../language/variableTypes";
 
+export class BooleanLiteral extends Token implements ILiteralToken {
+  public booleanValue: boolean;
 
-export class BooleanLiteral extends Token, ILiteralToken {
-   public boolean BooleanValue
+  public tokenIsLiteral: boolean = true;
+  public tokenType: string = 'BooleanLiteral';
 
-   public BooleanLiteral(boolean value, TokenCharacter character) : base(character) {
-     BooleanValue = value;
-   }
+  constructor(value: boolean, character: TokenCharacter) {
+    super(character);
+    this.booleanValue = value;
+  }
 
-   public override string Value => BooleanValue ? TokenValues.BooleanTrue : TokenValues.BooleanFalse;
+  public get typedValue() {
+    return this.booleanValue;
+  }
 
-   public object TypedValue => BooleanValue;
+  public get value() {
+    return this.booleanValue ? TokenValues.BooleanTrue : TokenValues.BooleanFalse;
+  }
 
-   public deriveType(context: IValidationContext): VariableType {
-     return PrimitiveType.Boolean;
-   }
+  public deriveType(context: IValidationContext): VariableType {
+    return PrimitiveType.boolean;
+  }
 
-   public static parse(value: string, character: TokenCharacter): BooleanLiteral {
-     return value switch {
-       TokenValues.BooleanTrue => new BooleanLiteral(true, character),
-       TokenValues.BooleanFalse => new BooleanLiteral(false, character),
-       _ => throw new Error($`Couldn't parse boolean: {value}`)
-     };
-   }
+  public static parse(value: string, character: TokenCharacter): BooleanLiteral {
+    switch (value) {
+      case TokenValues.BooleanTrue:
+        return new BooleanLiteral(true, character);
+      case TokenValues.BooleanFalse:
+        return new BooleanLiteral(false, character);
+      default:
+        throw new Error(`Couldn't parse boolean: ${value}`)
+    }
+  }
 
-   public static isValid(value: string): boolean {
-     return value == TokenValues.BooleanTrue || value == TokenValues.BooleanFalse;
-   }
+  public static isValid(value: string): boolean {
+    return value == TokenValues.BooleanTrue || value == TokenValues.BooleanFalse;
+  }
 
-   public override toString(): string {
-     return Value;
-   }
+  public toString(): string {
+    return this.value;
+  }
 }

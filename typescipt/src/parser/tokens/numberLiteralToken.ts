@@ -1,80 +1,98 @@
+import {ParsableToken} from "./parsableToken";
+import {ILiteralToken} from "./ILiteralToken";
+import {TokenValues} from "./tokenValues";
+import {TokenCharacter} from "./tokenCharacter";
+import {IValidationContext} from "../IValidationContext";
+import {PrimitiveType, VariableType} from "../../language/variableTypes";
+import {
+  newParseTokenFinishedResult,
+  newParseTokenInProgressResult,
+  newParseTokenInvalidResult,
+  ParseTokenResult
+} from "./parseTokenResult";
+import {isDigit} from "./character";
 
+export class NumberLiteralToken extends ParsableToken implements ILiteralToken {
 
-export class NumberLiteralToken extends ParsableToken, ILiteralToken {
-   private readonly char[] allowedNextTokensValues = {
-     TokenValues.TableSeparator,
-     TokenValues.Space,
-     TokenValues.Assignment,
+  private allowedNextTokensValues = [
+    TokenValues.TableSeparator,
+    TokenValues.Space,
+    TokenValues.Assignment,
 
-     TokenValues.Addition,
-     TokenValues.Subtraction,
-     TokenValues.Multiplication,
-     TokenValues.Division,
-     TokenValues.Modulus,
-     TokenValues.CloseParentheses,
-     TokenValues.CloseBrackets,
-     TokenValues.GreaterThan,
-     TokenValues.LessThan,
-     TokenValues.ArgumentSeparator
-   };
+    TokenValues.Addition,
+    TokenValues.Subtraction,
+    TokenValues.Multiplication,
+    TokenValues.Division,
+    TokenValues.Modulus,
+    TokenValues.CloseParentheses,
+    TokenValues.CloseBrackets,
+    TokenValues.GreaterThan,
+    TokenValues.LessThan,
+    TokenValues.ArgumentSeparator
+  ];
 
-   private boolean hasDecimalSeparator;
-   private decimal? numberValue;
+  private hasDecimalSeparator: boolean = false;
+  private numberValueValue: number | null;
 
-   public decimal NumberValue {
-     get {
-       if (!numberValue.HasValue) throw new Error(`NumberLiteralToken not finalized.`);
-       return numberValue.Value;
-     }
-   }
+  public tokenIsLiteral: boolean = true;
+  public tokenType: string = 'NumberLiteralToken';
 
-   public NumberLiteralToken(decimal value, TokenCharacter character) : base(character) {
-     numberValue = value;
-   }
+  public get numberValue(): number {
+    if (this.numberValueValue == null) throw new Error("NumberLiteralToken not finalized.");
+    return this.numberValueValue;
+  }
 
-   public NumberLiteralToken(TokenCharacter character) : base(character) {
-   }
+  constructor(value: number | null, character: TokenCharacter) {
+    super(character);
+    this.numberValueValue = value;
+  }
 
-   public override string Value => numberValue.HasValue
-     ? numberValue.Value.ToString(CultureInfo.InvariantCulture)
-     : base.Value;
+  public get value() {
+    return this.numberValue != null
+      ? this.numberValue.toString()
+      : super.value;
+  }
 
-   public object TypedValue => NumberValue;
+  public get typedValue() {
+    return this.numberValue;
+  }
 
-   public deriveType(context: IValidationContext): VariableType {
-     return PrimitiveType.Number;
-   }
+  public deriveType(context: IValidationContext): VariableType {
+    return PrimitiveType.number;
+  }
 
-   public override parse(character: TokenCharacter): ParseTokenResult {
-     let value = character.Value;
-     if (char.IsDigit(value)) {
-       AppendValue(value);
-       return ParseTokenResult.InProgress();
-     }
+  public parse(character: TokenCharacter): ParseTokenResult {
+    let value = character.value;
+    if (isDigit(value)) {
+      this.appendValue(value);
+      return newParseTokenInProgressResult();
+    }
 
-     if (value == TokenValues.DecimalSeparator) {
-       if (hasDecimalSeparator) return ParseTokenResult.Invalid(`Only one decimal separator expected`);
+    if (value == TokenValues.DecimalSeparator) {
+      if (this.hasDecimalSeparator) {
+        return {state: 'invalid', validationError: "Only one decimal separator expected"};
+      }
 
-       hasDecimalSeparator = true;
-       AppendValue(value);
-       return ParseTokenResult.InProgress();
-     }
+      this.hasDecimalSeparator = true;
+      this.appendValue(value);
+      return newParseTokenInProgressResult();
+    }
 
-     return allowedNextTokensValues.Contains(value)
-       ? Finalize()
-       : ParseTokenResult.Invalid($`Invalid number token character: '{value}'`);
-   }
+    return this.allowedNextTokensValues.findIndex(allowed => allowed == value) >= 0
+      ? this.finalize()
+      : newParseTokenInvalidResult(`Invalid number token character: '${String.fromCharCode(value)}'`);
+  }
 
-   public override finalize(): ParseTokenResult {
-     numberValue = decimal.Parse(base.Value, CultureInfo.InvariantCulture);
-     return ParseTokenResult.Finished(false);
-   }
+  public finalize(): ParseTokenResult {
+    this.numberValueValue = parseFloat(super.value);
+    return newParseTokenFinishedResult(false);
+  }
 
-   public isDecimal(): boolean {
-     return numberValue.HasValue && numberValue % 1 != 0;
-   }
+  public isDecimal(): boolean {
+    return this.numberValue != null && this.numberValue % 1 != 0;
+  }
 
-   public override toString(): string {
-     return Value;
-   }
+  public toString(): string {
+    return this.value;
+  }
 }

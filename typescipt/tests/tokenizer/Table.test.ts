@@ -1,5 +1,5 @@
 import {tokenize} from "./tokenize";
-import {TableSeparatorToken} from "../../src/parser/tokens/tokens";
+import {TableSeparatorToken} from "../../src/parser/tokens/tableSeparatorToken";
 
 describe('TableTests', () => {
     it('TestTableHeader', async () => {

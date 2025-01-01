@@ -1,13 +1,21 @@
+import {ParsableToken} from "./parsableToken";
+import {TokenCharacter} from "./tokenCharacter";
+import {newParseTokenFinishedResult, ParseTokenResult} from "./parseTokenResult";
 
 export class TableSeparatorToken extends ParsableToken {
-   public TableSeparatorToken(TokenCharacter character) : base(character) {
-   }
 
-   public override parse(character: TokenCharacter): ParseTokenResult {
-     return ParseTokenResult.Finished(true);
-   }
+  public tokenIsLiteral: boolean = false;
+  public tokenType: string = 'TableSeparatorToken';
 
-   public override finalize(): ParseTokenResult {
-     return ParseTokenResult.Finished(true);
-   }
+  constructor(character: TokenCharacter) {
+    super(character);
+  }
+
+  public parse(character: TokenCharacter): ParseTokenResult {
+    return newParseTokenFinishedResult(true);
+  }
+
+  public finalize(): ParseTokenResult {
+    return newParseTokenFinishedResult(true);
+  }
 }

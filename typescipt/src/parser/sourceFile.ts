@@ -1,8 +1,7 @@
-
 export class SourceFile {
-   public string FileName
+  public fileName: string;
 
-   constructor(fileName: string) {
-     FileName = fileName;
-   }
+  constructor(fileName: string) {
+    this.fileName = fileName;
+  }
 }

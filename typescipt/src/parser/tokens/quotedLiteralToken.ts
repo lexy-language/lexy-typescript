@@ -1,40 +1,57 @@
+import {ParsableToken} from "./parsableToken";
+import {ILiteralToken} from "./ILiteralToken";
+import {TokenCharacter} from "./tokenCharacter";
+import {TokenValues} from "./tokenValues";
+import {IValidationContext} from "../IValidationContext";
+import {PrimitiveType, VariableType} from "../../language/variableTypes";
+import {
+  newParseTokenFinishedResult,
+  newParseTokenInProgressResult,
+  newParseTokenInvalidResult,
+  ParseTokenResult
+} from "./parseTokenResult";
 
+export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
+  private quoteClosed: boolean = false;
 
-export class QuotedLiteralToken extends ParsableToken, ILiteralToken {
-   private boolean quoteClosed;
+  public tokenIsLiteral: boolean = true;
+  public tokenType: string = 'QuotedLiteralToken';
 
-   public QuotedLiteralToken(TokenCharacter character) : base(null, character) {
-     let value = character.Value;
-     if (value != TokenValues.Quote)
-       throw new Error(`QuotedLiteralToken should start with a quote`);
-   }
+  constructor(character: TokenCharacter) {
+    super(character, '');
 
-   public object TypedValue => Value;
+    let value = character.value;
+    if (value != TokenValues.Quote) throw new Error("QuotedLiteralToken should start with a quote");
+  }
 
-   public deriveType(context: IValidationContext): VariableType {
-     return PrimitiveType.String;
-   }
+  public get typedValue() {
+    return this.value;
+  }
 
-   public override parse(character: TokenCharacter): ParseTokenResult {
-     let value = character.Value;
-     if (quoteClosed) throw new Error(`No characters allowed after closing quote.`);
+  public deriveType(context: IValidationContext): VariableType {
+    return PrimitiveType.string;
+  }
 
-     if (value == TokenValues.Quote) {
-       quoteClosed = true;
-       return ParseTokenResult.Finished(true, this);
-     }
+  public parse(character: TokenCharacter): ParseTokenResult {
+    let value = character.value;
+    if (this.quoteClosed) throw new Error("No characters allowed after closing quote.");
 
-     AppendValue(value);
-     return ParseTokenResult.InProgress();
-   }
+    if (value == TokenValues.Quote) {
+      this.quoteClosed = true;
+      return newParseTokenFinishedResult(true, this);
+    }
 
-   public override finalize(): ParseTokenResult {
-     if (!quoteClosed) return ParseTokenResult.Invalid(`Closing quote expected.`);
+    this.appendValue(value);
+    return newParseTokenInProgressResult();
+  }
 
-     return ParseTokenResult.Finished(true, this);
-   }
+  public finalize(): ParseTokenResult {
+    if (!this.quoteClosed) return newParseTokenInvalidResult("Closing quote expected.");
 
-   public override toString(): string {
-     return Value;
-   }
+    return newParseTokenFinishedResult(true, this);
+  }
+
+  public toString() {
+    return this.value;
+  }
 }

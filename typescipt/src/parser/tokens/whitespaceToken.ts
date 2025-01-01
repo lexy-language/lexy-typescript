@@ -1,16 +1,23 @@
+import {newParseTokenFinishedResult, newParseTokenInProgressResult, ParseTokenResult} from "./parseTokenResult";
+import {ParsableToken} from "./parsableToken";
+import {TokenCharacter} from "./tokenCharacter";
 
 export class WhitespaceToken extends ParsableToken {
-   public WhitespaceToken(TokenCharacter character) : base(character) {
-   }
 
-   public override parse(character: TokenCharacter): ParseTokenResult {
-     let value = character.Value;
-     return !char.IsWhiteSpace(value)
-       ? ParseTokenResult.Finished(false)
-       : ParseTokenResult.InProgress();
-   }
+  public tokenIsLiteral: boolean = false;
+  public tokenType: string = 'WhitespaceToken';
+  
+  constructor(character: TokenCharacter) {
+    super(character);
+  }
 
-   public override finalize(): ParseTokenResult {
-     return ParseTokenResult.Finished(true);
-   }
+  public parse(character: TokenCharacter | null) : ParseTokenResult {
+    let value = character != null ? character.value.toString() : '';
+    return value != ' ' ? newParseTokenFinishedResult(false) : newParseTokenInProgressResult();
+  }
+
+  public finalize() : ParseTokenResult {
+    return newParseTokenFinishedResult(true);
+  }
 }
+

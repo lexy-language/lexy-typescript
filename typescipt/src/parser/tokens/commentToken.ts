@@ -1,15 +1,22 @@
+import {ParsableToken} from "./parsableToken";
+import {TokenCharacter} from "./tokenCharacter";
+import {newParseTokenFinishedResult, newParseTokenInProgressResult, ParseTokenResult} from "./parseTokenResult";
 
 export class CommentToken extends ParsableToken {
-   public CommentToken(TokenCharacter character) : base(character) {
-   }
 
-   public override parse(character: TokenCharacter): ParseTokenResult {
-     AppendValue(character.Value);
+  public tokenIsLiteral: boolean = false;
+  public tokenType: string = 'CommentToken';
 
-     return ParseTokenResult.InProgress();
-   }
+  constructor(character: TokenCharacter) {
+    super(character);
+  }
 
-   public override finalize(): ParseTokenResult {
-     return ParseTokenResult.Finished(true);
-   }
+  public parse(character: TokenCharacter): ParseTokenResult {
+    this.appendValue(character.value);
+    return newParseTokenInProgressResult();
+  }
+
+  public finalize(): ParseTokenResult {
+    return newParseTokenFinishedResult(true);
+  }
 }

@@ -1,4 +1,4 @@
-import {SourceReference} from "./sourceReference";
+import {SourceReference} from "../sourceReference";
 import {ParsableToken} from "./parsableToken";
 
 type ParsableTokenFailed = {
