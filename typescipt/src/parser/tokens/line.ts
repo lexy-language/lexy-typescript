@@ -85,7 +85,7 @@ export class Line {
   }
 
   public lineStartReference(): SourceReference {
-    var lineStart = this.firstCharacter();
+    let lineStart = this.firstCharacter();
     return new SourceReference(
       this.file,
       this.index + 1,

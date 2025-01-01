@@ -500,7 +500,7 @@ export class DateTimeLiteral extends ParsableToken implements ILiteralToken {
   }
 
   public parse(character: TokenCharacter): ParseTokenResult {
-    var value = character.value;
+    let value = character.value;
     if (value == TokenValues.Quote)
     {
       if (DateTimeLiteral.ValidLengths.findIndex(item => item == this.value.length) < 0) {

@@ -50,7 +50,7 @@ export class Tokenizer implements ITokenizer {
     let tokens = new Array<Token>();
     let current: ParsableToken | null = null;
 
-    for (var index = 0; index < line.content.length; index++) {
+    for (let index = 0; index < line.content.length; index++) {
       let value = line.content.charCodeAt(index);
       let tokenCharacter = new TokenCharacter(value, index);
       let valueProcessed = false;
