@@ -9,7 +9,7 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 
 class OperatorEntry {
   public operatorType: OperatorType;

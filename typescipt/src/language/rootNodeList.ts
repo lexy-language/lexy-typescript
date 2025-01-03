@@ -1,92 +1,103 @@
 import {IRootNode} from "./rootNode";
-import {TypeWithMembers} from "./types/typeWithMembers";
-import {Function} from "./functions/function";
-import {Table} from "./tables/table";
+import {TypeWithMembers} from "./variableTypes/typeWithMembers";
+import {asFunction, Function, instanceOfFunction} from "./functions/function";
+import {asTable, instanceOfTable, Table} from "./tables/table";
+import {asEnumDefinition, EnumDefinition, instanceOfEnumDefinition} from "./enums/enumDefinition";
+import {any, firstOrDefault, singleOrDefault, where, contains} from "../infrastructure/enumerableExtensions";
+import {asTypeDefinition, instanceOfTypeDefinition, TypeDefinition} from "./types/typeDefinition";
+import {asScenario, instanceOfScenario, Scenario} from "./scenarios/scenario";
+import {INode} from "./node";
+import {TableType} from "./variableTypes/tableType";
+import {FunctionType} from "./variableTypes/functionType";
+import {EnumType} from "./variableTypes/enumType";
+import {CustomType} from "./variableTypes/customType";
 
-export class RootNodeList extends Array<IRootNode> {
-   private readonly Array<IRootNode> values = collection<IRootNode>(): new;
+export class RootNodeList {
 
-   public number Count => values.Count;
+  private readonly values: Array<IRootNode> = [];
 
-   public getEnumerator(): IEnumerator<IRootNode> {
-     return values.GetEnumerator();
-   }
+  public get length(): number {
+    return this.values.length;
+  }
 
-   IEnumerator IEnumerable.GetEnumerator() {
-     return GetEnumerator();
-   }
+  public asArray() {
+    return [...this.values];
+  }
 
    public add(rootNode: IRootNode): void {
-     values.Add(rootNode);
+     this.values.push(rootNode);
    }
 
-   internal containsEnum(enumName: string): boolean {
-     return values
-       .OfType<EnumDefinition>()
-       .Any(definition => definition.Name.Value == enumName);
+   public containsEnum(enumName: string): boolean {
+     return any(this.values, definition => instanceOfEnumDefinition(definition) && definition.nodeName == enumName);
    }
 
    public getNode(name: string | null): IRootNode | null {
      if (name == null) return null;
-     return values
-       .FirstOrDefault(definition => definition.NodeName == name);
+     return firstOrDefault(this.values, definition => definition.nodeName == name);
    }
 
    public contains(name: string): boolean {
-     return values
-       .Any(definition => definition.NodeName == name);
+     return any(this.values, definition => definition.nodeName == name);
    }
 
-   public getFunction(name: string): Function {
-     return values
-       .OfType<Function>()
-       .FirstOrDefault(function => function.Name.Value == name);
+   public getFunction(name: string): Function | null {
+     return asFunction(
+       firstOrDefault(this.values, functionValue => instanceOfFunction(functionValue) && functionValue.nodeName == name));
    }
 
-   public getTable(name: string): Table {
-     return values
-       .OfType<Table>()
-       .FirstOrDefault(function => function.Name.Value == name);
+   public getTable(name: string): Table | null {
+     return asTable(
+       firstOrDefault(this.values, table => instanceOfTable(table) && table.nodeName == name));
    }
 
-   public getCustomType(name: string): TypeDefinition {
-     return values
-       .OfType<TypeDefinition>()
-       .FirstOrDefault(function => function.Name.Value == name);
+   public getCustomType(name: string): TypeDefinition | null {
+     return asTypeDefinition(
+       firstOrDefault(this.values, type => instanceOfTypeDefinition(type) && type.nodeName == name));
    }
 
    public getSingleFunction(): Function {
-     return values
-       .OfType<Function>()
-       .SingleOrDefault();
+     const node = singleOrDefault(this.values);
+     const functionValue = asFunction(node);
+     return functionValue != null
+       ? functionValue
+       : throw new Error("Invalid type: " + node?.nodeType );
    }
 
    public getScenarios(): Array<Scenario> {
-     return values.OfType<Scenario>();
+     return where(this.values, value => instanceOfScenario(value))
+       .map(value => asScenario(value) as Scenario);
    }
 
-   public getEnum(name: string): EnumDefinition {
-     return values
-       .OfType<EnumDefinition>()
-       .FirstOrDefault(enumDefinition => enumDefinition.Name.Value == name);
+   public getEnum(name: string): EnumDefinition | null {
+     return asEnumDefinition(
+       firstOrDefault(this.values,
+           value => instanceOfEnumDefinition(value) && value?.nodeName == name));
    }
 
    public addIfNew(node: IRootNode): void {
-     if (!values.contains(node)) values.Add(node);
+     if (!contains(this.values, node)) this.values.push(node);
    }
 
-   public first(): INode {
-     return values.FirstOrDefault();
+   public first(): INode | null {
+     return firstOrDefault(this.values);
    }
 
-   public getType(name: string): TypeWithMembers {
-     let node = getNode(name);
-     return node switch {
-       Table table => new TableType(name, table),
-       Function function => new FunctionType(name, function),
-       EnumDefinition enumDefinition => new EnumType(name, enumDefinition),
-       TypeDefinition typeDefinition => new CustomType(name, typeDefinition),
-       _ => null
-     };
+   public getType(name: string): TypeWithMembers | null {
+     let node = this.getNode(name);
+
+     let table = asTable(node);
+     if (table != null) return new TableType(name, table);
+
+     let functionValue = asFunction(node);
+     if (functionValue != null) return new FunctionType(name, functionValue);
+
+     let enumDefinition = asEnumDefinition(node);
+     if (enumDefinition != null) return new EnumType(name, enumDefinition);
+
+     let typeDefinition = asTypeDefinition(node);
+     if (typeDefinition != null) return new CustomType(name, typeDefinition);
+
+     return null;
    }
 }

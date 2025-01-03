@@ -4,11 +4,11 @@ import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {IdentifierExpression} from "../identifierExpression";
 import {INode} from "../../node";
-import {asComplexType, ComplexType} from "../../types/complexType";
+import {asComplexType, ComplexType} from "../../variableTypes/complexType";
 import {IValidationContext} from "../../../parser/validationContext";
 import {VariableSource} from "../../variableSource";
-import {VariableType} from "../../types/variableType";
-import {VoidType} from "../../types/voidType";
+import {VariableType} from "../../variableTypes/variableType";
+import {VoidType} from "../../variableTypes/voidType";
 
 export class ExtractResultsFunction extends ExpressionFunction {
 

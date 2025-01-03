@@ -12,7 +12,7 @@ import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 
 export class FunctionCallExpression extends Expression {
 

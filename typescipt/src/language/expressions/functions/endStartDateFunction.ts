@@ -3,8 +3,8 @@ import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {INode} from "../../node";
 import {IValidationContext} from "../../../parser/validationContext";
-import {PrimitiveType} from "../../types/primitiveType";
-import {VariableType} from "../../types/variableType";
+import {PrimitiveType} from "../../variableTypes/primitiveType";
+import {VariableType} from "../../variableTypes/variableType";
 
 export class EndStartDateFunction extends ExpressionFunction {
    private get functionHelp() {
@@ -12,6 +12,7 @@ export class EndStartDateFunction extends ExpressionFunction {
    }
 
   public readonly nodeType = "EndStartDateFunction";
+
   protected abstract functionName: string
 
   public endDateExpression: Expression;

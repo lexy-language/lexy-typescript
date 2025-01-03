@@ -1,0 +1,44 @@
+import {TypeWithMembers} from "./typeWithMembers";
+import {VariableType} from "./variableType";
+import {IValidationContext} from "../../parser/validationContext";
+import {FunctionParametersType} from "./functionParametersType";
+import {FunctionResultsType} from "./functionResultsType";
+
+
+export class FunctionType extends TypeWithMembers {
+
+  public readonly variableTypeName: "FunctionType';
+
+  public type: string;
+   public functionValue: Function;
+
+   constructor(type: string, functionValue: Function) {
+     super();
+     this.type = type;
+     this.functionValue = functionValue;
+   }
+
+   protected equals(other: FunctionType): boolean {
+     return this.type == other?.type;
+   }
+
+   public override toString(): string {
+     return this.type;
+   }
+
+   public override memberType(name: string, context: IValidationContext): VariableType | null {
+     if (name == Function.parameterName) return this.functionParametersType(context);
+     if (name == Function.resultsName) return this.functionResultsType(context);
+     return null;
+   }
+
+   private functionParametersType(context: IValidationContext): FunctionParametersType {
+     let complexType = context.rootNodes.getFunction(this.type)?.getParametersType(context);
+     return new FunctionParametersType(this.type, complexType);
+   }
+
+   private functionResultsType(context: IValidationContext): FunctionResultsType {
+     let complexType = context.rootNodes.getFunction(this.type)?.getResultsType(context);
+     return new FunctionResultsType(this.type, complexType);
+   }
+}

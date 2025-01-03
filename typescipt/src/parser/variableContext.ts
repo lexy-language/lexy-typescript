@@ -1,11 +1,11 @@
 import {IValidationContext} from "./ValidationContext";
-import {VariableType} from "../language/types/variableType";
+import {VariableType} from "../language/variableTypes/variableType";
 import {SourceReference} from "./sourceReference";
 import {IParserLogger} from "./IParserLogger";
 import {VariableEntry} from "./variableEntry";
 import {VariableReference} from "../runTime/variableReference";
 import {VariableSource} from "../language/variableSource";
-import {ITypeWithMembers} from "../language/types/iTypeWithMembers";
+import {ITypeWithMembers} from "../language/variableTypes/iTypeWithMembers";
 
 export interface IVariableContext {
   addVariable(variableName: string, type: VariableType, source: VariableSource): void;

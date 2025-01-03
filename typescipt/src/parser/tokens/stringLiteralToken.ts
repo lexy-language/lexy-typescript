@@ -1,8 +1,16 @@
 import {Token} from "./token";
 import {ILiteralToken} from "./ILiteralToken";
 import {TokenCharacter} from "./tokenCharacter";
-import {IValidationContext} from "../IValidationContext";
-import {VariableType} from "../../language/variableTypes";
+import {IValidationContext} from "../validationContext";
+import {VariableType} from "../../language/variableTypes/variableType";
+
+export function instanceOfStringLiteralToken(object: any) {
+  return object?.nodeType == "StringLiteralToken";
+}
+
+export function asStringLiteralToken(object: any): StringLiteralToken | null {
+  return instanceOfStringLiteralToken(object) ? object as StringLiteralToken : null;
+}
 
 export class StringLiteralToken extends Token implements ILiteralToken {
 
@@ -20,7 +28,7 @@ export class StringLiteralToken extends Token implements ILiteralToken {
     return this.value;
   }
 
-  public deriveType(context: IValidationContext): VariableType {
+  public deriveType(context: IValidationContext): VariableType | null {
     throw new Error("Not supported. Type should be defined by node or expression.");
   }
 

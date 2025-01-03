@@ -1,36 +1,70 @@
 
+export function any<TItem>(array: Array<TItem>, where: (value: TItem) => boolean): boolean {
+  for (const item of array) {
+    if (where(item)) return true;
+  }
+  return false;
+}
 
-export class EnumerableExtensions {
-   public static forEach<TItem>(enumerable: Array<TItem>, action: Action<TItem>): Array<TItem> {
-     if (enumerable == null) throw new Error(nameof(enumerable));
-     if (action == null) throw new Error(nameof(action));
+export function firstOrDefault<TItem>(array: Array<TItem>, where: ((value: TItem) => boolean) | null = null): TItem | null {
 
-     foreach (let item in enumerable) action(item);
+  if (where == null) return array.length > 0 ? array[0] : null;
 
-     return enumerable;
-   }
+  for (const item of array) {
+    if (where(item)) return item;
+  }
+  return null;
+}
 
-   public static format<TItem>(enumerable: Array<TItem>, indentLevel: number): string {
-     if (enumerable == null) throw new Error(nameof(enumerable));
+export function singleOrDefault<TItem>(array: Array<TItem>, where: ((value: TItem) => boolean) | null = null): TItem | null {
+  if (where == null) {
+    if (array.length > 1) throw new Error("More as one element found in array.");
+    return array.length == 1 ? array[0] : null;
+  }
+  let value: TItem | null = null;
+  for (const item of array) {
+    if (where(item)) {
+      if (value == null) {
+        value = item;
+      } else {
+        throw new Error("More as one element found in array.");
+      }
+    }
+  }
+  return value;
+}
 
-     let indent = indentLevel > 0 ? new string(' ', 4) : string.Empty;
-     let builder = new StringBuilder();
-     builder.AppendLine();
-     foreach (let item in enumerable) builder.AppendLine(indent + item);
+export function lastOrDefault<TItem>(array: Array<TItem>, where: ((value: TItem) => boolean) | null = null): TItem | null {
 
-     return builder.toString();
-   }
+  if (where == null) return array.length > 0 ? array[array.length - 1] : null;
 
-   public static formatLine<TItem>(enumerable: Array<TItem>, separator: string): string {
-     if (enumerable == null) throw new Error(nameof(enumerable));
+  for (let i = array.length - 1; i >= 0; i--){
+    const item = array[i];
+    if (where(item)) return item;
+  }
+  return null;
+}
 
-     let builder = new StringBuilder();
-     foreach (let item in enumerable) {
-       if (builder.length > 0) builder.Append(separator);
+export function forEach<TItem>(array: Array<TItem>, action: (value: TItem) => void): Array<TItem> {
+  for (const value of array) {
+    action(value);
+  }
+  return array;
+}
 
-       builder.Append(item);
-     }
+export function contains<TItem>(array: Array<TItem>, value: TItem): boolean {
+  for (const item of array) {
+    if (item == value) return true;
+  }
+  return false;
+}
 
-     return builder.toString();
-   }
+export function where<TItem>(array: Array<TItem>, predicate: (value: TItem) => void): Array<TItem> {
+  const results = [];
+  for (const item of array) {
+    if (predicate(item)) {
+      results.push(item);
+    }
+  }
+  return results;
 }

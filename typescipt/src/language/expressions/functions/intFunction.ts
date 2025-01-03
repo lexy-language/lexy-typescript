@@ -1,6 +1,6 @@
 import {SingleArgumentFunction} from "./singleArgumentFunction";
-import {VariableType} from "../../types/variableType";
-import {PrimitiveType} from "../../types/PrimitiveType";
+import {VariableType} from "../../variableTypes/variableType";
+import {PrimitiveType} from "../../variableTypes/PrimitiveType";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {ExpressionFunction} from "./expressionFunction";
@@ -14,15 +14,8 @@ export class IntFunction extends SingleArgumentFunction {
       return `{Name} expects 1 argument (Value)`;
    }
 
-   protected override get argumentType(): VariableType {
-      return PrimitiveType.number;
-   }
-   protected override get resultType(): VariableType {
-      return PrimitiveType.number;
-   }
-
    constructor(valueExpression: Expression, reference: SourceReference) {
-     super(valueExpression, reference);
+     super(valueExpression, reference, PrimitiveType.number, PrimitiveType.number);
    }
 
    public static create(reference: SourceReference, expression: Expression): ExpressionFunction {

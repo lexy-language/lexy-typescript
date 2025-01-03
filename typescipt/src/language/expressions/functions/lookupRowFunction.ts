@@ -1,108 +1,134 @@
 import {ExpressionFunction} from "./expressionFunction";
 import {IHasNodeDependencies} from "../../IHasNodeDependencies";
+import {VariableType} from "../../variableTypes/variableType";
+import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
+import {Expression} from "../expression";
+import {RootNodeList} from "../../rootNodeList";
+import {IRootNode} from "../../rootNode";
+import {SourceReference} from "../../../parser/sourceReference";
+import {
+  newParseExpressionFunctionsFailed,
+  newParseExpressionFunctionsSuccess,
+  ParseExpressionFunctionsResult
+} from "../parseExpressionFunctionsResult";
+import {asIdentifierExpression} from "../identifierExpression";
+import {INode} from "../../node";
+import {IValidationContext} from "../../../parser/validationContext";
+import {asMemberAccessExpression} from "../memberAccessExpression";
 
+const argumentsNumber = 3;
+const argumentTable = 0;
+const argumentLookupValue = 1;
+const argumentSearchValueColumn = 2;
+const functionHelp = " Arguments: LOOKUPROW(Table, lookUpValue, Table.searchValueColumn)";
 
 export class LookupRowFunction extends ExpressionFunction implements IHasNodeDependencies {
 
-  private const string FunctionHelp = " Arguments: LOOKUPROW(Table, lookUpValue, Table.SearchValueColumn)";
-   private const string functionHelp = ` lOOKUPROW(, , ): Arguments:`;
+  private searchValueColumnTypeValue: VariableType;
+  private rowTypeValue: VariableType;
 
-   public readonly name: string = `LOOKUPROW`;
-
-   private const number Arguments = 3;
-   private const number ArgumentTable = 0;
-   private const number ArgumentLookupValue = 1;
-   private const number ArgumentSearchValueColumn = 2;
+  public readonly hasNodeDependencies: true;
+  public readonly name: string = `LOOKUPROW`;
 
   public readonly nodeType = "LookupRowFunction";
-  public string Table
+  public readonly table: string
 
-   public Expression valueExpression
+   public readonly valueExpression: Expression
 
-   public MemberAccessLiteral SearchValueColumn
+   public readonly searchValueColumn: MemberAccessLiteral
+   
+  public get searchValueColumnType(): VariableType {
+    return this.searchValueColumnTypeValue;
+  }
+   public get rowType(): VariableType{
+     return this.rowTypeValue;
+   }
 
-   public VariableType SearchValueColumnType { get; private set; }
-   public VariableType RowType { get; private set; }
-
-   private LookupRowFunction(string tableType, Expression valueExpression,
-     MemberAccessLiteral searchValueColumn, SourceReference tableNameArgumentReference)
-     super(tableNameArgumentReference) {
-     Table = tableType ?? throw new Error(nameof(tableType));
-     valueExpression = valueExpression ?? throw new Error(nameof(valueExpression));
-     SearchValueColumn = searchValueColumn ?? throw new Error(nameof(searchValueColumn));
+   constructor(tableType: string, valueExpression: Expression,
+     searchValueColumn: MemberAccessLiteral, tableNameArgumentReference: SourceReference) {
+     super(tableNameArgumentReference);
+     this.table = tableType;
+     this.valueExpression = valueExpression;
+     this.searchValueColumn = searchValueColumn;
    }
 
    public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
-     let table = rootNodeList.GetTable(Table);
-     if (table != null) yield return table;
+     let table = rootNodeList.getTable(this.table);
+     return table != null ? [table] : [];
    }
 
-   public static ParseExpressionFunctionsResult Parse(string name, SourceReference functionCallReference,
-     IReadOnlyArray<Expression> arguments) {
-     if (arguments.Count != Arguments)
-       return ParseExpressionFunctionsResult.failed($`Invalid number of arguments. {functionHelp}`);
+   public static parse(name: string, functionCallReference: SourceReference,
+    argumentValues: Array<Expression>): ParseExpressionFunctionsResult {
+     if (argumentValues.length != argumentsNumber) {
+       return newParseExpressionFunctionsFailed(`Invalid number of arguments. ${functionHelp}`);
+     }
 
-     if (!(arguments[ArgumentTable] is IdentifierExpression tableNameExpression))
-       return ParseExpressionFunctionsResult.failed(
-         $`Invalid argument {ArgumentTable}. Should be valid table name. {functionHelp}`);
+     const tableNameExpression = asIdentifierExpression(argumentValues[argumentTable]);
+     if (tableNameExpression == null) {
+       return newParseExpressionFunctionsFailed(
+         `Invalid argument {ArgumentTable}. Should be valid table name. {functionHelp}`);
+     }
 
-     if (!(arguments[ArgumentSearchValueColumn] is MemberAccessExpression searchValueColumnHeader))
-       return ParseExpressionFunctionsResult.failed(
-         $`Invalid argument {ArgumentSearchValueColumn}. Should be search column. {functionHelp}`);
+     const searchValueColumnHeader = asMemberAccessExpression(argumentValues[argumentSearchValueColumn]);
+     if (searchValueColumnHeader == null) {
+       return newParseExpressionFunctionsFailed(
+         `Invalid argument {ArgumentSearchValueColumn}. Should be search column. {functionHelp}`);
+     }
 
-     let tableName = tableNameExpression.Identifier;
-     let valueExpression = arguments[ArgumentLookupValue];
-     let searchValueColumn = searchValueColumnHeader.MemberAccessLiteral;
+     let tableName = tableNameExpression.identifier;
+     let valueExpression = argumentValues[argumentLookupValue];
+     let searchValueColumn = searchValueColumnHeader.memberAccessLiteral;
 
      let lookupFunction =
        new LookupRowFunction(tableName, valueExpression, searchValueColumn, functionCallReference);
-     return ParseExpressionFunctionsResult.Success(lookupFunction);
+     return newParseExpressionFunctionsSuccess(lookupFunction);
    }
 
    public override getChildren(): Array<INode> {
-     yield return valueExpression;
+     return [this.valueExpression];
    }
 
    protected override validate(context: IValidationContext): void {
-     ValidateColumn(context, SearchValueColumn, ArgumentSearchValueColumn);
+     this.validateColumn(context, this.searchValueColumn, argumentSearchValueColumn);
 
-     let tableType = context.rootNodes.GetTable(Table);
+     let tableType = context.rootNodes.getTable(this.table);
      if (tableType == null) {
        context.logger.fail(this.reference,
-         $`Invalid argument {ArgumentTable}. Table name '{Table}' not found. {functionHelp}`);
+         `Invalid argument ${argumentTable}. Table name '${this.table}' not found. ${functionHelp}`);
        return;
      }
 
-     let searchColumnHeader = tableType.Header.Get(SearchValueColumn);
+     let searchColumnHeader = tableType.Header.Get(this.searchValueColumn);
      if (searchColumnHeader == null) {
        context.logger.fail(this.reference,
-         $`Invalid argument {ArgumentSearchValueColumn}. Column name '{SearchValueColumn}' not found in table '{Table}'. {functionHelp}`);
+         `Invalid argument ${argumentSearchValueColumn}. Column name '${this.searchValueColumn}' not found in table '${this.table}'. $functionHelp}`);
        return;
      }
 
-     let conditionValueType = valueExpression.deriveType(context);
-     SearchValueColumnType = searchColumnHeader.Type.createVariableType(context);
+     let conditionValueType = this.valueExpression.deriveType(context);
+     this.searchValueColumnTypeValue = searchColumnHeader.Type.createVariableType(context);
 
-     if (conditionValueType == null || !conditionValueType.equals(SearchValueColumnType))
+     if (conditionValueType == null || !conditionValueType.equals(this.searchValueColumnType)) {
        context.logger.fail(this.reference,
-         $`Invalid argument {ArgumentSearchValueColumn}. Column type '{SearchValueColumn}': '{SearchValueColumnType}' doesn't match condition type '{conditionValueType}'. {functionHelp}`);
+         `Invalid argument ${argumentSearchValueColumn}. Column type '${this.searchValueColumn}': '${this.searchValueColumnType}' doesn't match condition type '${conditionValueType}'. ${functionHelp}`);
+     }
 
-     RowType = tableType?.GetRowType(context);
+     this.rowTypeValue = tableType?.getRowType(context);
    }
 
 
    private validateColumn(context: IValidationContext, column: MemberAccessLiteral, index: number): void {
-     if (column.Parent != Table)
+     if (column.parent != this.table)
        context.logger.fail(this.reference,
-         $`Invalid argument {index}. Result column table '{column.Parent}' should be table name '{Table}'`);
+         `Invalid argument ${index}. Result column table '${column.parent}' should be table name '${this.table}'`);
 
-     if (column.Parts.length != 2)
+     if (column.parts.length != 2)
        context.logger.fail(this.reference,
-         $`Invalid argument {index}. Result column table '{column.Parent}' should be table name '{Table}'`);
+         `Invalid argument ${index}. Result column table '${column.parent}' should be table name '${this.table}'`);
    }
 
    public override deriveReturnType(context: IValidationContext): VariableType {
-     let tableType = context.rootNodes.GetTable(Table);
-     return tableType?.GetRowType(context);
+     let tableType = context.rootNodes.getTable(this.table);
+     return tableType?.getRowType(context);
    }
 }

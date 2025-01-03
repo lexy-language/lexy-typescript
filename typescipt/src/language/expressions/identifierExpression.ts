@@ -7,7 +7,7 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 
 export function asIdentifierExpression(object: any): IdentifierExpression | null {
   return object.nodeType == "IdentifierExpression" ? object as IdentifierExpression : null;

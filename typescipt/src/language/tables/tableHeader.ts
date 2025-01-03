@@ -1,54 +1,71 @@
-
+import {INode, Node} from "../node";
+import {ColumnHeader} from "./columnHeader";
+import {SourceReference} from "../../parser/sourceReference";
+import {IParseLineContext} from "../../parser/ParseLineContext";
+import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
+import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
+import {IValidationContext} from "../../parser/validationContext";
+import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {firstOrDefault} from "../../infrastructure/enumerableExtensions";
 
 export class TableHeader extends Node {
-   public Array<ColumnHeader> Columns
 
-   private TableHeader(ColumnHeader[] columns, SourceReference reference) {
-     super(reference);
-     Columns = columns ?? throw new Error(nameof(columns));
+  private readonly columnsValue: Array<ColumnHeader>;
+
+  public readonly nodeType: "TableHeader";
+
+   public get columns(): ReadonlyArray<ColumnHeader> {
+     return this.columnsValue;
    }
 
-   public static parse(context: IParseLineContext): TableHeader {
-     let index = 0;
-     let validator = context.ValidateTokens<TableHeader>();
+   constructor(columns: ColumnHeader[], reference: SourceReference) {
+     super(reference);
+     this.columnsValue = columns;
+   }
 
-     if (!validator.Type<TableSeparatorToken>(index).isValid) return null;
+   public static parse(context: IParseLineContext): TableHeader | null {
+     let index = 0;
+     let validator = context.validateTokens("TableHeader");
+
+     if (!validator.type<TableSeparatorToken>(index, TableSeparatorToken).isValid) return null;
 
      let headers = new Array<ColumnHeader>();
      let tokens = context.line.tokens;
      while (++index < tokens.length) {
        if (!validator
-           .Type<StringLiteralToken>(index)
-           .Type<StringLiteralToken>(index + 1)
-           .Type<TableSeparatorToken>(index + 2)
+           .type<StringLiteralToken>(index, StringLiteralToken)
+           .type<StringLiteralToken>(index + 1, StringLiteralToken)
+           .type<TableSeparatorToken>(index + 2, TableSeparatorToken)
            .isValid)
          return null;
 
-       let typeName = tokens.tokenValue(index);
+       let typeName = tokens.tokenValue(index)
        let name = tokens.tokenValue(++index);
-       let reference = context.line.TokenReference(index);
+       let reference = context.line.tokenReference(index);
+
+       if (typeName == null || name == null) return null;
 
        let header = ColumnHeader.parse(name, typeName, reference);
-       headers.Add(header);
+       headers.push(header);
 
        ++index;
      }
 
-     return new TableHeader(headers.ToArray(), context.line.lineStartReference());
+     return new TableHeader(headers, context.line.lineStartReference());
    }
 
    public override getChildren(): Array<INode> {
-     return Columns;
+     return [...this.columnsValue];
    }
 
    protected override validate(context: IValidationContext): void {
    }
 
-   public get(memberAccess: MemberAccessLiteral): ColumnHeader {
-     let parts = memberAccess.Parts;
+   public get(memberAccess: MemberAccessLiteral): ColumnHeader | null {
+     let parts = memberAccess.parts;
      if (parts.length < 2) return null;
      let name = parts[1];
 
-     return Columns.FirstOrDefault(value => value.Name == name);
+     return firstOrDefault(this.columnsValue, value => value.name == name);
    }
 }

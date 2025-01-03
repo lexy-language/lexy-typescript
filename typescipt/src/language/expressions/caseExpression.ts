@@ -1,5 +1,5 @@
 import {Expression} from "./Expression";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {IDependantExpression} from "./IDependantExpression";
 import {ExpressionList} from "./expressionList";

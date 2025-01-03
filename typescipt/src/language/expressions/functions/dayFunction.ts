@@ -1,5 +1,5 @@
-import {VariableType} from "../../types/variableType";
-import {PrimitiveType} from "../../types/primitiveType";
+import {VariableType} from "../../variableTypes/variableType";
+import {PrimitiveType} from "../../variableTypes/primitiveType";
 import {SingleArgumentFunction} from "./singleArgumentFunction";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
@@ -14,16 +14,8 @@ export class DayFunction extends SingleArgumentFunction {
       return `${this.name} expects 1 argument (Date)`;
    }
 
-   protected override get argumentType(): VariableType {
-      return PrimitiveType.date;
-   }
-
-   protected override get resultType(): VariableType {
-      return PrimitiveType.number;
-   }
-
    constructor(valueExpression: Expression, reference: SourceReference) {
-      super(valueExpression, reference);
+      super(valueExpression, reference, PrimitiveType.date, PrimitiveType.number);
    }
 
    public static create(reference: SourceReference, expression: Expression): ExpressionFunction {

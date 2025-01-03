@@ -2,7 +2,7 @@ import {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import {ExpressionFunction} from "./expressionFunction";
 import {Mapping} from "./mapping";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
-import {asComplexTypeReference, ComplexTypeReference} from "../../types/complexTypeReference";
+import {asComplexTypeReference, ComplexTypeReference} from "../../variableTypes/complexTypeReference";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {IValidationContext} from "../../../parser/ValidationContext";
@@ -10,14 +10,15 @@ import {asMemberAccessExpression} from "../memberAccessExpression";
 import {RootNodeList} from "../../rootNodeList";
 import {IRootNode} from "../../rootNode";
 import {INode} from "../../node";
-import {ComplexType} from "../../types/complexType";
-import {VariableType} from "../../types/variableType";
+import {ComplexType} from "../../variableTypes/complexType";
+import {VariableType} from "../../variableTypes/variableType";
 import {Function} from "../../functions/function";
 
 export class FillParametersFunction extends ExpressionFunction implements IHasNodeDependencies {
 
    public readonly name = `fill`;
 
+  public readonly hasNodeDependencies: true;
   public readonly nodeType = "FillParametersFunction";
 
   protected get functionHelp() {

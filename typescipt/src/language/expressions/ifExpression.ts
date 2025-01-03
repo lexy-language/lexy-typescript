@@ -11,8 +11,8 @@ import {ExpressionFactory} from "./expressionFactory";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
 import {IValidationContext} from "../../parser/validationContext";
-import {PrimitiveType} from "../types/primitiveType";
-import {VariableType} from "../types/variableType";
+import {PrimitiveType} from "../variableTypes/primitiveType";
+import {VariableType} from "../variableTypes/variableType";
 
 export class IfExpression extends Expression implements IParsableNode {
 

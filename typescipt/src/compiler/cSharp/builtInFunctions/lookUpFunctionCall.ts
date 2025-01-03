@@ -8,7 +8,7 @@ export class LookUpFunctionCall extends FunctionCall {
    public LookUpFunctionCall(LookupFunction lookupFunction) super(lookupFunction) {
      LookupFunction = lookupFunction;
      methodName =
-       $`__LookUp{lookupFunction.Table}{lookupFunction.resultColumn.Member}By{lookupFunction.SearchValueColumn.Member}`;
+       $`__LookUp{lookupFunction.Table}{lookupFunction.resultColumn.Member}By{lookupFunction.searchValueColumn.Member}`;
    }
 
    public override customMethodSyntax(context: ICompileFunctionContext): MemberDeclarationSyntax {
@@ -41,7 +41,7 @@ export class LookUpFunctionCall extends FunctionCall {
                        new SyntaxNodeOrToken[] {
                          Arguments.String(LookupFunction.resultColumn.Member),
                          Token(SyntaxKind.CommaToken),
-                         Arguments.String(LookupFunction.SearchValueColumn.Member),
+                         Arguments.String(LookupFunction.searchValueColumn.Member),
                          Token(SyntaxKind.CommaToken),
                          Arguments.String(LookupFunction.Table),
                          Token(SyntaxKind.CommaToken),
@@ -51,7 +51,7 @@ export class LookUpFunctionCall extends FunctionCall {
                          Argument(IdentifierName(`condition`)),
                          Token(SyntaxKind.CommaToken),
                          Arguments.MemberAccessLambda(`row`,
-                           LookupFunction.SearchValueColumn.Member),
+                           LookupFunction.searchValueColumn.Member),
                          Token(SyntaxKind.CommaToken),
                          Arguments.MemberAccessLambda(`row`,
                            LookupFunction.resultColumn.Member),

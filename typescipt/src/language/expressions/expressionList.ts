@@ -22,7 +22,7 @@ export class ExpressionList extends Node {
    }
 
   public asArray(): Array<Expression> {
-     return this.values;
+     return [...this.values];
   }
   public get(index: number): Expression {
     return this.values[index];

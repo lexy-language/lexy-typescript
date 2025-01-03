@@ -1,29 +1,38 @@
+import {INode, Node} from "../node";
+import {SourceReference} from "../../parser/sourceReference";
+import {IValidationContext} from "../../parser/validationContext";
+import {isNullOrEmpty, isValidIdentifier} from "../../parser/tokens/character";
 
+export class ScenarioFunctionName extends Node {
 
-export class ScenariofunctionName extends Node {
-   public string Value { get; private set; }
+  private valueValue: string;
 
-   public ScenariofunctionName(SourceReference reference) {
-     super(reference);
-   }
+  public readonly nodeType: "ScenarioFunctionName";
 
-   public parse(context: IParseLineContext): void {
-     let line = context.line;
-     Value = line.tokens.tokenValue(1);
-   }
+  public get value() {
+    return this.valueValue;
+  }
 
-   public override toString(): string {
-     return Value;
-   }
+  constructor(reference: SourceReference) {
+    super(reference);
+  }
 
-   public override getChildren(): Array<INode> {
-     yield break;
-   }
+  public parseName(name: string): void {
+    this.valueValue = name;
+  }
 
-   protected override validate(context: IValidationContext): void {
-   }
+  public override getChildren(): Array<INode> {
+    return [];
+  }
 
-   public isEmpty(): boolean {
-     return string.IsNullOrEmpty(Value);
+  protected override validate(context: IValidationContext): void {
+    if (isNullOrEmpty(this.value)) {
+      context.logger.fail(this.reference, `Invalid scenario name: '${this.value}'. Name should not be empty.`);
+    }
+    if (!isValidIdentifier(this.value)) context.logger.fail(this.reference, `Invalid scenario name: '${this.value}'.`);
+  }
+
+  public isEmpty(): boolean {
+     return isNullOrEmpty(this.valueValue);
    }
 }

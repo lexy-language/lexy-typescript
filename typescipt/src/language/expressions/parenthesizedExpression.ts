@@ -8,7 +8,7 @@ import {ExpressionFactory} from "./expressionFactory";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 
 export class ParenthesizedExpression extends Expression {
 

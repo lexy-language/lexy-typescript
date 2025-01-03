@@ -8,6 +8,7 @@ export class DaysFunction extends EndStartDateFunction {
    public readonly name: string = `DAYS`;
 
    public readonly nodeType = "DaysFunction";
+
    protected override get functionName() {
       return this.name;
    }

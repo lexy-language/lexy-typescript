@@ -1,29 +1,44 @@
-
+import {IParsableNode, ParsableNode} from "../parsableNode";
+import {TableHeader} from "../tables/tableHeader";
+import {TableRow} from "../tables/tableRow";
+import {SourceReference} from "../../parser/sourceReference";
+import {IParseLineContext} from "../../parser/ParseLineContext";
+import {INode} from "../node";
+import {IValidationContext} from "../../parser/validationContext";
 
 export class ScenarioTable extends ParsableNode {
-   public TableHeader Header { get; private set; }
-   public Array<TableRow> Rows = list<TableRow>(): new;
 
-   public ScenarioTable(SourceReference reference) {
+  private headerValue: TableHeader | null;
+  private rowsValue: Array<TableRow>;
+
+  public nodeType: "ScenarioTable";
+
+  public get rows(): ReadonlyArray<TableRow>{
+    return this.rows;
+  }
+
+  public get header() {
+    return this.headerValue;
+  }
+
+  constructor(reference: SourceReference) {
      super(reference);
    }
 
    public override parse(context: IParseLineContext): IParsableNode {
-     if (Header == null) {
-       Header = TableHeader.parse(context);
+     if (this.headerValue == null) {
+       this.headerValue = TableHeader.parse(context);
        return this;
      }
 
      let row = TableRow.parse(context);
-     if (row != null) Rows.Add(row);
+     if (row != null) this.rowsValue.push(row);
 
      return this;
    }
 
    public override getChildren(): Array<INode> {
-     if (Header != null) yield return Header;
-
-     foreach (let row in Rows) yield return row;
+    return this.headerValue != null ? [this.headerValue, ...this.rowsValue] :  [...this.rowsValue];
    }
 
    protected override validate(context: IValidationContext): void {

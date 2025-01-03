@@ -1,6 +1,6 @@
 import {Expression} from "./expression";
 
-type ParseExpressionFailed = {
+export type ParseExpressionFailed = {
   state: "failed";
   errorMessage: string;
 }
@@ -12,7 +12,7 @@ export function newParseExpressionFailed(constr: Function, errorMessage: string,
   } as const;
 }
 
-type ParseExpressionSuccess = {
+export type ParseExpressionSuccess = {
   state: "success";
   result: Expression;
 }

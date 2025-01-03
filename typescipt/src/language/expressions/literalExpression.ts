@@ -8,7 +8,16 @@ import {instanceOfNumberLiteralToken, NumberLiteralToken} from "../../parser/tok
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
+import {PrimitiveVariableDeclarationType} from "../variableTypes/primitiveVariableDeclarationType";
+
+export function instanceOfLiteralExpression(object: any): boolean {
+  return object?.nodeType == "LiteralExpression";
+}
+
+export function asLiteralExpression(object: any): LiteralExpression | null {
+  return instanceOfLiteralExpression(object) ? object as LiteralExpression : null;
+}
 
 export class LiteralExpression extends Expression {
 

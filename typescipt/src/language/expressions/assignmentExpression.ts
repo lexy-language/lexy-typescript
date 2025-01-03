@@ -11,8 +11,8 @@ import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
 import {IdentifierExpression} from "./identifierExpression";
 import {MemberAccessExpression} from "./memberAccessExpression";
-import {asTypeWithMembers} from "../types/iTypeWithMembers";
-import {VariableType} from "../types/variableType";
+import {asTypeWithMembers} from "../variableTypes/iTypeWithMembers";
+import {VariableType} from "../variableTypes/variableType";
 
 export class AssignmentExpression extends Expression {
   public nodeType: "AssignmentExpression"

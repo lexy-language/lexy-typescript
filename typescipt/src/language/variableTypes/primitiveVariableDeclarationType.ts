@@ -5,6 +5,14 @@ import {VariableType} from "./variableType";
 import {PrimitiveType} from "./primitiveType";
 import {INode} from "../node";
 
+export function instanceOfPrimitiveVariableDeclarationType(object: any): boolean {
+  return object?.nodeType == "PrimitiveVariableDeclarationType";
+}
+
+export function asPrimitiveVariableDeclarationType(object: any): PrimitiveVariableDeclarationType | null {
+  return instanceOfPrimitiveVariableDeclarationType(object) ? object as PrimitiveVariableDeclarationType : null;
+}
+
 export class PrimitiveVariableDeclarationType extends VariableDeclarationType {
 
   public nodeType: "PrimitiveVariableDeclarationType";

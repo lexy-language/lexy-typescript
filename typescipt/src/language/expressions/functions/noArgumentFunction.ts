@@ -1,15 +1,16 @@
 import {ExpressionFunction} from "./expressionFunction";
-import {VariableType} from "../../types/variableType";
+import {VariableType} from "../../variableTypes/variableType";
 import {SourceReference} from "../../../parser/sourceReference";
 import {INode} from "../../node";
 import {IValidationContext} from "../../../parser/validationContext";
 
 export abstract class NoArgumentFunction extends ExpressionFunction {
 
-  protected abstract resultType: VariableType;
+  protected readonly resultType: VariableType;
 
-  constructor(reference: SourceReference){
+  protected constructor(reference: SourceReference, resultType: VariableType){
    super(reference);
+   this.resultType = resultType;
  }
 
    public override getChildren(): Array<INode> {

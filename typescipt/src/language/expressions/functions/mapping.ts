@@ -1,4 +1,4 @@
-import {VariableType} from "../../types/variableType";
+import {VariableType} from "../../variableTypes/variableType";
 import {VariableSource} from "../../variableSource";
 
 export class Mapping {

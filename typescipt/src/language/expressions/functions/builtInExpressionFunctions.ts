@@ -117,7 +117,7 @@ export class BuiltInExpressionFunctions {
     (value: string, reference: SourceReference, expressions: Array<Expression>) => ParseExpressionFunctionsResult {
 
     return function(name: string, reference: SourceReference, argumentValues: Array<Expression>) {
-      if (arguments.length != 2) {
+      if (argumentValues.length != 2) {
         return newParseExpressionFunctionsFailed(`Invalid number of arguments. 2 arguments expected.`);
       }
 

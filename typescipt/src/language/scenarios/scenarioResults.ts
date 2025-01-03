@@ -1,20 +1,32 @@
-
+import {IParsableNode, ParsableNode} from "../parsableNode";
+import {AssignmentDefinition} from "./assignmentDefinition";
+import {SourceReference} from "../../parser/sourceReference";
+import {IParseLineContext} from "../../parser/ParseLineContext";
+import {INode} from "../node";
+import {IValidationContext} from "../../parser/validationContext";
 
 export class ScenarioResults extends ParsableNode {
-   public Array<AssignmentDefinition> Assignments = list<AssignmentDefinition>(): new;
 
-   public ScenarioResults(SourceReference reference) {
+  private assignmentsValue: Array<AssignmentDefinition> = [];
+
+  public nodeType: "ScenarioResults";
+
+  public get assignments(): ReadonlyArray<AssignmentDefinition> {
+    return this.assignmentsValue;
+  }
+
+   constructor(reference: SourceReference) {
      super(reference);
    }
 
    public override parse(context: IParseLineContext): IParsableNode {
      let assignment = AssignmentDefinition.parse(context);
-     if (assignment != null) Assignments.Add(assignment);
+     if (assignment != null) this.assignmentsValue.push(assignment);
      return this;
    }
 
    public override getChildren(): Array<INode> {
-     return Assignments;
+     return [...this.assignmentsValue];
    }
 
    protected override validate(context: IValidationContext): void {

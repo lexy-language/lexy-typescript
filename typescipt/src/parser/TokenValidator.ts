@@ -46,7 +46,6 @@ export class TokenValidator {
     return this;
   }
 
-  /*
   public countMinimum(count: number): TokenValidator {
     if (this.tokens.length < count) {
       this.fail(`Invalid number of tokens '${this.tokens.length}', should be at least '${this.count}'.`);
@@ -55,7 +54,6 @@ export class TokenValidator {
 
     return this;
   }
-  */
 
   public keyword(index: number, keyword: string | null): TokenValidator {
     this.type(index, KeywordToken);
@@ -133,6 +131,7 @@ export class TokenValidator {
     return this;
   }
 
+  //todo this will not work with minification
   public type<T extends Token>(index: number, constr: Function) {
     this.validateType<T>(index, constr);
     return this;

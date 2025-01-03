@@ -10,7 +10,7 @@ import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResu
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 
 export class SwitchExpression extends Expression implements IParsableNode {
 

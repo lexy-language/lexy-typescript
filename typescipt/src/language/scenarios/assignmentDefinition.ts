@@ -1,49 +1,74 @@
-
+import {Expression} from "../expressions/expression";
+import {Node} from "../node";
+import {ConstantValue} from "./constantValue";
+import {VariableReference} from "../../runTime/variableReference";
+import {VariableType} from "../variableTypes/variableType";
+import {SourceReference} from "../../parser/sourceReference";
+import {IParseLineContext} from "../../parser/ParseLineContext";
+import {OperatorToken} from "../../parser/tokens/operatorToken";
+import {OperatorType} from "../../parser/tokens/operatorType";
+import {ExpressionFactory} from "../expressions/expressionFactory";
+import {VariableReferenceParser} from "./variableReferenceParser";
 
 export class AssignmentDefinition extends Node {
-   private readonly Expression valueExpression;
-   private readonly Expression variableExpression;
 
-   public ConstantValue ConstantValue
-   public VariableReference Variable
+   private readonly valueExpression: Expression;
+   private readonly variableExpression: Expression;
 
-   public VariableType VariableType { get; private set; }
+   private variableTypeValue: VariableType;
 
-   private AssignmentDefinition(VariableReference variable, ConstantValue constantValue, Expression variableExpression,
-     Expression valueExpression, SourceReference reference)
-     {
+   public readonly constantValue: ConstantValue;
+   public readonly variable: VariableReference;
+
+   public get variableType(): VariableType {
+     return this.variableTypeValue;
+   }
+
+   constructor(variable: VariableReference, constantValue: ConstantValue, variableExpression: Expression,
+     valueExpression: Expression, reference: SourceReference) {
      super(reference);
-     Variable = variable;
-     ConstantValue = constantValue;
+
+     this.variable = variable;
+     this.constantValue = constantValue;
 
      this.variableExpression = variableExpression;
      this.valueExpression = valueExpression;
    }
 
-   public static parse(context: IParseLineContext): AssignmentDefinition {
+   public static parse(context: IParseLineContext): AssignmentDefinition | null {
      let line = context.line;
      let tokens = line.tokens;
      let reference = line.lineStartReference();
 
-     let assignmentIndex = tokens.Find<OperatorToken>(token => token.Type == OperatorType.Assignment);
+     let assignmentIndex = tokens.find<OperatorToken>(token => token.type == OperatorType.Assignment, OperatorToken);
      if (assignmentIndex <= 0 || assignmentIndex == tokens.length - 1) {
        context.logger.fail(reference, `Invalid assignment. Expected: 'Variable = Value'`);
        return null;
      }
 
-     let targetExpression =
-       ExpressionFactory.parse(tokens.tokensFromStart(assignmentIndex), line);
-     if (context.failed(targetExpression, reference)) return null;
+     let targetExpression = ExpressionFactory.parse(tokens.tokensFromStart(assignmentIndex), line);
+     if (targetExpression.state == "failed") {
+       context.logger.fail(reference, targetExpression.errorMessage);
+       return null;
+     }
 
-     let valueExpression =
-       ExpressionFactory.parse(tokens.tokensFrom(assignmentIndex + 1), line);
-     if (context.failed(valueExpression, reference)) return null;
+     let valueExpression = ExpressionFactory.parse(tokens.tokensFrom(assignmentIndex + 1), line);
+     if (valueExpression.state == "failed") {
+       context.logger.fail(reference, valueExpression.errorMessage);
+       return null;
+     }
 
      let variableReference = VariableReferenceParser.parse(targetExpression.result);
-     if (context.failed(variableReference, reference)) return null;
+     if (variableReference.state == "failed") {
+       context.logger.fail(reference, variableReference.errorMessage);
+       return null;
+     }
 
      let constantValue = ConstantValue.parse(valueExpression.result);
-     if (context.failed(constantValue, reference)) return null;
+     if (constantValue.state == "failed") {
+       context.logger.fail(reference, targetExpression.errorMessage);
+       return null;
+     }
 
      return new AssignmentDefinition(variableReference.result, constantValue.result, targetExpression.result,
        valueExpression.result, reference);

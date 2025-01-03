@@ -1,7 +1,7 @@
 import {Expression} from "./Expression";
 import {IHasNodeDependencies} from "../IHasNodeDependencies";
 import {VariableReference} from "../../runTime/variableReference";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 import {SourceReference} from "../../parser/sourceReference";
 import {ExpressionSource} from "./expressionSource";
 import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
@@ -12,7 +12,7 @@ import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResu
 import {TokenList} from "../../parser/tokens/tokenList";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
-import {asTypeWithMembers} from "../types/iTypeWithMembers";
+import {asTypeWithMembers} from "../variableTypes/iTypeWithMembers";
 
 export function asMemberAccessExpression(object: any): MemberAccessExpression | null {
   return object.nodeType == "MemberAccessExpression" ? object as MemberAccessExpression : null;
@@ -20,6 +20,7 @@ export function asMemberAccessExpression(object: any): MemberAccessExpression | 
 
 export class MemberAccessExpression extends Expression implements IHasNodeDependencies {
 
+  public readonly hasNodeDependencies: true;
   public nodeType: "MemberAccessExpression";
 
   public readonly memberAccessLiteral: MemberAccessLiteral;

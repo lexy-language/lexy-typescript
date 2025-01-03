@@ -1,42 +1,61 @@
-
+import {INode, Node} from "../node";
+import {Expression} from "../expressions/expression";
+import {SourceReference} from "../../parser/sourceReference";
+import {IParseLineContext} from "../../parser/ParseLineContext";
+import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
+import {Token} from "../../parser/tokens/token";
+import {ExpressionFactory} from "../expressions/expressionFactory";
+import {TokenList} from "../../parser/tokens/tokenList";
+import {IValidationContext} from "../../parser/validationContext";
 
 export class TableRow extends Node {
-   public Array<Expression> Values
 
-   private TableRow(Expression[] values, SourceReference reference) {
+  private readonly valuesValue: Array<Expression>;
+
+  public readonly nodeType: "TableRow";
+
+  public get values(): ReadonlyArray<Expression> {
+    return this.valuesValue;
+  }
+
+   constructor(values: Expression[], reference: SourceReference) {
      super(reference);
-     Values = values ?? throw new Error(nameof(values));
+     this.valuesValue = values;
    }
 
-   public static parse(context: IParseLineContext): TableRow {
+   public static parse(context: IParseLineContext): TableRow | null {
      let index = 0;
-     let validator = context.ValidateTokens<TableRow>();
+     let validator = context.validateTokens("TableRow");
 
-     if (!validator.Type<TableSeparatorToken>(index).isValid) return null;
+     if (!validator.type<TableSeparatorToken>(index, TableSeparatorToken).isValid) return null;
 
      let tokens = new Array<Expression>();
      let currentLineTokens = context.line.tokens;
      while (++index < currentLineTokens.length) {
        let valid = !validator
          .isLiteralToken(index)
-         .Type<TableSeparatorToken>(index + 1)
+         .type<TableSeparatorToken>(index + 1, TableSeparatorToken)
          .isValid;
 
        if (valid) return null;
 
-       let reference = context.line.TokenReference(index);
-       let token = currentLineTokens.Token<Token>(index++);
-       let expression = ExpressionFactory.parse(new TokenList(new[] { token }), context.line);
-       if (context.failed(expression, reference)) return null;
+       let token = currentLineTokens.token<Token>(index++, Token);
+       if (token == null) return null;
 
-       tokens.Add(expression.result);
+       let expression = ExpressionFactory.parse(new TokenList([token]), context.line);
+       if (expression.state == "failed") {
+         context.logger.fail(context.line.tokenReference(index), expression.errorMessage);
+         return null;
+       }
+
+       tokens.push(expression.result);
      }
 
-     return new TableRow(tokens.ToArray(), context.line.lineStartReference());
+     return new TableRow(tokens, context.line.lineStartReference());
    }
 
    public override getChildren(): Array<INode> {
-     return Values.ToList();
+     return [...this.values];
    }
 
    protected override validate(context: IValidationContext): void {

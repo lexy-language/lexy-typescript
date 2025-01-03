@@ -12,7 +12,7 @@ import {OperatorToken} from "./operatorToken";
 import {NumberLiteralToken} from "./numberLiteralToken";
 import {BuildLiteralToken} from "./buildLiteralToken";
 import {WhitespaceToken} from "./whitespaceToken";
-import {Character, isCharacter, isDigit, isWhitespace} from "./character";
+import {Character, isLetter, isDigit, isWhitespace} from "./character";
 
 const KnownTokens: Array<{value: number, factory: ((character: TokenCharacter) => ParsableToken)}> = [
   {value: TokenValues.CommentChar, factory: value => new CommentToken(value)},
@@ -44,7 +44,7 @@ const TokensValidators: Array<{
   isValid: ((character: Character) => boolean),
   factory: ((character: TokenCharacter) => ParsableToken)}> = [
   { isValid: isDigit, factory: value => new NumberLiteralToken(null, value) },
-  { isValid: isCharacter, factory: value => new BuildLiteralToken(value) },
+  { isValid: isLetter, factory: value => new BuildLiteralToken(value) },
   { isValid: isWhitespace, factory: value => new WhitespaceToken(value) },
 ];
 

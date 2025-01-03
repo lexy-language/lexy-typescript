@@ -1,39 +1,63 @@
+import {IHasNodeDependencies} from "./IHasNodeDependencies";
+import {VariableType} from "./variableTypes/variableType";
+import {VariableDeclarationType} from "./variableTypes/variableDeclarationType";
+import {SourceReference} from "../parser/sourceReference";
+import {Expression} from "./expressions/expression";
+import {VariableSource} from "./variableSource";
+import {INode, Node} from "./node";
+import {RootNodeList} from "./rootNodeList";
+import {IRootNode} from "./rootNode";
+import {asEnumType} from "./variableTypes/enumType";
+import {asCustomType} from "./variableTypes/customType";
+import {IParseLineContext} from "../parser/ParseLineContext";
+import {OperatorType} from "../parser/tokens/operatorType";
+import {OperatorToken} from "../parser/tokens/operatorToken";
+import {ExpressionFactory} from "./expressions/expressionFactory";
+import {IValidationContext} from "../parser/validationContext";
+import {validateTypeAndDefault} from "./variableTypes/validationContextExtensions";
 
+export class VariableDefinition extends Node implements IHasNodeDependencies {
 
-export class VariableDefinition extends Node, IHasNodeDependencies {
-   public Expression DefaultExpression
-   public VariableSource Source
-   public VariableDeclarationType Type
-   public VariableType VariableType { get; private set; }
-   public string Name
+  private variableTypeValue: VariableType | null;
 
-   private VariableDefinition(string name, VariableDeclarationType type,
-     VariableSource Source, SourceReference reference, Expression defaultExpression = null) {
+  public readonly hasNodeDependencies: true;
+  public readonly nodeType: "VariableDefinition";
+  public readonly defaultExpression: Expression | null;
+  public readonly source: VariableSource;
+  public readonly type: VariableDeclarationType;
+  public readonly name: string;
+
+  public get variableType(): VariableType | null {
+     return this.variableTypeValue;
+   }
+
+   constructor(name: string, type: VariableDeclarationType,
+     source: VariableSource, reference: SourceReference, defaultExpression: Expression | null = null) {
      super(reference);
-     Type = type ?? throw new Error(nameof(type));
-     Name = name ?? throw new Error(nameof(name));
-
-     DefaultExpression = defaultExpression;
-     this.Source = Source;
+     this.type = type;
+     this.name = name;
+     this.defaultExpression = defaultExpression;
+     this.source = source;
    }
 
    public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
-     if (VariableType is EnumType enumType) {
-       yield return rootNodeList.GetEnum(enumType.Type);
-       yield break;
+
+    const enumType = asEnumType(this.variableType);
+     if (enumType != null) {
+       var enumDefinition = rootNodeList.getEnum(enumType.type);
+       return enumDefinition != null ? [enumDefinition] : [];
      }
 
-     if (VariableType is not CustomType customType) yield break;
-
-     yield return customType.TypeDefinition;
+     const customType = asCustomType(this.variableType);
+     return customType != null ? [customType.typeDefinition] : [];
    }
 
-   public static parse(source: VariableSource, context: IParseLineContext): VariableDefinition {
+   public static parse(source: VariableSource, context: IParseLineContext): VariableDefinition | null {
      let line = context.line;
-     let result = context.ValidateTokens<VariableDefinition>()
-       .CountMinimum(2)
-       .StringLiteral(0)
-       .StringLiteral(1)
+     let result = context.validateTokens("VariableDefinition")
+       .countMinimum(2)
+       .stringLiteral(0)
+       .stringLiteral(1)
        .isValid;
 
      if (!result) return null;
@@ -41,14 +65,15 @@ export class VariableDefinition extends Node, IHasNodeDependencies {
      let tokens = line.tokens;
      let name = tokens.tokenValue(1);
      let type = tokens.tokenValue(0);
+     if (name == null || type == null) return null;
 
-     let variableType = VariableDeclarationType.parse(type, line.TokenReference(0));
+     let variableType = VariableDeclarationType.parse(type, line.tokenReference(0));
      if (variableType == null) return null;
 
      if (tokens.length == 2) return new VariableDefinition(name, variableType, source, line.lineStartReference());
 
-     if (tokens.Token<OperatorToken>(2).Type != OperatorType.Assignment) {
-       context.logger.fail(line.TokenReference(2), `Invalid variable declaration token. Expected '='.`);
+     if (tokens.token<OperatorToken>(2, OperatorToken)?.type != OperatorType.Assignment) {
+       context.logger.fail(line.tokenReference(2), `Invalid variable declaration token. Expected '='.`);
        return null;
      }
 
@@ -58,22 +83,24 @@ export class VariableDefinition extends Node, IHasNodeDependencies {
        return null;
      }
 
-     let defaultValue = ExpressionFactory.parse(tokens.tokensFrom(3), line);
-     if (context.failed(defaultValue, line.TokenReference(3))) return null;
+     const defaultValue = ExpressionFactory.parse(tokens.tokensFrom(3), line);
+     if (defaultValue.state == "failed") {
+       context.logger.fail(line.tokenReference(3), defaultValue.errorMessage);
+       return null;
+     }
 
      return new VariableDefinition(name, variableType, source, line.lineStartReference(), defaultValue.result);
    }
 
    public override getChildren(): Array<INode> {
-     if (DefaultExpression != null) yield return DefaultExpression;
-     yield return Type;
+    return this.defaultExpression != null ? [this.defaultExpression, this.type] : [this.type];
    }
 
    protected override validate(context: IValidationContext): void {
-     VariableType = Type.createVariableType(context);
+     this.variableTypeValue = this.type.createVariableType(context);
 
-     context.variableContext.registerVariableAndVerifyUnique(this.reference, Name, VariableType, Source);
+     context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, VariableType, this.source);
 
-     context.validateTypeAndDefault(this.reference, Type, DefaultExpression);
+     validateTypeAndDefault(context, this.reference, this.type, this.defaultExpression);
    }
 }

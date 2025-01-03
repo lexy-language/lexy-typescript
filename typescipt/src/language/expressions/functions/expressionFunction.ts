@@ -1,5 +1,5 @@
 import {IValidationContext} from "../../../parser/validationContext";
-import {VariableType} from "../../types/variableType";
+import {VariableType} from "../../variableTypes/variableType";
 import {SourceReference} from "../../../parser/sourceReference";
 import {Node} from "../../node";
 

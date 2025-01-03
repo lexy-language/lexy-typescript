@@ -1,23 +1,34 @@
+import {INode, Node} from "../node";
+import {SourceReference} from "../../parser/sourceReference";
+import {IValidationContext} from "../../parser/validationContext";
+import {isNullOrEmpty, isValidIdentifier} from "../../parser/tokens/character";
 
+export class FunctionName extends Node {
 
-export class functionName extends Node {
-   public string Value { get; private set; }
+  private valueValue: string;
 
-   public functionName(SourceReference reference) {
+  public readonly nodeType: "FunctionName";
+
+   public get value() {
+     return this.valueValue;
+   }
+
+   constructor(reference: SourceReference) {
      super(reference);
    }
 
    public parseName(name: string): void {
-     Value = name ?? throw new Error(nameof(name));
+     this.valueValue = name;
    }
 
    public override getChildren(): Array<INode> {
-     yield break;
+     return [];
    }
 
    protected override validate(context: IValidationContext): void {
-     if (string.IsNullOrEmpty(Value))
-       context.logger.fail(this.reference, $`Invalid function name: '{Value}'. Name should not be empty.`);
-     if (!SyntaxFacts.IsValidIdentifier(Value)) context.logger.fail(this.reference, $`Invalid function name: '{Value}'.`);
+     if (isNullOrEmpty(this.value)) {
+       context.logger.fail(this.reference, `Invalid function name: '${this.value}'. Name should not be empty.`);
+     }
+     if (!isValidIdentifier(this.value)) context.logger.fail(this.reference, `Invalid function name: '${this.value}'.`);
    }
 }

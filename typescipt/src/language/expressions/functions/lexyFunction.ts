@@ -2,7 +2,7 @@ import {ExpressionFunction} from "./expressionFunction";
 import {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import {Expression} from "../expression";
 import {Mapping} from "./mapping";
-import {ComplexType} from "../../types/complexType";
+import {ComplexType} from "../../variableTypes/complexType";
 import {SourceReference} from "../../../parser/sourceReference";
 import {RootNodeList} from "../../rootNodeList";
 import {IRootNode} from "../../rootNode";
@@ -11,7 +11,7 @@ import {IValidationContext} from "../../../parser/validationContext";
 import {FillParametersFunction} from "./fillParametersFunction";
 import {ExtractResultsFunction} from "./extractResultsFunction";
 import {asIdentifierExpression} from "../identifierExpression";
-import {VariableType} from "../../types/variableType";
+import {VariableType} from "../../variableTypes/variableType";
 
 export class LexyFunction extends ExpressionFunction implements IHasNodeDependencies {
 
@@ -19,6 +19,7 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
   private functionParametersTypeValue: ComplexType;
   private functionResultsTypeValue: ComplexType;
 
+  public readonly hasNodeDependencies: true;
   public readonly nodeType = "LexyFunction";
 
   public readonly functionName: string

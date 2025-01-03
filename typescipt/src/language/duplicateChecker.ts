@@ -1,42 +1,20 @@
-
+import {contains} from "../infrastructure/enumerableExtensions";
+import {SourceReference} from "../parser/sourceReference";
+import {IValidationContext} from "../parser/validationContext";
 
 export class DuplicateChecker {
-   public static void Validate<T>(IValidationContext context, Func<T, SourceReference> getReference,
-     Func<T, string> getName, Func<T, string> getErrorMessage, params Array<T>[] lists) {
-     if (context == null) throw new Error(nameof(context));
-     if (getReference == null) throw new Error(nameof(getReference));
-     if (getName == null) throw new Error(nameof(getName));
-     if (getErrorMessage == null) throw new Error(nameof(getErrorMessage));
-     if (lists == null) throw new Error(nameof(lists));
 
-     let found = new Array<string>();
-     foreach (let list in lists)
-     foreach (let item in list) {
-       let name = getName(item);
-       if (found.contains(name))
+   public static validate<T>(context: IValidationContext, getReference: ((value: T) => SourceReference) ,
+     getName: ((value: T) => string), getErrorMessage: ((value: T) => string), values: Array<T>): void {
+
+     const found = new Array<string>();
+     for (const item of values) {
+       const name = getName(item);
+       if (contains(found, name)) {
          context.logger.fail(getReference(item), getErrorMessage(item));
-       else
-         found.Add(name);
-     }
-   }
-
-   public static void ValidateNode<T>(IValidationContext context, Func<T, SourceReference> getReference,
-     Func<T, string> getName, Func<T, string> getErrorMessage, params Array<T>[] lists)
-     where T : INode {
-     if (context == null) throw new Error(nameof(context));
-     if (getReference == null) throw new Error(nameof(getReference));
-     if (getName == null) throw new Error(nameof(getName));
-     if (getErrorMessage == null) throw new Error(nameof(getErrorMessage));
-     if (lists == null) throw new Error(nameof(lists));
-
-     let found = new Array<string>();
-     foreach (let list in lists)
-     foreach (let item in list) {
-       let name = getName(item);
-       if (found.contains(name))
-         context.logger.fail(item, getReference(item), getErrorMessage(item));
-       else
-         found.Add(name);
+       } else {
+         found.push(name);
+       }
      }
    }
 }

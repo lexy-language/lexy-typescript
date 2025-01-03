@@ -11,7 +11,7 @@ import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResu
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 
 export class ElseExpression extends Expression implements IParsableNode, IDependantExpression {
   private readonly falseExpressionsValue: ExpressionList;

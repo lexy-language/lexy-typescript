@@ -1,58 +1,87 @@
 import {RootNode} from "../rootNode";
+import {TableName} from "./tableName";
+import {TableHeader} from "./tableHeader";
+import {TableRow} from "./tableRow";
+import {SourceReference} from "../../parser/sourceReference";
+import {NodeName} from "../../parser/nodeName";
+import {IParseLineContext} from "../../parser/ParseLineContext";
+import {IParsableNode} from "../parsableNode";
+import {INode} from "../node";
+import {IValidationContext} from "../../parser/validationContext";
+import {ComplexType} from "../variableTypes/complexType";
+import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
 
+export function instanceOfTable(object: any) {
+  return object?.nodeType == "Table";
+}
+
+export function asTable(object: any): Table | null {
+  return instanceOfTable(object) ? object as Table : null;
+}
 
 export class Table extends RootNode {
-   public const string RowName = `Row`;
-   public TableName Name new(): =;
-   public TableHeader Header { get; private set; }
-   public Array<TableRow> Rows = list<TableRow>(): new;
+  public static readonly rowName: string = `Row`;
 
-   public override string NodeName => Name.Value;
+  public readonly nodeType: "Table";
+  public name: TableName;
+  public header: TableHeader | null;
+  public rows: Array<TableRow> = [];
 
-   private Table(string name, SourceReference reference) {
-     super(reference);
-     Name.ParseName(name);
-   }
+  public override get nodeName() {
+    return this.name.value;
+  }
 
-   internal static parse(name: NodeName, reference: SourceReference): Table {
-     return new Table(name.Name, reference);
-   }
+  constructor(name: string, reference: SourceReference) {
+    super(reference);
+    this.name.parseName(name);
+  }
+
+  public static parse(name: NodeName, reference: SourceReference): Table {
+    return new Table(name.Name, reference);
+  }
 
    public override parse(context: IParseLineContext): IParsableNode {
-     if (IsFirstLine()) {
-       Header = TableHeader.parse(context);
-     }
-     else {
-       Rows.Add(TableRow.parse(context));
+     if (this.isFirstLine()) {
+       this.header = TableHeader.parse(context);
+     } else {
+       const tableRow = TableRow.parse(context);
+       if (tableRow != null) this.rows.push(tableRow);
      }
 
      return this;
    }
 
    private isFirstLine(): boolean {
-     return Header == null;
+     return this.header == null;
    }
 
    public override getChildren(): Array<INode> {
-     if (Header != null) yield return Header;
-
-     foreach (let row in Rows) yield return row;
+     if (this.header != null) {
+       return [this.header, ...this.rows];
+     } else {
+       return [...this.rows];
+     }
    }
 
    protected override validate(context: IValidationContext): void {
    }
 
    public override validateTree(context: IValidationContext): void {
-     using (context.CreateVariableScope()) {
-       base.validateTree(context);
+     const scope = context.createVariableScope();
+     try {
+       super.validateTree(context);
+     } finally {
+       scope[Symbol.dispose]();
      }
    }
 
    public getRowType(context: IValidationContext): ComplexType {
-     let members = Header.Columns
-       .Select(column => new ComplexTypeMember(column.Name, column.Type.createVariableType(context)))
-       .ToList();
+    if (this.header == null) throw new Error("Header not set.");
+     const members = this.header.columns.map(column => {
+       const type = column.type.createVariableType(context);
+       return new ComplexTypeMember(column.name, type)
+     });
 
-     return new ComplexType(Name.Value, ComplexTypeSource.TableRow, members);
+     return new ComplexType(this.name.value, ComplexTypeSource.TableRow, members);
    }
 }

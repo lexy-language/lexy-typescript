@@ -1,5 +1,5 @@
-import {PrimitiveType} from "../../../src/language/types/primitiveType";
-import {VariableType} from "../../../src/language/types/variableType";
+import {PrimitiveType} from "../../../src/language/variableTypes/primitiveType";
+import {VariableType} from "../../../src/language/variableTypes/variableType";
 import {IValidationContext} from "../../../src/parser/IValidationContext";
 import {SourceReference} from "../../../src/parser/sourceReference";
 import {SourceFile} from "../../../src/parser/sourceFile";

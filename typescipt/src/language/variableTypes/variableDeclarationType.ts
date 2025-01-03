@@ -9,9 +9,14 @@ import {PrimitiveVariableDeclarationType} from "./primitiveVariableDeclarationTy
 import {CustomVariableDeclarationType} from "./customVariableDeclarationType";
 
 export abstract class VariableDeclarationType extends Node {
-   public variableType: VariableType;
 
-   constructor(reference: SourceReference) {
+  private variableTypeValue: VariableType | null;
+
+  public get variableType(): VariableType | null {
+    return this.variableTypeValue;
+  }
+
+  protected constructor(reference: SourceReference) {
      super(reference);
    }
 
@@ -22,5 +27,9 @@ export abstract class VariableDeclarationType extends Node {
      return new CustomVariableDeclarationType(type, reference);
    }
 
-   public abstract createVariableType(context: IValidationContext): VariableType;
+  protected setVariableType(value: VariableType | null) {
+    this.variableTypeValue = value;
+  }
+
+   public abstract createVariableType(context: IValidationContext): VariableType | null;
 }

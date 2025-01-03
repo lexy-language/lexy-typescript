@@ -14,10 +14,10 @@ export class RoundFunctionCall extends MethodFunctionCall {
      return SyntaxFactory.SeparatedArray<ArgumentSyntax>(
        new SyntaxNodeOrToken[] {
          SyntaxFactory.Argument(
-           ExpressionSyntaxFactory.ExpressionSyntax(RoundFunction.NumberExpression, context)),
+           ExpressionSyntaxFactory.ExpressionSyntax(RoundFunction.numberExpression, context)),
          SyntaxFactory.Token(SyntaxKind.CommaToken),
          SyntaxFactory.Argument(
-           ExpressionSyntaxFactory.ExpressionSyntax(RoundFunction.DigitsExpression, context))
+           ExpressionSyntaxFactory.ExpressionSyntax(RoundFunction.digitsExpression, context))
        });
    }
 }

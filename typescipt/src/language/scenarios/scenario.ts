@@ -1,4 +1,13 @@
+import {Function} from "../functions/function";
+import {RootNode} from "../rootNode";
 
+export function instanceOfScenario(object: any) {
+  return object?.nodeType == "Scenario";
+}
+
+export function asScenario(object: any): Scenario | null {
+  return instanceOfScenario(object) ? object as Scenario : null;
+}
 
 export class Scenario extends RootNode {
    public ScenarioName Name

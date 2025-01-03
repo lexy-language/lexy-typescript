@@ -1,6 +1,6 @@
 import {SingleArgumentFunction} from "./singleArgumentFunction";
-import {VariableType} from "../../types/variableType";
-import {PrimitiveType} from "../../types/primitiveType";
+import {VariableType} from "../../variableTypes/variableType";
+import {PrimitiveType} from "../../variableTypes/primitiveType";
 import {SourceReference} from "../../../parser/sourceReference";
 import {Expression} from "../expression";
 import {ExpressionFunction} from "./expressionFunction";
@@ -14,16 +14,8 @@ export class AbsFunction extends SingleArgumentFunction {
       return `${this.name} expects 1 argument (Value)`;
    }
 
-   protected override get argumentType(): VariableType {
-      return PrimitiveType.number;
-   }
-
-   protected override get resultType(): VariableType {
-      return PrimitiveType.number;
-   }
-
    constructor(valueExpression: Expression, reference: SourceReference) {
-     super(valueExpression, reference);
+     super(valueExpression, reference, PrimitiveType.number, PrimitiveType.number);
    }
 
    public static create(reference: SourceReference, expression: Expression): ExpressionFunction {

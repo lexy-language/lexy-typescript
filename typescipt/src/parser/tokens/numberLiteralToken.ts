@@ -10,8 +10,8 @@ import {
 } from "./parseTokenResult";
 import {isDigit} from "./character";
 import {IValidationContext} from "../validationContext";
-import {VariableType} from "../../language/types/variableType";
-import {PrimitiveType} from "../../language/types/primitiveType";
+import {VariableType} from "../../language/variableTypes/variableType";
+import {PrimitiveType} from "../../language/variableTypes/primitiveType";
 
 export function instanceOfNumberLiteralToken(object: any): object is NumberLiteralToken {
   return object.tokenType == 'NumberLiteralToken';

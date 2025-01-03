@@ -1,14 +1,15 @@
-
+import {SourceReference} from "../../../parser/sourceReference";
+import {NoArgumentFunction} from "./noArgumentFunction";
+import {PrimitiveType} from "../../variableTypes/primitiveType";
+import {ExpressionFunction} from "./expressionFunction";
 
 export class TodayFunction extends NoArgumentFunction {
    public readonly name: string = `TODAY`;
 
   public readonly nodeType = "TodayFunction";
-  protected override get resultType(): VariableType => { return  PrimitiveType.date;
 
-   constructor(reference: SourceReference)
-     {
-     super(reference);
+   constructor(reference: SourceReference) {
+     super(reference, PrimitiveType.date);
    }
 
    public static create(reference: SourceReference): ExpressionFunction {

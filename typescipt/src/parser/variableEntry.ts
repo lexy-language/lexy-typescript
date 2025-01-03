@@ -1,5 +1,5 @@
 import {VariableSource} from "../language/variableSource"
-import {VariableType} from "../language/types/variableType"
+import {VariableType} from "../language/variableTypes/variableType"
 
 export class VariableEntry {
   public variableType: VariableType;

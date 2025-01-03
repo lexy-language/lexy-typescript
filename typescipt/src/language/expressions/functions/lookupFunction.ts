@@ -2,7 +2,7 @@ import {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import {ExpressionFunction} from "./expressionFunction";
 import {Expression} from "../expression";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
-import {VariableType} from "../../types/variableType";
+import {VariableType} from "../../variableTypes/variableType";
 import {SourceReference} from "../../../parser/sourceReference";
 import {IRootNode} from "../../rootNode";
 import {RootNodeList} from "../../rootNodeList";
@@ -21,14 +21,15 @@ const argumentTable = 0;
 const argumentLookupValue = 1;
 const argumentSearchValueColumn = 2;
 const argumentResultColumn = 3;
-const functionHelp = `Arguments: LOOKUP(Table, lookUpValue, Table.SearchValueColumn, Table.resultColumn)`;
+const functionHelp = `Arguments: LOOKUP(Table, lookUpValue, Table.searchValueColumn, Table.resultColumn)`;
 
 export class LookupFunction extends ExpressionFunction implements IHasNodeDependencies {
 
   private resultColumnTypeValue: VariableType;
   private searchValueColumnTypeValue: VariableType;
 
-   public readonly name: string = `LOOKUP`;
+  public readonly hasNodeDependencies: true;
+  public readonly name: string = `LOOKUP`;
    public readonly nodeType = "LookupFunction";
 
    public readonly table: string
@@ -62,23 +63,23 @@ export class LookupFunction extends ExpressionFunction implements IHasNodeDepend
 
    public static parse(name: string, functionCallReference: SourceReference,
      argumentValues: Array<Expression>): ParseExpressionFunctionsResult {
-     if (arguments.length != argumentsNumber) {
+     if (argumentValues.length != argumentsNumber) {
        return newParseExpressionFunctionsFailed(`Invalid number of arguments. ${functionHelp}`);
      }
 
-     const tableNameExpression = asIdentifierExpression(arguments[argumentTable]);
+     const tableNameExpression = asIdentifierExpression(argumentValues[argumentTable]);
      if (tableNameExpression == null) {
        return newParseExpressionFunctionsFailed(
          `Invalid argument ${argumentTable}. Should be valid table name. ${functionHelp}`);
      }
 
-     const searchValueColumnHeader = asMemberAccessExpression(arguments[argumentSearchValueColumn]);
+     const searchValueColumnHeader = asMemberAccessExpression(argumentValues[argumentSearchValueColumn]);
      if (searchValueColumnHeader == null) {
        return newParseExpressionFunctionsFailed(
          `Invalid argument ${argumentSearchValueColumn}. Should be search column. ${functionHelp}`);
      }
 
-     const resultColumnExpression = asMemberAccessExpression(arguments[argumentResultColumn]);
+     const resultColumnExpression = asMemberAccessExpression(argumentValues[argumentResultColumn]);
      if (resultColumnExpression == null)
      {
        return newParseExpressionFunctionsFailed(

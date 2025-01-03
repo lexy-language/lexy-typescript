@@ -1,132 +1,170 @@
-import {RootNode} from "../rootNode";
-import {IHasNodeDependencies} from "../IHasNodeDependencies";
+import {IRootNode, RootNode} from "../rootNode";
+import {asHasNodeDependencies, IHasNodeDependencies} from "../IHasNodeDependencies";
+import {FunctionName} from "./functionName";
+import {FunctionParameters} from "./functionParameters";
+import {FunctionResults} from "./functionResults";
+import {FunctionCode} from "./functionCode";
+import {SourceReference} from "../../parser/sourceReference";
+import {RootNodeList} from "../rootNodeList";
+import {IParseLineContext} from "../../parser/ParseLineContext";
+import {IParsableNode} from "../parsableNode";
+import {Keywords} from "../../parser/Keywords";
+import {KeywordToken} from "../../parser/tokens/keywordToken";
+import {INode} from "../node";
+import {contains} from "../../infrastructure/enumerableExtensions";
+import {VariableDefinition} from "../variableDefinition";
+import {asCustomVariableDeclarationType} from "../variableTypes/customVariableDeclarationType";
+import {IValidationContext} from "../../parser/validationContext";
+import {ComplexType} from "../variableTypes/complexType";
+import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
 
+export function instanceOfFunction(object: any) {
+  return object?.nodeType == "Function";
+}
+
+export function asFunction(object: any): Function | null {
+  return instanceOfFunction(object) ? object as Function : null;
+}
 
 export class Function extends RootNode implements IHasNodeDependencies {
 
    public static readonly parameterName = `Parameters`;
-    public static readonly resultsName = `Results`;
+   public static readonly resultsName = `Results`;
 
-   private static readonly LambdaComparer<IRootNode> NodeComparer =
-     new((token1, token2) => token1.NodeName == token2.NodeName);
+   public readonly hasNodeDependencies: true;
+  public readonly nodeType: "Function";
 
-   public functionName Name
-   public FunctionParameters Parameters
-   public FunctionResults Results
-   public FunctionCode Code
+  public readonly name: FunctionName;
+   public readonly parameters: FunctionParameters;
+   public readonly results: FunctionResults;
+   public readonly code: FunctionCode;
 
-   public override string NodeName => Name.Value;
+   public override get nodeName() {
+     return this.name.value;
+   }
 
-   private Function(string name, SourceReference reference) {
+   constructor(name: string, reference: SourceReference) {
      super(reference);
-     Name = new functionName(reference);
-     Parameters = new FunctionParameters(reference);
-     Results = new FunctionResults(reference);
-     Code = new FunctionCode(reference);
+     this.name = new FunctionName(reference);
+     this.parameters = new FunctionParameters(reference);
+     this.results = new FunctionResults(reference);
+     this.code = new FunctionCode(reference);
 
-     Name.ParseName(name);
+     this.name.parseName(name);
    }
 
    public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
      let result = new Array<IRootNode>();
-     AddEnumTypes(rootNodeList, Parameters.Variables, result);
-     AddEnumTypes(rootNodeList, Results.Variables, result);
+     this.addEnumTypes(rootNodeList, this.parameters.variables, result);
+     this.addEnumTypes(rootNodeList, this.results.variables, result);
      return result;
    }
 
-   internal static create(name: string, reference: SourceReference): Function {
+   public static create(name: string, reference: SourceReference): Function {
      return new Function(name, reference);
    }
 
    public override parse(context: IParseLineContext): IParsableNode {
      let line = context.line;
      let name = line.tokens.tokenValue(0);
-     if (!line.tokens.isTokenType<KeywordToken>(0)) return InvalidToken(name, context);
+     if (!line.tokens.isTokenType<KeywordToken>(0, KeywordToken)) return this.invalidToken(name, context);
 
-     return name switch {
-       Keywords.Parameters => Parameters,
-       Keywords.results => Results,
-       Keywords.Code => Code,
-       _ => InvalidToken(name, context)
-     };
+     switch (name) {
+       case Keywords.Parameters:
+         return this.parameters;
+       case Keywords.Results:
+         return this.results;
+       case Keywords.Code:
+         return this.code;
+       default:
+        return this.invalidToken(name, context)
+     }
    }
 
-   private invalidToken(name: string, parserContext: IParseLineContext): IParsableNode {
-     parserContext.logger.fail(this.reference, $`Invalid token '{name}'.`);
+   private invalidToken(name: string | null, parserContext: IParseLineContext): IParsableNode {
+     parserContext.logger.fail(this.reference, `Invalid token '${name}'.`);
      return this;
    }
 
    public getFunctionAndDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
-     let result = new Array<IRootNode> { this };
-     AddDependentNodes(this, rootNodeList, result);
+     let result: Array<IRootNode> = [this];
+     this.addDependentNodes(this, rootNodeList, result);
 
      let processed = 0;
-     while (processed != result.Count) {
-       processed = result.Count;
-       foreach (let node in result.ToList()) AddDependentNodes(node, rootNodeList, result);
+     while (processed != result.length) {
+       processed = result.length;
+       for (const node of result) {
+         this.addDependentNodes(node, rootNodeList, result);
+       }
      }
 
      return result;
    }
 
-   private static addDependentNodes(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
-     AddNodeDependencies(node, rootNodeList, result);
+   private addDependentNodes(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
+     this.addNodeDependencies(node, rootNodeList, result);
 
-     let children = node.GetChildren();
+     let children = node.getChildren();
 
-     NodesWalker.Walk(children, eachNode => AddNodeDependencies(eachNode, rootNodeList, result));
+     NodesWalker.walk(children, eachNode => this.addNodeDependencies(eachNode, rootNodeList, result));
    }
 
-   private static addNodeDependencies(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
-     if (!(node is IHasNodeDependencies hasDependencies)) return;
+   private addNodeDependencies(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
+     const hasDependencies = asHasNodeDependencies(node);
+     if (hasDependencies == null) return;
 
      let dependencies = hasDependencies.getDependencies(rootNodeList);
-     foreach (let dependency in dependencies)
-       if (!result.contains(dependency))
-         result.Add(dependency);
+     for (const dependency of dependencies) {
+       if (!contains(result, dependency)) {
+         result.push(dependency);
+       }
+     }
    }
 
-   private static void AddEnumTypes(RootNodeList rootNodeList, Array<VariableDefinition> variableDefinitions,
-     Array<IRootNode> result) {
-     foreach (let parameter in variableDefinitions) {
-       if (!(parameter.Type is CustomVariableDeclarationType enumVariableType)) continue;
+   private addEnumTypes(rootNodeList: RootNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
+                        result: Array<IRootNode>) {
+     for (const parameter of variableDefinitions) {
 
-       let dependency = rootNodeList.GetEnum(enumVariableType.Type);
-       if (dependency != null) result.Add(dependency);
+       const enumVariableType = asCustomVariableDeclarationType(parameter.type);
+       if (enumVariableType == null) continue;
+
+       let dependency = rootNodeList.getEnum(enumVariableType.type);
+       if (dependency != null) result.push(dependency);
      }
    }
 
    public override validateTree(context: IValidationContext): void {
-     using (context.CreateVariableScope()) {
-       base.validateTree(context);
+     const scope = context.createVariableScope();
+     try {
+       super.validateTree(context);
+     } finally {
+       scope[Symbol.dispose]();
      }
    }
 
    public override getChildren(): Array<INode> {
-     yield return Name;
-
-     yield return Parameters;
-     yield return Results;
-
-     yield return Code;
+     return [
+       this.name,
+       this.parameters,
+       this.results,
+       this.code
+     ];
    }
 
    protected override validate(context: IValidationContext): void {
    }
 
    public getParametersType(context: IValidationContext): ComplexType {
-     let members = Parameters.Variables
-       .Select(parameter => new ComplexTypeMember(parameter.Name, parameter.Type.createVariableType(context)))
-       .ToList();
+     let members = this.parameters.variables
+       .map(parameter => new ComplexTypeMember(parameter.name, parameter.type.createVariableType(context)));
 
-     return new ComplexType(Name.Value, ComplexTypeSource.FunctionParameters, members);
+     return new ComplexType(this.name.value, ComplexTypeSource.FunctionParameters, members);
    }
 
    public getResultsType(context: IValidationContext): ComplexType {
-     let members = Results.Variables
-       .Select(parameter => new ComplexTypeMember(parameter.Name, parameter.Type.createVariableType(context)))
-       .ToList();
+     let members = this.results.variables
+       .map(parameter => new ComplexTypeMember(parameter.name, parameter.type.createVariableType(context)));
 
-     return new ComplexType(Name.Value, ComplexTypeSource.FunctionResults, members);
+     return new ComplexType(this.name.value, ComplexTypeSource.FunctionResults, members);
    }
 }

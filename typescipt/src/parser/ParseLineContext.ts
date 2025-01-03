@@ -1,12 +1,15 @@
 import {Line} from "./line";
 import {TokenValidator} from "./TokenValidator";
 import {IParserLogger} from "./IParserLogger";
+import {SourceReference} from "./sourceReference";
 
 export interface IParseLineContext {
   line: Line;
-  logger: IParserLogger
+  logger: IParserLogger;
 
-  validateTokens(name: string): TokenValidator
+  validateTokens(name: string): TokenValidator;
+
+  failed<T>(result: {state: string, errorMessage?: string}, reference: SourceReference) : boolean;
 }
 
 export class ParseLineContext implements IParseLineContext {
@@ -21,5 +24,14 @@ export class ParseLineContext implements IParseLineContext {
 
   public validateTokens(name: string): TokenValidator {
     return new TokenValidator(name, this.line, this.logger);
+  }
+
+  failed<T>(result: {state: string, errorMessage: string}, reference: SourceReference) : boolean
+  {
+    if (result.state == "Success") return false;
+
+    this.logger.fail(reference, result.errorMessage);
+
+    return true;
   }
 }

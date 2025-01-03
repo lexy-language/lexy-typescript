@@ -1,6 +1,8 @@
 import {TokenCharacter} from "./tokenCharacter";
 
 export interface IToken {
+  tokenType: string;
+  tokenIsLiteral: boolean;
   firstCharacter: TokenCharacter;
 }
 

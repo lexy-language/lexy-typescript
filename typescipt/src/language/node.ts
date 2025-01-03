@@ -2,9 +2,11 @@ import {IValidationContext} from "../parser/validationContext";
 import {SourceReference} from "../parser/sourceReference";
 import {asRootNode, IRootNode} from "./RootNode";
 import {nameOf} from "../infrastructure/nameOf";
-import {ITypeWithMembers} from "./types/iTypeWithMembers";
+import {ITypeWithMembers} from "./variableTypes/iTypeWithMembers";
 
 export interface INode {
+
+  nodeType: string;
   reference: SourceReference
 
   validateTree(context: IValidationContext): void

@@ -3,8 +3,8 @@ import {ILiteralToken} from "./ILiteralToken";
 import {TokenCharacter} from "./tokenCharacter";
 import {TokenValues} from "./tokenValues";
 import {VariableReference} from "../../runTime/variableReference";
-import {instanceOfTypeWithMembers, ITypeWithMembers} from "../../language/types/iTypeWithMembers";
-import {VariableType} from "../../language/types/variableType";
+import {instanceOfTypeWithMembers, ITypeWithMembers} from "../../language/variableTypes/iTypeWithMembers";
+import {VariableType} from "../../language/variableTypes/variableType";
 import {IValidationContext} from "../validationContext";
 
 export class MemberAccessLiteral extends Token implements ILiteralToken {

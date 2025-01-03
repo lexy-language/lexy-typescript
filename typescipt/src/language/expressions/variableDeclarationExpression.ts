@@ -1,7 +1,7 @@
 import {Expression} from "./Expression";
 import {SourceReference} from "../../parser/sourceReference";
 import {ExpressionSource} from "./expressionSource";
-import {VariableDeclarationType} from "../types/variableDeclarationType";
+import {VariableDeclarationType} from "../variableTypes/variableDeclarationType";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {ExpressionFactory} from "./expressionFactory";
 import {TokenList} from "../../parser/tokens/tokenList";
@@ -10,8 +10,8 @@ import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
-import {ImplicitVariableDeclaration} from "../types/implicitVariableDeclaration";
+import {VariableType} from "../variableTypes/variableType";
+import {ImplicitVariableDeclaration} from "../variableTypes/implicitVariableDeclaration";
 import {VariableSource} from "../variableSource";
 
 export class VariableDeclarationExpression extends Expression {

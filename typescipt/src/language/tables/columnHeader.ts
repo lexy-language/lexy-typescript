@@ -1,13 +1,18 @@
-
+import {VariableDeclarationType} from "../variableTypes/variableDeclarationType";
+import {SourceReference} from "../../parser/sourceReference";
+import {INode, Node} from "../node";
+import {IValidationContext} from "../../parser/validationContext";
 
 export class ColumnHeader extends Node {
-   public string Name
-   public VariableDeclarationType Type
 
-   public ColumnHeader(string name, VariableDeclarationType type, SourceReference reference) {
+  public nodeType: "ColumnHeader";
+   public name: string
+   public type: VariableDeclarationType
+
+   constructor(name: string, type: VariableDeclarationType, reference: SourceReference) {
      super(reference);
-     Name = name;
-     Type = type;
+     this.name = name;
+     this.type = type;
    }
 
    public static parse(name: string, typeName: string, reference: SourceReference): ColumnHeader {
@@ -16,7 +21,7 @@ export class ColumnHeader extends Node {
    }
 
    public override getChildren(): Array<INode> {
-     yield return Type;
+     return [this.type];
    }
 
    protected override validate(context: IValidationContext): void {

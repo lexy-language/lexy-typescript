@@ -2,7 +2,7 @@ import {Node} from "../node";
 import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../../parser/sourceReference";
 import {IValidationContext} from "../../parser/validationContext";
-import {VariableType} from "../types/variableType";
+import {VariableType} from "../variableTypes/variableType";
 
 export abstract class Expression extends Node {
 

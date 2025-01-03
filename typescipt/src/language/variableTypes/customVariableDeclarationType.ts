@@ -4,6 +4,14 @@ import {IValidationContext} from "../../parser/validationContext";
 import {VariableType} from "./variableType";
 import {INode} from "../node";
 
+export function instanceOfCustomVariableDeclarationType(object: any): boolean {
+  return object?.nodeType == "CustomVariableDeclarationType";
+}
+
+export function asCustomVariableDeclarationType(object: any): CustomVariableDeclarationType | null {
+  return instanceOfCustomVariableDeclarationType(object) ? object as CustomVariableDeclarationType : null;
+}
+
 export class CustomVariableDeclarationType extends VariableDeclarationType {
 
   public nodeType: "CustomVariableDeclarationType";
@@ -22,8 +30,8 @@ export class CustomVariableDeclarationType extends VariableDeclarationType {
      return this.type;
    }
 
-   public override createVariableType(context: IValidationContext): VariableType {
-     return context.rootNodes.getType(this.type);
+   public override createVariableType(context: IValidationContext): VariableType | null {
+     return  context.rootNodes.getType(this.type);
    }
 
    public override getChildren(): Array<INode> {
@@ -31,6 +39,6 @@ export class CustomVariableDeclarationType extends VariableDeclarationType {
    }
 
    protected override validate(context: IValidationContext): void {
-     this.variableType = this.createVariableType(context);
+     this.setVariableType(this.createVariableType(context));
    }
 }

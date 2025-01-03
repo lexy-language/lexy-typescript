@@ -1,16 +1,20 @@
-
+import {SingleArgumentFunction} from "./singleArgumentFunction";
+import {SourceReference} from "../../../parser/sourceReference";
+import {Expression} from "../expression";
+import {PrimitiveType} from "../../variableTypes/primitiveType";
+import {ExpressionFunction} from "./expressionFunction";
 
 export class SecondFunction extends SingleArgumentFunction {
    public readonly name: string = `SECOND`;
 
-   protected override get functionHelp(): string { return $`'{Name} expects 1 argument (Date)`;
+   protected override get functionHelp(): string {
+      return `'${this.name} expects 1 argument (Date)`;
+   }
 
    public readonly nodeType = "SecondFunction";
-   protected override get argumentType(): VariableType { PrimitiveType.date;
-   protected override get resultType(): VariableType => { return  PrimitiveType.number;
 
-   constructor(valueExpression: Expression, reference: SourceReference)
-     super(valueExpression, reference);
+   constructor(valueExpression: Expression, reference: SourceReference) {
+      super(valueExpression, reference, PrimitiveType.date, PrimitiveType.number);
    }
 
    public static create(reference: SourceReference, expression: Expression): ExpressionFunction {

@@ -1,22 +1,36 @@
-
+import {SourceReference} from "../../parser/sourceReference";
+import {INode, Node} from "../node";
+import {IValidationContext} from "../../parser/validationContext";
+import {isNullOrEmpty, isValidIdentifier} from "../../parser/tokens/character";
 
 export class EnumName extends Node {
-   public string Value { get; private set; }
 
-   public EnumName(SourceReference sourceReference) super(sourceReference) {
+  private valueValue: string;
+
+  public nodeType: "EnumName";
+
+  public get value() {
+    return this.valueValue;
+  }
+
+   constructor(sourceReference: SourceReference) {
+     super(sourceReference);
    }
 
    public parseName(parameter: string): void {
-     Value = parameter;
+     this.valueValue = parameter;
    }
 
    public override getChildren(): Array<INode> {
-     yield break;
+     return [];
    }
 
    protected override validate(context: IValidationContext): void {
-     if (string.IsNullOrEmpty(Value))
-       context.logger.fail(this.reference, $`Invalid enum name: {Value}. Name should not be empty.`);
-     if (!SyntaxFacts.IsValidIdentifier(Value)) context.logger.fail(this.reference, $`Invalid enum name: {Value}.`);
+     if (isNullOrEmpty(this.value)) {
+       context.logger.fail(this.reference, `Invalid enum name: ${this.value}. Name should not be empty.`);
+     }
+     if (!isValidIdentifier(this.value)) {
+       context.logger.fail(this.reference, `Invalid enum name: ${this.value}.`);
+     }
    }
 }
