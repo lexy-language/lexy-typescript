@@ -18,11 +18,11 @@ export class ConstantValue {
    public static parse(expression: Expression): ConstantValueParseResult {
      const literalExpression = asLiteralExpression(expression);
      if (literalExpression != null ) {
-       this.parseLiteralExpression(literalExpression);
+       return this.parseLiteralExpression(literalExpression);
      }
      const memberAccessExpression = asMemberAccessExpression(expression);
      if (memberAccessExpression != null ) {
-       this.parseMemberAccessExpression(memberAccessExpression);
+       return this.parseMemberAccessExpression(memberAccessExpression);
      }
      return newConstantValueParseFailed(`Invalid expression variable. Expected: 'Variable = ConstantValue'`);
    }

@@ -48,7 +48,7 @@ export function validateDateTimeLiteralExpression(expression: Expression, value:
  let valueDate = new Date(value);
  validateOfType<LiteralExpression>(asLiteralExpression, expression, literal =>
    validateOfType<DateTimeLiteral>(asDateTimeLiteral, literal.literal, number =>
-     expect(number.dateTimeValue).toBe(valueDate)));
+     expect(number.dateTimeValue?.toISOString()).toBe(valueDate.toISOString())));
 }
 
 export function validateIdentifierExpression(expression: Expression, value: string): void {

@@ -12,7 +12,7 @@ import {VariableSource} from "./variableSource";
 import {Node} from "./node";
 import {RootNodeList} from "./rootNodeList";
 import {OperatorType} from "../parser/tokens/operatorType";
-import {OperatorToken} from "../parser/tokens/operatorToken";
+import {asOperatorToken, OperatorToken} from "../parser/tokens/operatorToken";
 import {validateTypeAndDefault} from "./variableTypes/validationContextExtensions";
 import {VariableDeclarationTypeParser} from "./variableTypes/variableDeclarationTypeParser";
 
@@ -65,7 +65,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
 
      if (tokens.length == 2) return new VariableDefinition(name, variableType, source, line.lineStartReference());
 
-     if (tokens.token<OperatorToken>(2, OperatorToken)?.type != OperatorType.Assignment) {
+     if (tokens.token<OperatorToken>(2, asOperatorToken)?.type != OperatorType.Assignment) {
        context.logger.fail(line.tokenReference(2), `Invalid variable declaration token. Expected '='.`);
        return null;
      }
@@ -92,7 +92,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
    protected override validate(context: IValidationContext): void {
      this.variableTypeValue = this.type.createVariableType(context);
 
-     context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, VariableType, this.source);
+     context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, this.variableTypeValue, this.source);
 
      validateTypeAndDefault(context, this.reference, this.type, this.defaultExpression);
    }

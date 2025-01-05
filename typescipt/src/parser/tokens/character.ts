@@ -6,6 +6,7 @@ const letterA = 'A'.charCodeAt(0);
 const letterZ = 'Z'.charCodeAt(0);
 const space = ' '.charCodeAt(0);
 const tab =  '\t'.charCodeAt(0);
+const underscore =  '_'.charCodeAt(0);
 
 export function isDigit(value: Character) {
   return value >= digit0 && value <= digit9;
@@ -33,7 +34,7 @@ export function isValidIdentifier(value: string | null): boolean {
 
   for (let index = 1 ; index < value.length ; index++) {
     let character = value.charCodeAt(index);
-    if (!isLetter(character)) {   //todo allow digits and underscore
+    if (!isLetter(character) && !isDigit(character) && character != underscore) {   //todo allow underscore
       return false;
     }
   }

@@ -3,7 +3,6 @@ import {TableName} from "./tableName";
 import {TableHeader} from "./tableHeader";
 import {TableRow} from "./tableRow";
 import {SourceReference} from "../../parser/sourceReference";
-import {NodeName} from "../../parser/nodeName";
 import {IParseLineContext} from "../../parser/ParseLineContext";
 import {IParsableNode} from "../parsableNode";
 import {INode} from "../node";
@@ -20,12 +19,21 @@ export function asTable(object: any): Table | null {
 }
 
 export class Table extends RootNode {
+
   public static readonly rowName: string = `Row`;
+  private rowsValue: Array<TableRow> = [];
+  private headerValue: TableHeader | null;
 
   public readonly nodeType = "Table";
-  public name: TableName;
-  public header: TableHeader | null;
-  public rows: Array<TableRow> = [];
+  public readonly name: TableName = new TableName();
+
+  public get header(): TableHeader | null {
+    return this.headerValue;
+  }
+
+  get rows(): Array<TableRow> {
+    return this.rowsValue;
+  }
 
   public override get nodeName() {
     return this.name.value;
@@ -36,13 +44,13 @@ export class Table extends RootNode {
     this.name.parseName(name);
   }
 
-  public static parse(name: NodeName, reference: SourceReference): Table {
-    return new Table(name.Name, reference);
+  public static parse(name: string, reference: SourceReference): Table {
+    return new Table(name, reference);
   }
 
    public override parse(context: IParseLineContext): IParsableNode {
      if (this.isFirstLine()) {
-       this.header = TableHeader.parse(context);
+       this.headerValue = TableHeader.parse(context);
      } else {
        const tableRow = TableRow.parse(context);
        if (tableRow != null) this.rows.push(tableRow);

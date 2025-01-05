@@ -20,6 +20,10 @@ export class TokenList {
     this.values = values;
   }
 
+  public asArray(): Array<Token> {
+    return [...this.values];
+  }
+
   public isComment(): boolean {
     return this.values.length == 1 && this.values[0].tokenType == "CommentToken";
   }
@@ -47,10 +51,10 @@ export class TokenList {
     return index >= 0 && index <= this.values.length - 1 && this.values[index] instanceof type;
   }
 
-  public token<T extends Token>(index: number, type: Function): T | null {
+  public token<T extends Token>(index: number, castFunction: (object: any) => T | null): T | null {
     this.checkValidTokenIndex(index);
 
-    return this.values[index].tokenType == type.name ? this.values[index] as T : null;
+    return castFunction(this.values[index]);
   }
 
   public literalToken(index: number): ILiteralToken | null {

@@ -63,7 +63,7 @@ export class IdentifierExpression extends Expression {
       return;
     }
 
-    this.variableSourceValue = this.variableSource.value;
+    this.variableSourceValue = this.variableSourceValue;
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {

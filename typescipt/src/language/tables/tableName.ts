@@ -1,7 +1,7 @@
 
 export class TableName {
 
-  private valueValue: string = crypto.randomUUID().replace("-", "");
+  private valueValue: string;
 
    public get value(): string {
     return this.valueValue;

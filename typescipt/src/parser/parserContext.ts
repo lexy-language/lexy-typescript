@@ -1,34 +1,52 @@
+import type {IParserLogger} from "./ParserLogger";
+
+import {SourceCodeNode} from "../language/sourceCodeNode";
+import {RootNodeList} from "../language/rootNodeList";
+import {contains} from "../infrastructure/enumerableExtensions";
+import {IExpressionFactory} from "../language/expressions/expressionFactory";
+import {IFileSystem} from "./IFileSystem";
+
+export interface IParserContext {
+  logger: IParserLogger;
 
 
-export class ParserContext extends IParserContext {
-   private readonly Array<string> includedFiles = list<string>(): new;
+  fileSystem: IFileSystem;
+  nodes: RootNodeList;
+  rootNode: SourceCodeNode;
 
-   public Line CurrentLine => SourceCode.CurrentLine;
-   public RootNodeList Nodes => RootNode.rootNodes;
+  addFileIncluded(fileName: string): void;
+  isFileIncluded(fileName: string ): boolean;
+}
 
-   public SourceCodeNode RootNode
-   public ISourceCodeDocument SourceCode
-   public IParserLogger Logger
+export class ParserContext implements IParserContext {
 
-   constructor(logger: IParserLogger, sourceCodeDocument: ISourceCodeDocument) {
-     Logger = logger ?? throw new Error(nameof(logger));
-     SourceCode = sourceCodeDocument ?? throw new Error(nameof(sourceCodeDocument));
+   private readonly includedFiles: Array<string> = [];
 
-     RootNode = new SourceCodeNode();
+   public get nodes(): RootNodeList {
+     return this.rootNode.rootNodes;
+   }
+
+  public readonly rootNode: SourceCodeNode;
+  public readonly logger: IParserLogger;
+  public readonly fileSystem: IFileSystem;
+
+   constructor(logger: IParserLogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory) {
+     this.logger = logger;
+     this.fileSystem = fileSystem;
+     this.rootNode = new SourceCodeNode(expressionFactory);
    }
 
    public addFileIncluded(fileName: string): void {
-     let path = NormalizePath(fileName);
+     let path = this.normalizePath(fileName);
 
-     includedFiles.Add(path);
+     this.includedFiles.push(path);
    }
 
    public isFileIncluded(fileName: string): boolean {
-     return includedFiles.contains(NormalizePath(fileName));
+     return contains(this.includedFiles, this.normalizePath(fileName));
    }
 
-   private static normalizePath(fileName: string): string {
-     return Path.GetFullPath(fileName)
-       .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+   private normalizePath(fileName: string): string {
+     return this.fileSystem.getFullPath(fileName);
    }
 }

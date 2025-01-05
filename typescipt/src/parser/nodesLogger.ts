@@ -1,31 +1,43 @@
-
+import type {IRootNode} from "../language/rootNode";
+import type {INode} from "../language/node";
 
 export class NodesLogger {
-   private readonly StringBuilder builder new(): =;
-   private number indent;
+   private readonly builder: string[] = [];
+   private indent: number ;
 
    public log(nodes: Array<INode>): void {
-     foreach (let node in nodes) Log(node);
+     for (const node of nodes) {
+        this.logNode(node);
+     }
    }
 
-   private log(node: INode): void {
-     builder.Append(new string(' ', indent));
+   private logNode(node: INode): void {
+     this.builder.push(' '.repeat(this.indent));
 
-     if (node is IRootNode rootNode)
-       builder.AppendLine($`{rootNode.getType().Name}: {rootNode.NodeName}`);
-     else
-       builder.AppendLine(node == null ? `<null>` : node?.getType().Name);
+     const rootNode = this.asRootNode(node)
+     if (rootNode != null) {
+       this.builder.push(`${rootNode.nodeType}: ${rootNode.nodeName}`);
+     } else {
+       this.builder.push(node.nodeType);
+     }
+     this.builder.push("\n")
 
-     if (node == null) return;
+     const children = node.getChildren();
 
-     let children = node.GetChildren();
-
-     indent += 2;
-     Log(children);
-     indent -= 2;
+     this.indent += 2;
+     this.log(children);
+     this.indent -= 2;
    }
 
    public toString(): string {
-     return builder.toString();
+     return this.builder.join('');
    }
+
+  private instanceOfRootNode(object: any): object is IRootNode {
+    return object?.isRootNode == true;
+  }
+
+  private asRootNode(object: any): IRootNode | null {
+    return this.instanceOfRootNode(object) ? object as IRootNode : null;
+  }
 }

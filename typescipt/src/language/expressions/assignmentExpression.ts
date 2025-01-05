@@ -85,7 +85,7 @@ export class AssignmentExpression extends Expression {
    let expressionType = this.assignment.deriveType(context);
    if (!variableType?.equals(expressionType))
      context.logger.fail(this.reference,
-       `Variable '${variableName}' of type '${variableType}' is not assignable from expression of type '{expressionType}'.`);
+       `Variable '${variableName}' of type '${variableType}' is not assignable from expression of type '${expressionType}'.`);
   }
 
   private validateMemberAccess(context: IValidationContext): void {
@@ -97,7 +97,7 @@ export class AssignmentExpression extends Expression {
 
    let assignmentType = this.assignment.deriveType(context);
 
-   let variableType = context.variableContext?.getVariableType(memberAccessExpression.variable, context);
+   let variableType = context.variableContext?.getVariableTypeByReference(memberAccessExpression.variable, context);
    if (variableType != null) {
      if (assignmentType == null || !assignmentType.equals(variableType))
        context.logger.fail(this.reference,

@@ -1,5 +1,4 @@
-export class Keywords
-{
+export class Keywords {
   public static readonly FunctionKeyword = "Function:";
   public static readonly EnumKeyword = "Enum:";
   public static readonly TableKeyword = "Table:";

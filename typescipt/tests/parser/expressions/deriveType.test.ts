@@ -6,7 +6,8 @@ import {IValidationContext, ValidationContext} from "../../../src/parser/validat
 import {VariableSource} from "../../../src/language/variableSource";
 import {parseExpression} from "../expressionParser/parseExpression";
 import {RootNodeList} from "../../../src/language/rootNodeList";
-import {DummyParserLogger} from "../../tokenizer/tokenize";
+import {ParserLogger} from "../../../src/parser/parserLogger";
+import {ConsoleLogger} from "../../../src/parser/logger";
 
 describe('DeriveTypeTests', () => {
   it('numberLiteral', async () => {
@@ -114,8 +115,8 @@ describe('DeriveTypeTests', () => {
                        validationContextHandler: ((context: IValidationContext) => void) | null = null): VariableType | null {
 
     const rootNodeList = new RootNodeList();
-    const dummyLogger = new DummyParserLogger();
-    let validationContext = new ValidationContext(dummyLogger, rootNodeList);
+    const logger = new ParserLogger(new ConsoleLogger());
+    const validationContext = new ValidationContext(logger, rootNodeList);
 
     const scope = validationContext.createVariableScope();
     try {

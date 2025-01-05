@@ -2,7 +2,7 @@ export function format<TItem>(enumerable: Array<TItem>, indentLevel: number): st
 
   const indent = indentLevel > 0 ? ' '.repeat(indentLevel * 2) : '';
   const builder: Array<string> = [];
-  builder.push('/n');
+  builder.push('\n');
 
   for (const item of enumerable)
   {

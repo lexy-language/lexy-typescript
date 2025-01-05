@@ -111,6 +111,7 @@ export function validateTypeAndDefault(context: IValidationContext, reference: S
   const primitiveVariableType = asPrimitiveVariableDeclarationType(type);
   if (primitiveVariableType != null) {
     validatePrimitiveVariableType(context, reference, primitiveVariableType, defaultValueExpression);
+    return;
   }
 
   throw new Error(`Invalid Type: ${type.nodeType}`);

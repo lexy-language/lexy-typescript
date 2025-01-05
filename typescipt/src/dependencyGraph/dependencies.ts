@@ -1,67 +1,86 @@
+import type {IRootNode} from "../language/rootNode";
+import type {INode} from "../language/node";
 
+import {RootNodeList} from "../language/rootNodeList";
+import {DependencyNode} from "./dependencyNode";
+import {asRootNode} from "../language/rootNode";
+import {asHasNodeDependencies} from "../language/IHasNodeDependencies";
+import {any} from "../infrastructure/enumerableExtensions";
+import {NodesWalker} from "../language/nodesWalker";
 
 export class Dependencies {
-   private readonly Array<IRootNode> circularReferences new(): =;
-   private readonly RootNodeList rootNodes;
+   private readonly circularReferences: Array<IRootNode> = [];
+   private readonly rootNodes: RootNodeList;
 
-   public Array<DependencyNode> Nodes = list<DependencyNode>(): new;
-   public boolean HasCircularReferences => circularReferences.Count > 0;
-   public IReadOnlyArray<IRootNode> CircularReferences => circularReferences;
+   public nodes: Array<DependencyNode> = [];
+
+   public get hasCircularReferences() {
+     return this.circularReferences.length > 0
+   }
+
+   public get circularReferences() {
+     return [...this.circularReferences];
+   }
 
    constructor(rootNodes: RootNodeList) {
-     this.rootNodes = rootNodes ?? throw new Error(nameof(rootNodes));
+     this.rootNodes = rootNodes;
    }
 
    public build(): void {
-     ProcessNodes(rootNodes, null);
+     this.processNodes(this.rootNodes.asArray(), null);
    }
 
-   private processNodes(nodes: Array<IRootNode>, parentNode: DependencyNode): void {
-     foreach (let node in nodes) Nodes.Add(ProcessNode(node, parentNode));
+   private processNodes(nodes: Array<IRootNode>, parentNode: DependencyNode | null): void {
+     for (const node of nodes) {
+       this.nodes.push(this.processNode(node, parentNode));
+     }
    }
 
-   private processNode(node: INode, parentNode: DependencyNode): DependencyNode {
-     let dependencyNode = NewDependencyNode(node, parentNode);
-     let dependencies = getDependencies(node, dependencyNode);
-     foreach (let dependency in dependencies) dependencyNode.AddDependency(dependency);
+   private processNode(node: INode, parentNode: DependencyNode | null): DependencyNode {
+     let dependencyNode = this.newDependencyNode(node, parentNode);
+     let dependencies = this.getDependencies(node, dependencyNode);
+     for (const dependency of dependencies) {
+       dependencyNode.addDependency(dependency)
+     }
      return dependencyNode;
    }
 
-   private static newDependencyNode(node: INode, parentNode: DependencyNode): DependencyNode {
-     let name = node is IRootNode { NodeName: { } } rootNode ? rootNode.NodeName : node.getType().Name;
-     return new DependencyNode(name, node.getType(), parentNode);
+   private newDependencyNode(node: INode, parentNode: DependencyNode | null): DependencyNode {
+     const rootNode = asRootNode(node);
+     const name = rootNode != null && rootNode.nodeName != null ? rootNode.nodeName : node.nodeType;
+     return new DependencyNode(name, node.nodeType, parentNode);
    }
 
-   private getDependencies(node: INode, parentNode: DependencyNode): IReadOnlyArray<DependencyNode> {
+   private getDependencies(node: INode, parentNode: DependencyNode): ReadonlyArray<DependencyNode> {
      let resultDependencies = new Array<DependencyNode>();
-     NodesWalker.Walk(node, childNode => ProcessDependencies(parentNode, childNode, resultDependencies));
+     NodesWalker.walk(node, childNode => this.processDependencies(parentNode, childNode, resultDependencies));
      return resultDependencies;
    }
 
-   private void ProcessDependencies(DependencyNode parentNode, INode childNode,
-     Array<DependencyNode> resultDependencies) {
-     let nodeDependencies = (childNode as IHasNodeDependencies)?.getDependencies(rootNodes);
+   private processDependencies(parentNode: DependencyNode, childNode: INode, resultDependencies: Array<DependencyNode>) {
+     let nodeDependencies = asHasNodeDependencies(childNode)?.getDependencies(this.rootNodes);
      if (nodeDependencies == null) return;
 
-     foreach (let dependency in nodeDependencies) ValidateDependency(parentNode, resultDependencies, dependency);
+     for (const dependency of nodeDependencies) {
+       this.validateDependency(parentNode, resultDependencies, dependency);
+     }
    }
 
-   private void ValidateDependency(DependencyNode parentNode, Array<DependencyNode> resultDependencies,
-     IRootNode dependency) {
+   private validateDependency(parentNode: DependencyNode, resultDependencies: Array<DependencyNode>, dependency: IRootNode): void {
      if (dependency == null) throw new Error(`node.GetNodes() should never return null`);
 
-     if (parentNode != null && parentNode.ExistsInLineage(dependency.NodeName, dependency.getType())) {
-       circularReferences.Add(dependency);
+     if (parentNode != null && parentNode.existsInLineage(dependency.nodeName, dependency.nodeType)) {
+       this.circularReferences.push(dependency);
      }
      else {
-       if (DependencyExists(resultDependencies, dependency)) return;
+       if (this.dependencyExists(resultDependencies, dependency)) return;
 
-       let dependencyNode = ProcessNode(dependency, parentNode);
-       resultDependencies.Add(dependencyNode);
+       let dependencyNode = this.processNode(dependency, parentNode);
+       resultDependencies.push (dependencyNode);
      }
    }
 
-   private static dependencyExists(resultDependencies: Array<DependencyNode>, dependency: IRootNode): boolean {
-     return resultDependencies.Any(any => any.Name == dependency.NodeName && any.Type == dependency.getType());
+   private dependencyExists(resultDependencies: Array<DependencyNode>, dependency: IRootNode): boolean {
+     return any(resultDependencies, any => any.Name == dependency.nodeName && any.Type == dependency.nodeType);
    }
 }

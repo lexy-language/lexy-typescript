@@ -1,30 +1,47 @@
+import {SourceFile} from "./sourceFile";
+import {Line} from "./line";
 
+export interface ISourceCodeDocument {
+  currentLine: Line;
 
-export class SourceCodeDocument extends ISourceCodeDocument {
-   private Line[] code;
-   private number index;
-   private SourceFile file;
+  setCode(lines: string[], fileName: string): void;
 
-   public Line CurrentLine { get; private set; }
+  hasMoreLines(): boolean;
+  nextLine(): Line;
+  reset(): void;
+}
 
-   public setCode(lines: string[], fileName: string): void {
-     index = -1;
-     file = new SourceFile(fileName);
-     code = lines.Select((line, index) => new Line(index, line, file)).ToArray();
-   }
+export class SourceCodeDocument implements ISourceCodeDocument {
+
+   private code: Line[] ;
+   private file: SourceFile;
+
+  private currentLineValue: Line | null;
+  private index: number ;
+
+   public get currentLine(): Line {
+     if (this.currentLineValue == null) throw new Error(`No current line.`);
+     return this.currentLineValue;
+  }
+
+  public setCode(lines: string[], fileName: string): void {
+   this.index = -1;
+   this.file = new SourceFile(fileName);
+   this.code = lines.map((line, index) => new Line(index, line, this.file));
+  }
 
    public hasMoreLines(): boolean {
-     return index < code.length - 1;
+     return this.index < this.code.length - 1;
    }
 
    public nextLine(): Line {
-     if (index >= code.length) throw new Error(`No more lines`);
+     if (this.index >= this.code.length) throw new Error(`No more lines`);
 
-     CurrentLine = code[++index];
-     return CurrentLine;
+     this.currentLineValue = this.code[++this.index];
+     return this.currentLineValue;
    }
 
    public reset(): void {
-     CurrentLine = null;
+     this.currentLineValue = null;
    }
 }

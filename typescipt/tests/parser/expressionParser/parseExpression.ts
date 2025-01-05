@@ -3,7 +3,7 @@ import {ExpressionFactory} from "../../../src/language/expressions/expressionFac
 import {Line} from "../../../src/parser/line";
 import {SourceFile} from "../../../src/parser/sourceFile";
 import {Tokenizer} from "../../../src/parser/tokens/tokenizer";
-import {expectSuccess} from "../../parserExtensions";
+import {expectSuccess} from "../../expectSuccess";
 
 export function parseExpression(expression: string): Expression {
 

@@ -1,12 +1,13 @@
+import type {IParserLogger} from "./ParserLogger";
+import type {ITypeWithMembers} from "../language/variableTypes/ITypeWithMembers";
+import type {IValidationContext} from "./ValidationContext";
+
 import {VariableType} from "../language/variableTypes/variableType";
 import {SourceReference} from "./sourceReference";
 import {VariableEntry} from "./variableEntry";
 import {VariableReference} from "../runTime/variableReference";
 import {VariableSource} from "../language/variableSource";
-
-import type {IParserLogger} from "./IParserLogger";
-import type {ITypeWithMembers} from "../language/variableTypes/ITypeWithMembers";
-import type {IValidationContext} from "./ValidationContext";
+import {asTypeWithMembers} from "../language/variableTypes/ITypeWithMembers";
 
 export interface IVariableContext {
   addVariable(variableName: string, type: VariableType, source: VariableSource): void;
@@ -16,11 +17,11 @@ export interface IVariableContext {
 
   ensureVariableExists(reference: SourceReference, variableName: string): boolean;
 
-  contains(variableName: string): boolean;
-  contains(reference: VariableReference, context: IValidationContext): boolean;
+  containsName(variableName: string): boolean;
+  containsReference(reference: VariableReference, context: IValidationContext): boolean;
 
   getVariableTypeByName(variableName: string): VariableType | null;
-  getVariableType(reference: VariableReference, context: IValidationContext): VariableType | null;
+  getVariableTypeByReference(reference: VariableReference, context: IValidationContext): VariableType | null;
   getVariableSource(variableName: string): VariableSource | null;
 
   getVariable(variableName: string): VariableEntry | null;
@@ -37,7 +38,7 @@ export class VariableContext implements IVariableContext {
    }
 
    public addVariable(name: string, type: VariableType, source: VariableSource): void {
-     if (this.contains(name)) return;
+     if (this.containsName(name)) return;
 
      let entry = new VariableEntry(type, source);
      this.variables[name] = entry;
@@ -45,7 +46,7 @@ export class VariableContext implements IVariableContext {
 
    public registerVariableAndVerifyUnique(reference: SourceReference, name: string, type: VariableType | null,
                                                source: VariableSource): void {
-     if (this.contains(name)) {
+     if (this.containsName(name)) {
        this.logger.fail(reference, `Duplicated variable name: '${name}'`);
        return;
      }
@@ -54,11 +55,11 @@ export class VariableContext implements IVariableContext {
      this.variables[name] = entry;
    }
 
-   public contains(name: string): boolean {
-     return name in this.variables || this.parentContext != null && this.parentContext.contains(name);
+   public containsName(name: string): boolean {
+     return name in this.variables || (this.parentContext != null && this.parentContext.contains(name));
    }
 
-   public contains(reference: VariableReference, context: IValidationContext): boolean {
+   public containsReference(reference: VariableReference, context: IValidationContext): boolean {
      let parent = this.getVariable(reference.parentIdentifier);
      if (parent == null) return false;
 
@@ -67,7 +68,7 @@ export class VariableContext implements IVariableContext {
    }
 
    public ensureVariableExists(reference: SourceReference, name: string): boolean {
-     if (!this.contains(name)) {
+     if (!this.containsName(name)) {
        this.logger.fail(reference, `Unknown variable name: '${name}'.`);
        return false;
      }
@@ -83,7 +84,7 @@ export class VariableContext implements IVariableContext {
           : null;
    }
 
-   public getVariableType(reference: VariableReference, context: IValidationContext): VariableType | null {
+   public getVariableTypeByReference(reference: VariableReference, context: IValidationContext): VariableType | null {
      let parent = this.getVariableTypeByName(reference.parentIdentifier);
      return parent == null || !reference.hasChildIdentifiers
        ? parent
@@ -117,7 +118,7 @@ export class VariableContext implements IVariableContext {
    private getVariableType(parentType: VariableType, reference: VariableReference,
                             context: IValidationContext ): VariableType | null {
 
-     let typeWithMembers = 'memberType' in parentType ? parentType as ITypeWithMembers : null;
+     let typeWithMembers = asTypeWithMembers(parentType);
      if (typeWithMembers == null) return null;
 
      let memberVariableType = typeWithMembers.memberType(reference.parentIdentifier, context);

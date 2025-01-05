@@ -37,201 +37,200 @@ export class Scenario extends RootNode {
   public readonly nodeType = "Scenario";
   public readonly name: ScenarioName;
 
-   public get functionNode(): Function | null {
-     return this.functionNodeValue;
-   }
+  public get functionNode(): Function | null {
+    return this.functionNodeValue;
+  }
 
-   public get enum(): EnumDefinition | null {
-     return this.enumValue;
-   }
+  public get enum(): EnumDefinition | null {
+    return this.enumValue;
+  }
 
-   public get table(): Table | null{
-     return this.tableValue;
-   }
+  public get table(): Table | null {
+    return this.tableValue;
+  }
 
-   public readonly functionName: ScenarioFunctionName;
+  public readonly functionName: ScenarioFunctionName;
 
-   public readonly parameters: ScenarioParameters;
-   public readonly results: ScenarioResults;
+  public readonly parameters: ScenarioParameters;
+  public readonly results: ScenarioResults;
   public readonly validationTable: ScenarioTable;
 
   public readonly expectError: ScenarioExpectError;
-   public readonly expectRootErrors: ScenarioExpectRootErrors;
+  public readonly expectRootErrors: ScenarioExpectRootErrors;
 
-   public override get nodeName() {
-     return this.name.value;
-   }
+  public override get nodeName() {
+    return this.name.value;
+  }
 
-   constructor(name: string, reference: SourceReference) {
-     super(reference);
-     this.name = new ScenarioName(reference);
-     this.functionName = new ScenarioFunctionName(reference);
+  constructor(name: string, reference: SourceReference) {
+    super(reference);
+    this.name = new ScenarioName(reference);
+    this.functionName = new ScenarioFunctionName(reference);
 
-     this.parameters = new ScenarioParameters(reference);
-     this.results = new ScenarioResults(reference);
-     this.validationTable = new ScenarioTable(reference);
+    this.parameters = new ScenarioParameters(reference);
+    this.results = new ScenarioResults(reference);
+    this.validationTable = new ScenarioTable(reference);
 
-     this.expectError = new ScenarioExpectError(reference);
-     this.expectRootErrors = new ScenarioExpectRootErrors(reference);
+    this.expectError = new ScenarioExpectError(reference);
+    this.expectRootErrors = new ScenarioExpectRootErrors(reference);
 
-     this.name.parseName(name);
-   }
+    this.name.parseName(name);
+  }
 
-   public static parse(name: NodeName, reference: SourceReference): Scenario {
-     if (name.name == null) throw new Error("No node name.")
-     return new Scenario(name.name, reference);
-   }
+  public static parse(name: string, reference: SourceReference): Scenario {
+    return new Scenario(name, reference);
+  }
 
-   public override parse(context: IParseLineContext): IParsableNode {
-     let line = context.line;
-     let name = line.tokens.tokenValue(0);
-     let reference = line.lineStartReference();
-     if (!line.tokens.isTokenType<KeywordToken>(0, KeywordToken)) {
-       context.logger.fail(reference, `Invalid token '${name}'. Keyword expected.`);
-       return this;
-     }
+  public override parse(context: IParseLineContext): IParsableNode {
+    let line = context.line;
+    let name = line.tokens.tokenValue(0);
+    let reference = line.lineStartReference();
+    if (!line.tokens.isTokenType<KeywordToken>(0, KeywordToken)) {
+      context.logger.fail(reference, `Invalid token '${name}'. Keyword expected.`);
+      return this;
+    }
 
-     switch (name) {
-       case Keywords.FunctionKeyword:
-         return this.parseFunction(context, reference);
-       case Keywords.EnumKeyword:
-         return this.parseEnum(context, reference);
-       case Keywords.TableKeyword:
-         return this.parseTable(context, reference);
-       case Keywords.Function:
-         return this.resetRootNode(context, this.parseFunctionName(context));
-       case Keywords.Parameters:
-         return this.resetRootNode(context, this.parameters);
-       case Keywords.Results:
-         return this.resetRootNode(context, this.results);
-       case Keywords.ValidationTable:
-         return this.resetRootNode(context, this.validationTable);
-       case Keywords.ExpectError:
-         return this.resetRootNode(context, this.expectError.parse(context));
-       case Keywords.ExpectRootErrors:
-         return this.resetRootNode(context, this.expectRootErrors);
-       default:
-         return this.invalidToken(context, name, reference);
-     }
-   }
+    switch (name) {
+      case Keywords.FunctionKeyword:
+        return this.parseFunction(context, reference);
+      case Keywords.EnumKeyword:
+        return this.parseEnum(context, reference);
+      case Keywords.TableKeyword:
+        return this.parseTable(context, reference);
+      case Keywords.Function:
+        return this.resetRootNode(context, this.parseFunctionName(context));
+      case Keywords.Parameters:
+        return this.resetRootNode(context, this.parameters);
+      case Keywords.Results:
+        return this.resetRootNode(context, this.results);
+      case Keywords.ValidationTable:
+        return this.resetRootNode(context, this.validationTable);
+      case Keywords.ExpectError:
+        return this.resetRootNode(context, this.expectError.parse(context));
+      case Keywords.ExpectRootErrors:
+        return this.resetRootNode(context, this.expectRootErrors);
+      default:
+        return this.invalidToken(context, name, reference);
+    }
+  }
 
-   private resetRootNode(parserContext: IParseLineContext, node: IParsableNode): IParsableNode {
-     parserContext.logger.setCurrentNode(this);
-     return node;
-   }
+  private resetRootNode(parserContext: IParseLineContext, node: IParsableNode): IParsableNode {
+    parserContext.logger.setCurrentNode(this);
+    return node;
+  }
 
-   private parseFunctionName(context: IParseLineContext): IParsableNode {
-     this.functionName.parse(context);
-     return this;
-   }
+  private parseFunctionName(context: IParseLineContext): IParsableNode {
+    this.functionName.parse(context);
+    return this;
+  }
 
-   private parseFunction(context: IParseLineContext, reference: SourceReference): IParsableNode | null {
-     if (Function != null) {
-       context.logger.fail(reference, `Duplicated inline Function '${this.nodeName}'.`);
-       return null;
-     }
+  private parseFunction(context: IParseLineContext, reference: SourceReference): IParsableNode {
+    if (this.functionNodeValue != null) {
+      context.logger.fail(reference, `Duplicated inline Function '${this.nodeName}'.`);
+      return this.functionNodeValue;
+    }
 
-     let tokenName = NodeName.parse(context);
-     if (tokenName != null && tokenName.name != null) {
-       context.logger.fail(context.line.tokenReference(1),
-         `Unexpected function name. Inline function should not have a name: '${tokenName.name}'`);
-     }
+    let tokenName = NodeName.parse(context);
+    if (tokenName != null && tokenName.name != null) {
+      context.logger.fail(context.line.tokenReference(1),
+        `Unexpected function name. Inline function should not have a name: '${tokenName.name}'`);
+    }
 
-     this.functionNodeValue = Function.create(`${this.name.value}Function`, reference, context.expressionFactory);
-     context.logger.setCurrentNode(this.functionNode);
-     return Function;
-   }
+    this.functionNodeValue = Function.create(`${this.name.value}Function`, reference, context.expressionFactory);
+    context.logger.setCurrentNode(this.functionNodeValue);
+    return this.functionNodeValue;
+  }
 
-   private parseEnum(context: IParseLineContext, reference: SourceReference): IParsableNode | null {
-     if (this.enum != null) {
-       context.logger.fail(reference, `Duplicated inline Enum '${this.nodeName}'.`);
-       return null;
-     }
+  private parseEnum(context: IParseLineContext, reference: SourceReference): IParsableNode {
+    if (this.enum != null) {
+      context.logger.fail(reference, `Duplicated inline Enum '${this.nodeName}'.`);
+      return this.enum;
+    }
 
-     let tokenName = NodeName.parse(context);
-     if (tokenName == null) return null;
+    let tokenName = NodeName.parse(context);
+    if (tokenName == null || tokenName.name == null) return this;
 
-     this.enumValue = EnumDefinition.parse(tokenName, reference);
-     context.logger.setCurrentNode(this.enumValue);
-     return this.enum;
-   }
+    this.enumValue = EnumDefinition.parse(tokenName.name, reference);
+    context.logger.setCurrentNode(this.enumValue);
+    return this.enumValue;
+  }
 
-   private parseTable(context: IParseLineContext, reference: SourceReference): IParsableNode | null {
-     if (this.table != null) {
-       context.logger.fail(reference, `Duplicated inline Enum '${this.nodeName}'.`);
-       return null;
-     }
+  private parseTable(context: IParseLineContext, reference: SourceReference): IParsableNode {
+    if (this.table != null) {
+      context.logger.fail(reference, `Duplicated inline Enum '${this.nodeName}'.`);
+      return this.table;
+    }
 
-     let tokenName = NodeName.parse(context);
-     if (tokenName == null) return null;
+    let tokenName = NodeName.parse(context);
+    if (tokenName == null || tokenName.name == null) return this;
 
-     this.tableValue = Table.parse(tokenName, reference);
-     context.logger.setCurrentNode(this.tableValue);
-     return Table;
-   }
+    this.tableValue = Table.parse(tokenName.name, reference);
+    context.logger.setCurrentNode(this.tableValue);
+    return this.tableValue;
+  }
 
-   private invalidToken(context: IParseLineContext, name: string, reference: SourceReference): IParsableNode {
-     context.logger.fail(reference, `Invalid token '${name}'.`);
-     return this;
-   }
+  private invalidToken(context: IParseLineContext, name: string | null, reference: SourceReference): IParsableNode {
+    context.logger.fail(reference, `Invalid token '${name}'.`);
+    return this;
+  }
 
-   public override getChildren(): Array<INode> {
-     const result: Array<INode> = [];
-     if (this.functionNodeValue != null) result.push(this.functionNodeValue);
-     if (this.enumValue != null) result.push(this.enumValue);
-     if (this.tableValue != null) result.push(this.tableValue);
+  public override getChildren(): Array<INode> {
+    const result: Array<INode> = [];
+    if (this.functionNodeValue != null) result.push(this.functionNodeValue);
+    if (this.enumValue != null) result.push(this.enumValue);
+    if (this.tableValue != null) result.push(this.tableValue);
 
-     return [
-       ...result,
-       this.name,
-       this.functionName,
-       this.parameters,
-       this.results,
-       this.validationTable,
-       this.expectError,
-       this.expectRootErrors
-     ];
-   }
+    return [
+      ...result,
+      this.name,
+      this.functionName,
+      this.parameters,
+      this.results,
+      this.validationTable,
+      this.expectError,
+      this.expectRootErrors
+    ];
+  }
 
-   protected override validateNodeTree(context: IValidationContext, child: INode): void {
-     if (child === this.parameters || child === this.results) {
-       this.validateParameterOrResultNode(context, child);
-       return;
-     }
+  protected override validateNodeTree(context: IValidationContext, child: INode): void {
+    if (child === this.parameters || child === this.results) {
+      this.validateParameterOrResultNode(context, child);
+      return;
+    }
 
-     super.validateNodeTree(context, child);
-   }
+    super.validateNodeTree(context, child);
+  }
 
-   private validateParameterOrResultNode(context: IValidationContext, child: INode): void {
-     const scope = context.createVariableScope();
-     try {
-       this.addFunctionParametersAndResultsForValidation(context);
-       super.validateNodeTree(context, child);
-     } finally {
-       scope[Symbol.dispose]();
-     }
-   }
+  private validateParameterOrResultNode(context: IValidationContext, child: INode): void {
+    const scope = context.createVariableScope();
+    try {
+      this.addFunctionParametersAndResultsForValidation(context);
+      super.validateNodeTree(context, child);
+    } finally {
+      scope[Symbol.dispose]();
+    }
+  }
 
-   private addFunctionParametersAndResultsForValidation(context: IValidationContext): void {
-     let functionNode = this.functionNode ?? (this.functionName != null ? context.rootNodes.getFunction(this.functionName.value) : null);
-     if (functionNode == null) return;
+  private addFunctionParametersAndResultsForValidation(context: IValidationContext): void {
+    let functionNode = this.functionNode ?? (this.functionName != null ? context.rootNodes.getFunction(this.functionName.value) : null);
+    if (functionNode == null) return;
 
-     this.addVariablesForValidation(context, functionNode.parameters.variables, VariableSource.Parameters);
-     this.addVariablesForValidation(context, functionNode.results.variables, VariableSource.Results);
-   }
+    this.addVariablesForValidation(context, functionNode.parameters.variables, VariableSource.Parameters);
+    this.addVariablesForValidation(context, functionNode.results.variables, VariableSource.Results);
+  }
 
-   private addVariablesForValidation(context: IValidationContext, definitions: ReadonlyArray<VariableDefinition>,
-     source: VariableSource) {
-     for (const definition of definitions) {
-       let variableType = definition.type.createVariableType(context);
-       if (variableType == null) continue;
-       context.variableContext.addVariable(definition.name, variableType, source);
-     }
-   }
+  private addVariablesForValidation(context: IValidationContext, definitions: ReadonlyArray<VariableDefinition>,
+                                    source: VariableSource) {
+    for (const definition of definitions) {
+      let variableType = definition.type.createVariableType(context);
+      if (variableType == null) continue;
+      context.variableContext.addVariable(definition.name, variableType, source);
+    }
+  }
 
-   protected override validate(context: IValidationContext): void {
-     if (this.functionName.isEmpty() && this.functionNode == null && this.enum == null && this.table == null && !this.expectRootErrors.HasValues) {
-       context.logger.fail(this.reference, `Scenario has no function, enum, table or expect errors.`);
-     }
-   }
+  protected override validate(context: IValidationContext): void {
+    if (this.functionName.isEmpty() && this.functionNode == null && this.enum == null && this.table == null && !this.expectRootErrors.hasValues) {
+      context.logger.fail(this.reference, `Scenario has no function, enum, table or expect errors.`);
+    }
+  }
 }

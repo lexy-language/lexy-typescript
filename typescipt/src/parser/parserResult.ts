@@ -1,9 +1,9 @@
-
+import {RootNodeList} from "../language/rootNodeList";
 
 export class ParserResult {
-   public RootNodeList rootNodes
+   public readonly rootNodes: RootNodeList
 
    constructor(rootNodes: RootNodeList) {
-     rootNodes = rootNodes;
+     this.rootNodes = rootNodes;
    }
 }

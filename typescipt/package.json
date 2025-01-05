@@ -2,6 +2,14 @@
   "name": "lexy-compiler",
   "version": "1.0.0",
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/plugin-proposal-throw-expressions": "^7.25.9",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-typescript": "^7.26.0",
+    "@types/path-browserify": "^1.0.3",
+    "@types/jest-expect-message": "^1.1.0",
+    "babel-jest": "^29.7.0",
+    "typescript": "^5.7.2",
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
@@ -12,12 +20,7 @@
     "check-circular-dependencies": "npx madge -c --extensions ts ./"
   },
   "dependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "@babel/preset-typescript": "^7.26.0",
-    "@babel/plugin-proposal-throw-expressions": "^7.25.9",
-    "typescript": "^5.7.2",
-    "babel-jest": "^29.7.0"
+
   },
   "madge": {
     "detectiveOptions": {

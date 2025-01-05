@@ -39,8 +39,8 @@ export class TypeDefinition extends RootNode {
      this.name.parseName(name);
    }
 
-   public static parse(name: NodeName, reference: SourceReference): TypeDefinition {
-     return new TypeDefinition(name.Name, reference);
+   public static parse(name: string, reference: SourceReference): TypeDefinition {
+     return new TypeDefinition(name, reference);
    }
 
    public override parse(context: IParseLineContext): IParsableNode {

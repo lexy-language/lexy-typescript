@@ -1,28 +1,39 @@
-
+import {IParsableNode, ParsableNode} from "./parsableNode";
+import {SourceReference} from "../parser/sourceReference";
+import {IParseLineContext} from "../parser/ParseLineContext";
+import {INode} from "./node";
+import {IValidationContext} from "../parser/validationContext";
 
 export class Comments extends ParsableNode {
-   private readonly Array<string> lines = list<string>(): new;
 
-   public Comments(SourceReference sourceReference) super(sourceReference) {
+  private readonly lines: Array<string> = [];
+
+  public nodeType = "Comments";
+
+   constructor(sourceReference: SourceReference) {
+     super(sourceReference);
    }
 
    public override parse(context: IParseLineContext): IParsableNode {
-     let valid = context.ValidateTokens<Comments>()
-       .Count(1)
-       .Comment(0)
+     let valid = context.validateTokens("Comments")
+       .count(1)
+       .comment(0)
        .isValid;
 
-     if (!valid) return null;
+     if (!valid) return this;
 
-     let comment = context.line.tokens.Token<CommentToken>(0);
-     lines.Add(comment.Value);
+     let comment = context.line.tokens.tokenValue(0);
+     if (comment != null) {
+       this.lines.push(comment);
+     }
      return this;
    }
 
    public override getChildren(): Array<INode> {
-     yield break;
+     return [];
    }
 
    protected override validate(context: IValidationContext): void {
    }
+
 }

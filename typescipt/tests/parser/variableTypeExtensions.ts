@@ -1,8 +1,11 @@
+import {VariableDeclarationType} from "../../src/language/variableTypes/variableDeclarationType";
+import {
+  asPrimitiveVariableDeclarationType,
+} from "../../src/language/variableTypes/primitiveVariableDeclarationType";
 
+export function shouldBePrimitiveType(type: VariableDeclarationType | null | undefined, name: string): void {
 
-internal static class VariableTypeExtensions {
-   public static shouldBePrimitiveType(type: VariableDeclarationType, name: string): void {
-     type.ShouldBeOfType<PrimitiveVariableDeclarationType>()
-       .Type.toBe(name);
-   }
+  const primitiveVariableDeclarationType = asPrimitiveVariableDeclarationType(type);
+  expect(primitiveVariableDeclarationType).not.toBeNull();
+  expect(primitiveVariableDeclarationType?.type).toBe(name);
 }

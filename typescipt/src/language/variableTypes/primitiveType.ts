@@ -8,6 +8,8 @@ export class PrimitiveType extends VariableType
   public static readonly number: PrimitiveType = new PrimitiveType(TypeNames.number);
   public static readonly date: PrimitiveType = new PrimitiveType(TypeNames.date);
 
+  public readonly variableTypeName = "PrimitiveType";
+
   public type: string;
 
   private constructor(type: string) {
@@ -15,13 +17,11 @@ export class PrimitiveType extends VariableType
     this.type = type;
   }
 
-  public equals(other: PrimitiveType): boolean
-  {
+  public equals(other: PrimitiveType): boolean {
     return this.type == other.type;
   }
 
-  public toString()
-  {
+  public toString() {
     return this.type;
   }
 }

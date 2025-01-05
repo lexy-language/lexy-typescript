@@ -1,5 +1,5 @@
 import type {IExpressionFactory} from "../language/expressions/expressionFactory";
-import type {IParserLogger} from "./IParserLogger";
+import type {IParserLogger} from "./ParserLogger";
 
 import {Line} from "./line";
 import {TokenValidator} from "./tokenValidator";
@@ -19,10 +19,12 @@ export class ParseLineContext implements IParseLineContext {
 
   public readonly line: Line;
   public readonly logger: IParserLogger;
+  public readonly expressionFactory: IExpressionFactory;
 
-  constructor(line: Line, logger: IParserLogger) {
+  constructor(line: Line, logger: IParserLogger, expressionFactory: IExpressionFactory) {
     this.line = line;
     this.logger = logger;
+    this.expressionFactory = expressionFactory;
   }
 
   public validateTokens(name: string): TokenValidator {

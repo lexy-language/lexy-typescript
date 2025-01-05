@@ -1,6 +1,7 @@
+import type {IValidationContext} from "../parser/validationContext";
+
 import {contains} from "../infrastructure/enumerableExtensions";
 import {SourceReference} from "../parser/sourceReference";
-import {IValidationContext} from "../parser/validationContext";
 
 export class DuplicateChecker {
 
@@ -11,6 +12,7 @@ export class DuplicateChecker {
      for (const item of values) {
        const name = getName(item);
        if (contains(found, name)) {
+         context.logger
          context.logger.fail(getReference(item), getErrorMessage(item));
        } else {
          found.push(name);

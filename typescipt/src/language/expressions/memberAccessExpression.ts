@@ -9,7 +9,7 @@ import {VariableReference} from "../../runTime/variableReference";
 import {VariableType} from "../variableTypes/variableType";
 import {SourceReference} from "../../parser/sourceReference";
 import {ExpressionSource} from "./expressionSource";
-import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {asMemberAccessLiteral, MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
 import {VariableSource} from "../variableSource"
 import {RootNodeList} from "../rootNodeList";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
@@ -47,7 +47,7 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
     let tokens = source.tokens;
     if (!MemberAccessExpression.isValid(tokens)) return newParseExpressionFailed("MemberAccessExpression", `Invalid expression.`);
 
-    let literal = tokens.token<MemberAccessLiteral>(0, MemberAccessLiteral);
+    let literal = tokens.token<MemberAccessLiteral>(0, asMemberAccessLiteral);
     if (!literal) return newParseExpressionFailed("MemberAccessExpression", `Invalid expression.`);
 
     let variable = new VariableReference(literal.parts);
@@ -67,7 +67,7 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
   }
 
   protected override validate(context: IValidationContext): void {
-    this.variableType = context.variableContext.getVariableType(this.variable, context);
+    this.variableType = context.variableContext.getVariableTypeByReference(this.variable, context);
     this.rootType = context.rootNodes.getType(this.variable.parentIdentifier);
 
     this.setVariableSource(context);

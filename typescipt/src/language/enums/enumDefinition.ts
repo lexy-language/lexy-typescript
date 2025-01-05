@@ -36,8 +36,8 @@ export class EnumDefinition extends RootNode {
      this.name.parseName(name);
    }
 
-   public static parse(name: NodeName, reference: SourceReference): EnumDefinition {
-     return new EnumDefinition(name.Name, reference);
+   public static parse(name: string, reference: SourceReference): EnumDefinition {
+     return new EnumDefinition(name, reference);
    }
 
    public override parse(context: IParseLineContext): IParsableNode {

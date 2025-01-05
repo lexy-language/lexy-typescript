@@ -1,12 +1,12 @@
+import type {IParserLogger} from "./ParserLogger";
+import type {IVariableContext} from "./variableContext"
+
 import {VariableContext} from "./variableContext";
 import {Stack} from "../infrastructure/stack";
-import {IParserLogger} from "./IParserLogger";
 import {RootNodeList} from "../language/rootNodeList";
 import {Expression} from "../language/expressions/expression";
 import {VariableType} from "../language/variableTypes/variableType";
 import {SourceReference} from "./sourceReference";
-
-import type {IVariableContext} from "./variableContext"
 
 class CodeContextScope  {
   private readonly func: () => IVariableContext | null;

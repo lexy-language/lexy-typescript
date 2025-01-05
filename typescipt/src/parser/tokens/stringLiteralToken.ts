@@ -5,7 +5,7 @@ import {IValidationContext} from "../validationContext";
 import {VariableType} from "../../language/variableTypes/variableType";
 
 export function instanceOfStringLiteralToken(object: any) {
-  return object?.nodeType == "StringLiteralToken";
+  return object?.tokenType == "StringLiteralToken";
 }
 
 export function asStringLiteralToken(object: any): StringLiteralToken | null {

@@ -1,10 +1,10 @@
+import type {ITokenizer} from "./tokens/tokenizer";
+import type {IParserLogger} from "./parserLogger";
+
 import {SourceFile} from "./sourceFile";
-import {IParserLogger} from "./IParserLogger";
 import {SourceReference} from "./sourceReference";
 import {TokenizeResult} from "./tokens/tokenizeResult";
 import {TokenList} from "./tokens/tokenList";
-
-import type {ITokenizer} from "./tokens/tokenizer";
 
 export class Line {
 
@@ -52,7 +52,7 @@ export class Line {
 
     if (spaces % 2 != 0) {
       logger.fail(this.lineReference(index),
-        `Wrong number of indent spaces {spaces}. Should be multiplication of 2. (line: ${this.index} line: ${this.content})`);
+        `Wrong number of indent spaces ${spaces}. Should be multiplication of 2.`);
       return null;
     }
 

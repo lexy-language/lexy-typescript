@@ -56,7 +56,7 @@ export class TableWriter extends IRootTokenWriter {
    }
 
    private static generateStaticConstructor(className: string, table: Table, rowName: string): ConstructorDeclarationSyntax {
-     let rows = table.Rows.Select(row =>
+     let rows = table.rows.Select(row =>
        ObjectCreationExpression(
            IdentifierName(rowName))
          .WithInitializer(

@@ -27,9 +27,8 @@ export class EnumName extends Node {
 
    protected override validate(context: IValidationContext): void {
      if (isNullOrEmpty(this.value)) {
-       context.logger.fail(this.reference, `Invalid enum name: ${this.value}. Name should not be empty.`);
-     }
-     if (!isValidIdentifier(this.value)) {
+       context.logger.fail(this.reference, `Invalid enum name: ${this.value}. name should not be empty.`);
+     } else if (!isValidIdentifier(this.value)) {
        context.logger.fail(this.reference, `Invalid enum name: ${this.value}.`);
      }
    }

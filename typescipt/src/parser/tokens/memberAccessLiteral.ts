@@ -44,7 +44,7 @@ export class MemberAccessLiteral extends Token implements ILiteralToken {
 
   public deriveType(context: IValidationContext): VariableType | null {
     let variableReference = new VariableReference(this.parts);
-    let variableType = context.variableContext.getVariableType(variableReference, context);
+    let variableType = context.variableContext.getVariableTypeByReference(variableReference, context);
     if (variableType != null) return variableType;
 
     if (this.parts.length != 2) return null;

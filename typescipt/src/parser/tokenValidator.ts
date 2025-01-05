@@ -1,4 +1,4 @@
-import {IParserLogger} from "./IParserLogger";
+import {IParserLogger} from "./ParserLogger";
 import {Line} from "./line";
 import {TokenList} from "./tokens/tokenList";
 import {BooleanLiteral} from "./tokens/BooleanLiteral";

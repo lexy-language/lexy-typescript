@@ -10,6 +10,7 @@ import {SourceReference} from "../../parser/sourceReference";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {VariableReferenceParser} from "./variableReferenceParser";
+import {contains} from "../../infrastructure/enumerableExtensions";
 
 export class AssignmentDefinition extends Node {
 
@@ -82,15 +83,23 @@ export class AssignmentDefinition extends Node {
    }
 
    protected override validate(context: IValidationContext): void {
-     if (!context.variableContext.contains(this.variable, context))
+     if (!context.variableContext.containsReference(this.variable, context))
        //logger by IdentifierExpressionValidation
        return;
 
      let expressionType = this.valueExpression.deriveType(context);
 
-     VariableType = context.variableContext.getVariableType(this.variable, context);
-     if (expressionType != null && !expressionType.equals(VariableType))
+     const variableTypeValue = context.variableContext.getVariableTypeByReference(this.variable, context);
+     if (variableTypeValue == null) {
        context.logger.fail(this.reference,
-         `Variable '${this.variable}' of type '${this.variableType}' is not assignable from expression of type '${this.expressionType}'.`);
+         `Variable '${this.variable}' of type '${this.variableType}' is not assignable from expression of type '${expressionType}'.`);
+       return;
+     }
+
+     this.variableTypeValue = variableTypeValue;
+     if (expressionType != null && !expressionType.equals(variableTypeValue)) {
+       context.logger.fail(this.reference,
+         `Variable '${this.variable}' of type '${this.variableType}' is not assignable from expression of type '${expressionType}'.`);
+     }
    }
 }

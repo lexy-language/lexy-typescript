@@ -16,11 +16,15 @@ export abstract class Expression extends Node {
 
    public toString(): string {
      let writer = new Array<string>();
-     for (let index = 0 ; index < this.source.tokens.length < index ; index++) {
+     for (let index = 0 ; index < this.source.tokens.length ; index++) {
        let token = this.source.tokens.get(index);
        writer.push(token.value);
      }
      return writer.join('');
+   }
+
+   public A(): string{
+     return this.toString();
    }
 
    public abstract deriveType(context: IValidationContext): VariableType | null;

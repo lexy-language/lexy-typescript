@@ -31,7 +31,7 @@ export class VariableReferenceParser {
 
      const identifierExpression = asIdentifierExpression(expression);
      if (identifierExpression != null) {
-       return newVariableReferenceParseSuccess(new VariableReference(literalExpression.Identifier));
+       return newVariableReferenceParseSuccess(new VariableReference(identifierExpression.identifier.split(".")));
      }
 
      return newVariableReferenceParseFailed(`Invalid constant value. Expected: 'Variable = ConstantValue'`);
@@ -40,7 +40,7 @@ export class VariableReferenceParser {
    private static parseLiteralExpression(literalExpression: LiteralExpression): VariableReferenceParseResult {
      const stringLiteral = asStringLiteralToken(literalExpression.literal);
      if (stringLiteral != null) {
-       return newVariableReferenceParseSuccess(new VariableReference(stringLiteral.value))
+       return newVariableReferenceParseSuccess(new VariableReference(stringLiteral.value.split(".")))
      }
      return newVariableReferenceParseFailed(`Invalid expression literal. Expected: 'Variable = ConstantValue'`);
    }

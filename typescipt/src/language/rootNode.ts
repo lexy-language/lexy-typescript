@@ -20,7 +20,7 @@ export interface IRootNode extends IParsableNode {
 
 export abstract class RootNode extends ParsableNode implements IRootNode {
 
-   public readonly isRootNode: true;
+   public readonly isRootNode = true;
    public readonly abstract nodeName: string;
 
    protected constructor(reference: SourceReference){

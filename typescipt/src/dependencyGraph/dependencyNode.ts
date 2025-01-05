@@ -1,41 +1,31 @@
 
-
 export class DependencyNode {
-   private readonly Array<DependencyNode> dependencies new(): =;
-   private readonly DependencyNode parentNode;
+   private readonly dependencies: Array<DependencyNode> = [];
+   private readonly parentNode: DependencyNode | null;
 
-   public string Name
-   public Type Type
+   public name: string
+  public type: string
 
-   public IReadOnlyArray<DependencyNode> Dependencies => dependencies;
+   public get dependencies() {
+     return [...this.dependencies];
+   }
 
-   constructor(name: string, type: Type, parentNode: DependencyNode) {
-     Name = name ?? throw new Error(nameof(name));
-     Type = type ?? throw new Error(nameof(type));
+   constructor(name: string, type: string, parentNode: DependencyNode | null) {
+     this.name = name;
+     this.type = type;
      this.parentNode = parentNode;
    }
 
    public addDependency(dependency: DependencyNode): void {
-     dependencies.Add(dependency);
+     this.dependencies.push(dependency);
    }
 
    protected equals(other: DependencyNode): boolean {
-     return Name == other.Name && Equals(Type, other.Type);
+     return this.name == other.name && this.type == other.type;
    }
 
-   public override equals(obj: object): boolean {
-     if (ReferenceEquals(null, obj)) return false;
-     if (ReferenceEquals(this, obj)) return true;
-     if (obj.getType() != getType()) return false;
-     return Equals((DependencyNode)obj);
-   }
-
-   public override getHashCode(): number {
-     return HashCode.Combine(Name, Type);
-   }
-
-   public existsInLineage(name: string, type: Type): boolean {
-     if (Name == name && Type == type) return true;
-     return parentNode != null && parentNode.ExistsInLineage(name, type);
+   public existsInLineage(name: string, type: string): boolean {
+     if (this.name == name && this.type == type) return true;
+     return this.parentNode != null && this.parentNode.existsInLineage(name, type);
    }
 }

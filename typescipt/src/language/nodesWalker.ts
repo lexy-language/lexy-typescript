@@ -1,57 +1,51 @@
+import {INode} from "./node";
 
+export class NodesWalker {
 
-internal static class NodesWalker {
-   public static walk(nodes: Array<INode>, action: Action<INode>): void {
-     if (nodes == null) throw new Error(nameof(nodes));
-     if (action == null) throw new Error(nameof(action));
-
-     foreach (let node in nodes) Walk(node, action);
+   public static walkNodes(nodes: Array<INode>, action: (node : INode) => void): void {
+     for (const node of nodes) {
+       NodesWalker.walk(node, action);
+     }
    }
 
-   public static walk(node: INode, action: Action<INode>): void {
-     if (node == null) throw new Error(nameof(node));
-     if (action == null) throw new Error(nameof(action));
+   public static walk(node: INode, action: (node : INode) => void): void {
 
      action(node);
 
-     let children = node.GetChildren();
-     Walk(children, action);
+     let children = node.getChildren();
+     NodesWalker.walkNodes(children, action);
    }
 
-   public static walk(nodes: Array<INode>, function: Func<INode, bool>): boolean {
-     if (nodes == null) throw new Error(nameof(nodes));
-     if (function == null) throw new Error(nameof(function));
+   public static walkWithBoolean(nodes: Array<INode>, functionValue: (node : INode) => boolean): boolean {
 
-     foreach (let node in nodes) {
-       if (!function(node)) return false;
+    for (const node of nodes) {
+      if (!functionValue(node)) return false;
 
-       let children = node.GetChildren();
-       if (!Walk(children, function)) return false;
-     }
+      let children = node.getChildren();
+      if (!NodesWalker.walkWithBoolean(children, functionValue)) return false;
+    }
 
      return true;
    }
 
-   public static walkWithResult<T>(nodes: Array<INode>, action: Func<INode, T>): Array<T> {
-     if (nodes == null) throw new Error(nameof(nodes));
-     if (action == null) throw new Error(nameof(action));
-
+   public static walkWithResult<T>(nodes: Array<INode>, action: (node : INode) => T): Array<T> {
      let result = new Array<T>();
-     WalkWithResult(nodes, action, result);
-
+     NodesWalker.walkWithResultNodes(nodes, action, result);
      return result;
    }
 
-   private static walkWithResult<T>(node: INode, action: Func<INode, T>, result: Array<T>): void {
+   private static walkWithResultNode<T>(node: INode, action: (node : INode) => T, result: Array<T>): void {
      let actionResult = action(node);
-     if (actionResult != null) result.Add(actionResult);
+     if (actionResult != null) result.push(actionResult);
 
-     let children = node.GetChildren();
+     let children = node.getChildren();
 
-     WalkWithResult(children, action, result);
+     NodesWalker.walkWithResultNodes(children, action, result);
    }
 
-   private static walkWithResult<T>(nodes: Array<INode>, action: Func<INode, T>, result: Array<T>): void {
-     foreach (let node in nodes) WalkWithResult(node, action, result);
+   private static walkWithResultNodes<T>(nodes: Array<INode>, action: (node : INode) => T, result: Array<T>): void {
+     for (const node of nodes) {
+       NodesWalker.walkWithResultNode(node, action, result);
+     }
    }
 }

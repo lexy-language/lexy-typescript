@@ -9,7 +9,7 @@ import {IValidationContext} from "../../parser/validationContext";
 export class ScenarioTable extends ParsableNode {
 
   private headerValue: TableHeader | null;
-  private rowsValue: Array<TableRow>;
+  private rowsValue: Array<TableRow> = [];
 
   public nodeType = "ScenarioTable";
 

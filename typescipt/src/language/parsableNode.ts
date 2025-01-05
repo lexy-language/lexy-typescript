@@ -13,7 +13,7 @@ export function asParsableNode(object: any): IParsableNode | null {
 }
 
 export interface IParsableNode extends INode {
-   isParsableNode: true;
+   isParsableNode: boolean;
    parse(context: IParseLineContext): IParsableNode;
 }
 
@@ -22,6 +22,6 @@ export abstract class ParsableNode extends Node implements IParsableNode {
       super(reference);
    }
 
-   public isParsableNode: true;
+   public isParsableNode = true;
    public abstract parse(context: IParseLineContext): IParsableNode;
 }

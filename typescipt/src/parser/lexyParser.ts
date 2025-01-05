@@ -1,149 +1,182 @@
+import type {IParserContext} from "./parserContext";
+import type {ITokenizer} from "./tokens/tokenizer";
+import type {IParserLogger} from "./parserLogger";
+import type {ISourceCodeDocument} from "./sourceCodeDocument";
+import type {IParsableNode} from "../language/parsableNode";
+import type {IExpressionFactory} from "../language/expressions/expressionFactory";
+import type {IRootNode} from "../language/rootNode";
 
+import {ParserResult} from "./parserResult";
+import {ParsableNodeArray} from "../language/parsableNodeArray";
+import {ParseLineContext} from "./ParseLineContext";
+import {Include} from "../language/include";
+import {ValidationContext} from "./validationContext";
+import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
+import {IFileSystem} from "./IFileSystem";
+import {SourceCodeDocument} from "./sourceCodeDocument";
 
-export class LexyParser extends ILexyParser {
-   private readonly ITokenizer tokenizer;
-   private readonly IParserContext context;
-   private readonly IParserLogger logger;
-   private readonly ISourceCodeDocument sourceCodeDocument;
+export interface ILexyParser {
+  parseFile(fileName: string, throwException: boolean): ParserResult;
+  parse(code: string[], fileName: string, throwException: boolean): ParserResult;
+}
 
-   constructor(parserContext: IParserContext, sourceCodeDocument: ISourceCodeDocument, logger: IParserLogger, tokenizer: ITokenizer) {
-     context = parserContext ?? throw new Error(nameof(parserContext));
-     this.sourceCodeDocument = sourceCodeDocument ?? throw new Error(nameof(sourceCodeDocument));
-     this.logger = logger ?? throw new Error(nameof(logger));
-     this.tokenizer = tokenizer ?? throw new Error(nameof(tokenizer));
+export class LexyParser implements ILexyParser {
+  private readonly tokenizer: ITokenizer;
+  private readonly context: IParserContext;
+  private readonly logger: IParserLogger;
+  private readonly sourceCode: ISourceCodeDocument;
+  private readonly fileSystem: IFileSystem;
+  private readonly expressionFactory: IExpressionFactory;
+
+   constructor(parserContext: IParserContext, logger: IParserLogger,
+               tokenizer: ITokenizer, fileSystem: IFileSystem, expressionFactory: IExpressionFactory) {
+     this.context = parserContext;
+     this.logger = logger;
+     this.tokenizer = tokenizer;
+     this.fileSystem = fileSystem;
+     this.expressionFactory = expressionFactory;
+     this.sourceCode = new SourceCodeDocument();
    }
 
-   public parseFile(fileName: string, throwException: boolean =: boolean true: boolean): ParserResult {
-     logger.LogInfo(`Parse file: ` + fileName);
+   public parseFile(fileName: string, throwException: boolean = true): ParserResult {
+     this.logger.logInfo(`Parse file: ` + fileName);
 
-     let code = File.ReadAllLines(fileName);
-     return Parse(code, fileName, throwException);
+     const code = this.fileSystem.readAllLines(fileName);
+     return this.parse(code, fileName, throwException);
    }
 
-   public parse(code: string[], fullFileName: string, throwException: boolean =: boolean true: boolean): ParserResult {
-     if (code == null) throw new Error(nameof(code));
+   public parse(code: string[], fullFileName: string, throwException: boolean = true): ParserResult {
+     this.context.addFileIncluded(fullFileName);
 
-     context.AddFileIncluded(fullFileName);
+     this.parseDocument(code, fullFileName);
 
-     ParseDocument(code, fullFileName);
+     this.logger.logNodes(this.context.nodes.asArray());
 
-     logger.LogNodes(context.Nodes);
+     this.validateNodesTree();
+     this.detectCircularDependencies();
 
-     ValidateNodesTree();
-     DetectCircularDependencies();
+     if (throwException) this.logger.assertNoErrors();
 
-     if (throwException) logger.AssertNoErrors();
-
-     return new ParserResult(context.Nodes);
+     return new ParserResult(this.context.nodes);
    }
 
    private parseDocument(code: string[], fullFileName: string): void {
-     sourceCodeDocument.SetCode(code, Path.GetFileName(fullFileName));
+     this.sourceCode.setCode(code, this.fileSystem.getFileName(fullFileName));
 
      let currentIndent = 0;
-     let nodePerIndent = new ParsableNodeArray(context.RootNode);
+     let nodePerIndent = new ParsableNodeArray(this.context.rootNode);
 
-     while (sourceCodeDocument.HasMoreLines()) {
-       if (!ProcessLine()) {
-         currentIndent = sourceCodeDocument.CurrentLine?.Indent(logger) ?? currentIndent;
+     while (this.sourceCode.hasMoreLines()) {
+       if (!this.processLine()) {
+         currentIndent = this.sourceCode.currentLine?.indent(this.logger) ?? currentIndent;
          continue;
        }
 
-       let line = sourceCodeDocument.CurrentLine;
-       if (line.IsEmpty()) continue;
+       let line = this.sourceCode.currentLine;
+       if (line.isEmpty()) continue;
 
-       let indentResult = line.Indent(logger);
-       if (!indentResult.HasValue) continue;
+       let indent = line.indent(this.logger);
+       if (indent == null) continue;
 
-       let indent = indentResult.Value;
        if (indent > currentIndent) {
-         context.logger.fail(line.lineStartReference(), $`Invalid indent: {indent}`);
+         this.context.logger.fail(line.lineStartReference(), `Invalid indent: ${indent}`);
          continue;
        }
 
-       let node = nodePerIndent.Get(indent);
-       node = ParseLine(node);
+       let node = nodePerIndent.get(indent);
+       node = this.parseLine(node);
 
        currentIndent = indent + 1;
 
-       nodePerIndent.Set(currentIndent, node);
+       nodePerIndent.set(currentIndent, node);
      }
 
-     Reset();
+     this.reset();
 
-     LoadIncludedFiles(fullFileName);
+     this.loadIncludedFiles(fullFileName);
    }
 
    private processLine(): boolean {
-     let line = context.SourceCode.NextLine();
-     logger.Log(line.lineStartReference(), $`'{line.Content}'`);
+     let line = this.sourceCode.nextLine();
+     this.logger.log(line.lineStartReference(), `'${line.content}'`);
 
-     let tokens = line.Tokenize(tokenizer);
+     let tokens = line.tokenize(this.tokenizer);
      if (tokens.state != 'success') {
-       logger.fail(tokens.reference, tokens.errorMessage);
+       this.logger.fail(tokens.reference, tokens.errorMessage);
        return false;
      }
 
-     let tokenNames = string.Join(` `, context.CurrentLine.tokens.Select(token =>
-       $`{token.getType().Name}({token.Value})`).ToArray());
+     const tokenNames = this.sourceCode.currentLine.tokens.asArray()
+       .map(token => `${token.tokenType}(${token.value})`)
+       .join(" ");
 
-     logger.Log(line.lineStartReference(), ` Tokens: ` + tokenNames);
+     this.logger.log(line.lineStartReference(), ` Tokens: ` + tokenNames);
 
-     return tokens.IsSuccess;
+     return true;
    }
 
    private loadIncludedFiles(parentFullFileName: string): void {
-     let includes = context.RootNode.GetDueIncludes();
-     foreach (let include in includes) IncludeFiles(parentFullFileName, include);
+     let includes = this.context.rootNode.getDueIncludes();
+     for (const include of includes) {
+       this.includeFiles(parentFullFileName, include)
+     }
    }
 
    private includeFiles(parentFullFileName: string, include: Include): void {
-     let fileName = include.Process(parentFullFileName, context);
+     let fileName = include.process(parentFullFileName, this.context);
      if (fileName == null) return;
 
-     if (context.IsFileIncluded(fileName)) return;
+     if (this.context.isFileIncluded(fileName)) return;
 
-     logger.LogInfo(`Parse file: ` + fileName);
+     this.logger.logInfo(`Parse file: ` + fileName);
 
-     let code = File.ReadAllLines(fileName);
+     const code = this.fileSystem.readAllLines(fileName);
 
-     context.AddFileIncluded(fileName);
+     this.context.addFileIncluded(fileName);
 
-     ParseDocument(code, fileName);
+     this.parseDocument(code, fileName);
    }
 
    private validateNodesTree(): void {
-     let validationContext = new ValidationContext(logger, context.Nodes);
-     context.RootNode.validateTree(validationContext);
+     let validationContext = new ValidationContext(this.logger, this.context.nodes);
+     this.context.rootNode.validateTree(validationContext);
    }
 
    private detectCircularDependencies(): void {
-     let dependencies = DependencyGraphFactory.Create(context.Nodes);
-     if (!dependencies.HasCircularReferences) return;
+     let dependencies = DependencyGraphFactory.create(this.context.nodes);
+     if (!dependencies.hasCircularReferences) return;
 
-     foreach (let circularReference in dependencies.CircularReferences) {
-       context.logger.SetCurrentNode(circularReference);
-       context.logger.fail(circularReference.reference,
-         $`Circular reference detected in: '{circularReference.NodeName}'`);
+     for (const circularReference of dependencies.circularReferences) {
+       this.context.logger.setCurrentNode(circularReference);
+       this.context.logger.fail(circularReference.reference,
+         `Circular reference detected in: '${circularReference.NodeName}'`);
      }
    }
 
    private reset(): void {
-     sourceCodeDocument.Reset();
-     logger.Reset();
+     this.sourceCode.reset();
+     this.logger.resetCurrentNode();
    }
 
-   private parseLine(currentNode: IParsableNode): IParsableNode {
-     let parseLineContext = new ParseLineContext(context.CurrentLine, context.logger);
-     let node = currentNode.parse(parseLineContext);
+   private parseLine(currentNode: IParsableNode | null): IParsableNode {
+     let parseLineContext = new ParseLineContext(this.sourceCode.currentLine, this.context.logger, this.expressionFactory);
+     let node = currentNode != null ? currentNode?.parse(parseLineContext) : null;
      if (node == null) {
-       throw new Error($`({currentNode}) Parse should return child node or itself.`);
+       throw new Error(`(${currentNode}) Parse should return child node or itself.`);
      }
 
-     if (node is IRootNode rootNode) {
-       context.logger.SetCurrentNode(rootNode);
+     const rootNode = this.asRootNode(node)
+     if (rootNode != null) {
+       this.context.logger.setCurrentNode(rootNode);
      }
 
      return node;
-   }
+  }
+  private instanceOfRootNode(object: any): object is IRootNode {
+    return object?.isRootNode == true;
+  }
+
+  private asRootNode(object: any): IRootNode | null {
+    return this.instanceOfRootNode(object) ? object as IRootNode : null;
+  }
 }

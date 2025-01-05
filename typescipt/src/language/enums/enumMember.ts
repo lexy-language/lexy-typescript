@@ -1,4 +1,4 @@
-import {NumberLiteralToken} from "../../parser/tokens/numberLiteralToken";
+import {asNumberLiteralToken, NumberLiteralToken} from "../../parser/tokens/numberLiteralToken";
 import {SourceReference} from "../../parser/sourceReference";
 import {INode, Node} from "../node";
 import {IParseLineContext} from "../../parser/ParseLineContext";
@@ -49,7 +49,7 @@ export class EnumMember extends Node {
        .isValid;
      if (!valid) return null;
 
-     let value = tokens.token<NumberLiteralToken>(2, NumberLiteralToken);
+     let value = tokens.token<NumberLiteralToken>(2, asNumberLiteralToken);
      if (value == null )return null;
 
      return new EnumMember(name, reference, value, value.numberValue);

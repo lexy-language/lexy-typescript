@@ -1,123 +1,137 @@
+import type {IRootNode} from "../language/rootNode";
+import type {INode} from "../language/node";
+import type {ILogger} from "./logger";
 
+import {SourceReference} from "./sourceReference";
+import {any, where} from "../infrastructure/enumerableExtensions";
+import {LogLevel} from "./logger";
+import {format} from "../infrastructure/formatting";
+import {NodesLogger} from "./nodesLogger";
 
-export class ParserLogger extends IParserLogger {
-   private readonly Array<LogEntry> logEntries = list<LogEntry>(): new;
+class LogEntry {
+  public node: INode | null;
+  public isError: boolean;
+  public message: string;
 
-   private readonly ILogger<ParserLogger> logger;
-   private IRootNode currentNode;
-   private number failedMessages;
+  constructor(node: INode | null, isError: boolean, message: string) {
+    this.node = node;
+    this.isError = isError;
+    this.message = message;
+  }
 
-   constructor(logger: ILogger<ParserLogger>) {
-     this.logger = logger ?? throw new Error(nameof(logger));
+  public toString(): string {
+    return this.message;
+  }
+}
+
+export interface IParserLogger {
+
+  logInfo(message: string): void;
+  log(reference: SourceReference, message: string): void;
+  fail(reference: SourceReference, message: string): void;
+
+  logNodes(nodes: Array<INode>);
+
+  hasErrors(): boolean;
+  hasRootErrors(): boolean;
+  hasErrorMessage(expectedError: string): boolean;
+
+  formatMessages(): string;
+
+  nodeHasErrors(node: IRootNode ): boolean;
+
+  errorMessages(): string[];
+  errorRootMessages(): string[];
+  errorNodeMessages(node: IRootNode): string[];
+
+  assertNoErrors(): void;
+
+  setCurrentNode(node: IRootNode): void;
+  resetCurrentNode(): void;
+}
+
+export class ParserLogger implements IParserLogger {
+
+   private readonly logEntries: Array<LogEntry> = [];
+
+   private readonly logger: ILogger;
+   private currentNode: IRootNode | null;
+   private failedMessages: number = 0;
+
+   constructor(logger: ILogger) {
+     this.logger = logger;
    }
 
    public hasErrors(): boolean {
-     return failedMessages > 0;
+     return this.failedMessages > 0;
    }
 
    public hasRootErrors(): boolean {
-     return logEntries.Any(entry => entry.IsError && entry.Node == null);
+     return any(this.logEntries, entry => entry.isError && entry.node == null);
    }
 
    public logInfo(message: string): void {
-     logger.LogInformation(message);
+     this.logger.logInformation(message);
    }
 
    public log(reference: SourceReference, message: string): void {
-     if (reference == null) throw new Error(nameof(reference));
-     if (message == null) throw new Error(nameof(message));
-
-     logger.LogDebug(`{reference}: {Message}`, reference, message);
-     logEntries.Add(new LogEntry(currentNode, false, $`{reference}: {message}`));
+     this.logger.logDebug(`${reference}: ${message}`);
+     this.logEntries.push(new LogEntry(this.currentNode, false, `${reference}: ${message}`));
    }
 
    public fail(reference: SourceReference, message: string): void {
-     if (reference == null) throw new Error(nameof(reference));
-     if (message == null) throw new Error(nameof(message));
 
-     failedMessages++;
+     this.failedMessages++;
 
-     logger.LogError(`{reference}: ERROR - {Message}`, reference, message);
-     logEntries.Add(new LogEntry(currentNode, true, $`{reference}: ERROR - {message}`));
-   }
-
-   public fail(node: INode, reference: SourceReference, message: string): void {
-     if (reference == null) throw new Error(nameof(reference));
-     if (message == null) throw new Error(nameof(message));
-
-     failedMessages++;
-
-     logger.LogError(`{reference}: ERROR - {Message}`, reference, message);
-     logEntries.Add(new LogEntry(node, true, $`{reference}: ERROR - {message}`));
+     this.logger.logError(`${reference}: ERROR - ${message}`);
+     this.logEntries.push(new LogEntry(this.currentNode, true, `${reference}: ERROR - ${message}`));
    }
 
    public logNodes(nodes: Array<INode>): void {
-     if (!logger.IsEnabled(LogLevel.Debug)) return;
+     if (!this.logger.isEnabled(LogLevel.Debug)) return;
 
      let nodeLogger = new NodesLogger();
-     nodeLogger.Log(nodes);
+     nodeLogger.log(nodes);
 
-     logger.LogDebug(`Parsed nodes: {Nodes}`, nodeLogger.toString());
+     this.logger.logDebug(`Parsed nodes: ${nodeLogger.toString()}`);
    }
 
    public hasErrorMessage(expectedError: string): boolean {
-     return logEntries.Any(message => message.IsError && message.Message.contains(expectedError));
+     return any(this.logEntries, message => message.isError && message.message.includes(expectedError));
    }
 
    public formatMessages(): string {
-     return
-       $`{string.Join(Environment.NewLine, logEntries)}{Environment.NewLine}`;
+     return `${format(this.logEntries, 0)}\n`;
    }
 
    public setCurrentNode(node: IRootNode): void {
-     currentNode = node ?? throw new Error(nameof(node));
+     this.currentNode = node;
    }
 
-   public reset(): void {
-     currentNode = null;
+   public resetCurrentNode(): void {
+     this.currentNode = null;
    }
 
    public nodeHasErrors(node: IRootNode): boolean {
-     if (node == null) throw new Error(nameof(node));
-
-     return logEntries.Any(message => message.IsError && message.Node == node);
+     return any(this.logEntries, message => message.isError && message.node === node);
    }
 
-   public string[errorNodeMessages(node: IRootNode): ] {
-     return logEntries.Where(entry => entry.IsError && entry.Node == node)
-       .Select(entry => entry.Message)
-       .ToArray();
+   public errorNodeMessages(node: IRootNode): string[] {
+     return where(this.logEntries, entry => entry.isError && entry.node === node)
+       .map(entry => entry.message);
    }
 
-   public string[errorRootMessages(): ] {
-     return logEntries.Where(entry => entry.IsError && entry.Node == null)
-       .Select(entry => entry.Message)
-       .ToArray();
+   public errorRootMessages(): string[] {
+     return where(this.logEntries, entry => entry.isError && entry.node === null)
+       .map(entry => entry.message);
    }
 
-   public string[errorMessages(): ] {
-     return logEntries.Where(entry => entry.IsError)
-       .Select(entry => entry.Message)
-       .ToArray();
+   public errorMessages(): string[] {
+     return where(this.logEntries, entry => entry.isError)
+       .map(entry => entry.message);
    }
 
    public assertNoErrors(): void {
-     if (HasErrors()) throw new Error($`Parsing failed: {FormatMessages()}`);
-   }
-
-   private class LogEntry {
-     public INode Node
-     public boolean IsError
-     public string Message
-
-     logEntry(node: INode, isError: boolean, message: string): public {
-       Node = node;
-       IsError = isError;
-       Message = message;
-     }
-
-     public toString(): string {
-       return Message;
-     }
+     if (this.hasErrors()) throw new Error(`Parsing failed: ${this.formatMessages()}`);
    }
 }

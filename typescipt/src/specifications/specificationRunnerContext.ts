@@ -30,19 +30,19 @@ export class SpecificationRunnerContext extends ISpecificationRunnerContext, IDi
 
    public logGlobal(message: string): void {
      Console.WriteLine(Environment.NewLine + message + Environment.NewLine);
-     logger.LogInformation(message);
+     logger.logInformation(message);
    }
 
    public log(message: string): void {
      let log = $` {message}`;
      Console.WriteLine(log);
-     logger.LogInformation(log);
+     logger.logInformation(log);
    }
 
    public success(scenario: Scenario): void {
      let log = $`- SUCCESS - {scenario.Name}`;
      Console.WriteLine(log);
-     logger.LogInformation(log);
+     logger.logInformation(log);
    }
 
    public add(fileRunner: ISpecificationFileRunner): void {

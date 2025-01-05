@@ -6,7 +6,7 @@ import {Node} from "../node";
 import {Expression} from "../expressions/expression";
 import {SourceReference} from "../../parser/sourceReference";
 import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
-import {Token} from "../../parser/tokens/token";
+import {asToken, Token} from "../../parser/tokens/token";
 import {TokenList} from "../../parser/tokens/tokenList";
 
 export class TableRow extends Node {
@@ -40,7 +40,7 @@ export class TableRow extends Node {
 
        if (valid) return null;
 
-       let token = currentLineTokens.token<Token>(index++, Token);
+       let token = currentLineTokens.token<Token>(index++, asToken);
        if (token == null) return null;
 
        let expression = context.expressionFactory.parse(new TokenList([token]), context.line);

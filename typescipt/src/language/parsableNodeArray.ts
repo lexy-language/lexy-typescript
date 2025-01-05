@@ -1,26 +1,34 @@
-
+import {IParsableNode} from "./parsableNode";
 
 export class ParsableNodeArray {
-   private IParsableNode[] values = new IParsableNode[8];
+
+   private values:Array<IParsableNode | null> = new Array<IParsableNode | null>(8);
 
    constructor(rootNode: IParsableNode) {
-     values[0] = rootNode;
+     this.values[0] = rootNode;
    }
 
-   public get(indent: number): IParsableNode {
-     let node = values[indent];
-     for (let index = indent + 1; index < values.length; index++) {
-       if (values[index] == null) break;
+   public get(indent: number): IParsableNode | null {
+     let node = this.values[indent];
+     for (let index = indent + 1; index < this.values.length; index++) {
+       if (this.values[index] == null) break;
 
-       values[index] = null;
+       this.values[index] = null;
      }
 
      return node;
    }
 
    public set(indent: number, node: IParsableNode): void {
-     if (indent >= values.length) Array.Resize(ref values, values.length * 2);
+     if (indent >= this.values.length) {
+      this.resize(this.values.length * 2);
+     }
 
-     values[indent] = node;
+     this.values[indent] = node;
    }
+
+   private resize(size: number) {
+    var delta = this.values.length - size;
+    while (delta++ < 0) this.values.push(null);
+  }
 }

@@ -1,5 +1,13 @@
 import {TokenCharacter} from "./tokenCharacter";
 
+export function instanceOfToken(object: any): object is Token {
+  return !!object?.tokenType;
+}
+
+export function asToken(object: any): Token | null {
+  return instanceOfToken(object) ? object as Token : null;
+}
+
 export interface IToken {
   tokenType: string;
   tokenIsLiteral: boolean;
