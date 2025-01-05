@@ -1,10 +1,10 @@
+import type {IParseLineContext} from "../parser/ParseLineContext";
+import type {IParserContext} from "../parser/parserContext";
+
 import {SourceReference} from "../parser/sourceReference";
 import {Line} from "../parser/line";
 import {Keywords} from "../parser/Keywords";
-import {IParseLineContext} from "../parser/ParseLineContext";
-import {IParserContext} from "../parser/parserContext";
 import {isNullOrEmpty} from "../parser/tokens/character";
-
 
 export class Include {
    private isProcessedValue: boolean;

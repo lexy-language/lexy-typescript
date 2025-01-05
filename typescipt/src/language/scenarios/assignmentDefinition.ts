@@ -68,7 +68,7 @@ export class AssignmentDefinition extends Node {
        return null;
      }
 
-     const constantValue = ConstantValue.parse(valueExpression.result);
+     const constantValue = ConstantValueParser.parse(valueExpression.result);
      if (constantValue.state == "failed") {
        context.logger.fail(reference, constantValue.errorMessage);
        return null;
