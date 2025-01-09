@@ -4,13 +4,12 @@ import {LexyCodeConstants} from "../../lexyCodeConstants";
 import {GeneratedType, GeneratedTypeKind} from "../../generatedType";
 import {asFunction, Function} from "../../../language/functions/function";
 import {NodesWalker} from "../../../language/nodesWalker";
-import {FunctionCall} from "../builtInFunctions/functionCall";
 import {asFunctionCallExpression} from "../../../language/expressions/functionCallExpression";
 import {CodeWriter} from "./codeWriter";
 import {functionClassName} from "../classNames";
 import {renderExpressions} from "../renderers/renderExpression";
 import {createVariableClass} from "../renderers/renderVariableClass";
-import {createFunctionCall, renderCustomBuiltInFunctions} from "../builtInFunctions/createFunctionCall";
+import {renderCustomBuiltInFunctions} from "../builtInFunctions/createFunctionCall";
 
 export class FunctionWriter implements IRootTokenWriter {
 

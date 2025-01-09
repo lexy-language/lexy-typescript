@@ -26,20 +26,20 @@ import {ExpressionFunction} from "../../../language/expressions/functions/expres
 
 export function renderCustomBuiltInFunctions(expression: ExpressionFunction, codeWriter: CodeWriter) {
   const functionCall = createFunctionCall(expression);
-  functionCall.renderCustomFunction(expression, codeWriter);
+  if (functionCall != null) {
+    functionCall.renderCustomFunction(expression, codeWriter);
+  }
 }
 
 export function renderFunctionCall(expression: ExpressionFunction, codeWriter: CodeWriter) {
   const functionCall = createFunctionCall(expression);
+  if (functionCall == null) throw new Error("Invalid expression function: " + expression.nodeType)
   functionCall.renderExpression(expression, codeWriter);
 }
 
 function createFunctionCall(expression: ExpressionFunction): any | null {
 
-  const callExpression = asFunctionCallExpression(expression);
-  if (callExpression == null) throw new Error("Invalid expression type: " + expression.nodeType);
-
-  switch (callExpression.expressionFunction.nodeType) {
+  switch (expression.nodeType) {
     case NodeType.LookupFunction:
       return new LookUpFunctionCall();
     case NodeType.LookupRowFunction:

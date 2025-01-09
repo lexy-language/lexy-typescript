@@ -1,12 +1,11 @@
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {TypeWithMembers} from "./typeWithMembers";
 import {Table} from "../tables/table";
-import {IValidationContext} from "../../parser/validationContext";
 import {VariableType} from "./variableType";
 import {PrimitiveType} from "./primitiveType";
-import {TableRowType} from "./tableRowType";
-import {ComplexTypeMember} from "./complexTypeMember";
 import {VariableTypeName} from "./variableTypeName";
-import {EnumType} from "./enumType";
+import {ComplexType} from "./complexType";
 
 export function instanceOfTableType(object: any): object is TableType {
   return object?.variableTypeName == VariableTypeName.TableType;
@@ -19,21 +18,21 @@ export function asTableType(object: any): TableType | null {
 export class TableType extends TypeWithMembers {
 
   public readonly variableTypeName = VariableTypeName.TableType;
-  public readonly type: string;
+  public readonly tableName: string;
   public readonly table: Table;
 
-  constructor(type: string, table: Table) {
+  constructor(tableName: string, table: Table) {
     super();
-    this.type = type;
+    this.tableName = tableName;
     this.table = table;
   }
 
   protected equals(other: TableType): boolean {
-    return this.type == other?.type;
+    return this.tableName == other?.tableName;
   }
 
   public toString(): string {
-    return this.type;
+    return this.tableName;
   }
 
   public override memberType(name: string, context: IValidationContext): VariableType | null {
@@ -43,8 +42,8 @@ export class TableType extends TypeWithMembers {
     return null;
   }
 
-  private tableRowType(context: IValidationContext): TableRowType | null {
-    let complexType = context.rootNodes.getTable(this.type)?.getRowType(context);
-    return complexType != null ? new TableRowType(this.type, complexType) : null;
+  private tableRowType(context: IValidationContext): ComplexType | null {
+    let complexType = context.rootNodes.getTable(this.tableName)?.getRowType(context);
+    return !!complexType ? complexType : null;
   }
 }

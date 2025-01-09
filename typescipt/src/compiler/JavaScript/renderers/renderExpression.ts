@@ -37,14 +37,21 @@ import {
 import {renderFunctionCall} from "../builtInFunctions/createFunctionCall";
 import {matchesLineExpressionException} from "../lineExpressionExceptions/matchesLineExpressionException";
 import {TokenType} from "../../../parser/tokens/tokenType";
+import {asDateTimeLiteral, DateTimeLiteral} from "../../../parser/tokens/dateTimeLiteral";
 
 export function renderExpressions(expressions: ReadonlyArray<Expression>, codeWriter: CodeWriter) {
   for (const expression of expressions) {
     const line = codeWriter.currentLine;
     codeWriter.startLine()
-    renderExpression(expression, codeWriter);
-    if (line == codeWriter.currentLine) {
-      codeWriter.endLine(";")
+
+    const exception = matchesLineExpressionException(expression);
+    if (exception != null) {
+      exception.render(expression, codeWriter);
+    } else {
+      renderExpression(expression, codeWriter);
+      if (line == codeWriter.currentLine) {
+        codeWriter.endLine(";")
+      }
     }
   }
 }
@@ -78,12 +85,6 @@ export function renderExpression(expression: Expression, codeWriter: CodeWriter)
     const specificExpression = castFunction(expression);
     if (specificExpression == null) throw new Error(`Invalid expression type: '${expression.nodeType}' cast is null`);
     render(specificExpression, codeWriter);
-  }
-
-  const exception = matchesLineExpressionException(expression);
-  if (exception != null) {
-    exception.render(expression, codeWriter);
-    return;
   }
 
   switch (expression.nodeType) {
@@ -168,6 +169,11 @@ function renderIdentifierExpression(expression: IdentifierExpression, codeWriter
 function renderLiteralExpression(expression: LiteralExpression, codeWriter: CodeWriter) {
   if (expression.literal.tokenType == TokenType.QuotedLiteralToken) {
     codeWriter.write(`"${expression.literal.value}"`);
+  } else if (expression.literal.tokenType == TokenType.DateTimeLiteral) {
+    const dateTimeLiteral = asDateTimeLiteral(expression.literal);
+    const dateValue =  dateTimeLiteral?.dateTimeValue;
+    if (dateValue == null) throw new Error("DateTimeLiteral.dateTimeValue expected")
+    codeWriter.write(`new Date(${dateValue.getFullYear()}, ${dateValue.getMonth()}, ${dateValue.getDate()}, ${dateValue.getHours()}, ${dateValue.getMinutes()}, ${dateValue.getSeconds()})`);
   } else {
     codeWriter.write(expression.literal.value);
   }
@@ -291,7 +297,7 @@ export function customVariableIdentifier(customVariable: CustomVariableDeclarati
     case VariableTypeName.TableType:
       const tableType = asTableType(customVariable.variableType);
       if (tableType == null) throw new Error("Invalid TableType")
-      return codeWriter.identifierFromNamespace(tableClassName(tableType.type));
+      return codeWriter.identifierFromNamespace(tableClassName(tableType.tableName));
     case VariableTypeName.CustomType:
       const customType = asCustomType(customVariable.variableType);
       if (customType == null) throw new Error("Invalid CustomType")

@@ -55,7 +55,7 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
   }
 
   public override getChildren(): Array<INode> {
-    const result: Array<INode> = [this.condition, ...this.trueExpressionsValues.asArray()];
+    const result: Array<INode> = [this.condition, this.trueExpressionsValues];
     if (this.else != null) result.push(this.else);
     return result;
   }

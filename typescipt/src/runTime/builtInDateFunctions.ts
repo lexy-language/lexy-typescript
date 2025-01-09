@@ -19,7 +19,7 @@ export class BuiltInDateFunctions {
    }
 
    public static day(value: Date): number {
-     return value.getDay();
+     return value.getDate();
    }
 
    public static hour(value: Date): number {
@@ -27,7 +27,7 @@ export class BuiltInDateFunctions {
    }
 
    public static minute(value: Date): number {
-     return value.getHours();
+     return value.getMinutes();
    }
 
    public static second(value: Date): number {

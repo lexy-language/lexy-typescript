@@ -11,7 +11,7 @@ export class ExecutableFunction {
 
   public run(executionContext: IExecutionContext, values: { [key: string]: any } | null = null): FunctionResult {
     let parameters = this.getParameters(values);
-    let results = this.functionReference(parameters);
+    let results = this.functionReference(parameters, executionContext);
     return new FunctionResult(results);
   }
 

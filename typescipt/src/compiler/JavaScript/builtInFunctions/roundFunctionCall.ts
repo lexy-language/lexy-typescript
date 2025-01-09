@@ -5,7 +5,7 @@ import {renderExpression} from "../renderers/renderExpression";
 
 export class RoundFunctionCall extends MethodFunctionCall<RoundFunction> {
 
-  protected override className = "BuiltInNumberFunctions";
+  protected override className = "builtInNumberFunctions";
   protected override methodName = "round";
 
   protected override renderArguments(expression: RoundFunction, codeWriter: CodeWriter) {

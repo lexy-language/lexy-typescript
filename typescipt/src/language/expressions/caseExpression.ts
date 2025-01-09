@@ -53,7 +53,7 @@ export class CaseExpression extends Expression implements IParsableNode {
    }
 
    public override getChildren(): Array<INode> {
-    return this.value != null ? [this.value, ...this.expressions] : [...this.expressions];
+    return this.value != null ? [this.value, this.expressionsValues] : [this.expressionsValues];
    }
 
    public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {

@@ -39,15 +39,18 @@ export class FillFunctionExpressionStatementException implements ILineExpression
    }
 
    public static renderFill(variableName: string, type: VariableType, mappings: ReadonlyArray<Mapping>, codeWriter: CodeWriter) {
-     const typeName = translateType(type);
-     codeWriter.writeLine(`const ${variableName}new ${typeName}();`);
+     codeWriter.write(`const ` + variableName + " = new ");
+     codeWriter.writeNamespace(`.${translateType(type)}`)
+     codeWriter.endLine("();");
 
      for (const mapping of mappings) {
-       codeWriter.startLine(variableName + "." + mapping.variableName + " = " +  + ";");
+       codeWriter.startLine(variableName + "." + mapping.variableName + " = ");
 
        if (mapping.variableSource == VariableSource.Code) {
          codeWriter.write(mapping.variableName);
        } else  if (mapping.variableSource == VariableSource.Results) {
+         codeWriter.write(`${LexyCodeConstants.resultsVariable}.${mapping.variableName}`);
+       } else  if (mapping.variableSource == VariableSource.Parameters) {
          codeWriter.write(`${LexyCodeConstants.parameterVariable}.${mapping.variableName}`);
        } else {
          throw new Error(`Invalid source: ${mapping.variableSource}`)

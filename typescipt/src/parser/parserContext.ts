@@ -1,14 +1,15 @@
 import type {IParserLogger} from "./ParserLogger";
+import type {IExpressionFactory} from "../language/expressions/expressionFactory";
+import type {IFileSystem} from "./IFileSystem";
+import type {ILogger} from "../infrastructure/logger";
 
 import {SourceCodeNode} from "../language/sourceCodeNode";
 import {RootNodeList} from "../language/rootNodeList";
 import {contains} from "../infrastructure/enumerableExtensions";
-import {IExpressionFactory} from "../language/expressions/expressionFactory";
-import {IFileSystem} from "./IFileSystem";
+import {ParserLogger} from "./ParserLogger";
 
 export interface IParserContext {
   logger: IParserLogger;
-
 
   fileSystem: IFileSystem;
   nodes: RootNodeList;
@@ -30,8 +31,8 @@ export class ParserContext implements IParserContext {
   public readonly logger: IParserLogger;
   public readonly fileSystem: IFileSystem;
 
-   constructor(logger: IParserLogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory) {
-     this.logger = logger;
+   constructor(logger: ILogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory) {
+     this.logger = new ParserLogger(logger);
      this.fileSystem = fileSystem;
      this.rootNode = new SourceCodeNode(expressionFactory);
    }

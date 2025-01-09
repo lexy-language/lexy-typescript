@@ -67,10 +67,12 @@ export class Dependencies {
    }
 
    private validateDependency(parentNode: DependencyNode, resultDependencies: Array<DependencyNode>, dependency: IRootNode): void {
-     if (dependency == null) throw new Error(`node.GetNodes() should never return null`);
+     if (dependency == null) throw new Error(`node.getDependencies() should never return null`);
 
      if (parentNode != null && parentNode.existsInLineage(dependency.nodeName, dependency.nodeType)) {
-       this.circularReferencesValue.push(dependency);
+       if (!any(this.circularReferencesValue, value => value.nodeName == dependency.nodeName)) {
+         this.circularReferencesValue.push(dependency);
+       }
      }
      else {
        if (this.dependencyExists(resultDependencies, dependency)) return;

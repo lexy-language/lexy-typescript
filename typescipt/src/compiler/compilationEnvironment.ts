@@ -54,9 +54,9 @@ export class CompilationEnvironment implements ICompilationEnvironment, Disposab
 
   private initializeNamespace() {
     const functions = {
-      date: BuiltInDateFunctions,
-      number: BuiltInNumberFunctions,
-      table: BuiltInTableFunctions,
+      builtInDateFunctions: BuiltInDateFunctions,
+      builtInNumberFunctions: BuiltInNumberFunctions,
+      builtInTableFunctions: BuiltInTableFunctions,
     }
     Function("functions", `if (!globalThis.${LexyCodeConstants.namespace}) globalThis.${LexyCodeConstants.namespace} = {};
     globalThis.${LexyCodeConstants.namespace}.${this.namespace} = functions;`)(functions)
@@ -64,15 +64,15 @@ export class CompilationEnvironment implements ICompilationEnvironment, Disposab
 
   private initializeType(generatedType: GeneratedType): void {
     const code = `"use strict";
-const type = ${generatedType.initializationFunction};
+const type = ${generatedType.initializationFunction}
 globalThis.${LexyCodeConstants.namespace}.${this.namespace}.${generatedType.name} = type;`;
 
     try {
       this.compilationLogger.logDebug(`Initialization code: ${code}`)
       const initialization = new Function(code);
       initialization();
-    } catch (e) {
-      throw new Error(`Initialization failed: ${e}
+    } catch (error) {
+      throw new Error(`Initialization failed: ${error}
 ${code}`)
     }
 

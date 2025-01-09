@@ -13,6 +13,9 @@ import {any, firstOrDefault} from "../infrastructure/enumerableExtensions";
 import {ScenarioParameters} from "../language/scenarios/scenarioParameters";
 import {FunctionParameters} from "../language/functions/functionParameters";
 import {VariableType} from "../language/variableTypes/variableType";
+import {IRootNode} from "../language/rootNode";
+import {ExecutableFunction} from "../compiler/executableFunction";
+import {IExecutionContext} from "../runTime/executionContext";
 
 export interface IScenarioRunner {
   failed: boolean;
@@ -63,18 +66,34 @@ export class ScenarioRunner implements IScenarioRunner {
     if (!this.validateErrors()) return;
 
     const nodes = this.functionNode.getFunctionAndDependencies(this.rootNodeList);
-    const compilerResult = this.compiler.compile(nodes);
-    const context =compilerResult.createContext();
+    const compilerResult = this.compile(nodes);
+    const context = compilerResult.createContext();
     const executable = compilerResult.getFunction(this.functionNode);
     const values = this.getValues(this.scenario.parameters, this.functionNode.parameters, compilerResult);
 
-    const result = executable.run(context, values);
+    const result = this.runFunction(executable, context, values);
 
     const validationResultText = this.getValidationResult(result, compilerResult);
     if (validationResultText.length > 0) {
       this.fail(validationResultText);
     } else {
       this.context.success(this.scenario);
+    }
+  }
+
+  private runFunction(executable: ExecutableFunction, context: IExecutionContext, values: { [key: string]: any } | null) {
+    try {
+      return executable.run(context, values);
+    } catch (error) {
+      throw new Error("Exception occurred while running scenario '" + this.scenario.name + "' from '" + this.fileName + "'\n" + error.stack)
+    }
+  }
+
+  private compile(nodes: Array<IRootNode>) {
+    try {
+      return this.compiler.compile(nodes);
+    } catch (error) {
+      throw new Error("Exception occurred while compiling scenario '" + this.scenario.name + "' from '" + this.fileName + "'\n" + error.stack)
     }
   }
 
@@ -187,6 +206,9 @@ export class ScenarioRunner implements IScenarioRunner {
   }
 
   private static compare(actual: object, expectedValue: object): boolean {
+    if (expectedValue?.constructor == Date && actual?.constructor == Date) {
+      return actual.toISOString() == expectedValue.toISOString();
+    }
     return actual == expectedValue;
   }
 }

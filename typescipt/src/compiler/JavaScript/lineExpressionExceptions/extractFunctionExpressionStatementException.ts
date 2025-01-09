@@ -35,21 +35,23 @@ export class ExtractFunctionExpressionStatementException implements ILineExpress
 
    public static renderExtract(mappings: ReadonlyArray<Mapping>, functionResultVariable: string, codeWriter: CodeWriter) {
      for (const mapping of mappings) {
-       this.renderMapping(functionResultVariable, mapping, CodeWriter);
+       this.renderMapping(functionResultVariable, mapping, codeWriter);
      }
    }
 
    private static renderMapping(functionResultVariable: string, mapping: Mapping, codeWriter: CodeWriter) {
 
      if (mapping.variableSource == VariableSource.Code) {
-       codeWriter.write(mapping.variableName);
+       codeWriter.startLine(mapping.variableName);
      } else  if (mapping.variableSource == VariableSource.Results) {
-       codeWriter.write(`${LexyCodeConstants.resultsVariable}.${mapping.variableName}`);
+       codeWriter.startLine(`${LexyCodeConstants.resultsVariable}.${mapping.variableName}`);
+     } else  if (mapping.variableSource == VariableSource.Parameters) {
+       codeWriter.startLine(`${LexyCodeConstants.parameterVariable}.${mapping.variableName}`);
      } else {
        throw new Error(`Invalid source: ${mapping.variableSource}`)
      }
 
      codeWriter.write(" = ");
-     codeWriter.write(`${functionResultVariable}.${mapping.variableName}`);
+     codeWriter.endLine(`${functionResultVariable}.${mapping.variableName};`);
    }
 }

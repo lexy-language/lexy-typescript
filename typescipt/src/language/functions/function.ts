@@ -164,13 +164,13 @@ export class Function extends RootNode implements IHasNodeDependencies {
     let members = this.parameters.variables
       .map(parameter => new ComplexTypeMember(parameter.name, parameter.type.createVariableType(context)));
 
-    return new ComplexType(this.name.value, ComplexTypeSource.FunctionParameters, members);
+    return new ComplexType(this.name.value, this, ComplexTypeSource.FunctionParameters, members);
   }
 
   public getResultsType(context: IValidationContext): ComplexType {
     let members = this.results.variables
       .map(parameter => new ComplexTypeMember(parameter.name, parameter.type.createVariableType(context)));
 
-    return new ComplexType(this.name.value, ComplexTypeSource.FunctionResults, members);
+    return new ComplexType(this.name.value, this, ComplexTypeSource.FunctionResults, members);
   }
 }

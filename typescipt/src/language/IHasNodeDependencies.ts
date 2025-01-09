@@ -11,5 +11,5 @@ export function asHasNodeDependencies(object: any): IHasNodeDependencies | null 
 
 export interface IHasNodeDependencies {
    hasNodeDependencies: true;
-   getDependencies(rootNodeList: RootNodeList): Array<IRootNode>;
+   getDependencies(rootNodeList: RootNodeList): ReadonlyArray<IRootNode>;
 }

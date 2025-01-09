@@ -8,9 +8,9 @@ describe('RunLexySpecifications', () => {
 
   it('specificFile',  async()=> {
     const runner = createRunner();
-    runner.run(`../laws/Specifications/Function/Variables.lexy`);
-    //runner.run(`../laws/Specifications/Isolate.lexy`);
+    //runner.run(`../laws/Specifications/Function/Variables.lexy`);
+    runner.run(`../laws/Specifications/Table/LookupRowByDate.lexy`);
   //runner.run(`../laws/Specifications/Function/Variables.lexy`);
-  //runner.run(`../laws/Specifications/BuiltInFunctions/Extract.lexy`);
+  //runner.run(`../laws/Specifications/BuiltInFunctions/Date.lexy`);
   });
 });

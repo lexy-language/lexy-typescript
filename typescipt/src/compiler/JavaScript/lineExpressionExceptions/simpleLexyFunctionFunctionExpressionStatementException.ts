@@ -18,7 +18,8 @@ export class SimpleLexyFunctionFunctionExpressionStatementException implements I
     const functionCallExpression = asFunctionCallExpression(expression);
     if (functionCallExpression == null) return false;
 
-    return instanceOfLexyFunction(functionCallExpression.expressionFunction);
+    const instanceOfLexyFunction1 = instanceOfLexyFunction(functionCallExpression.expressionFunction);
+    return instanceOfLexyFunction1;
   }
 
   public render(expression: Expression, codeWriter: CodeWriter) {
@@ -43,8 +44,6 @@ export class SimpleLexyFunctionFunctionExpressionStatementException implements I
       lexyFunction.mappingResults,
       resultsVariable,
       codeWriter);
-
-    return result;
   }
 
   private renderRunFunction(lexyFunction: LexyFunction,

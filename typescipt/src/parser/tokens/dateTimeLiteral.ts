@@ -67,7 +67,7 @@ export class DateTimeLiteral extends ParsableToken implements ILiteralToken {
           Expected: '${formatLine(DateTimeLiteral.ValidLengths, ',')}'`);
       }
 
-      this.parseValue();
+      this.dateTimeValue = DateTimeLiteral.parseValue(this.value);
       return newParseTokenFinishedResult(true);
     }
 
@@ -84,8 +84,15 @@ export class DateTimeLiteral extends ParsableToken implements ILiteralToken {
     return newParseTokenInvalidResult(`Unexpected character: '${String.fromCharCode(value)}'. Format: d""2024-12-18T14:17:30""`);
   }
 
-  private parseValue() {
-    this.dateTimeValue = new Date(this.value);
+  public static parseValue(value: string): Date | null {
+    if (value.length != 19) return null;
+    return new Date(value);
+    /*  parseInt(value.substring(0, 4)),
+      parseInt(value.substring(5, 7)) - 1,
+      parseInt(value.substring(8, 10)),
+      parseInt(value.substring(11, 13)),
+      parseInt(value.substring(14, 16)),
+      parseInt(value.substring(17, 19)));*/
   }
 
   private validateExact(value: number, match: number, indexes: number[]): ParseTokenResult | null {

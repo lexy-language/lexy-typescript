@@ -8,12 +8,13 @@ import {
 } from "../../../language/variableTypes/primitiveVariableDeclarationType";
 import {
   asCustomVariableDeclarationType,
-  CustomVariableDeclarationType, instanceOfCustomVariableDeclarationType
+  CustomVariableDeclarationType
 } from "../../../language/variableTypes/customVariableDeclarationType";
 import {TypeNames} from "../../../language/variableTypes/typeNames";
-import {instanceOfCustomType} from "../../../language/variableTypes/customType";
-import {translateType} from "../types";
-import {asEnumType, instanceOfEnumType} from "../../../language/variableTypes/enumType";
+import {translateComplexType, translateType} from "../types";
+import {asEnumType} from "../../../language/variableTypes/enumType";
+import {VariableTypeName} from "../../../language/variableTypes/variableTypeName";
+import {asComplexType} from "../../../language/variableTypes/complexType";
 
 export function createVariableClass(className: string,
                                     variables: ReadonlyArray<VariableDefinition>,
@@ -74,7 +75,7 @@ function renderPrimitiveTypeDefaultExpression(type: PrimitiveVariableDeclaration
       return;
 
     case TypeNames.date:
-      codeWriter.write('new Date(1, 0, 1, 0, 0, 0');
+      codeWriter.write('new Date("0001-01-01T00:00:00")');
       return;
 
     default:
@@ -84,14 +85,23 @@ function renderPrimitiveTypeDefaultExpression(type: PrimitiveVariableDeclaration
 
 function renderDefaultExpressionSyntax(customType: CustomVariableDeclarationType,
                                        codeWriter: CodeWriter) {
-  if (instanceOfCustomType(customType.variableType)) {
-    codeWriter.write(`new ${customVariableIdentifier(customType, codeWriter)}()`);
-    return;
-  } else if (instanceOfEnumType(customType.variableType)) {
-    const enumType = asEnumType(customType.variableType);
-    codeWriter.writeNamespace(`.${translateType(customType.variableType)}.${enumType?.firstMemberName()}`)
-    return;
-  } else {
-    throw new Error(`Invalid renderDefaultExpressionSyntax: ${customType.variableType?.variableTypeName}`);
+  switch (customType.variableType?.variableTypeName) {
+    case VariableTypeName.CustomType:
+      codeWriter.write(`new ${customVariableIdentifier(customType, codeWriter)}()`);
+      return;
+    case VariableTypeName.EnumType:
+      const enumType = asEnumType(customType.variableType);
+      if (enumType == null) throw new Error("customType.variableType not enumType");
+      codeWriter.writeNamespace(`.${translateType(enumType)}.${enumType.firstMemberName()}`)
+      return;
+    case VariableTypeName.ComplexType:
+      const complexType = asComplexType(customType.variableType);
+      if (complexType == null) throw new Error("customType.variableType not complexType");
+      codeWriter.write(`new `);
+      codeWriter.writeNamespace(`.${translateComplexType(complexType)}`)
+      codeWriter.write(`()`);
+      return;
+    default:
+      throw new Error(`Invalid renderDefaultExpressionSyntax: ${customType.variableType?.variableTypeName}`);
   }
 }

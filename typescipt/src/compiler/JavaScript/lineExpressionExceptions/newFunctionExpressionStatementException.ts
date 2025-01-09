@@ -19,17 +19,20 @@ export class NewFunctionExpressionStatementException implements ILineExpressionE
   }
 
 
-   public render(expression: Expression, codeWriter: CodeWriter) {
-     const assignmentExpression = asVariableDeclarationExpression(expression);
-     if (assignmentExpression == null) throw new Error(`expression should be VariableDeclarationExpression`);
+  public render(expression: Expression, codeWriter: CodeWriter) {
+    const assignmentExpression = asVariableDeclarationExpression(expression);
+    if (assignmentExpression == null) throw new Error(`expression should be VariableDeclarationExpression`);
+    if (assignmentExpression.type.variableType == null) throw new Error(`assignmentExpression.type.variableType should not be null`);
 
-     const functionCallExpression = asFunctionCallExpression(assignmentExpression.assignment);
-     if (functionCallExpression == null) throw new Error(`assignmentExpression.assignment should be FunctionCallExpression`);
+    const functionCallExpression = asFunctionCallExpression(assignmentExpression.assignment);
+    if (functionCallExpression == null) throw new Error(`assignmentExpression.assignment should be FunctionCallExpression`);
 
-     const newFunction = asNewFunction(functionCallExpression.expressionFunction)
-     if (functionCallExpression == null) throw new Error(`functionCallExpression.ExpressionFunction should be NewFunction`);
+    const newFunction = asNewFunction(functionCallExpression.expressionFunction)
+    if (newFunction == null) throw new Error(`functionCallExpression.ExpressionFunction should be NewFunction`);
 
-     const type = translateType(assignmentExpression.type);
-     codeWriter.writeLine("const " + assignmentExpression.name + " = new " + type + "();")
-   }
+    const type = translateType(assignmentExpression.type.variableType);
+    codeWriter.write("const " + assignmentExpression.name + " = new ");
+    codeWriter.writeNamespace(`.${translateType(assignmentExpression.type.variableType)}`)
+    codeWriter.endLine("();")
+  }
 }

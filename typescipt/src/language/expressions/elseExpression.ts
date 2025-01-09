@@ -49,7 +49,7 @@ export class ElseExpression extends Expression implements IParsableNode, IChildE
   }
 
   public override getChildren(): Array<INode> {
-    return this.falseExpressionsValue.asArray();
+    return [this.falseExpressionsValue];
   }
 
   public parse(context: IParseLineContext): IParsableNode {

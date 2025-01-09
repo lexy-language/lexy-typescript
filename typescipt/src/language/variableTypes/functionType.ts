@@ -5,6 +5,7 @@ import {IValidationContext} from "../../parser/validationContext";
 import {FunctionParametersType} from "./functionParametersType";
 import {FunctionResultsType} from "./functionResultsType";
 import {VariableTypeName} from "./variableTypeName";
+import {ComplexType} from "./complexType";
 
 export class FunctionType extends TypeWithMembers {
 
@@ -33,13 +34,13 @@ export class FunctionType extends TypeWithMembers {
     return null;
   }
 
-  private functionParametersType(context: IValidationContext): FunctionParametersType | null {
-    let complexType = context.rootNodes.getFunction(this.type)?.getParametersType(context);
-    return complexType ? new FunctionParametersType(this.type, complexType) : null;
+  private functionParametersType(context: IValidationContext): ComplexType | null {
+    const resultsType = context.rootNodes.getFunction(this.type)?.getParametersType(context);
+    return !!resultsType ? resultsType : null;
   }
 
-  private functionResultsType(context: IValidationContext): FunctionResultsType | null {
-    let complexType = context.rootNodes.getFunction(this.type)?.getResultsType(context);
-    return complexType ? new FunctionResultsType(this.type, complexType) : null;
+  private functionResultsType(context: IValidationContext): ComplexType | null {
+    const resultsType = context.rootNodes.getFunction(this.type)?.getResultsType(context);
+    return !!resultsType ? resultsType : null;
   }
 }

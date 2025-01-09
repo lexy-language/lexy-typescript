@@ -32,7 +32,7 @@ export class TableWriter implements IRootTokenWriter {
     codeWriter.openScope(`return`)
     codeWriter.writeLine(`${LexyCodeConstants.rowType}: ${LexyCodeConstants.rowType},`)
     codeWriter.writeLine(`Count: ${LexyCodeConstants.valuesVariable}.length,`)
-    codeWriter.writeLine(`Values: ${LexyCodeConstants.valuesVariable}`)
+    codeWriter.writeLine(`__values: ${LexyCodeConstants.valuesVariable}`)
     codeWriter.closeScope(";")
 
     codeWriter.closeScope("();");
@@ -52,12 +52,12 @@ export class TableWriter implements IRootTokenWriter {
       const column = table.header?.columns[i];
       codeWriter.write(column?.name ?? "")
       if (i < table.header?.columns.length - 1) {
-        codeWriter.write(",")
+        codeWriter.write(", ")
       }
     }
     codeWriter.openInlineScope(")")
     for (const column of table.header?.columns) {
-      codeWriter.writeLine("this." + column.name + " = " + column.name + ";")
+      codeWriter.writeLine(`this.${column.name} = ${column.name} != undefined ? ${column.name} : this.${column.name};`)
     }
 
     codeWriter.closeScope();

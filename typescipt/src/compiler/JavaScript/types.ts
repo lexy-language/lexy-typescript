@@ -52,11 +52,12 @@ import {asEnumType} from "../../language/variableTypes/enumType";
 import {enumClassName, functionClassName, tableClassName, typeClassName} from "./classNames";
 import {asTableType} from "../../language/variableTypes/tableType";
 import {asComplexType, ComplexType} from "../../language/variableTypes/complexType";
-import {asComplexTypeReference} from "../../language/variableTypes/complexTypeReference";
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {ComplexTypeSource} from "../../language/variableTypes/complexTypeSource";
+import {asCustomType} from "../../language/variableTypes/customType";
 
 export function translateType(variableType: VariableType): string {
+
   switch (variableType.variableTypeName) {
     case VariableTypeName.PrimitiveType: {
       const primitiveType = asPrimitiveType(variableType);
@@ -71,35 +72,25 @@ export function translateType(variableType: VariableType): string {
     case VariableTypeName.TableType: {
       const tableType = asTableType(variableType);
       if (tableType == null) throw new Error("Is not tableType");
-      return tableType.type; // todo: is this correct?
+      return tableType.tableName;
     }
     case VariableTypeName.ComplexType: {
       const complexType = asComplexType(variableType);
       if (complexType == null) throw new Error("Is not complexType");
       return translateComplexType(complexType);
     }
-    case VariableTypeName.FunctionParametersType: {
-      const complexTypeReference = asComplexTypeReference(variableType);
-      if (complexTypeReference == null) throw new Error("Is not ComplexTypeReference");
-      return `${functionClassName(complexTypeReference.name)}.${LexyCodeConstants.parametersType}`;
+    case VariableTypeName.CustomType: {
+      const customType = asCustomType(variableType);
+      if (customType == null) throw new Error("Is not customType");
+      return typeof (customType.type);
     }
-    case VariableTypeName.FunctionResultsType: {
-      const complexTypeReference = asComplexTypeReference(variableType);
-      if (complexTypeReference == null) throw new Error("Is not ComplexTypeReference");
-      return `${functionClassName(complexTypeReference.name)}.${LexyCodeConstants.resultsType}`;
-    }
-
-    case VariableTypeName.TableRowType: {
-      const complexTypeReference = asComplexTypeReference(variableType);
-      if (complexTypeReference == null) throw new Error("Is not ComplexTypeReference");
-      return `${tableClassName(complexTypeReference.name)}.${LexyCodeConstants.rowType}`;
-    }
+    default:
+      throw new Error("Not supported: " + variableType.variableTypeName)
   }
 }
 
 export function translateComplexType(complexType: ComplexType) {
-  switch (complexType.source)
-  {
+  switch (complexType.source) {
     case ComplexTypeSource.FunctionParameters: {
       return functionClassName(complexType.name) + "." + LexyCodeConstants.parametersType;
     }
@@ -108,9 +99,6 @@ export function translateComplexType(complexType: ComplexType) {
     }
     case ComplexTypeSource.TableRow: {
       return tableClassName(complexType.name) + "." + LexyCodeConstants.rowType;
-    }
-    case ComplexTypeSource.Custom: {
-      return typeClassName(complexType.name);
     }
     default: {
       throw new Error(`Invalid type: ${complexType.source}`)

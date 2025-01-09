@@ -29,7 +29,7 @@ export class CustomType extends TypeWithMembers {
     this.typeDefinition = typeDefinition;
   }
 
-  protected equals(other: TableType): boolean {
+  protected equals(other: CustomType): boolean {
     return this.type == other?.type;
   }
 

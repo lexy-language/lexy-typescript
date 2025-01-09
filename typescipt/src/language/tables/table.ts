@@ -92,6 +92,6 @@ export class Table extends RootNode {
       return new ComplexTypeMember(column.name, type)
     });
 
-    return new ComplexType(this.name.value, ComplexTypeSource.TableRow, members);
+    return new ComplexType(this.name.value, this, ComplexTypeSource.TableRow, members);
   }
 }

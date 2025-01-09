@@ -21,7 +21,7 @@ export class RoundFunction extends ExpressionFunction {
   constructor(numberExpression: Expression, digitsExpression: Expression, reference: SourceReference) {
      super(reference);
      this.numberExpression = numberExpression;
-     digitsExpression = digitsExpression;
+     this.digitsExpression = digitsExpression;
    }
 
    public override getChildren(): Array<INode> {

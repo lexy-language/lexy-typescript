@@ -1,7 +1,5 @@
-
-
 export class BuiltInNumberFunctions {
-   public static number(value: number): number {
+   public static int(value: number): number {
      return Math.floor(value);
    }
 

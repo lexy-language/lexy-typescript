@@ -4,6 +4,7 @@ import {ComplexTypeMember} from "./complexTypeMember";
 import {IValidationContext} from "../../parser/validationContext";
 import {ComplexTypeSource} from "./complexTypeSource";
 import {VariableTypeName} from "./variableTypeName";
+import {IRootNode} from "../rootNode";
 
 export function instanceOfComplexType(object: any): object is ComplexType {
   return object.variableTypeName == VariableTypeName.ComplexType;
@@ -18,12 +19,14 @@ export class ComplexType extends VariableType implements ITypeWithMembers {
   public variableTypeName = VariableTypeName.ComplexType;
   public typeWithMember = true;
   public name: string;
+  public node: IRootNode;
   public source: ComplexTypeSource;
   public members: Array<ComplexTypeMember>
 
-  constructor(name: string, source: ComplexTypeSource, members: Array<ComplexTypeMember>) {
+  constructor(name: string, node: IRootNode, source: ComplexTypeSource, members: Array<ComplexTypeMember>) {
     super();
     this.name = name;
+    this.node = node;
     this.source = source;
     this.members = members;
   }

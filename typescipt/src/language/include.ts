@@ -5,6 +5,7 @@ import {SourceReference} from "../parser/sourceReference";
 import {Line} from "../parser/line";
 import {Keywords} from "../parser/Keywords";
 import {isNullOrEmpty} from "../parser/tokens/character";
+import {LexySourceDocument} from "../parser/lexySourceDocument";
 
 export class Include {
    private isProcessedValue: boolean;
@@ -49,7 +50,7 @@ export class Include {
 
      let directName = context.fileSystem.getDirectoryName(parentFullFileName);
      let fullPath = context.fileSystem.getFullPath(directName);
-     let fullFinName = `${context.fileSystem.combine(fullPath, this.fileName)}.{LexySourceDocument.FileExtension}`;
+     let fullFinName = `${context.fileSystem.combine(fullPath, this.fileName)}.${LexySourceDocument.fileExtension}`;
 
      if (!context.fileSystem.fileExists(fullFinName)) {
        context.logger.fail(this.reference, `Invalid include file name '${this.fileName}'`);

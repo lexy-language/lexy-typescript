@@ -14,8 +14,7 @@ export class LexyFunctionCall extends FunctionCall<LexyFunction> {
   }
 
   public static renderFunction(functionName: string, variableName: string | null, codeWriter: CodeWriter) {
-    codeWriter.writeNamespace();
-    codeWriter.write(`${functionClassName(functionName)}(${variableName}, ${LexyCodeConstants.contextVariable})`);
-    codeWriter.write(functionClassName(functionName));
+    codeWriter.writeNamespace("." + functionClassName(functionName));
+    codeWriter.write(`(${variableName}, ${LexyCodeConstants.contextVariable})`);
   }
 }

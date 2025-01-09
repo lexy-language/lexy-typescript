@@ -5,7 +5,7 @@ import {renderExpression} from "../renderers/renderExpression";
 
 export class PowerFunctionCall extends MethodFunctionCall<PowerFunction> {
 
-  protected override className = "BuiltInNumberFunctions";
+  protected override className = "builtInNumberFunctions";
   protected override methodName = "power";
 
   protected override renderArguments(expression: PowerFunction, codeWriter: CodeWriter) {

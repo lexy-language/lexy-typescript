@@ -9,8 +9,7 @@ import {
   PrimitiveVariableDeclarationType
 } from "../../../src/language/variableTypes/primitiveVariableDeclarationType";
 import {
-  validateBooleanLiteralExpression,
-  validateDateTimeLiteralExpressionByDate,
+  validateBooleanLiteralExpression, validateDateTimeLiteralExpression,
   validateMemberAccessExpression,
   validateNumericLiteralExpression,
   validateQuotedLiteralExpression
@@ -98,7 +97,7 @@ describe('VariableDeclaration', () => {
       validateOfType<PrimitiveVariableDeclarationType>(asPrimitiveVariableDeclarationType, variableDeclarationExpression.type, type =>
         expect(type.type).toBe("date"));
       expect(variableDeclarationExpression.name).toBe("temp");
-      validateDateTimeLiteralExpressionByDate(variableDeclarationExpression.assignment, new Date("2024-12-16T16:51:12"));
+      validateDateTimeLiteralExpression(variableDeclarationExpression.assignment, "2024-12-16T16:51:12");
     });
   });
 

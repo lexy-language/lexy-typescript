@@ -37,7 +37,6 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     this.runnerContext = runnerContext;
   }
 
-
   initialize() {
     try {
       this.result = this.parser.parseFile(this.fileName, false);

@@ -81,7 +81,7 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
   private validateMemberType(context: IValidationContext) {
 
     if (this.variableType == null && this.parentVariableType == null) {
-      context.logger.fail(this.reference, `Invalid member access '${this.variable}'. Variable '{this.variable}' not found.`);
+      context.logger.fail(this.reference, `Invalid member access '${this.variable}'. Variable '${this.variable}' not found.`);
       return;
     }
 

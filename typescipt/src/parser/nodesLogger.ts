@@ -15,11 +15,15 @@ export class NodesLogger {
    private logNode(node: INode): void {
      this.builder.push(' '.repeat(this.indent));
 
-     const rootNode = this.asRootNode(node)
-     if (rootNode != null) {
-       this.builder.push(`${rootNode.nodeType}: ${rootNode.nodeName}`);
+     if (node == null) {
+       throw new Error("node.getChildren should never return null.")
      } else {
-       this.builder.push(node.nodeType);
+       const rootNode = this.asRootNode(node)
+       if (rootNode != null) {
+         this.builder.push(`${rootNode.nodeType}: ${rootNode.nodeName}`);
+       } else {
+         this.builder.push(node.nodeType);
+       }
      }
      this.builder.push("\n")
 

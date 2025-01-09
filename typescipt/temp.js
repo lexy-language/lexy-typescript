@@ -1,62 +1,29 @@
 "use strict";
-
 const type = function scope() {
-
-  function TestSimpleReturn(__parameters, __context) {
-    const __result = {
-      Result,
-    }
-    __result.Result = 777;
-    return __result;
-  }
-
-  class __Results {
-
-  }
-
-  const __Row = {
-    aaa: "aaa",
-    bbb: "bbb",
-    ccc: "ccc",
-  }
-
-  let values = {
-    aaa: 123,
-    bbb: 457
-  }
-
-  let __parameters = new __Parameters();
-  for (let key in values) {
-    __parameters[key] = values[key];
-  }
-
-  TestSimpleReturn.__Results = __Results;
-  TestSimpleReturn.__parameters = __parameters;
-
-
-
-  class __Row
-  {
-    Value = 0;
-    Result = 0;
-    constructor(Value, Result) {
-      this.Value = Value;
-      this.Result = Result;
+  class __Row {
+    SearchValue = "";
+    ResultNumber = 0;
+    ResultString = "";
+    ResultBoolean = false;
+    ResultDate = new Date("0001-01-01T00:00:00");
+    constructor(SearchValue, ResultNumber, ResultString, ResultBoolean, ResultDate) {
+      this.SearchValue = SearchValue != undefined ? SearchValue : this.SearchValue;
+      this.ResultNumber = ResultNumber != undefined ? ResultNumber : this.ResultNumber;
+      this.ResultString = ResultString != undefined ? ResultString : this.ResultString;
+      this.ResultBoolean = ResultBoolean != undefined ? ResultBoolean : this.ResultBoolean;
+      this.ResultDate = ResultDate != undefined ? ResultDate : this.ResultDate;
     }
   }
-
-  const _values = [
-    new __Row(0, 0),
-    new __Row(1, 1),
-  ];
-
-  function count() {
-    return _values.length;
-  }
-
+  const __values =  [
+    new __Row("a",222,"222",false,new Date(2024, 11, 24, 23, 22, 22)),
+    new __Row("b",333,"333",true,new Date(2024, 11, 24, 23, 33, 33)),
+    new __Row("c",444,"444",false,new Date(2024, 11, 24, 23, 44, 44)),
+    new __Row("d",555,"555",true,new Date(2024, 11, 24, 23, 55, 55)),
+  ]
   return {
     __Row: __Row,
-    _values: _values,
-    count: count
-  }
+    Count: __values.length,
+    Values: __values
+  };
 }();
+

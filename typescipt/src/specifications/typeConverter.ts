@@ -26,8 +26,7 @@ export class TypeConverter {
 
     let enumValueName = value.toString();
     let indexOfSeparator = enumValueName.indexOf(`.`);
-    let enumValue = enumValueName.substring(indexOfSeparator + 1);
-    return enumType[enumValue];
+    return enumValueName.substring(indexOfSeparator + 1);
   }
 
   private static convertPrimitive(primitiveVariableType: PrimitiveType, value: object) {
@@ -36,7 +35,7 @@ export class TypeConverter {
         return parseFloat(value.toString());
 
       case TypeNames.date:
-        return new Date(value.toString());
+        return value.constructor == Date ? value : new Date(value.toString());
 
       case TypeNames.boolean:
         return value.toString() === 'true';

@@ -16,6 +16,7 @@ import {ImplicitVariableDeclaration} from "../variableTypes/implicitVariableDecl
 import {VariableSource} from "../variableSource";
 import {VariableDeclarationTypeParser} from "../variableTypes/variableDeclarationTypeParser";
 import {NodeType} from "../nodeType";
+import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
 
 export function asVariableDeclarationExpression(object: any): VariableDeclarationExpression | null {
   return object.nodeType == NodeType.VariableDeclarationExpression ? object as VariableDeclarationExpression : null;
@@ -73,6 +74,9 @@ export class VariableDeclarationExpression extends Expression {
       || tokens.length == 2
       && tokens.isTokenType<StringLiteralToken>(0, StringLiteralToken)
       && tokens.isTokenType<StringLiteralToken>(1, StringLiteralToken)
+      || tokens.length == 2
+      && tokens.isTokenType<MemberAccessLiteral>(0, MemberAccessLiteral)
+      && tokens.isTokenType<StringLiteralToken>(1, StringLiteralToken)
       || tokens.length >= 4
       && tokens.isKeyword(0, Keywords.ImplicitVariableDeclaration)
       && tokens.isTokenType<StringLiteralToken>(1, StringLiteralToken)
@@ -84,9 +88,8 @@ export class VariableDeclarationExpression extends Expression {
   }
 
   public override getChildren(): Array<INode> {
-    const result = [];
+    const result: Array<INode> = [this.type];
     if (this.assignment != null) result.push(this.assignment);
-    result.push(this.type);
     return result;
   }
 

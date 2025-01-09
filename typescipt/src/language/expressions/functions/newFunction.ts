@@ -2,7 +2,6 @@ import {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import {ExpressionFunction} from "./expressionFunction";
 import {Expression} from "../expression";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
-import {asComplexTypeReference, ComplexTypeReference} from "../../variableTypes/complexTypeReference";
 import {SourceReference} from "../../../parser/sourceReference";
 import {asMemberAccessExpression} from "../memberAccessExpression";
 import {RootNodeList} from "../../rootNodeList";
@@ -11,6 +10,7 @@ import {INode} from "../../node";
 import {IValidationContext} from "../../../parser/validationContext";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
+import {asComplexType, ComplexType} from "../../variableTypes/complexType";
 
 export function instanceOfNewFunction(object: any): object is NewFunction {
   return object?.nodeType == NodeType.NewFunction;
@@ -22,7 +22,7 @@ export function asNewFunction(object: any): NewFunction | null {
 
 export class NewFunction extends ExpressionFunction implements IHasNodeDependencies {
 
-  private typeValue: ComplexTypeReference;
+  private typeValue: ComplexType;
 
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.NewFunction;
@@ -37,7 +37,7 @@ export class NewFunction extends ExpressionFunction implements IHasNodeDependenc
 
   public valueExpression: Expression;
 
-  public get type(): ComplexTypeReference {
+  public get type(): ComplexType {
     return this.typeValue;
   }
 
@@ -65,20 +65,18 @@ export class NewFunction extends ExpressionFunction implements IHasNodeDependenc
 
   protected override validate(context: IValidationContext): void {
     const valueType = this.valueExpression.deriveType(context);
-    const complexTypeReference = asComplexTypeReference(valueType);
-    if (complexTypeReference == null) {
+    const complexType = asComplexType(valueType);
+    if (complexType == null) {
       context.logger.fail(this.reference,
         `Invalid argument 1 'Value' should be of type 'ComplexTypeType' but is 'ValueType'. ${this.functionHelp}`);
       return;
     }
 
-    this.typeValue = complexTypeReference;
+    this.typeValue = complexType;
   }
 
   public override deriveReturnType(context: IValidationContext): VariableType | null {
     let nodeType = context.rootNodes.getType(this.typeLiteral.parent);
-    let typeReference = nodeType?.memberType(this.typeLiteral.member, context) as ComplexTypeReference;
-    let complexType = typeReference?.getComplexType(context);
-    return !!complexType ? complexType : null;
+    return nodeType?.memberType(this.typeLiteral.member, context) as ComplexType;
   }
 }

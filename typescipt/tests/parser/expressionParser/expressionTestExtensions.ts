@@ -37,15 +37,9 @@ export function validateBooleanLiteralExpression(expression: Expression | null, 
   });
 }
 
-export function validateDateTimeLiteralExpressionByDate(expression: Expression | null, value: Date): void {
-  validateOfType<LiteralExpression>(asLiteralExpression, expression, literal => {
-    validateOfType<DateTimeLiteral>(asDateTimeLiteral, literal.literal, number =>
-      expect(number.dateTimeValue?.toISOString()).toBe(value.toISOString()));
-  });
-}
 
-export function validateDateTimeLiteralExpression(expression: Expression, value: string): void {
-  let valueDate = new Date(value);
+export function validateDateTimeLiteralExpression(expression: Expression | null, value: string): void {
+  let valueDate = DateTimeLiteral.parseValue(value);
   validateOfType<LiteralExpression>(asLiteralExpression, expression, literal =>
     validateOfType<DateTimeLiteral>(asDateTimeLiteral, literal.literal, number =>
       expect(number.dateTimeValue?.toISOString()).toBe(valueDate.toISOString())));

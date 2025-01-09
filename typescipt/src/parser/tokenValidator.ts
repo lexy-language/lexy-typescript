@@ -119,7 +119,7 @@ export class TokenValidator {
 
   public dateTime(index: number, year: number, month: number, day: number, hours: number, minutes: number, seconds: number): TokenValidator {
     let token = this.validateType<DateTimeLiteral>(index, TokenType.DateTimeLiteral);
-    let expected = new Date(`${year}-${month}-${day}T${hours}:${minutes}:${seconds}`);
+    let expected = new Date(year, month-1, day, hours, minutes, seconds);
     if (token != null && token.dateTimeValue != null && token.dateTimeValue.getTime() != expected.getTime()) {
       this.fail(`Invalid token value at ${index}. Expected: '${expected.toISOString()}' Actual: '${token.dateTimeValue.toISOString()}'`);
       this.isValid = false;

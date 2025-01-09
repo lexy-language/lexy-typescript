@@ -13,21 +13,19 @@ import {LoggingConfiguration} from "./loggingConfiguration";
 import {NodeFileSystem} from "./nodeFileSystem";
 
 export function createParser() {
-  const parserLogger = new ParserLogger(LoggingConfiguration.getParserLogger())
+  const logger = LoggingConfiguration.getParserLogger();
   const expressionFactory = new ExpressionFactory();
   const fileSystem = new NodeFileSystem();
-  const context = new ParserContext(parserLogger, fileSystem, expressionFactory)
   const tokenizer = new Tokenizer();
-  const parser = new LexyParser(context, parserLogger, tokenizer, fileSystem, expressionFactory);
-  return {parserLogger, parser};
+  return new LexyParser(logger, tokenizer, fileSystem, expressionFactory);
 }
 
 export function parseNodes(code: string): { nodes: RootNodeList, logger: IParserLogger } {
-  const {parserLogger, parser} = createParser();
+  const parser = createParser();
   const codeLines = code.split("\n");
   const result = parser.parse(codeLines, `tests.lexy`, false);
 
-  return {nodes: result.rootNodes, logger: parserLogger};
+  return {nodes: result.rootNodes, logger: result.logger};
 }
 
 export function parseFunction(code: string): { functionNode: Function, logger: IParserLogger } {

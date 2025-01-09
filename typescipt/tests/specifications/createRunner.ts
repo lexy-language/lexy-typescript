@@ -6,7 +6,7 @@ import {SpecificationsRunner} from "../../src/specifications/specificationsRunne
 
 export function createRunner() {
   const mainLogger = LoggingConfiguration.getMainLogger();
-  const {parser} = createParser();
+  const parser = createParser();
   const compiler = new LexyCompiler(LoggingConfiguration.getCompilerLogger(), LoggingConfiguration.getExecutionLogger());
   const nodeFileSystem = new NodeFileSystem();
 
