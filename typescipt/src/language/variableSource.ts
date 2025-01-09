@@ -1,7 +1,7 @@
 export enum VariableSource {
-   Unknown,
-   Parameters,
-   Results,
-   Code,
-   Type
+   Unknown = "Unknown",
+   Parameters = "Parameters",
+   Results = "Results",
+   Code = "Code",
+   Type = "Type"
 }

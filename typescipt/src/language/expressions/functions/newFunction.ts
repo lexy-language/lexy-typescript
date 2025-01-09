@@ -12,6 +12,14 @@ import {IValidationContext} from "../../../parser/validationContext";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
 
+export function instanceOfNewFunction(object: any): object is NewFunction {
+  return object?.nodeType == NodeType.NewFunction;
+}
+
+export function asNewFunction(object: any): NewFunction | null {
+  return instanceOfNewFunction(object) ? object as NewFunction : null;
+}
+
 export class NewFunction extends ExpressionFunction implements IHasNodeDependencies {
 
   private typeValue: ComplexTypeReference;

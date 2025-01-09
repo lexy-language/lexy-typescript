@@ -8,9 +8,9 @@ import {FunctionCall} from "../builtInFunctions/functionCall";
 import {asFunctionCallExpression} from "../../../language/expressions/functionCallExpression";
 import {CodeWriter} from "./codeWriter";
 import {functionClassName} from "../classNames";
-import {renderExpressions} from "./renderExpression";
-import {createVariableClass} from "./renderVariableClass";
-import {createFunctionCall} from "../builtInFunctions/createFunctionCall";
+import {renderExpressions} from "../renderers/renderExpression";
+import {createVariableClass} from "../renderers/renderVariableClass";
+import {createFunctionCall, renderCustomBuiltInFunctions} from "../builtInFunctions/createFunctionCall";
 
 export class FunctionWriter implements IRootTokenWriter {
 
@@ -24,8 +24,7 @@ export class FunctionWriter implements IRootTokenWriter {
     const functionNode = asFunction(node);
     if (functionNode == null) throw new Error(`Root token not Function`);
 
-    let builtInFunctionCalls = this.getBuiltInFunctionCalls(functionNode);
-    const codeWriter = new CodeWriter(this.namespace, builtInFunctionCalls)
+    const codeWriter = new CodeWriter(this.namespace)
 
     return this.createFunction(functionNode, codeWriter);
   }
@@ -57,19 +56,6 @@ export class FunctionWriter implements IRootTokenWriter {
     codeWriter.closeScope();
   }
 
-
-  private getBuiltInFunctionCalls(functionNode: Function): Array<FunctionCall> {
-    return NodesWalker.walkWithResult(functionNode.code.expressions,
-      node => {
-        const expression = asFunctionCallExpression(node);
-        if (expression != null) {
-          return createFunctionCall(expression)
-        } else {
-          return null
-        }
-      });
-  }
-
   private renderCode(functionNode: Function, codeWriter: CodeWriter) {
     renderExpressions(functionNode.code.expressions, codeWriter);
   }
@@ -79,7 +65,13 @@ export class FunctionWriter implements IRootTokenWriter {
   }
 
   private renderCustomBuiltInFunctions(functionNode: Function, codeWriter: CodeWriter) {
-    codeWriter.renderCustomBuiltInFunctions();
+    return NodesWalker.walkWithResult(functionNode.code.expressions,
+      node => {
+        const expression = asFunctionCallExpression(node);
+        if (expression != null) {
+          renderCustomBuiltInFunctions(expression.expressionFunction, codeWriter)
+        }
+      });
   }
 }
 

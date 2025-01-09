@@ -4,18 +4,12 @@ import {CodeWriter} from "../writers/codeWriter";
 import {functionClassName} from "../classNames";
 import {LexyCodeConstants} from "../../lexyCodeConstants";
 
-export class LexyFunctionCall extends FunctionCall {
-  public expressionFunction: LexyFunction;
+export class LexyFunctionCall extends FunctionCall<LexyFunction> {
 
-  constructor(expressionFunction: LexyFunction) {
-    super(expressionFunction);
-    this.expressionFunction = expressionFunction;
-  }
-
-  public renderExpression(codeWriter: CodeWriter) {
+  public renderExpression(expression: LexyFunction, codeWriter: CodeWriter) {
     return LexyFunctionCall.renderFunction(
-      this.expressionFunction.functionName,
-      this.expressionFunction.variableName,
+      expression.functionName,
+      expression.variableName,
       codeWriter);
   }
 

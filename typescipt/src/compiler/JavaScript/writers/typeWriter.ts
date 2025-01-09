@@ -2,10 +2,9 @@ import type {IRootTokenWriter} from "../../IRootTokenWriter";
 import type {IRootNode} from "../../../language/rootNode";
 import {GeneratedType, GeneratedTypeKind} from "../../generatedType";
 import {asTypeDefinition} from "../../../language/types/typeDefinition";
-import {functionClassName, typeClassName} from "../classNames";
-import {createVariableClass} from "./renderVariableClass";
+import {typeClassName} from "../classNames";
+import {createVariableClass} from "../renderers/renderVariableClass";
 import {CodeWriter} from "./codeWriter";
-import {CompileFunctionContext} from "../compileFunctionContext";
 
 export class TypeWriter implements IRootTokenWriter {
 

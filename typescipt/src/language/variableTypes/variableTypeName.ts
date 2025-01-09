@@ -7,5 +7,6 @@ export enum VariableTypeName {
   FunctionType = "FunctionType",
   PrimitiveType = "PrimitiveType",
   TableType = "TableType",
+  TableRowType = "TableRowType",
   VoidType = "VoidType",
 }

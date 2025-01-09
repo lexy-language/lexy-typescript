@@ -4,6 +4,9 @@ import {ExecutableFunction} from "./executableFunction";
 import {normalize} from "./JavaScript/classNames";
 import {LexyCodeConstants} from "./lexyCodeConstants";
 import {ILogger} from "../infrastructure/logger";
+import {BuiltInDateFunctions} from "../runTime/builtInDateFunctions";
+import {BuiltInNumberFunctions} from "../runTime/builtInNumberFunctions";
+import {BuiltInTableFunctions} from "../runTime/builtInTableFunctions";
 
 export interface ICompilationEnvironment extends Disposable {
   namespace: string;
@@ -50,8 +53,13 @@ export class CompilationEnvironment implements ICompilationEnvironment, Disposab
   }
 
   private initializeNamespace() {
-    Function(`if (!globalThis.${LexyCodeConstants.namespace}) globalThis.${LexyCodeConstants.namespace} = {};
-    globalThis.${LexyCodeConstants.namespace}.${this.namespace} = {};`)()
+    const functions = {
+      date: BuiltInDateFunctions,
+      number: BuiltInNumberFunctions,
+      table: BuiltInTableFunctions,
+    }
+    Function("functions", `if (!globalThis.${LexyCodeConstants.namespace}) globalThis.${LexyCodeConstants.namespace} = {};
+    globalThis.${LexyCodeConstants.namespace}.${this.namespace} = functions;`)(functions)
   }
 
   private initializeType(generatedType: GeneratedType): void {

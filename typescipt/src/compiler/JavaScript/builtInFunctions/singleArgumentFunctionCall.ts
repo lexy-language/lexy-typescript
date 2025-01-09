@@ -1,21 +1,13 @@
 import {MethodFunctionCall} from "./methodFunctionCall";
 import {SingleArgumentFunction} from "../../../language/expressions/functions/singleArgumentFunction";
 import {CodeWriter} from "../writers/codeWriter";
-import {renderExpression} from "../writers/renderExpression";
+import {renderExpression} from "../renderers/renderExpression";
 
-export abstract class SingleArgumentFunctionCall extends MethodFunctionCall {
+export abstract class SingleArgumentFunctionCall<TFunctionExpression extends SingleArgumentFunction>
 
-  public singleArgumentFunction: SingleArgumentFunction;
+  extends MethodFunctionCall<TFunctionExpression> {
 
-  constructor(functionNode: SingleArgumentFunction) {
-     super(functionNode);
-     this.singleArgumentFunction = functionNode;
-   }
-
-   public override renderMethodSyntax(codeWriter: CodeWriter) {
-   }
-
-   protected override renderArguments(codeWriter: CodeWriter) {
-     renderExpression(this.singleArgumentFunction.valueExpression, codeWriter);
-   }
+  protected override renderArguments(expression: TFunctionExpression, codeWriter: CodeWriter) {
+    renderExpression(expression.valueExpression, codeWriter);
+  }
 }

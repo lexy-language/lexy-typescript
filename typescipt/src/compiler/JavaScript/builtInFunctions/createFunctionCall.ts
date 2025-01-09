@@ -1,103 +1,91 @@
-import {FunctionCallExpression} from "../../../language/expressions/functionCallExpression";
+import {asFunctionCallExpression, FunctionCallExpression} from "../../../language/expressions/functionCallExpression";
 import {NodeType} from "../../../language/nodeType";
-import {LookupFunction} from "../../../language/expressions/functions/lookupFunction";
 import {LookUpFunctionCall} from "./lookUpFunctionCall";
-import {LookupRowFunction} from "../../../language/expressions/functions/lookupRowFunction";
 import {LookUpRowFunctionCall} from "./lookUpRowFunctionCall";
-import {IntFunction} from "../../../language/expressions/functions/intFunction";
 import {IntFunctionCall} from "./intFunctionCall";
-import {AbsFunction} from "../../../language/expressions/functions/absFunction";
 import {AbsFunctionCall} from "./absFunctionCall";
-import {PowerFunction} from "../../../language/expressions/functions/powerFunction";
 import {PowerFunctionCall} from "./powerFunctionCall";
-import {RoundFunction} from "../../../language/expressions/functions/roundFunction";
 import {RoundFunctionCall} from "./roundFunctionCall";
-import {NowFunction} from "../../../language/expressions/functions/nowFunction";
 import {NowFunctionCall} from "./nowFunctionCall";
-import {TodayFunction} from "../../../language/expressions/functions/todayFunction";
 import {TodayFunctionCall} from "./todayFunctionCall";
-import {YearFunction} from "../../../language/expressions/functions/yearFunction";
 import {YearFunctionCall} from "./yearFunctionCall";
-import {MonthFunction} from "../../../language/expressions/functions/monthFunction";
 import {MonthFunctionCall} from "./monthFunctionCall";
-import {DayFunction} from "../../../language/expressions/functions/dayFunction";
 import {DayFunctionCall} from "./dayFunctionCall";
-import {HourFunction} from "../../../language/expressions/functions/hourFunction";
 import {HourFunctionCall} from "./hourFunctionCall";
-import {MinuteFunction} from "../../../language/expressions/functions/minuteFunction";
 import {MinuteFunctionCall} from "./minuteFunctionCall";
-import {SecondFunction} from "../../../language/expressions/functions/secondFunction";
 import {SecondFunctionCall} from "./secondFunctionCall";
-import {YearsFunction} from "../../../language/expressions/functions/yearsFunction";
 import {YearsFunctionCall} from "./yearsFunctionCall";
-import {MonthsFunction} from "../../../language/expressions/functions/monthsFunction";
 import {MonthsFunctionCall} from "./monthsFunctionCall";
-import {DaysFunction} from "../../../language/expressions/functions/daysFunction";
 import {DaysFunctionCall} from "./daysFunctionCall";
-import {HoursFunction} from "../../../language/expressions/functions/hoursFunction";
 import {HoursFunctionCall} from "./hoursFunctionCall";
-import {MinutesFunction} from "../../../language/expressions/functions/minutesFunction";
 import {MinutesFunctionCall} from "./minutesFunctionCall";
-import {SecondsFunction} from "../../../language/expressions/functions/secondsFunction";
 import {SecondsFunctionCall} from "./secondsFunctionCall";
-import {LexyFunction} from "../../../language/expressions/functions/lexyFunction";
 import {LexyFunctionCall} from "./lexyFunctionCall";
-import {FunctionCall} from "./functionCall";
+import {CodeWriter} from "../writers/codeWriter";
+import {ExpressionFunction} from "../../../language/expressions/functions/expressionFunction";
 
-export function createFunctionCall(expression: FunctionCallExpression): FunctionCall | null {
+export function renderCustomBuiltInFunctions(expression: ExpressionFunction, codeWriter: CodeWriter) {
+  const functionCall = createFunctionCall(expression);
+  functionCall.renderCustomFunction(expression, codeWriter);
+}
 
-  function factory<T>(factory: (expression: T) => FunctionCall): FunctionCall {
-    const specific = expression as T;
-    return factory(specific);
-  }
+export function renderFunctionCall(expression: ExpressionFunction, codeWriter: CodeWriter) {
+  const functionCall = createFunctionCall(expression);
+  functionCall.renderExpression(expression, codeWriter);
+}
 
-  switch (expression.expressionFunction.nodeType) {
+function createFunctionCall(expression: ExpressionFunction): any | null {
+
+  const callExpression = asFunctionCallExpression(expression);
+  if (callExpression == null) throw new Error("Invalid expression type: " + expression.nodeType);
+
+  switch (callExpression.expressionFunction.nodeType) {
     case NodeType.LookupFunction:
-      return factory<LookupFunction>(node => new LookUpFunctionCall(node));
+      return new LookUpFunctionCall();
     case NodeType.LookupRowFunction:
-      return factory<LookupRowFunction>(node => new LookUpRowFunctionCall(node));
+      return new LookUpRowFunctionCall();
     case NodeType.IntFunction:
-      return factory<IntFunction>(node => new IntFunctionCall(node));
+      return new IntFunctionCall();
     case NodeType.AbsFunction:
-      return factory<AbsFunction>(node => new AbsFunctionCall(node));
+      return new AbsFunctionCall();
     case NodeType.PowerFunction:
-      return factory<PowerFunction>(node => new PowerFunctionCall(node));
+      return new PowerFunctionCall();
     case NodeType.RoundFunction:
-      return factory<RoundFunction>(node => new RoundFunctionCall(node));
+      return new RoundFunctionCall();
 
     case NodeType.NowFunction:
-      return factory<NowFunction>(node => new NowFunctionCall(node));
+      return new NowFunctionCall();
     case NodeType.TodayFunction:
-      return factory<TodayFunction>(node => new TodayFunctionCall(node));
+      return new TodayFunctionCall();
 
     case NodeType.YearFunction:
-      return factory<YearFunction>(node => new YearFunctionCall(node),);
+      return new YearFunctionCall();
     case NodeType.MonthFunction:
-      return factory<MonthFunction>(node => new MonthFunctionCall(node));
+      return new MonthFunctionCall();
     case NodeType.DayFunction:
-      return factory<DayFunction>(node => new DayFunctionCall(node));
+      return new DayFunctionCall();
     case NodeType.HourFunction:
-      return factory<HourFunction>(node => new HourFunctionCall(node));
+      return new HourFunctionCall();
     case NodeType.MinuteFunction:
-      return factory<MinuteFunction>(node => new MinuteFunctionCall(node));
+      return new MinuteFunctionCall();
     case NodeType.SecondFunction:
-      return factory<SecondFunction>(node => new SecondFunctionCall(node));
+      return new SecondFunctionCall();
 
     case NodeType.YearsFunction:
-      return factory<YearsFunction>(node => new YearsFunctionCall(node));
+      return new YearsFunctionCall();
     case NodeType.MonthsFunction:
-      return factory<MonthsFunction>(node => new MonthsFunctionCall(node));
+      return new MonthsFunctionCall();
     case NodeType.DaysFunction:
-      return factory<DaysFunction>(node => new DaysFunctionCall(node));
+      return new DaysFunctionCall();
     case NodeType.HoursFunction:
-      return factory<HoursFunction>(node => new HoursFunctionCall(node));
+      return new HoursFunctionCall();
     case NodeType.MinutesFunction:
-      return factory<MinutesFunction>(node => new MinutesFunctionCall(node));
+      return new MinutesFunctionCall();
     case NodeType.SecondsFunction:
-      return factory<SecondsFunction>(node => new SecondsFunctionCall(node));
+      return new SecondsFunctionCall();
 
     case NodeType.LexyFunction:
-      return factory<LexyFunction>(node => new LexyFunctionCall(node));
+      return new LexyFunctionCall();
 
     default:
       return null;

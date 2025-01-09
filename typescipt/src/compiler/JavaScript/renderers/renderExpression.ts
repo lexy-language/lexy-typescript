@@ -1,5 +1,5 @@
 import {Expression} from "../../../language/expressions/expression";
-import {CodeWriter} from "./codeWriter";
+import {CodeWriter} from "../writers/codeWriter";
 import {NodeType} from "../../../language/nodeType";
 import {asMemberAccessExpression, MemberAccessExpression} from "../../../language/expressions/memberAccessExpression";
 import {VariableReference} from "../../../language/variableReference";
@@ -23,24 +23,20 @@ import {
   asVariableDeclarationExpression,
   VariableDeclarationExpression
 } from "../../../language/expressions/variableDeclarationExpression";
-import {VariableDeclarationType} from "../../../language/variableTypes/variableDeclarationType";
-import {asPrimitiveVariableDeclarationType} from "../../../language/variableTypes/primitiveVariableDeclarationType";
-import {
-  asCustomVariableDeclarationType,
-  CustomVariableDeclarationType
-} from "../../../language/variableTypes/customVariableDeclarationType";
+import {CustomVariableDeclarationType} from "../../../language/variableTypes/customVariableDeclarationType";
 import {asEnumType} from "../../../language/variableTypes/enumType";
 import {asCustomType} from "../../../language/variableTypes/customType";
 import {asTableType} from "../../../language/variableTypes/tableType";
-import {asImplicitVariableDeclaration} from "../../../language/variableTypes/implicitVariableDeclaration";
 import {VariableSource} from "../../../language/variableSource";
 import {LexyCodeConstants} from "../../lexyCodeConstants";
 import {renderTypeDefaultExpression} from "./renderVariableClass";
 import {
   asFunctionCallExpression,
   FunctionCallExpression,
-  instanceOfFunctionCallExpression
 } from "../../../language/expressions/functionCallExpression";
+import {renderFunctionCall} from "../builtInFunctions/createFunctionCall";
+import {matchesLineExpressionException} from "../lineExpressionExceptions/matchesLineExpressionException";
+import {TokenType} from "../../../parser/tokens/tokenType";
 
 export function renderExpressions(expressions: ReadonlyArray<Expression>, codeWriter: CodeWriter) {
   for (const expression of expressions) {
@@ -82,6 +78,12 @@ export function renderExpression(expression: Expression, codeWriter: CodeWriter)
     const specificExpression = castFunction(expression);
     if (specificExpression == null) throw new Error(`Invalid expression type: '${expression.nodeType}' cast is null`);
     render(specificExpression, codeWriter);
+  }
+
+  const exception = matchesLineExpressionException(expression);
+  if (exception != null) {
+    exception.render(expression, codeWriter);
+    return;
   }
 
   switch (expression.nodeType) {
@@ -130,7 +132,10 @@ export function renderExpression(expression: Expression, codeWriter: CodeWriter)
 function renderMemberAccessExpression(memberAccessExpression: MemberAccessExpression, codeWriter: CodeWriter) {
   if (memberAccessExpression.variable.parts < 2) throw new Error(`Invalid MemberAccessExpression: {expression}`);
 
-  renderVariableClassName(memberAccessExpression, memberAccessExpression.variable, codeWriter);
+  const parentIdentifier = translateParentVariableClassName(memberAccessExpression, memberAccessExpression.variable, codeWriter);
+  const parent = fromSource(memberAccessExpression.variableSource, parentIdentifier);
+
+  codeWriter.write(parent)
 
   let childReference = memberAccessExpression.variable;
   while (childReference.hasChildIdentifiers) {
@@ -140,24 +145,18 @@ function renderMemberAccessExpression(memberAccessExpression: MemberAccessExpres
   }
 }
 
-function renderVariableClassName(expression: MemberAccessExpression, reference: VariableReference, codeWriter: CodeWriter) {
-  switch (expression.rootType?.variableTypeName) {
+function translateParentVariableClassName(expression: MemberAccessExpression, reference: VariableReference, codeWriter: CodeWriter) {
+  switch (expression.parentVariableType?.variableTypeName) {
     case VariableTypeName.CustomType:
-      codeWriter.writeNamespace()
-      codeWriter.write(`.${typeClassName(reference.parentIdentifier)}`);
-      break;
+      return codeWriter.identifierFromNamespace(typeClassName(reference.parentIdentifier));
     case VariableTypeName.EnumType:
-      codeWriter.writeNamespace()
-      codeWriter.write(`.${enumClassName(reference.parentIdentifier)}`);
-      break;
+      return codeWriter.identifierFromNamespace(enumClassName(reference.parentIdentifier));
     case VariableTypeName.FunctionType:
-      codeWriter.writeNamespace()
-      codeWriter.write(`.${functionClassName(reference.parentIdentifier)}`);
-      break;
+      return codeWriter.identifierFromNamespace(functionClassName(reference.parentIdentifier));
     case VariableTypeName.TableType:
-      codeWriter.writeNamespace()
-      codeWriter.write(`.${tableClassName(reference.parentIdentifier)}`);
-      break;
+      return codeWriter.identifierFromNamespace(tableClassName(reference.parentIdentifier));
+    default:
+      return reference.parentIdentifier;
   }
 }
 
@@ -167,7 +166,11 @@ function renderIdentifierExpression(expression: IdentifierExpression, codeWriter
 }
 
 function renderLiteralExpression(expression: LiteralExpression, codeWriter: CodeWriter) {
-  codeWriter.write(expression.literal.value);
+  if (expression.literal.tokenType == TokenType.QuotedLiteralToken) {
+    codeWriter.write(`"${expression.literal.value}"`);
+  } else {
+    codeWriter.write(expression.literal.value);
+  }
 }
 
 function renderAssignmentExpression(expression: AssignmentExpression, codeWriter: CodeWriter) {
@@ -178,11 +181,11 @@ function renderAssignmentExpression(expression: AssignmentExpression, codeWriter
 
 function renderBinaryExpression(expression: BinaryExpression, codeWriter: CodeWriter) {
   renderExpression(expression.left, codeWriter);
-  codeWriter.write(operaorString(expression.operator));
+  codeWriter.write(operatorString(expression.operator));
   renderExpression(expression.right, codeWriter);
 }
 
-function operaorString(operator: ExpressionOperator) {
+function operatorString(operator: ExpressionOperator) {
   switch (operator) {
     case ExpressionOperator.Addition:
       return " + ";
@@ -276,25 +279,7 @@ function renderVariableDeclarationExpression(expression: VariableDeclarationExpr
   }
 }
 
-function typeName(type: VariableDeclarationType) {
-  switch (type.nodeType) {
-    case NodeType.PrimitiveVariableDeclarationType:
-      const primitive = asPrimitiveVariableDeclarationType(type);
-      if (primitive == null) throw new Error("Invalid PrimitiveVariableDeclarationType")
-      return primitive.type;
-    case NodeType.CustomVariableDeclarationType:
-      const custom = asCustomVariableDeclarationType(type);
-      if (custom == null) throw new Error("Invalid CustomVariableDeclarationType")
-      return identifierNameSyntax(custom);
-    case NodeType.ImplicitVariableDeclaration:
-      const implicit = asImplicitVariableDeclaration(type);
-      if (implicit == null) throw new Error("Invalid PrimitiveVariableDeclarationType")
-      return implicit.variableType;
-  }
-  throw new Error(`Invalid type: ${type.nodeType}`)
-}
-
-function identifierNameSyntax(customVariable: CustomVariableDeclarationType) {
+export function customVariableIdentifier(customVariable: CustomVariableDeclarationType, codeWriter: CodeWriter) {
   if (customVariable.variableType == null) throw new Error("Variable type expected: " + customVariable.nodeType);
 
   const variableTypeName = customVariable.variableType.variableTypeName;
@@ -302,15 +287,15 @@ function identifierNameSyntax(customVariable: CustomVariableDeclarationType) {
     case VariableTypeName.EnumType:
       const enumType = asEnumType(customVariable.variableType);
       if (enumType == null) throw new Error("Invalid EnumType")
-      return enumClassName(enumType.type)
+      return codeWriter.identifierFromNamespace(enumClassName(enumType.type));
     case VariableTypeName.TableType:
       const tableType = asTableType(customVariable.variableType);
       if (tableType == null) throw new Error("Invalid TableType")
-      return tableClassName(tableType.type)
+      return codeWriter.identifierFromNamespace(tableClassName(tableType.type));
     case VariableTypeName.CustomType:
       const customType = asCustomType(customVariable.variableType);
       if (customType == null) throw new Error("Invalid CustomType")
-      return enumClassName(customType.type)
+      return codeWriter.identifierFromNamespace(typeClassName(customType.type));
   }
   throw new Error(`Couldn't map type: ${customVariable.variableType}`)
 }
@@ -334,5 +319,5 @@ function fromSource(source: VariableSource, name: string): string {
 }
 
 function renderFunctionCallExpression(expression: FunctionCallExpression, codeWriter: CodeWriter) {
-  codeWriter.renderFunctionCall(expression.expressionFunction);
+  renderFunctionCall(expression.expressionFunction, codeWriter);
 }

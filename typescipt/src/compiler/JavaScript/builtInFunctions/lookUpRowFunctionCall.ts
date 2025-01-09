@@ -2,20 +2,10 @@ import {FunctionCall} from "./functionCall";
 import {LookupRowFunction} from "../../../language/expressions/functions/lookupRowFunction";
 import {CodeWriter} from "../writers/codeWriter";
 import {LexyCodeConstants} from "../../lexyCodeConstants";
-import {renderExpression} from "../writers/renderExpression";
+import {renderExpression} from "../renderers/renderExpression";
 
-export class LookUpRowFunctionCall extends FunctionCall {
-   private readonly methodName: string;
-
-   public lookupFunction: LookupRowFunction;
-
-  constructor(lookupFunction: LookupRowFunction) {
-    super(lookupFunction);
-    this.lookupFunction = lookupFunction;
-    this.methodName = `__LookUp${lookupFunction.table}RowBy${lookupFunction.searchValueColumn.member}`;
-   }
-
-   override renderCustomFunction(codeWriter: CodeWriter) {
+export class LookUpRowFunctionCall extends FunctionCall<LookupRowFunction> {
+   override renderCustomFunction(expression: LookupRowFunction, codeWriter: CodeWriter) {
 /*     return MethodDeclaration(
          Types.Syntax(LookupFunction.RowType),
          Identifier(methodName))
@@ -60,9 +50,13 @@ export class LookUpRowFunctionCall extends FunctionCall {
  */
    }
 
-  public override renderExpression(codeWriter: CodeWriter) {
+  public override renderExpression(expression: LookupRowFunction, codeWriter: CodeWriter) {
     codeWriter.write(`${this.methodName}(`)
-    renderExpression(this.lookupFunction.valueExpression, codeWriter);
+    renderExpression(expression.valueExpression, codeWriter);
     codeWriter.write(`, ${LexyCodeConstants.contextVariable})`)
+  }
+
+  private methodName(expression: LookupRowFunction) {
+    return `__LookUp${expression.table}RowBy${expression.searchValueColumn.member}`;
   }
 }

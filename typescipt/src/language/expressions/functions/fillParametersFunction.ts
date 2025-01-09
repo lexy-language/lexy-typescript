@@ -14,6 +14,15 @@ import {ComplexType} from "../../variableTypes/complexType";
 import {VariableType} from "../../variableTypes/variableType";
 import {Function} from "../../functions/function";
 import {NodeType} from "../../nodeType";
+import {BracketedExpression} from "../bracketedExpression";
+
+export function instanceOfFillParametersFunction(object: any): object is FillParametersFunction {
+  return object?.nodeType == NodeType.FillParametersFunction;
+}
+
+export function asFillParametersFunction(object: any): FillParametersFunction | null {
+  return instanceOfFillParametersFunction(object) ? object as FillParametersFunction : null;
+}
 
 export class FillParametersFunction extends ExpressionFunction implements IHasNodeDependencies {
 

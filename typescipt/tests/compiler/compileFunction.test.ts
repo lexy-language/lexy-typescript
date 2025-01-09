@@ -1,4 +1,5 @@
 import {compileFunction} from "./compileFunction";
+import {LoggingConfiguration} from "../loggingConfiguration";
 
 describe('CompileFunctionTests', () => {
   it('testSimpleReturn', async () => {
@@ -84,20 +85,64 @@ Function: ValidateTableKeywordFunction
      expect(result.number(`Result`)).toBe(5);
    });
 
-
-  it('variableDeclarationWithDefaultInCode', async () => {
+  it('variableDeclarationWithDefaultEnumInCode', async () => {
     let script = compileFunction(`
 Enum: SimpleEnum
   First
   Second
     
-Function: TestSimpleReturn
+Function: TestEnum
   Results
     SimpleEnum Result
   Code
     Result = SimpleEnum.Second
 `);
     let result = script.run();
-    expect(result.number(`Result`)).toBe(5);
+    expect(result.number(`Result`)).toBe("Second");
+  });
+
+  it('customType', async () => {
+    let script = compileFunction(`
+Type: SimpleComplex
+  number First
+  string Second
+    
+Function: TestCustomType
+  Results
+    SimpleComplex Result
+  Code
+    Result.First = 777
+    Result.Second = "123"
+`);
+    let result = script.run();
+    expect(result.number(`Result`)).toEqual({
+      First: 777,
+      Second: "123"
+    });
+  });
+
+  it('CustomTypeNestedProperties', async () => {
+    let script = compileFunction(`
+Type: InnerComplex
+  number First
+  string Second
+    
+Type: SimpleComplex
+  InnerComplex Inner
+    
+Function: TestCustomType
+  Results
+    SimpleComplex Result
+  Code
+    Result.Inner.First = 777
+    Result.Inner.Second = "123"
+`);
+    let result = script.run();
+    expect(result.number(`Result`)).toEqual({
+      Inner: {
+        First: 777,
+        Second: "123"
+      }
+    });
   });
 });

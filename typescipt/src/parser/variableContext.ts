@@ -56,7 +56,7 @@ export class VariableContext implements IVariableContext {
    }
 
    public containsName(name: string): boolean {
-     return name in this.variables || (this.parentContext != null && this.parentContext.contains(name));
+     return name in this.variables || (this.parentContext != null && this.parentContext.containsName(name));
    }
 
    public containsReference(reference: VariableReference, context: IValidationContext): boolean {
@@ -79,7 +79,7 @@ export class VariableContext implements IVariableContext {
    public getVariableTypeByName(name: string): VariableType | null {
      return name in this.variables
        ? this.variables[name].variableType
-       : this.parentContext !== null
+       : this.parentContext != null
           ? this.parentContext.getVariableTypeByName(name)
           : null;
    }

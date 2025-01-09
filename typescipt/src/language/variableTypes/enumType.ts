@@ -4,7 +4,7 @@ import type {IValidationContext} from "../../parser/validationContext";
 import {TypeWithMembers} from "./typeWithMembers";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {VariableType} from "./variableType";
-import {any} from "../../infrastructure/enumerableExtensions";
+import {any, firstOrDefault} from "../../infrastructure/enumerableExtensions";
 import {RootNodeList} from "../rootNodeList";
 import {VariableTypeName} from "./variableTypeName";
 
@@ -44,5 +44,9 @@ export class EnumType extends TypeWithMembers {
   public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
     const enumDefinition = rootNodeList.getEnum(this.type);
     return enumDefinition != null ? [enumDefinition] : [];
+  }
+
+  public firstMemberName() {
+    return firstOrDefault(this.enum.members)?.name;
   }
 }

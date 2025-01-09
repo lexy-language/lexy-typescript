@@ -14,10 +14,10 @@ const type = function scope() {
 
   }
 
-  class __Row {
-    aaa = 141;
-    bbb = 777
-    ccc = 666;
+  const __Row = {
+    aaa: "aaa",
+    bbb: "bbb",
+    ccc: "ccc",
   }
 
   let values = {

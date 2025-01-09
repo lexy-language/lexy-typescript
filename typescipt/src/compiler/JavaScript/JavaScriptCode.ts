@@ -4,15 +4,15 @@ import {FunctionWriter} from "./writers/functionWriter";
 import {NodeType} from "../../language/nodeType";
 import {TypeWriter} from "./writers/typeWriter";
 import {TableWriter} from "./writers/tableWriter";
+import {EnumWriter} from "./writers/enumWriter";
 
 export class JavaScriptCode {
    public static getWriter(rootNode: IRootNode, namespace: string): IRootTokenWriter | null {
      switch (rootNode.nodeType) {
        case NodeType.Function:
          return new FunctionWriter(namespace);
-         /*
        case "EnumDefinition":
-         return new EnumWriter(); */
+         return new EnumWriter(namespace);
        case NodeType.Table:
          return new TableWriter(namespace);
        case NodeType.TypeDefinition:

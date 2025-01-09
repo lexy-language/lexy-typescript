@@ -1,22 +1,16 @@
 import {MethodFunctionCall} from "./methodFunctionCall";
 import {RoundFunction} from "../../../language/expressions/functions/roundFunction";
 import {CodeWriter} from "../writers/codeWriter";
-import {renderExpression} from "../writers/renderExpression";
+import {renderExpression} from "../renderers/renderExpression";
 
-export class RoundFunctionCall extends MethodFunctionCall {
-  public roundFunction: RoundFunction;
+export class RoundFunctionCall extends MethodFunctionCall<RoundFunction> {
 
   protected override className = "BuiltInNumberFunctions";
   protected override methodName = "round";
 
-  constructor(functionNode: RoundFunction) {
-    super(functionNode);
-    this.roundFunction = functionNode;
-  }
-
-  protected override renderArguments(codeWriter: CodeWriter) {
-    renderExpression(this.roundFunction.numberExpression, codeWriter);
+  protected override renderArguments(expression: RoundFunction, codeWriter: CodeWriter) {
+    renderExpression(expression.numberExpression, codeWriter);
     codeWriter.write(", ");
-    renderExpression(this.roundFunction.digitsExpression, codeWriter);
+    renderExpression(expression.digitsExpression, codeWriter);
   }
 }

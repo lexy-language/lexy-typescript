@@ -11,7 +11,6 @@ import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {VariableType} from "../variableTypes/variableType";
-import {IntFunction} from "./functions/intFunction";
 import {NodeType} from "../nodeType";
 
 export function instanceOfBracketedExpression(object: any): object is BracketedExpression {

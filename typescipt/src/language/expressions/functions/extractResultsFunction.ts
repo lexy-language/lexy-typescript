@@ -10,6 +10,15 @@ import {VariableSource} from "../../variableSource";
 import {VariableType} from "../../variableTypes/variableType";
 import {VoidType} from "../../variableTypes/voidType";
 import {NodeType} from "../../nodeType";
+import {ElseExpression} from "../elseExpression";
+
+export function instanceOfExtractResultsFunction(object: any): object is ExtractResultsFunction {
+  return object?.nodeType == NodeType.ExtractResultsFunction;
+}
+
+export function asExtractResultsFunction(object: any): ExtractResultsFunction | null {
+  return instanceOfExtractResultsFunction(object) ? object as ExtractResultsFunction : null;
+}
 
 export class ExtractResultsFunction extends ExpressionFunction {
 
@@ -69,7 +78,7 @@ export class ExtractResultsFunction extends ExpressionFunction {
       let variable = context.variableContext.getVariable(member.name);
       if (variable == null || variable.variableSource == VariableSource.Parameters) continue;
 
-     if (!variable.variableType?.equals(member.type)) {
+     if (variable.variableType == null || !variable.variableType?.equals(member.type)) {
        context.logger.fail(reference,
          `Invalid parameter mapping. Variable '${member.name}' of type '${variable.variableType}' can't be mapped to parameter '${member.name}' of type '${member.type}'.`);
      } else {

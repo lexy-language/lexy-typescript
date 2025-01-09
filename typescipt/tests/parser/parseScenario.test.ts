@@ -4,6 +4,7 @@ import {
   PrimitiveVariableDeclarationType
 } from "../../src/language/variableTypes/primitiveVariableDeclarationType";
 import {validateOfType} from "../validateOfType";
+import {format} from "../../src/infrastructure/formatting";
 
 describe('ParseScenarioTests', () => {
   it('testValidScenarioKeyword', async () => {
@@ -48,7 +49,8 @@ describe('ParseScenarioTests', () => {
 
     expect(logger.nodeHasErrors(scenario)).toBe(true);
 
-    expect(errors.length).toBe(4);
+    if (errors.length != 4) throw new Error(format(logger.errorNodeMessages(scenario), 2));
+
     expect(errors[0]).toBe(`tests.lexy(2, 3): ERROR - Invalid token 'Functtion'. Keyword expected.`);
     expect(errors[1]).toBe(`tests.lexy(1, 1): ERROR - Scenario has no function, enum, table or expect errors.`);
     expect(errors[2]).toBe(`tests.lexy(4, 5): ERROR - Unknown variable name: 'value'.`);

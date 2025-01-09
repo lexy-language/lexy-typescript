@@ -37,8 +37,11 @@ class WinstonLogger implements ILogger {
 
 export class LoggingConfiguration {
   static readonly logRun = `${LoggingConfiguration.timestamp()}-lexy-`;
+  static initialized = false;
 
   public static configure() {
+
+    if (LoggingConfiguration.initialized) return;
 
     LoggingConfiguration.mainLogger(testsLogFile);
     LoggingConfiguration.addLogger("LexyParser", parserLogFile)
@@ -52,21 +55,27 @@ export class LoggingConfiguration {
 
     LoggingConfiguration.logFileNames();
     LoggingConfiguration.removeOldFiles();
+
+    LoggingConfiguration.initialized = true;
   }
 
   public static getParserLogger(): ILogger {
+    LoggingConfiguration.configure();
     return LoggingConfiguration.winstonLogger('LexyParser');
   }
 
   public static getCompilerLogger(): ILogger {
+    LoggingConfiguration.configure();
     return LoggingConfiguration.winstonLogger('LexyCompiler');
   }
 
   public static getExecutionLogger(): ILogger {
+    LoggingConfiguration.configure();
     return LoggingConfiguration.winstonLogger('ExecutionContext');
   }
 
   public static getMainLogger(): ILogger {
+    LoggingConfiguration.configure();
     return new WinstonLogger(winston);
   }
 

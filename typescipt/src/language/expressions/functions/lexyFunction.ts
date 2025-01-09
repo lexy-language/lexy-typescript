@@ -14,6 +14,14 @@ import {asIdentifierExpression} from "../identifierExpression";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
 
+export function instanceOfLexyFunction(object: any): object is LexyFunction {
+  return object?.nodeType == NodeType.LexyFunction;
+}
+
+export function asLexyFunction(object: any): LexyFunction | null {
+  return instanceOfLexyFunction(object) ? object as LexyFunction : null;
+}
+
 export class LexyFunction extends ExpressionFunction implements IHasNodeDependencies {
 
   private variableNameValue: string | null
@@ -30,68 +38,78 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
     return this.variableNameValue;
   }
 
-  private readonly mappingParameters: Array<Mapping> = [];
-  private readonly mappingResults: Array<Mapping> = [];
+  private readonly mappingParametersValue: Array<Mapping> = [];
+  private readonly mappingResultsValue: Array<Mapping> = [];
 
-   public get functionParametersType(): ComplexType {
-     return this.functionParametersTypeValue;
-   }
-   public get functionResultsType(): ComplexType {
-     return this.functionResultsTypeValue;
-   }
+  public get functionParametersType(): ComplexType {
+    return this.functionParametersTypeValue;
+  }
 
-   constructor(functionName: string, argumentValues: Array<Expression>, reference: SourceReference) {
-     super(reference);
-     this.functionName = functionName;
-     this.argumentValues = argumentValues;
-   }
+  public get functionResultsType(): ComplexType {
+    return this.functionResultsTypeValue;
+  }
 
-   public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
-     let functionNode = rootNodeList.getFunction(this.functionName);
-     return functionNode != null ? [functionNode] : [];
-   }
+  public get mappingParameters(): ReadonlyArray<Mapping> {
+    return this.mappingParametersValue;
+  }
 
-   public override getChildren(): Array<INode> {
-     return [...this.argumentValues];
-   }
+  public get mappingResults(): ReadonlyArray<Mapping> {
+    return this.mappingResultsValue;
+  }
 
-   protected override validate(context: IValidationContext): void {
-     let functionNode = context.rootNodes.getFunction(this.functionName);
-     if (functionNode == null) {
-       context.logger.fail(this.reference, `Invalid function name: '${this.functionName}'`);
-       return;
-     }
+  constructor(functionName: string, argumentValues: Array<Expression>, reference: SourceReference) {
+    super(reference);
+    this.functionName = functionName;
+    this.argumentValues = argumentValues;
+  }
 
-     if (this.argumentValues.length > 1) {
-       context.logger.fail(this.reference, `Invalid function argument: '${this.functionName}'. Should be 0 or 1`);
-       return;
-     }
+  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+    let functionNode = rootNodeList.getFunction(this.functionName);
+    return functionNode != null ? [functionNode] : [];
+  }
 
-     if (this.argumentValues.length == 0) {
-       FillParametersFunction.getMapping(this.reference, context, functionNode.getParametersType(context),
-         this.mappingParameters);
-       ExtractResultsFunction.getMapping(this.reference, context, functionNode.getResultsType(context), this.mappingResults);
+  public override getChildren(): Array<INode> {
+    return [...this.argumentValues];
+  }
 
-       this.functionParametersTypeValue = functionNode.getParametersType(context);
-       this.functionResultsTypeValue = functionNode.getResultsType(context);
+  protected override validate(context: IValidationContext): void {
+    let functionNode = context.rootNodes.getFunction(this.functionName);
+    if (functionNode == null) {
+      context.logger.fail(this.reference, `Invalid function name: '${this.functionName}'`);
+      return;
+    }
 
-       return;
-     }
+    if (this.argumentValues.length > 1) {
+      context.logger.fail(this.reference, `Invalid function argument: '${this.functionName}'. Should be 0 or 1`);
+      return;
+    }
 
-     let argumentType = this.argumentValues[0].deriveType(context);
-     let parametersType = functionNode.getParametersType(context);
+    if (this.argumentValues.length == 0) {
+      FillParametersFunction.getMapping(this.reference, context, functionNode.getParametersType(context),
+        this.mappingParametersValue);
+      ExtractResultsFunction.getMapping(this.reference, context, functionNode.getResultsType(context), this.mappingResultsValue);
 
-     if (argumentType == null || !argumentType.equals(parametersType)) {
-       context.logger.fail(this.reference, `Invalid function argument: '${this.functionName}'. ` +
-         `Argument should be of type function parameters. Use new(Function) of fill(Function) to create an variable of the function result type.`);
-     }
+      this.functionParametersTypeValue = functionNode.getParametersType(context);
+      this.functionResultsTypeValue = functionNode.getResultsType(context);
+
+      return;
+    }
+
+    let argumentType = this.argumentValues[0].deriveType(context);
+    let parametersType = functionNode.getParametersType(context);
+
+    if (argumentType == null || !argumentType.equals(parametersType)) {
+      context.logger.fail(this.reference, `Invalid function argument: '${this.functionName}'. ` +
+        `Argument should be of type function parameters. Use new(Function) of fill(Function) to create an variable of the function result type.`);
+    }
 
     const identifierExpression = asIdentifierExpression(this.argumentValues[0]);
-     this.variableNameValue = identifierExpression != null ? identifierExpression.identifier : null;
-   }
+    this.variableNameValue = identifierExpression != null ? identifierExpression.identifier : null;
+  }
 
-   public override deriveReturnType(context: IValidationContext): VariableType {
-     const functionNode = context.rootNodes.getFunction(this.functionName);
-     return functionNode.getResultsType(context);
-   }
+  public override deriveReturnType(context: IValidationContext): VariableType | null {
+    const functionNode = context.rootNodes.getFunction(this.functionName);
+    if (functionNode == null) return null;
+    return functionNode.getResultsType(context);
+  }
 }

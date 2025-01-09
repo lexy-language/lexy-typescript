@@ -1,17 +1,13 @@
-import {FunctionCall} from "../builtInFunctions/functionCall";
-import {firstOrDefault} from "../../../infrastructure/enumerableExtensions";
-import {FunctionCallExpression} from "../../../language/expressions/functionCallExpression";
+import {isNullOrEmpty} from "../../../parser/tokens/character";
 
 export class CodeWriter {
   private readonly builder: Array<string> = [];
   private readonly namespace;
   private indent = 0;
   private currentLineValue = 0;
-  private functionCalls: Array<FunctionCall>;
 
-  constructor(namespace: string, functionCalls: Array<FunctionCall> = []) {
+  constructor(namespace: string) {
     this.namespace = namespace;
-    this.functionCalls = functionCalls;
   }
 
   public get currentLine() {
@@ -44,12 +40,20 @@ export class CodeWriter {
     this.builder.push(value);
   }
 
-  writeNamespace() {
-    this.builder.push(this.namespace);
+  writeNamespace(value: string | null = null) {
+    if (value != null) {
+      this.builder.push(this.namespace + value);
+    } else {
+      this.builder.push(this.namespace);
+    }
   }
 
-  openScope(name: string) {
-    this.writeLine(name + " {")
+  openScope(value: string | null = null) {
+    if (value != null) {
+      this.writeLine(value + " {")
+    } else {
+      this.writeLine(" {")
+    }
     this.indent++
   }
 
@@ -89,14 +93,12 @@ export class CodeWriter {
     return ' '.repeat(this.indent * 2);
   }
 
-  public renderFunctionCall(expressionFunction: FunctionCallExpression) {
-    let functionCall = firstOrDefault(this.functionCalls, call => call.expressionFunction == expressionFunction);
-    if (functionCall == null) throw new Error(`Function call not found: ${expressionFunction.nodeType}`);
-
-    functionCall.renderExpression(this);
-  }
-
-  renderCustomBuiltInFunctions() {
-    this.functionCalls.forEach(call => call.renderCustomFunction(this));
+  identifierFromNamespace(value: string) {
+    if (isNullOrEmpty(value)) throw new Error("Value is null or empty")
+    if (value[0] == ".") {
+      return this.namespace + value;
+    } else {
+      return `${this.namespace}.${value}`;
+    }
   }
 }

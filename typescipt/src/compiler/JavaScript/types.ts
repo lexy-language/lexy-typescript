@@ -1,4 +1,3 @@
-
 /*
 
 internal static class Types {
@@ -43,69 +42,147 @@ internal static class Types {
      };
    }
 
-   public static syntax(variableType: VariableType): TypeSyntax {
-     return variableType switch {
-       PrimitiveType primitive => Syntax(primitive.Type),
-       EnumType enumType => IdentifierName(ClassNames.EnumClassName(enumType.Type)),
-       TableType tableType => IdentifierName(tableType.Type),
-       ComplexType complexType => ComplexTypeSyntax(complexType),
-       ComplexTypeReference complexTypeReference => ComplexTypeReferenceSyntax(complexTypeReference),
-       _ => throw new Error(`Couldn't map type: ` + variableType)
-     };
-   }
 
-   private static complexTypeReferenceSyntax(complexTypeReference: ComplexTypeReference): TypeSyntax {
-     return complexTypeReference switch {
-       FunctionParametersType _ => QualifiedName(
-         IdentifierName(ClassNames.FunctionClassName(complexTypeReference.Name)),
-         IdentifierName(LexyCodeConstants.ParametersType)),
-       FunctionResultsType _ => QualifiedName(
-         IdentifierName(ClassNames.FunctionClassName(complexTypeReference.Name)),
-         IdentifierName(LexyCodeConstants.resultsType)),
-       TableRowType _ => QualifiedName(
-         IdentifierName(ClassNames.TableClassName(complexTypeReference.Name)),
-         IdentifierName(LexyCodeConstants.RowType)),
-       _ => throw new Error($`Invalid type: {complexTypeReference?.getType()}`)
-     };
-   }
+ */
 
-   private static complexTypeSyntax(complexType: ComplexType): TypeSyntax {
-     switch (complexType.Source) {
-       case ComplexTypeSource.FunctionParameters:
-         return QualifiedName(
-           IdentifierName(ClassNames.FunctionClassName(complexType.Name)),
-           IdentifierName(LexyCodeConstants.ParametersType));
-       case ComplexTypeSource.FunctionResults:
-         return QualifiedName(
-           IdentifierName(ClassNames.FunctionClassName(complexType.Name)),
-           IdentifierName(LexyCodeConstants.resultsType));
-       case ComplexTypeSource.TableRow:
-         return QualifiedName(
-           IdentifierName(ClassNames.TableClassName(complexType.Name)),
-           IdentifierName(LexyCodeConstants.RowType));
-       case ComplexTypeSource.Custom:
-         return IdentifierName(ClassNames.TypeClassName(complexType.Name));
-       default:
-         throw new Error($`Invalid type: {complexType}`);
-     }
-   }
+import {VariableType} from "../../language/variableTypes/variableType";
+import {VariableTypeName} from "../../language/variableTypes/variableTypeName";
+import {asPrimitiveType} from "../../language/variableTypes/primitiveType";
+import {asEnumType} from "../../language/variableTypes/enumType";
+import {enumClassName, functionClassName, tableClassName, typeClassName} from "./classNames";
+import {asTableType} from "../../language/variableTypes/tableType";
+import {asComplexType, ComplexType} from "../../language/variableTypes/complexType";
+import {asComplexTypeReference} from "../../language/variableTypes/complexTypeReference";
+import {LexyCodeConstants} from "../lexyCodeConstants";
+import {ComplexTypeSource} from "../../language/variableTypes/complexTypeSource";
 
-   public static syntax(type: VariableDeclarationType): TypeSyntax {
-     return type switch {
-       PrimitiveVariableDeclarationType primitive => Syntax(primitive.Type),
-       CustomVariableDeclarationType customVariable => IdentifierNameSyntax(customVariable),
-       ImplicitVariableDeclaration implicitVariable => Syntax(implicitVariable.VariableType),
-       _ => throw new Error(`Couldn't map type: ` + type)
-     };
-   }
+export function translateType(variableType: VariableType): string {
+  switch (variableType.variableTypeName) {
+    case VariableTypeName.PrimitiveType: {
+      const primitiveType = asPrimitiveType(variableType);
+      if (primitiveType == null) throw new Error("Is not primitiveType");
+      return primitiveType.type;
+    }
+    case VariableTypeName.EnumType: {
+      const enumType = asEnumType(variableType);
+      if (enumType == null) throw new Error("Is not enumType");
+      return enumClassName(enumType.type);
+    }
+    case VariableTypeName.TableType: {
+      const tableType = asTableType(variableType);
+      if (tableType == null) throw new Error("Is not tableType");
+      return tableType.type; // todo: is this correct?
+    }
+    case VariableTypeName.ComplexType: {
+      const complexType = asComplexType(variableType);
+      if (complexType == null) throw new Error("Is not complexType");
+      return translateComplexType(complexType);
+    }
+    case VariableTypeName.FunctionParametersType: {
+      const complexTypeReference = asComplexTypeReference(variableType);
+      if (complexTypeReference == null) throw new Error("Is not ComplexTypeReference");
+      return `${functionClassName(complexTypeReference.name)}.${LexyCodeConstants.parametersType}`;
+    }
+    case VariableTypeName.FunctionResultsType: {
+      const complexTypeReference = asComplexTypeReference(variableType);
+      if (complexTypeReference == null) throw new Error("Is not ComplexTypeReference");
+      return `${functionClassName(complexTypeReference.name)}.${LexyCodeConstants.resultsType}`;
+    }
 
-   private static identifierNameSyntax(customVariable: CustomVariableDeclarationType): IdentifierNameSyntax {
-     return customVariable.VariableType switch {
-       EnumType enumType => IdentifierName(ClassNames.EnumClassName(enumType.Type)),
-       TableType tableType => IdentifierName(ClassNames.TableClassName(tableType.Type)),
-       CustomType customType => IdentifierName(ClassNames.TypeClassName(customType.Type)),
-       _ => throw new Error(`Couldn't map type: ` + customVariable.VariableType)
-     };
-   }
+    case VariableTypeName.TableRowType: {
+      const complexTypeReference = asComplexTypeReference(variableType);
+      if (complexTypeReference == null) throw new Error("Is not ComplexTypeReference");
+      return `${tableClassName(complexTypeReference.name)}.${LexyCodeConstants.rowType}`;
+    }
+  }
+}
+
+export function translateComplexType(complexType: ComplexType) {
+  switch (complexType.source)
+  {
+    case ComplexTypeSource.FunctionParameters: {
+      return functionClassName(complexType.name) + "." + LexyCodeConstants.parametersType;
+    }
+    case ComplexTypeSource.FunctionResults: {
+      return functionClassName(complexType.name) + "." + LexyCodeConstants.resultsType;
+    }
+    case ComplexTypeSource.TableRow: {
+      return tableClassName(complexType.name) + "." + LexyCodeConstants.rowType;
+    }
+    case ComplexTypeSource.Custom: {
+      return typeClassName(complexType.name);
+    }
+    default: {
+      throw new Error(`Invalid type: ${complexType.source}`)
+    }
+  }
+}
+
+/*
+
+private static
+complexTypeSyntax(complexType
+:
+ComplexType
+):
+TypeSyntax
+{
+  switch (complexType.Source) {
+    case ComplexTypeSource.FunctionParameters:
+      return QualifiedName(
+        IdentifierName(ClassNames.FunctionClassName(complexType.Name)),
+        IdentifierName(LexyCodeConstants.ParametersType));
+    case ComplexTypeSource.FunctionResults:
+      return QualifiedName(
+        IdentifierName(ClassNames.FunctionClassName(complexType.Name)),
+        IdentifierName(LexyCodeConstants.resultsType));
+    case ComplexTypeSource.TableRow:
+      return QualifiedName(
+        IdentifierName(ClassNames.TableClassName(complexType.Name)),
+        IdentifierName(LexyCodeConstants.RowType));
+    case ComplexTypeSource.Custom:
+      return IdentifierName(ClassNames.TypeClassName(complexType.Name));
+    default:
+      throw new Error($`Invalid type: {complexType}`);
+  }
+}
+
+public static
+syntax(type
+:
+VariableDeclarationType
+):
+TypeSyntax
+{
+  return type
+  switch {
+    PrimitiveVariableDeclarationType primitive => Syntax(primitive.Type),
+    CustomVariableDeclarationType customVariable => IdentifierNameSyntax(customVariable),
+    ImplicitVariableDeclaration implicitVariable => Syntax(implicitVariable.VariableType),
+    _
+    =>
+      throw new Error(`Couldn't map type: ` + type)
+}
+  ;
+}
+
+private static
+customVariableIdentifier(customVariable
+:
+CustomVariableDeclarationType
+):
+IdentifierNameSyntax
+{
+  return customVariable.VariableType
+  switch {
+    EnumType enumType => IdentifierName(ClassNames.EnumClassName(enumType.Type)),
+    TableType tableType => IdentifierName(ClassNames.TableClassName(tableType.Type)),
+    CustomType customType => IdentifierName(ClassNames.TypeClassName(customType.Type)),
+    _
+    =>
+      throw new Error(`Couldn't map type: ` + customVariable.VariableType)
+}
+  ;
+}
 }
 */

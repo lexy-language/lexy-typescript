@@ -31,7 +31,7 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
 
   public variableSource: VariableSource;
   public variableType: VariableType | null;
-  public rootType: VariableType | null;
+  public parentVariableType: VariableType | null;
 
   constructor(variable: VariableReference, literal: MemberAccessLiteral, source: ExpressionSource, reference: SourceReference) {
     super(source, reference);
@@ -69,18 +69,23 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
 
   protected override validate(context: IValidationContext): void {
     this.variableType = context.variableContext.getVariableTypeByReference(this.variable, context);
-    this.rootType = context.rootNodes.getType(this.variable.parentIdentifier);
+    this.parentVariableType = context.rootNodes.getType(this.variable.parentIdentifier);
 
     this.setVariableSource(context);
 
     if (this.variableType != null) return;
 
-    if (this.variableType == null && this.rootType == null) {
+    this.validateMemberType(context);
+  }
+
+  private validateMemberType(context: IValidationContext) {
+
+    if (this.variableType == null && this.parentVariableType == null) {
       context.logger.fail(this.reference, `Invalid member access '${this.variable}'. Variable '{this.variable}' not found.`);
       return;
     }
 
-    const typeWithMembers = asTypeWithMembers(this.rootType);
+    const typeWithMembers = asTypeWithMembers(this.parentVariableType);
     if (typeWithMembers == null) {
       context.logger.fail(this.reference,
         `Invalid member access '${this.variable}'. Variable '${this.variable.parentIdentifier}' not found.`);
@@ -88,13 +93,14 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
     }
 
     let memberType = typeWithMembers.memberType(this.memberAccessLiteral.member, context);
-    if (memberType == null)
+    if (memberType == null) {
       context.logger.fail(this.reference,
         `Invalid member access '${this.variable}'. Member '${this.memberAccessLiteral.member}' not found on '${this.variable.parentIdentifier}'.`);
+    }
   }
 
   private setVariableSource(context: IValidationContext): void {
-    if (this.rootType != null) {
+    if (this.parentVariableType != null) {
       this.variableSource = VariableSource.Type;
       return;
     }

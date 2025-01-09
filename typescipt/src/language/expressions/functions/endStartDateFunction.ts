@@ -5,7 +5,6 @@ import {INode} from "../../node";
 import {IValidationContext} from "../../../parser/validationContext";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
 import {VariableType} from "../../variableTypes/variableType";
-import {NodeType} from "../../nodeType";
 
 export abstract class EndStartDateFunction extends ExpressionFunction {
    private get functionHelp() {

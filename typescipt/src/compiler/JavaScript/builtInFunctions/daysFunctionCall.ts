@@ -1,11 +1,7 @@
 import {EndStartDateFunctionCall} from "./endStartDateFunctionCall";
 import {DaysFunction} from "../../../language/expressions/functions/daysFunction";
 
-export class DaysFunctionCall extends EndStartDateFunctionCall {
+export class DaysFunctionCall extends EndStartDateFunctionCall<DaysFunction> {
   protected override className = "BuiltInDateFunctions";
   protected override methodName = "days";
-
-  constructor(functionNode: DaysFunction) {
-    super(functionNode);
-  }
 }

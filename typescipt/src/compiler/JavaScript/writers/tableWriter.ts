@@ -5,9 +5,9 @@ import {GeneratedType, GeneratedTypeKind} from "../../generatedType";
 import {asTable, Table} from "../../../language/tables/table";
 import {tableClassName} from "../classNames";
 import {CodeWriter} from "./codeWriter";
-import {renderTypeDefaultExpression} from "./renderVariableClass";
+import {renderTypeDefaultExpression} from "../renderers/renderVariableClass";
 import {LexyCodeConstants} from "../../lexyCodeConstants";
-import {renderValueExpression} from "./renderExpression";
+import {renderValueExpression} from "../renderers/renderExpression";
 
 export class TableWriter implements IRootTokenWriter {
 

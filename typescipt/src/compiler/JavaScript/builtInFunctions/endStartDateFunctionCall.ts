@@ -1,19 +1,14 @@
 import {EndStartDateFunction} from "../../../language/expressions/functions/endStartDateFunction";
 import {MethodFunctionCall} from "./methodFunctionCall";
 import {CodeWriter} from "../writers/codeWriter";
-import {renderExpression} from "../writers/renderExpression";
+import {renderExpression} from "../renderers/renderExpression";
 
-export abstract class EndStartDateFunctionCall extends MethodFunctionCall {
-  public functionNode: EndStartDateFunction;
+export abstract class EndStartDateFunctionCall<TFunctionExpression extends EndStartDateFunction>
+  extends MethodFunctionCall<TFunctionExpression> {
 
-  protected constructor(functionNode: EndStartDateFunction) {
-    super(functionNode);
-    this.functionNode = functionNode;
-  }
-
-  protected override renderArguments(codeWriter: CodeWriter) {
-    renderExpression(this.functionNode.endDateExpression, codeWriter);
+  protected override renderArguments(expression: TFunctionExpression, codeWriter: CodeWriter) {
+    renderExpression(expression.endDateExpression, codeWriter);
     codeWriter.write(", ")
-    renderExpression(this.functionNode.startDateExpression, codeWriter);
+    renderExpression(expression.startDateExpression, codeWriter);
   }
 }
