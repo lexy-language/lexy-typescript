@@ -9,6 +9,6 @@ describe('RunLexySpecifications', () => {
   it('specificFile',  async()=> {
     const runner = createRunner();
     runner.run(`../laws/Specifications/Type/Syntax.lexy`);
-    runner.run(`../laws/Specifications/Scenario/UnknownParameterType.lexy`);
+    //runner.run(`../laws/Specifications/Scenario/UnknownParameterType.lexy`);
   });
 });

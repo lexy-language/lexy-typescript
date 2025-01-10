@@ -17,7 +17,7 @@ export class FunctionResult {
     let currentValue = this.valueObject[expectedVariable.parentIdentifier];
     while (currentReference.hasChildIdentifiers) {
       currentReference = currentReference.childrenReference();
-      currentValue = this.valueObject[currentReference.parentIdentifier];
+      currentValue = currentValue[currentReference.parentIdentifier];
     }
 
     return currentValue;

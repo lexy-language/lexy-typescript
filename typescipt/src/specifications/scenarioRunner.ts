@@ -122,7 +122,7 @@ export class ScenarioRunner implements IScenarioRunner {
       }
     }
 
-    return validationResult.toString();
+    return validationResult.join('\n');
   }
 
   private validateErrors(): boolean {

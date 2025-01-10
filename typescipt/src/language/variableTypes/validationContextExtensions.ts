@@ -11,8 +11,10 @@ import {TypeNames} from "./TypeNames";
 import {asLiteralExpression} from "../expressions/literalExpression";
 
 
-function validateCustomVariableType(context: IValidationContext, reference: SourceReference,
-                                    customVariableDeclarationType: CustomVariableDeclarationType, defaultValueExpression: Expression | null) {
+function validateCustomVariableType(context: IValidationContext,
+                                    reference: SourceReference,
+                                    customVariableDeclarationType: CustomVariableDeclarationType,
+                                    defaultValueExpression: Expression | null) {
 
   let type = context.rootNodes.getType(customVariableDeclarationType.type);
   if (type == null || !instanceOfEnumType(type) && type.variableTypeName != "CustomType") {
