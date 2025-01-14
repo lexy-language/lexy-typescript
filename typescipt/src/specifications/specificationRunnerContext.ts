@@ -4,19 +4,19 @@ import type {ILogger} from "../infrastructure/logger";
 
 import {Scenario} from "../language/scenarios/scenario";
 import {format} from "../infrastructure/formatting";
-import moment from "moment";
+import {BuiltInDateFunctions} from "../runTime/builtInDateFunctions";
 
 export interface ISpecificationRunnerContext {
   failed: number
   fileRunners: ReadonlyArray<ISpecificationFileRunner>
 
-  fail(scenario: Scenario, message: string);
-  success(scenario: Scenario);
+  fail(scenario: Scenario, message: string): void;
+  success(scenario: Scenario): void;
 
-  logGlobal(message: string);
-  logTimeSpent();
+  logGlobal(message: string): void;
+  logTimeSpent(): void;
 
-  add(fileRunner: ISpecificationFileRunner);
+  add(fileRunner: ISpecificationFileRunner): void;
 
   failedScenariosRunners(): ReadonlyArray<IScenarioRunner>;
   countScenarios(): number;
@@ -61,16 +61,11 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
 
   public logTimeSpent(): void {
 
-    const difference = new moment(new Date()).diff(moment(this.startTimestamp), "milliseconds");
+    const difference = BuiltInDateFunctions.milliseconds(new Date(), this.startTimestamp);
     const message = `Time: ${difference} milliseconds`
 
     this.globalLog.push(message)
     this.logger.logInformation(message);
-  }
-
-  public log(message: string): void {
-    let log = ` ${message}`;
-    this.logger.logInformation(log);
   }
 
   public success(scenario: Scenario): void {
@@ -84,7 +79,7 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
   }
 
   public failedScenariosRunners(): Array<IScenarioRunner> {
-    const result = [];
+    const result: Array<IScenarioRunner> = [];
     this.fileRunners.forEach(runner =>
       runner.scenarioRunners.forEach(scenario => {
         if (scenario.failed) result.push(scenario)

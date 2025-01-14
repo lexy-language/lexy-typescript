@@ -23,11 +23,12 @@ export function asTable(object: any): Table | null {
 export class Table extends RootNode {
 
   public static readonly rowName: string = `Row`;
-  private rowsValue: Array<TableRow> = [];
-  private headerValue: TableHeader | null;
 
   public readonly nodeType = NodeType.Table;
   public readonly name: TableName = new TableName();
+
+  private rowsValue: Array<TableRow> = [];
+  private headerValue: TableHeader | null = null;
 
   public get header(): TableHeader | null {
     return this.headerValue;

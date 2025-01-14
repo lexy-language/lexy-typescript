@@ -6,7 +6,7 @@ import {NodeType} from "../../nodeType";
 
 export class SecondsFunction extends EndStartDateFunction {
 
-  public static readonly name: string = `SECONDS`;
+  public static readonly functionName: string = `SECONDS`;
    public readonly nodeType = NodeType.SecondsFunction;
 
   protected override get functionName() {

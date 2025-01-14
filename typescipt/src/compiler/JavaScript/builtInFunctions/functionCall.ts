@@ -6,7 +6,7 @@ export abstract class FunctionCall<TFunctionExpression extends ExpressionFunctio
   public renderCustomFunction(expression: TFunctionExpression, codeWriter: CodeWriter) {
   }
 
-  public abstract renderExpression(expression: TFunctionExpression, codeWriter: CodeWriter);
+  public abstract renderExpression(expression: TFunctionExpression, codeWriter: CodeWriter): void;
 }
 
 

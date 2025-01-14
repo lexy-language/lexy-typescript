@@ -2,10 +2,10 @@ import type {IRootNode} from "../language/rootNode";
 import {ExecutableFunction} from "./executableFunction";
 
 export enum GeneratedTypeKind {
-  function,
-  enum,
-  type,
-  table
+  Function = "Function",
+  Enum = "Enum",
+  Type = "Type",
+  Table = "Table"
 }
 
 export class GeneratedType {

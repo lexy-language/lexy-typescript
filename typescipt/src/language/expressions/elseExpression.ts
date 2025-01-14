@@ -4,7 +4,7 @@ import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IParseLineContext} from "../../parser/ParseLineContext";
 
-import {Expression} from "./Expression";
+import {Expression} from "./expression";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
 import {ExpressionSource} from "./expressionSource";

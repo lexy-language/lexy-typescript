@@ -15,11 +15,17 @@ class WinstonLogger implements ILogger {
     this.logger = logger;
   }
 
-  isEnabled(level: LogLevel) {
-    if (this.logger.level == "error") return LogLevel.Error;
-    if (this.logger.level == "warn") return LogLevel.Warning;
-    if (this.logger.level == "info") return LogLevel.Information;
-    return LogLevel.Debug;
+  isEnabled(level: LogLevel): boolean {
+    if (this.logger.level == "error") {
+      return level == LogLevel.Error;
+    }
+    if (this.logger.level == "warn") {
+      return level == LogLevel.Error || level == LogLevel.Warning;
+    }
+    if (this.logger.level == "info") {
+      return level == LogLevel.Error || level == LogLevel.Warning || level == LogLevel.Information;
+    }
+    return true;
   }
 
   logDebug(message: string) {

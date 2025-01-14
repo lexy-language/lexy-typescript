@@ -17,31 +17,27 @@ export function asImplicitVariableDeclaration(object: any): ImplicitVariableDecl
 
 export class ImplicitVariableDeclaration extends VariableDeclarationType {
 
-  private variableTypeValue: VariableType;
-
   public nodeType = NodeType.ImplicitVariableDeclaration;
 
-  public get variableType(): VariableType{
-    return this.variableTypeValue;
+  constructor(reference: SourceReference) {
+    super(reference);
   }
 
-   constructor(reference: SourceReference) {
-     super(reference);
-   }
+  public override createVariableType(context: IValidationContext): VariableType {
+    if (this.variableType == null) {
+      throw new Error(`Not supported. Nodes should be Validated first.`)
+    }
+    return this.variableType;
+  }
 
-   public override createVariableType(context: IValidationContext): VariableType {
-     return VariableType ??
-        throw new Error(`Not supported. Nodes should be Validated first.`);
-   }
+  public define(variableType: VariableType): void {
+    super.setVariableType(variableType);
+  }
 
-   public define(variableType: VariableType): void {
-     this.variableTypeValue = variableType;
-   }
+  public override getChildren(): Array<INode> {
+    return [];
+  }
 
-   public override getChildren(): Array<INode> {
-     return [];
-   }
-
-   protected override validate(context: IValidationContext): void {
-   }
+  protected override validate(context: IValidationContext): void {
+  }
 }

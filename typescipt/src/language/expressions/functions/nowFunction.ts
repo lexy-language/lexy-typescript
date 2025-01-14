@@ -6,7 +6,7 @@ import {NodeType} from "../../nodeType";
 
 export class NowFunction extends NoArgumentFunction {
 
-  public static readonly name: string = `NOW`;
+  public static readonly functionName: string = `NOW`;
 
   public readonly nodeType = NodeType.NowFunction;
 

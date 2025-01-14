@@ -1,13 +1,14 @@
+import {Assert} from "../../infrastructure/assert";
 
 export class TableName {
 
-  private valueValue: string;
+  private valueValue: string | null = null;
 
-   public get value(): string {
-    return this.valueValue;
-   }
+  public get value(): string {
+    return Assert.notNull(this.valueValue, "value");
+  }
 
-   public parseName(parameter: string): void {
-     this.valueValue = parameter;
-   }
+  public parseName(parameter: string): void {
+    this.valueValue = parameter;
+  }
 }

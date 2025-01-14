@@ -3,6 +3,5 @@ import {CodeWriter} from "../writers/codeWriter";
 
 export interface ILineExpressionException {
   matches(expression: Expression): boolean;
-
-  render(expression: Expression, codeWriter: CodeWriter);
+  render(expression: Expression, codeWriter: CodeWriter): void;
 }

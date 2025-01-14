@@ -8,8 +8,8 @@ import {ILexyParser} from "../parser/lexyParser";
 import {ILexyCompiler} from "../compiler/lexyCompiler";
 
 export interface ISpecificationsRunner {
-  run(folder: string);
-  runAll(file: string);
+  run(folder: string): void;
+  runAll(file: string): void;
 }
 
 export class SpecificationsRunner implements ISpecificationsRunner {

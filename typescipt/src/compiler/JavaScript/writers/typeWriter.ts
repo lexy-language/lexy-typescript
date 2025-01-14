@@ -23,6 +23,6 @@ export class TypeWriter implements IRootTokenWriter {
      const codeWriter = new CodeWriter(this.namespace);
      createVariableClass(className, typeDefinition.variables, codeWriter);
 
-     return new GeneratedType(GeneratedTypeKind.type, node, className, codeWriter.toString());
+     return new GeneratedType(GeneratedTypeKind.Type, node, className, codeWriter.toString());
    }
 }

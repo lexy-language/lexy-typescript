@@ -37,7 +37,7 @@ import {
 import {renderFunctionCall} from "../builtInFunctions/createFunctionCall";
 import {matchesLineExpressionException} from "../lineExpressionExceptions/matchesLineExpressionException";
 import {TokenType} from "../../../parser/tokens/tokenType";
-import {asDateTimeLiteral, DateTimeLiteral} from "../../../parser/tokens/dateTimeLiteral";
+import {asDateTimeLiteral} from "../../../parser/tokens/dateTimeLiteral";
 
 export function renderExpressions(expressions: ReadonlyArray<Expression>, codeWriter: CodeWriter) {
   for (const expression of expressions) {
@@ -58,7 +58,7 @@ export function renderExpressions(expressions: ReadonlyArray<Expression>, codeWr
 
 export function renderValueExpression(expression: Expression, codeWriter: CodeWriter) {
 
-  function render<T>(castFunction: (expression: Expression) => T, render: (render: T, codeWriter: CodeWriter) => void) {
+  function render<T>(castFunction: (expression: Expression) => T | null, render: (render: T, codeWriter: CodeWriter) => void) {
     const specificExpression = castFunction(expression);
     if (specificExpression == null) throw new Error(`Invalid expression type: '${expression.nodeType}' cast is null`);
     render(specificExpression, codeWriter);
@@ -81,7 +81,7 @@ export function renderValueExpression(expression: Expression, codeWriter: CodeWr
 
 export function renderExpression(expression: Expression, codeWriter: CodeWriter) {
 
-  function render<T>(castFunction: (expression: Expression) => T, render: (render: T, codeWriter: CodeWriter) => void) {
+  function render<T>(castFunction: (expression: Expression) => T | null, render: (render: T, codeWriter: CodeWriter) => void) {
     const specificExpression = castFunction(expression);
     if (specificExpression == null) throw new Error(`Invalid expression type: '${expression.nodeType}' cast is null`);
     render(specificExpression, codeWriter);

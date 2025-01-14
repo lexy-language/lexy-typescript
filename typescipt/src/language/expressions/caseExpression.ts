@@ -3,7 +3,7 @@ import type {INode} from "../node";
 import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/validationContext";
 
-import {Expression} from "./Expression";
+import {Expression} from "./expression";
 import {VariableType} from "../variableTypes/variableType";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";

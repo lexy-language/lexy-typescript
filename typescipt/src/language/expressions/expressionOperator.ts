@@ -1,15 +1,15 @@
 export enum ExpressionOperator {
-   Addition,
-   Subtraction,
-   Multiplication,
-   Division,
-   Modulus,
-   GreaterThan,
-   GreaterThanOrEqual,
-   LessThan,
-   LessThanOrEqual,
-   And,
-   Or,
-   Equals,
-   NotEqual
+  Addition = "Addition",
+  Subtraction = "Subtraction",
+  Multiplication = "Multiplication",
+  Division = "Division",
+  Modulus = "Modulus",
+  GreaterThan = "GreaterThan",
+  GreaterThanOrEqual = "GreaterThanOrEqual",
+  LessThan = "LessThan",
+  LessThanOrEqual = "LessThanOrEqual",
+  And = "And",
+  Or = "Or",
+  Equals = "Equals",
+  NotEqual = "NotEqual"
 }

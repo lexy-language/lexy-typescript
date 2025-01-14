@@ -8,10 +8,10 @@ import {NodeType} from "../../nodeType";
 export class DayFunction extends SingleArgumentFunction {
 
    public readonly nodeType = NodeType.DayFunction;
-   public static readonly name = `DAY`;
+   public static readonly functionName: string = `DAY`;
 
    protected override get functionHelp(): string {
-      return `${DayFunction.name} expects 1 argument (Date)`;
+      return `${DayFunction.functionName} expects 1 argument (Date)`;
    }
 
    constructor(valueExpression: Expression, reference: SourceReference) {

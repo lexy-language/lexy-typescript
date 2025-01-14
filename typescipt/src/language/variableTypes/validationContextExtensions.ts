@@ -7,7 +7,7 @@ import {asCustomVariableDeclarationType, CustomVariableDeclarationType} from "./
 import {asPrimitiveVariableDeclarationType, PrimitiveVariableDeclarationType} from "./primitiveVariableDeclarationType";
 import {instanceOfEnumType} from "./enumType";
 import {asMemberAccessExpression} from "../expressions/memberAccessExpression";
-import {TypeNames} from "./TypeNames";
+import {TypeNames} from "./typeNames";
 import {asLiteralExpression} from "../expressions/literalExpression";
 
 

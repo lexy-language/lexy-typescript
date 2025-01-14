@@ -25,7 +25,7 @@ export class LexyCompiler implements ILexyCompiler {
        this.generateCode(nodes, environment);
        environment.initialize();
        return environment.result();
-     } catch (error) {
+     } catch (error: any) {
        this.compilationLogger.logError(`Exception occurred during compilation: ` + error.stack);
        throw error;
      }

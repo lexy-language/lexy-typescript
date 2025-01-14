@@ -49,7 +49,7 @@ export class Function extends RootNode implements IHasNodeDependencies {
     return this.name.value;
   }
 
-  constructor(name: string, reference: SourceReference, factory) {
+  constructor(name: string, reference: SourceReference, factory: IExpressionFactory) {
     super(reference);
     this.name = new FunctionName(reference);
     this.parameters = new FunctionParameters(reference);
@@ -61,8 +61,8 @@ export class Function extends RootNode implements IHasNodeDependencies {
 
   public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
     let result = new Array<IRootNode>();
-    this.addEnumTypes(rootNodeList, this.parameters.variables, result);
-    this.addEnumTypes(rootNodeList, this.results.variables, result);
+    Function.addEnumTypes(rootNodeList, this.parameters.variables, result);
+    Function.addEnumTypes(rootNodeList, this.results.variables, result);
     return result;
   }
 
@@ -108,14 +108,14 @@ export class Function extends RootNode implements IHasNodeDependencies {
   }
 
   private addDependentNodes(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
-    this.addNodeDependencies(node, rootNodeList, result);
+    Function.addNodeDependencies(node, rootNodeList, result);
 
     let children = node.getChildren();
 
-    NodesWalker.walkNodes(children, eachNode => this.addNodeDependencies(eachNode, rootNodeList, result));
+    NodesWalker.walkNodes(children, eachNode => Function.addNodeDependencies(eachNode, rootNodeList, result));
   }
 
-  private addNodeDependencies(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
+  private static addNodeDependencies(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
     const hasDependencies = asHasNodeDependencies(node);
     if (hasDependencies == null) return;
 
@@ -127,8 +127,8 @@ export class Function extends RootNode implements IHasNodeDependencies {
     }
   }
 
-  private addEnumTypes(rootNodeList: RootNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
-                       result: Array<IRootNode>) {
+  private static addEnumTypes(rootNodeList: RootNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
+                              result: Array<IRootNode>) {
     for (const parameter of variableDefinitions) {
 
       const enumVariableType = asCustomVariableDeclarationType(parameter.type);

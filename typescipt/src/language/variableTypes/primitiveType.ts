@@ -1,4 +1,4 @@
-import {TypeNames} from "./TypeNames";
+import {TypeNames} from "./typeNames";
 import {VariableType} from "./variableType";
 import {VariableTypeName} from "./variableTypeName";
 
@@ -26,11 +26,26 @@ export class PrimitiveType extends VariableType
     this.type = type;
   }
 
-  public equals(other: PrimitiveType): boolean {
-    return other != null && this.type == other.type;
+  public override equals(other: VariableType | null): boolean {
+    return other != null && instanceOfPrimitiveType(other) && this.type == other.type;
   }
 
   public toString() {
     return this.type;
+  }
+
+  public static parse(type: string): PrimitiveType {
+    switch (type) {
+      case TypeNames.boolean:
+        return PrimitiveType.boolean;
+      case TypeNames.string:
+        return PrimitiveType.string;
+      case TypeNames.number:
+        return PrimitiveType.number;
+      case TypeNames.date:
+        return PrimitiveType.date;
+      default:
+        throw new Error(`Invalid primitive type: '${type}'`)
+    }
   }
 }

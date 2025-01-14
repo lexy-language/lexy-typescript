@@ -6,11 +6,11 @@ import {NodeType} from "../../nodeType";
 
 export class MonthsFunction extends EndStartDateFunction {
 
-  public static readonly name: string = `MONTHS`;
+  public static readonly functionName: string = `MONTHS`;
   public readonly nodeType = NodeType.MonthsFunction;
 
   protected override get functionName() {
-    return this.name;
+    return MonthsFunction.name;
   }
 
   constructor(endDateExpression: Expression, startDateExpression: Expression, reference: SourceReference) {

@@ -4,7 +4,7 @@ import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IChildExpression, IParentExpression} from "./IChildExpression";
 
-import {Expression} from "./Expression";
+import {Expression} from "./expression";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
 import {asElseExpression, ElseExpression} from "./elseExpression";
@@ -35,11 +35,11 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
 
   public condition: Expression
 
+  public else: ElseExpression | null = null;
+
   public get trueExpressions(): ReadonlyArray<Expression> {
     return this.trueExpressionsValues.asArray();
   }
-
-  public else: ElseExpression | null;
 
   constructor(condition: Expression, source: ExpressionSource, reference: SourceReference, factory: IExpressionFactory) {
     super(source, reference);

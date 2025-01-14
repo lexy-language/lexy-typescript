@@ -17,8 +17,7 @@ import {IRootNode} from "../language/rootNode";
 import {ExecutableFunction} from "../compiler/executableFunction";
 import {IExecutionContext} from "../runTime/executionContext";
 import {AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
-import {VariableReference} from "../language/variableReference";
-import {asTypeWithMembers} from "../language/variableTypes/ITypeWithMembers";
+import {Assert} from "../infrastructure/assert";
 
 export interface IScenarioRunner {
   failed: boolean;
@@ -34,11 +33,11 @@ export class ScenarioRunner implements IScenarioRunner {
   private readonly context: ISpecificationRunnerContext;
   private readonly compiler: ILexyCompiler;
   private readonly fileName: string;
-  private readonly functionNode: Function;
+  private readonly functionNode: Function | null = null;
   private readonly parserLogger: IParserLogger;
   private readonly rootNodeList: RootNodeList;
 
-  private failedValue: boolean;
+  private failedValue: boolean = false;
 
   public get failed(): boolean {
     return this.failedValue;
@@ -55,7 +54,17 @@ export class ScenarioRunner implements IScenarioRunner {
     this.parserLogger = parserLogger;
 
     this.scenario = scenario;
-    this.functionNode = scenario.functionNode ?? rootNodeList.getFunction(scenario.functionName.value);
+    this.functionNode = ScenarioRunner.getFunctionNode(scenario, rootNodeList);
+  }
+
+  private static getFunctionNode(scenario: Scenario, rootNodeList: RootNodeList): Function | null {
+    if (scenario.functionNode != null) {
+      return scenario.functionNode;
+    }
+    if (scenario.functionName.hasValue) {
+      return rootNodeList.getFunction(scenario.functionName.value);
+    }
+    return null;
   }
 
   public run(): void {
@@ -68,11 +77,12 @@ export class ScenarioRunner implements IScenarioRunner {
 
     if (!this.validateErrors()) return;
 
-    const nodes = this.functionNode.getFunctionAndDependencies(this.rootNodeList);
+    const functionNode = Assert.notNull(this.functionNode, "this.functionNode");
+    const nodes = functionNode.getFunctionAndDependencies(this.rootNodeList);
     const compilerResult = this.compile(nodes);
     const context = compilerResult.createContext();
-    const executable = compilerResult.getFunction(this.functionNode);
-    const values = this.getValues(this.scenario.parameters, this.functionNode.parameters, compilerResult);
+    const executable = compilerResult.getFunction(functionNode);
+    const values = this.getValues(this.scenario.parameters, functionNode.parameters, compilerResult);
 
     const result = this.runFunction(executable, context, values);
 
@@ -87,7 +97,7 @@ export class ScenarioRunner implements IScenarioRunner {
   private runFunction(executable: ExecutableFunction, context: IExecutionContext, values: { [key: string]: any } | null) {
     try {
       return executable.run(context, values);
-    } catch (error) {
+    } catch (error: any) {
       throw new Error("Exception occurred while running scenario '" + this.scenario.name + "' from '" + this.fileName + "'\n" + error.stack)
     }
   }
@@ -95,7 +105,7 @@ export class ScenarioRunner implements IScenarioRunner {
   private compile(nodes: Array<IRootNode>) {
     try {
       return this.compiler.compile(nodes);
-    } catch (error) {
+    } catch (error: any) {
       throw new Error("Exception occurred while compiling scenario '" + this.scenario.name + "' from '" + this.fileName + "'\n" + error.stack)
     }
   }
@@ -128,7 +138,7 @@ export class ScenarioRunner implements IScenarioRunner {
   private validateErrors(): boolean {
     if (this.scenario.expectRootErrors.hasValues) return this.validateRootErrors();
 
-    let node = this.functionNode ?? this.scenario.functionNode ?? this.scenario.enum ?? this.scenario.table;
+    let node = Assert.notNull<IRootNode>(this.functionNode ?? this.scenario.functionNode ?? this.scenario.enum ?? this.scenario.table, "node");
     let failedMessages = this.parserLogger.errorNodeMessages(node);
 
     if (failedMessages.length > 0 && !this.scenario.expectError.hasValue) {
@@ -144,7 +154,7 @@ export class ScenarioRunner implements IScenarioRunner {
       return false;
     }
 
-    if (!any(failedMessages, message => this.scenario.expectError.message != null && message.includes(this.scenario.expectError.message))) {
+    if (!any(failedMessages, message => this.scenario.expectError.hasValue != null && message.includes(this.scenario.expectError.message))) {
       this.fail(`Wrong exception \n` +
         ` Expected: ${this.scenario.expectError.message}\n` +
         ` Actual: ${format(failedMessages, 4)}`);
@@ -186,7 +196,7 @@ export class ScenarioRunner implements IScenarioRunner {
   }
 
   private getValues(scenarioParameters: ScenarioParameters, functionParameters: FunctionParameters,
-                    compilerResult: CompilerResult): { [key: string], value: any } {
+                    compilerResult: CompilerResult): { [key: string]: any } {
     let result = {};
     for (const parameter of scenarioParameters.assignments) {
       this.setParameter(functionParameters, parameter, compilerResult, result);
@@ -195,11 +205,14 @@ export class ScenarioRunner implements IScenarioRunner {
     return result;
   }
 
-  private setParameter(functionParameters: FunctionParameters, parameter: AssignmentDefinition, compilerResult: CompilerResult, result: {}) {
+  private setParameter(functionParameters: FunctionParameters,
+                       parameter: AssignmentDefinition,
+                       compilerResult: CompilerResult,
+                       result: {[key: string]: any}) {
     let type = firstOrDefault(functionParameters.variables, variable => variable.name == parameter.variable.parentIdentifier);
 
     if (type == null) {
-      throw new Error(`Function '${this.functionNode.name}' parameter '${parameter.variable.parentIdentifier}' not found.`);
+      throw new Error(`Function '${this.functionNode?.name}' parameter '${parameter.variable.parentIdentifier}' not found.`);
     }
 
     const value = ScenarioRunner.getValue(compilerResult, parameter.constantValue.value, parameter.variableType);
@@ -222,7 +235,7 @@ export class ScenarioRunner implements IScenarioRunner {
     return TypeConverter.convert(compilerResult, value, type);
   }
 
-  private static compare(actual: object, expectedValue: object): boolean {
+  private static compare(actual: any, expectedValue: any): boolean {
     if (expectedValue?.constructor == Date && actual?.constructor == Date) {
       return actual.toISOString() == expectedValue.toISOString();
     }

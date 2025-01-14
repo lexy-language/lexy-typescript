@@ -14,7 +14,7 @@ export interface ICompilationEnvironment extends Disposable {
   namespace: string;
   fullNamespace: string;
 
-  addType(generatedType: GeneratedType);
+  addType(generatedType: GeneratedType): void;
 
   initialize(): void;
 
@@ -76,26 +76,26 @@ globalThis.${LexyCodeConstants.namespace}.${this.namespace}.${generatedType.name
       this.compilationLogger.logDebug(`Initialization code: ${code}`)
       const initialization = new Function(code);
       initialization();
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Initialization failed: ${error}
 ${code}`)
     }
 
     switch (generatedType.kind) {
-      case GeneratedTypeKind.function: {
+      case GeneratedTypeKind.Function: {
         const executable = this.createExecutableFunction(generatedType);
         this.executables[generatedType.node.nodeName] = executable;
         break;
       }
-      case GeneratedTypeKind.enum: {
+      case GeneratedTypeKind.Enum: {
         this.enums[generatedType.node.nodeName] = generatedType;
         break;
       }
-      case GeneratedTypeKind.table: {
+      case GeneratedTypeKind.Table: {
         this.tables[generatedType.node.nodeName] = generatedType;
         break;
       }
-      case GeneratedTypeKind.type: {
+      case GeneratedTypeKind.Type: {
         this.types[generatedType.node.nodeName] = generatedType;
         break;
       }

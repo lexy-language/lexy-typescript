@@ -27,6 +27,6 @@ export class EnumWriter implements IRootTokenWriter {
     }
     codeWriter.closeScope();
 
-    return new GeneratedType(GeneratedTypeKind.enum, node, enumName, codeWriter.toString());
+    return new GeneratedType(GeneratedTypeKind.Enum, node, enumName, codeWriter.toString());
    }
 }

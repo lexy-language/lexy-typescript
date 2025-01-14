@@ -1,18 +1,23 @@
+import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IValidationContext} from "../../parser/validationContext";
 import {INode, Node} from "../node";
 import {SourceReference} from "../../parser/sourceReference";
-import {IValidationContext} from "../../parser/validationContext";
 import {isNullOrEmpty, isValidIdentifier} from "../../parser/tokens/character";
-import {IParseLineContext} from "../../parser/ParseLineContext";
 import {NodeType} from "../nodeType";
+import {Assert} from "../../infrastructure/assert";
 
 export class ScenarioFunctionName extends Node {
 
-  private valueValue: string;
+  private valueValue: string | null = null;
 
   public readonly nodeType = NodeType.ScenarioFunctionName;
 
+  public get hasValue() {
+    return this.valueValue != null;
+  }
+
   public get value() {
-    return this.valueValue;
+    return Assert.notNull(this.valueValue, "value");
   }
 
   constructor(reference: SourceReference) {
@@ -22,7 +27,7 @@ export class ScenarioFunctionName extends Node {
   public parse(context: IParseLineContext): void {
     const name = context.line.tokens.tokenValue(1);
     if (!name) {
-      context.logger.fail(this.reference, "No function name found. Use 'Function:' for inline functions.")
+      context.logger.fail(this.reference, "No function functionName found. Use 'Function:' for inline functions.")
       return
     }
     this.valueValue = name;
@@ -33,8 +38,8 @@ export class ScenarioFunctionName extends Node {
   }
 
   protected override validate(context: IValidationContext): void {
-    if (!isNullOrEmpty(this.value) && !isValidIdentifier(this.value)) {
-      context.logger.fail(this.reference, `Invalid scenario name: '${this.value}'.`);
+    if (!isNullOrEmpty(this.valueValue) && !isValidIdentifier(this.valueValue)) {
+      context.logger.fail(this.reference, `Invalid scenario name: '${this.valueValue}'.`);
     }
   }
 

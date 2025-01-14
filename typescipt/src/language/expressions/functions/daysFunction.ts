@@ -6,12 +6,12 @@ import {NodeType} from "../../nodeType";
 
 export class DaysFunction extends EndStartDateFunction {
 
-   public static readonly name: string = `DAYS`;
+   public static readonly functionName: string = `DAYS`;
 
    public readonly nodeType = NodeType.DaysFunction;
 
    protected override get functionName() {
-      return DaysFunction.name;
+      return DaysFunction.functionName;
    }
 
    constructor(endDateExpression: Expression, startDateExpression: Expression, reference: SourceReference) {

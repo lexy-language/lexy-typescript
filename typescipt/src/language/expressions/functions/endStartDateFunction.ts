@@ -7,6 +7,7 @@ import {PrimitiveType} from "../../variableTypes/primitiveType";
 import {VariableType} from "../../variableTypes/variableType";
 
 export abstract class EndStartDateFunction extends ExpressionFunction {
+
    private get functionHelp() {
      return `'${this.functionName}' expects 2 arguments (EndDate, StartDate).`;
    }
@@ -16,8 +17,8 @@ export abstract class EndStartDateFunction extends ExpressionFunction {
   public endDateExpression: Expression;
   public startDateExpression: Expression;
 
-  constructor(endDateExpression: Expression, startDateExpression: Expression,
-     reference: SourceReference) {
+  protected constructor(endDateExpression: Expression, startDateExpression: Expression,
+                        reference: SourceReference) {
      super(reference);
      this.endDateExpression = endDateExpression;
      this.startDateExpression = startDateExpression;

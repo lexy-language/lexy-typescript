@@ -1,9 +1,9 @@
+import {IParserLogger} from "../src/parser/parserLogger";
+
 import {RootNodeList} from "../src/language/rootNodeList";
 import {LexyParser} from "../src/parser/lexyParser";
-import {ParserContext} from "../src/parser/parserContext";
 import {Tokenizer} from "../src/parser/tokens/tokenizer";
 import {ExpressionFactory} from "../src/language/expressions/expressionFactory";
-import {IParserLogger, ParserLogger} from "../src/parser/parserLogger";
 import {asTable, Table} from "../src/language/tables/table";
 import {asScenario, Scenario} from "../src/language/scenarios/scenario";
 import {asEnumDefinition, EnumDefinition} from "../src/language/enums/enumDefinition";

@@ -27,8 +27,8 @@ export class TableType extends TypeWithMembers {
     this.table = table;
   }
 
-  protected equals(other: TableType): boolean {
-    return this.tableName == other?.tableName;
+  public override equals(other: VariableType): boolean {
+    return other != null && instanceOfTableType(other) && this.tableName == other.tableName;
   }
 
   public toString(): string {

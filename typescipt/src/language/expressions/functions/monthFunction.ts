@@ -7,12 +7,12 @@ import {NodeType} from "../../nodeType";
 
 export class MonthFunction extends SingleArgumentFunction {
 
-   public static readonly name: string = `MONTH`;
+   public static readonly functionName: string = `MONTH`;
 
    public readonly nodeType = NodeType.MonthFunction;
 
    protected override get functionHelp(): string {
-      return `'${MonthFunction.name} expects 1 argument (Date)`;
+      return `'${MonthFunction.functionName} expects 1 argument (Date)`;
    }
 
    constructor(valueExpression: Expression, reference: SourceReference) {

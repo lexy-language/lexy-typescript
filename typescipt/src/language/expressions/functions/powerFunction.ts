@@ -9,10 +9,10 @@ import {NodeType} from "../../nodeType";
 
 export class PowerFunction extends ExpressionFunction {
 
-  public static readonly name: string = `POWER`;
+  public static readonly functionName: string = `POWER`;
 
   private get functionHelp() {
-    return `${PowerFunction.name} expects 2 arguments (Number, Power).`;
+    return `${PowerFunction.functionName} expects 2 arguments (Number, Power).`;
   }
 
   public readonly nodeType = NodeType.PowerFunction;

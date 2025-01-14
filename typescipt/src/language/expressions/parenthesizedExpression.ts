@@ -2,7 +2,7 @@ import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 
-import {Expression} from "./Expression";
+import {Expression} from "./expression";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {SourceReference} from "../../parser/sourceReference";

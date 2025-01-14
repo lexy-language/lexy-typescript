@@ -24,7 +24,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
   private readonly runnerContext: ISpecificationRunnerContext;
   private readonly scenarioRunnersValue: Array<IScenarioRunner> = [];
 
-  private result: ParserResult;
+  private result: ParserResult | null = null;
 
   public get scenarioRunners(): ReadonlyArray<IScenarioRunner> {
     return [...this.scenarioRunnersValue]
@@ -38,19 +38,22 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
   }
 
   initialize() {
+    let result: ParserResult;
     try {
-      this.result = this.parser.parseFile(this.fileName, false);
-    } catch(e) {
-      throw new Error("Error while parsing " + this.fileName + "\n" + e.stack + "\n--------------------------------------\n")
+      result = this.parser.parseFile(this.fileName, false);
+    } catch(error: any) {
+      throw new Error("Error while parsing " + this.fileName + "\n" + error.stack + "\n--------------------------------------\n")
     }
-    this.result
+    this.result = result
+    result
       .rootNodes
       .getScenarios()
       .forEach(scenario =>
-        this.scenarioRunnersValue.push(this.getScenarioRunner(scenario, this.result.rootNodes, this.result.logger)));
+        this.scenarioRunnersValue.push(this.getScenarioRunner(scenario, result.rootNodes, result.logger)));
   }
 
   public run(): void {
+    if (this.result == null) throw new Error("Runner not initialized")
 
     this.validateHasScenarioCheckingRootErrors(this.result.logger);
 
@@ -62,7 +65,11 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
   }
 
   private getScenarioRunner(scenario: Scenario, rootNodeList: RootNodeList, parserLogger: IParserLogger) {
-    return new ScenarioRunner(this.fileName, this.compiler, rootNodeList, scenario, this.runnerContext, parserLogger);
+    try {
+      return new ScenarioRunner(this.fileName, this.compiler, rootNodeList, scenario, this.runnerContext, parserLogger);
+    } catch (error: any) {
+      throw new Error("Error occurred while create runner for: " + this.fileName + "\n" + error.stack);
+    }
   }
 
   public countScenarioRunners(): number {

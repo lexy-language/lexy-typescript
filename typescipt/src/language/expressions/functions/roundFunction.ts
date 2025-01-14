@@ -8,7 +8,7 @@ import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
 
 export class RoundFunction extends ExpressionFunction {
-   public static readonly name: string = `ROUND`;
+   public static readonly functionName: string = `ROUND`;
 
    private get functionHelp() {
      return `'${RoundFunction.name}' expects 2 arguments (Number, Digits).`;

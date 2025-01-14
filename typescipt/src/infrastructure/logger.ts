@@ -1,15 +1,15 @@
 export enum LogLevel {
-  Debug,
-  Information,
-  Warning,
-  Error
+  Debug = "Debug",
+  Information = "Information",
+  Warning = "Warning",
+  Error = "Error"
 }
 
 export interface ILogger {
-  logDebug(message: string);
-  logInformation(message: string);
-  logError(message: string);
-  isEnabled(level: LogLevel);
+  logDebug(message: string): void;
+  logInformation(message: string): void;
+  logError(message: string): void;
+  isEnabled(level: LogLevel): boolean;
 }
 
 export class ConsoleLogger implements ILogger {
@@ -29,3 +29,4 @@ export class ConsoleLogger implements ILogger {
     console.log(`[INF]  - ${message}`)
   }
 }
+

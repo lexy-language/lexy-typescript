@@ -11,6 +11,7 @@ import {IValidationContext} from "../../../parser/validationContext";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
 import {asComplexType, ComplexType} from "../../variableTypes/complexType";
+import {Assert} from "../../../infrastructure/assert";
 
 export function instanceOfNewFunction(object: any): object is NewFunction {
   return object?.nodeType == NodeType.NewFunction;
@@ -22,15 +23,15 @@ export function asNewFunction(object: any): NewFunction | null {
 
 export class NewFunction extends ExpressionFunction implements IHasNodeDependencies {
 
-  private typeValue: ComplexType;
+  private typeValue: ComplexType | null = null;
 
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.NewFunction;
 
-  public static readonly name: string = `new`;
+  public static readonly functionName: string = `new`;
 
   protected get functionHelp() {
-    return `${NewFunction.name} expects 1 argument (Function.Parameters)`;
+    return `${NewFunction.functionName} expects 1 argument (Function.Parameters)`;
   }
 
   public typeLiteral: MemberAccessLiteral;
@@ -38,7 +39,7 @@ export class NewFunction extends ExpressionFunction implements IHasNodeDependenc
   public valueExpression: Expression;
 
   public get type(): ComplexType {
-    return this.typeValue;
+    return Assert.notNull(this.typeValue, "type");
   }
 
   constructor(valueExpression: Expression, reference: SourceReference) {

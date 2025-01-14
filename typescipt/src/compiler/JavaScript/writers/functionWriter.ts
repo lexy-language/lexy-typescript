@@ -40,7 +40,7 @@ export class FunctionWriter implements IRootTokenWriter {
     codeWriter.writeLine(`return ${LexyCodeConstants.runMethod};`)
     codeWriter.closeScope("();");
 
-    return new GeneratedType(GeneratedTypeKind.function, functionNode, functionClassName(functionNode.nodeName), codeWriter.toString());
+    return new GeneratedType(GeneratedTypeKind.Function, functionNode, functionClassName(functionNode.nodeName), codeWriter.toString());
   }
 
   private renderRunFunction(functionNode: Function, codeWriter: CodeWriter) {

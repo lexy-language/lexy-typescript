@@ -19,14 +19,14 @@ import {NodeType} from "./nodeType";
 
 export class VariableDefinition extends Node implements IHasNodeDependencies {
 
-  private variableTypeValue: VariableType | null;
-
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.VariableDefinition;
   public readonly defaultExpression: Expression | null;
   public readonly source: VariableSource;
   public readonly type: VariableDeclarationType;
   public readonly name: string;
+
+  private variableTypeValue: VariableType | null = null;
 
   public get variableType(): VariableType | null {
      return this.variableTypeValue;

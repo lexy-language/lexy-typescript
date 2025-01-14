@@ -9,7 +9,7 @@ import {NodeType} from "../nodeType";
 
 export class ScenarioTable extends ParsableNode {
 
-  private headerValue: TableHeader | null;
+  private headerValue: TableHeader | null = null;
   private rowsValue: Array<TableRow> = [];
 
   public nodeType = NodeType.ScenarioTable;

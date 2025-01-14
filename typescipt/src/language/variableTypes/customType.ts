@@ -3,7 +3,6 @@ import type {IValidationContext} from "../../parser/validationContext";
 
 import {TypeWithMembers} from "./typeWithMembers";
 import {TypeDefinition} from "../types/typeDefinition";
-import {TableType} from "./tableType";
 import {VariableType} from "./variableType";
 import {firstOrDefault} from "../../infrastructure/enumerableExtensions";
 import {RootNodeList} from "../rootNodeList";
@@ -29,8 +28,8 @@ export class CustomType extends TypeWithMembers {
     this.typeDefinition = typeDefinition;
   }
 
-  protected equals(other: CustomType): boolean {
-    return this.type == other?.type;
+  public override equals(other: VariableType | null): boolean {
+    return other != null && instanceOfCustomType(other) && this.type == other.type;
   }
 
   public toString(): string {

@@ -1,5 +1,5 @@
 import type {IExpressionFactory} from "../language/expressions/expressionFactory";
-import type {IParserLogger} from "./ParserLogger";
+import type {IParserLogger} from "./parserLogger";
 
 import {Line} from "./line";
 import {TokenValidator} from "./tokenValidator";

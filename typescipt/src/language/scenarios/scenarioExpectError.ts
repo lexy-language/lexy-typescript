@@ -7,14 +7,15 @@ import {SourceReference} from "../../parser/sourceReference";
 import {asQuotedLiteralToken, QuotedLiteralToken} from "../../parser/tokens/quotedLiteralToken";
 import {INode} from "../node";
 import {NodeType} from "../nodeType";
+import {Assert} from "../../infrastructure/assert";
 
 export class ScenarioExpectError extends ParsableNode {
-  private messageValue: string | null;
+  private messageValue: string | null = null;
 
   public readonly nodeType = NodeType.ScenarioExpectError;
 
-  public get message(): string | null {
-     return this.messageValue;
+  public get message(): string {
+     return Assert.notNull(this.messageValue, "message");
    }
 
    public get hasValue(): boolean {

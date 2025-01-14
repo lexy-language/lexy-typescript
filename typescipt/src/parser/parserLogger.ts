@@ -27,42 +27,34 @@ class LogEntry {
 export interface IParserLogger {
 
   logInfo(message: string): void;
-
   log(reference: SourceReference, message: string): void;
 
   fail(reference: SourceReference, message: string): void;
 
-  logNodes(nodes: Array<INode>);
+  logNodes(nodes: Array<INode>): void;
 
   hasErrors(): boolean;
-
   hasRootErrors(): boolean;
-
   hasErrorMessage(expectedError: string): boolean;
 
   formatMessages(): string;
-
   nodeHasErrors(node: IRootNode): boolean;
-
   errorMessages(): string[];
-
   errorRootMessages(): string[];
-
   errorNodeMessages(node: IRootNode): string[];
 
   assertNoErrors(): void;
 
   setCurrentNode(node: IRootNode): void;
-
   resetCurrentNode(): void;
 }
 
 export class ParserLogger implements IParserLogger {
 
   private readonly logEntries: Array<LogEntry> = [];
-
   private readonly logger: ILogger;
-  private currentNode: IRootNode | null;
+
+  private currentNode: IRootNode | null = null;
   private failedMessages: number = 0;
 
   constructor(logger: ILogger) {

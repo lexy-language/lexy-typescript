@@ -13,11 +13,11 @@ export interface ISourceCodeDocument {
 
 export class SourceCodeDocument implements ISourceCodeDocument {
 
-   private code: Line[] ;
-   private file: SourceFile;
+   private code: Line[] = [];
+   private file: SourceFile = new SourceFile("null");
 
-  private currentLineValue: Line | null;
-  private index: number ;
+  private currentLineValue: Line | null = null;
+  private index: number = -1;
 
    public get currentLine(): Line {
      if (this.currentLineValue == null) throw new Error(`No current line.`);

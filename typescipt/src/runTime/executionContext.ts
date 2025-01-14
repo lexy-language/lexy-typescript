@@ -1,4 +1,4 @@
-import {ILogger} from "../infrastructure/logger";
+import type {ILogger} from "../infrastructure/logger";
 
 export interface IExecutionContext {
   logDebug(message: string): void;

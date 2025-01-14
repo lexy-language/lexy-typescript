@@ -3,15 +3,16 @@ import {SourceReference} from "../../parser/sourceReference";
 import {IValidationContext} from "../../parser/validationContext";
 import {isNullOrEmpty, isValidIdentifier} from "../../parser/tokens/character";
 import {NodeType} from "../nodeType";
+import {Assert} from "../../infrastructure/assert";
 
 export class ScenarioName extends Node {
 
-  private valueValue: string;
+  private valueValue: string | null = null;
 
   public readonly nodeType = NodeType.ScenarioName;
 
   public get value() {
-    return this.valueValue;
+    return Assert.notNull(this.valueValue, "value");
   }
 
   constructor(reference: SourceReference) {

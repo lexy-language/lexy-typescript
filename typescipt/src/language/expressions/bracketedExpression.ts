@@ -80,7 +80,7 @@ export class BracketedExpression extends Expression {
   }
 
   public override getChildren(): Array<INode> {
-    return [Expression];
+    return [this.expression];
   }
 
   protected override validate(context: IValidationContext): void {

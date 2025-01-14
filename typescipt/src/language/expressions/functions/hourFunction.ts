@@ -8,10 +8,10 @@ import {NodeType} from "../../nodeType";
 export class HourFunction extends SingleArgumentFunction {
 
    public readonly nodeType = NodeType.HourFunction;
-   public static readonly name = `HOUR`;
+   public static readonly functionName: string = `HOUR`;
 
    protected override get functionHelp() {
-      return `${HourFunction.name} expects 1 argument (Date)`;
+      return `${HourFunction.functionName} expects 1 argument (Date)`;
    }
 
    constructor(valueExpression: Expression, reference: SourceReference) {

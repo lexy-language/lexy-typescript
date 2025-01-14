@@ -7,7 +7,7 @@ import type {IExpressionFactory} from "./expressions/expressionFactory";
 
 import {Function} from "./functions/function";
 import {RootNode} from "./rootNode";
-import {Comments} from "./Comments";
+import {Comments} from "./comments";
 import {Include} from "./include";
 import {RootNodeList} from "./rootNodeList";
 import {SourceReference} from "../parser/sourceReference";
@@ -25,7 +25,7 @@ import {NodeType} from "./nodeType";
 export class SourceCodeNode extends RootNode {
 
   private readonly includes: Array<Include> = [];
-  private expressionFactory: IExpressionFactory;
+  private readonly expressionFactory: IExpressionFactory;
 
   public readonly nodeType = NodeType.SourceCodeNode;
   public readonly nodeName = "SourceCodeNode";
@@ -42,7 +42,7 @@ export class SourceCodeNode extends RootNode {
   public override parse(context: IParseLineContext): IParsableNode {
     let line = context.line;
 
-    if (line.tokens.isComment()) return Comments;
+    if (line.tokens.isComment()) return this.comments;
 
     let rootNode = this.parseRootNode(context);
     if (rootNode == null) return this;

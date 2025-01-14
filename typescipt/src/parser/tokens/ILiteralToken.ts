@@ -1,4 +1,4 @@
-import {IToken} from "./Token";
+import {IToken} from "./token";
 import {VariableType} from "../../language/variableTypes/variableType";
 
 import type {IValidationContext} from "../validationContext";

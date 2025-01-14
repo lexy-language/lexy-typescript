@@ -1,18 +1,20 @@
-import {IHasNodeDependencies} from "../../IHasNodeDependencies";
+import type {IRootNode} from "../../rootNode";
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
+import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
+
 import {ExpressionFunction} from "./expressionFunction";
 import {Mapping} from "./mapping";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
-import {IValidationContext} from "../../../parser/ValidationContext";
 import {asMemberAccessExpression} from "../memberAccessExpression";
 import {RootNodeList} from "../../rootNodeList";
-import {IRootNode} from "../../rootNode";
-import {INode} from "../../node";
 import {asComplexType, ComplexType} from "../../variableTypes/complexType";
 import {VariableType} from "../../variableTypes/variableType";
 import {Function} from "../../functions/function";
 import {NodeType} from "../../nodeType";
+import {Assert} from "../../../infrastructure/assert";
 
 export function instanceOfFillParametersFunction(object: any): object is FillParametersFunction {
   return object?.nodeType == NodeType.FillParametersFunction;
@@ -24,21 +26,25 @@ export function asFillParametersFunction(object: any): FillParametersFunction | 
 
 export class FillParametersFunction extends ExpressionFunction implements IHasNodeDependencies {
 
-  public static readonly name = `fill`;
+  public static readonly functionName: string = `fill`;
+
+  private typeValue: ComplexType | null = null;
 
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.FillParametersFunction;
 
-  protected get functionHelp() {
-    return `${FillParametersFunction.name} expects 1 argument (Function.Parameters)`;
-  }
-
   public readonly typeLiteral: MemberAccessLiteral | undefined;
   public readonly valueExpression: Expression;
 
-  public type: ComplexType;
+  public get type() {
+    return Assert.notNull(this.typeValue, "type");
+  }
 
   public readonly mapping: Array<Mapping> = [];
+
+  protected get functionHelp() {
+    return `${FillParametersFunction.functionName} expects 1 argument (Function.Parameters)`;
+  }
 
   constructor(valueExpression: Expression, reference: SourceReference) {
     super(reference);
@@ -49,7 +55,7 @@ export class FillParametersFunction extends ExpressionFunction implements IHasNo
   }
 
   public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
-    const rootNode = rootNodeList.getNode(this.type.name);
+    const rootNode = rootNodeList.getNode(Assert.notNull(this.type, "type").name);
     return rootNode != null ? [rootNode] : [];
   }
 
@@ -70,9 +76,7 @@ export class FillParametersFunction extends ExpressionFunction implements IHasNo
       return;
     }
 
-    this.type = complexType;
-
-    if (complexType == null) return;
+    this.typeValue = complexType;
 
     FillParametersFunction.getMapping(this.reference, context, complexType, this.mapping);
   }

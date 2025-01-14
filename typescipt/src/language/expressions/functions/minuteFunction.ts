@@ -6,12 +6,12 @@ import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
 
 export class MinuteFunction extends SingleArgumentFunction {
-   public static readonly name: string = `MINUTE`;
+   public static readonly functionName: string = `MINUTE`;
 
    public readonly nodeType = NodeType.MinuteFunction;
 
    protected override get functionHelp(): string {
-      return `'${MinuteFunction.name} expects 1 argument (Date)`
+      return `'${MinuteFunction.functionName} expects 1 argument (Date)`
    }
 
    constructor(valueExpression: Expression, reference: SourceReference) {

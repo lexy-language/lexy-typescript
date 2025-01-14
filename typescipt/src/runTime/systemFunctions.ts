@@ -1,6 +1,6 @@
 
 export class SystemFunctions {
-  public static populate(parameters, values) {
+  public static populate(parameters: any, values: any) {
     for (let key in values) {
       if (values[key] && typeof values[key] === 'object' && values[key].constructor !== Date)  {
         this.populate(parameters[key], values[key]);

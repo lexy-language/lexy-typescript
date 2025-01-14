@@ -5,7 +5,7 @@ import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
 
 export class TodayFunction extends NoArgumentFunction {
-   public static readonly name: string = `TODAY`;
+   public static readonly functionName: string = `TODAY`;
 
   public readonly nodeType = NodeType.TodayFunction;
 

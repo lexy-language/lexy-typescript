@@ -31,12 +31,12 @@ export function asScenario(object: any): Scenario | null {
 
 export class Scenario extends RootNode {
 
-  private functionNodeValue: Function | null;
-  private enumValue: EnumDefinition | null;
-  private tableValue: Table | null;
-
   public readonly nodeType = NodeType.Scenario;
   public readonly name: ScenarioName;
+
+  private functionNodeValue: Function | null = null;
+  private enumValue: EnumDefinition | null = null;
+  private tableValue: Table | null = null;
 
   public get functionNode(): Function | null {
     return this.functionNodeValue;
@@ -213,15 +213,15 @@ export class Scenario extends RootNode {
   }
 
   private addFunctionParametersAndResultsForValidation(context: IValidationContext): void {
-    let functionNode = this.functionNode ?? (this.functionName != null ? context.rootNodes.getFunction(this.functionName.value) : null);
+    let functionNode = this.functionNode ?? (this.functionName.hasValue ? context.rootNodes.getFunction(this.functionName.value) : null);
     if (functionNode == null) return;
 
-    this.addVariablesForValidation(context, functionNode.parameters.variables, VariableSource.Parameters);
-    this.addVariablesForValidation(context, functionNode.results.variables, VariableSource.Results);
+    Scenario.addVariablesForValidation(context, functionNode.parameters.variables, VariableSource.Parameters);
+    Scenario.addVariablesForValidation(context, functionNode.results.variables, VariableSource.Results);
   }
 
-  private addVariablesForValidation(context: IValidationContext, definitions: ReadonlyArray<VariableDefinition>,
-                                    source: VariableSource) {
+  private static addVariablesForValidation(context: IValidationContext, definitions: ReadonlyArray<VariableDefinition>,
+                                           source: VariableSource) {
     for (const definition of definitions) {
       let variableType = definition.type.createVariableType(context);
       if (variableType == null) continue;

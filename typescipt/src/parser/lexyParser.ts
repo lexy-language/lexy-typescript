@@ -18,7 +18,6 @@ import {ParserContext} from "./parserContext";
 
 export interface ILexyParser {
   parseFile(fileName: string, throwException: boolean): ParserResult;
-
   parse(code: string[], fileName: string, throwException: boolean): ParserResult;
 }
 

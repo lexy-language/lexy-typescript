@@ -41,7 +41,7 @@ export class ComplexType extends VariableType implements ITypeWithMembers {
     return null;
   }
 
-  protected equals(other: ComplexType): boolean {
-    return other != null && this.name == other.name && this.source == other.source;
+  public equals(other: VariableType | null): boolean {
+    return other != null && instanceOfComplexType(other) && this.name == other.name && this.source == other.source;
   }
 }

@@ -1,7 +1,13 @@
+import {IExecutionContext} from "./executionContext";
 
 export class BuiltInTableFunctions {
 
-  public static lookUp(resultName, valueName, tableName, tableValues, condition, context) {
+  public static lookUp(resultName: string,
+                       valueName: string,
+                       tableName: string,
+                       tableValues: any,
+                       condition: any,
+                       context: IExecutionContext) {
     let functionName = `Lookup '${resultName}' by '${valueName}' from table '${tableName}'`;
 
     let lastRow = null;
@@ -37,7 +43,11 @@ export class BuiltInTableFunctions {
     return lastRow[resultName];
   }
 
-  public static lookUpRow(valueName, tableName, tableValues, condition, context) {
+  public static lookUpRow(valueName: string,
+                          tableName: string,
+                          tableValues: any,
+                          condition: any,
+                          context: IExecutionContext) {
     let functionName = `Lookup row by '${valueName}' from table '${tableName}'`;
 
     let lastRow = null;

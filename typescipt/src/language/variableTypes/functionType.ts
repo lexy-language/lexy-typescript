@@ -2,10 +2,16 @@ import {TypeWithMembers} from "./typeWithMembers";
 import {VariableType} from "./variableType";
 import {Function} from "../functions/function";
 import {IValidationContext} from "../../parser/validationContext";
-import {FunctionParametersType} from "./functionParametersType";
-import {FunctionResultsType} from "./functionResultsType";
 import {VariableTypeName} from "./variableTypeName";
 import {ComplexType} from "./complexType";
+
+export function instanceOfFunctionType(object: any): object is FunctionType {
+  return object?.variableTypeName == VariableTypeName.EnumType;
+}
+
+export function asFunctionType(object: any): FunctionType | null {
+  return instanceOfFunctionType(object) ? object as FunctionType : null;
+}
 
 export class FunctionType extends TypeWithMembers {
 
@@ -20,8 +26,8 @@ export class FunctionType extends TypeWithMembers {
     this.functionValue = functionValue;
   }
 
-  protected equals(other: FunctionType): boolean {
-    return this.type == other?.type;
+  public override equals(other: VariableType | null): boolean {
+    return other != null && instanceOfFunctionType(other) && this.type == other.type;
   }
 
   public toString(): string {

@@ -8,10 +8,10 @@ import {NodeType} from "../../nodeType";
 export class AbsFunction extends SingleArgumentFunction {
 
    public readonly nodeType = NodeType.AbsFunction;
-   public static readonly name = `ABS`;
+   public static readonly functionName: string = `ABS`;
 
    protected override get functionHelp(): string {
-      return `${AbsFunction.name} expects 1 argument (Value)`;
+      return `${AbsFunction.functionName} expects 1 argument (Value)`;
    }
 
    constructor(valueExpression: Expression, reference: SourceReference) {

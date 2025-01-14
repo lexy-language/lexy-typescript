@@ -18,7 +18,7 @@ export function formatLine<TItem>(enumerable: ReadonlyArray<TItem>, separator: s
   for (const item of enumerable)
   {
     if (builder.length > 0) builder.push(separator);
-    builder.push(item);
+    builder.push((item as any)?.toString());
   }
 
   return builder.join('');

@@ -11,6 +11,7 @@ import {ParseExpressionResult} from "./parseExpressionResult";
 import {asChildExpression, asParentExpression} from "./IChildExpression";
 import {lastOrDefault} from "../../infrastructure/enumerableExtensions";
 import {NodeType} from "../nodeType";
+import {Assert} from "../../infrastructure/assert";
 
 export class ExpressionList extends Node {
 
@@ -75,7 +76,7 @@ export class ExpressionList extends Node {
   private addToParent(childExpression: IChildExpression, context: IParseLineContext) {
     const parentExpression = asParentExpression(lastOrDefault(this.values));
     if (childExpression.validateParentExpression(parentExpression, context)) {
-      parentExpression.linkChildExpression(childExpression);
+      parentExpression?.linkChildExpression(childExpression);
     }
   }
 }

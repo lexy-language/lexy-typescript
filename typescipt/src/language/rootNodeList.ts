@@ -57,14 +57,6 @@ export class RootNodeList {
        firstOrDefault(this.values, type => instanceOfTypeDefinition(type) && type.nodeName == name));
    }
 
-   public getSingleFunction(): Function {
-     const node = singleOrDefault(this.values);
-     const functionValue = asFunction(node);
-     return functionValue != null
-       ? functionValue
-       : throw new Error("Invalid type: " + node?.nodeType );
-   }
-
    public getScenarios(): Array<Scenario> {
      return where(this.values, value => instanceOfScenario(value))
        .map(value => asScenario(value) as Scenario);

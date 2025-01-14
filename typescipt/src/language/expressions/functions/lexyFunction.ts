@@ -13,6 +13,7 @@ import {ExtractResultsFunction} from "./extractResultsFunction";
 import {asIdentifierExpression} from "../identifierExpression";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
+import {Assert} from "../../../infrastructure/assert";
 
 export function instanceOfLexyFunction(object: any): object is LexyFunction {
   return object?.nodeType == NodeType.LexyFunction;
@@ -24,9 +25,9 @@ export function asLexyFunction(object: any): LexyFunction | null {
 
 export class LexyFunction extends ExpressionFunction implements IHasNodeDependencies {
 
-  private variableNameValue: string | null
-  private functionParametersTypeValue: ComplexType;
-  private functionResultsTypeValue: ComplexType;
+  private variableNameValue: string | null = null;
+  private functionParametersTypeValue: ComplexType | null = null;
+  private functionResultsTypeValue: ComplexType | null = null;
 
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.LexyFunction;
@@ -42,11 +43,7 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
   private readonly mappingResultsValue: Array<Mapping> = [];
 
   public get functionParametersType(): ComplexType {
-    return this.functionParametersTypeValue;
-  }
-
-  public get functionResultsType(): ComplexType {
-    return this.functionResultsTypeValue;
+    return Assert.notNull(this.functionParametersTypeValue, "functionParametersType");
   }
 
   public get mappingParameters(): ReadonlyArray<Mapping> {

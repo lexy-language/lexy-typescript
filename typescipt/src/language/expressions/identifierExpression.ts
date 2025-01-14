@@ -2,7 +2,7 @@ import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 
-import {Expression} from "./Expression";
+import {Expression} from "./expression";
 import {VariableSource} from "../variableSource";
 import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../../parser/sourceReference";
@@ -11,6 +11,7 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
+import {Assert} from "../../infrastructure/assert";
 
 export function asIdentifierExpression(object: any): IdentifierExpression | null {
   return object?.nodeType == NodeType.IdentifierExpression ? object as IdentifierExpression : null;
@@ -18,13 +19,13 @@ export function asIdentifierExpression(object: any): IdentifierExpression | null
 
 export class IdentifierExpression extends Expression {
 
-  private variableSourceValue: VariableSource;
+  private variableSourceValue: VariableSource | null = null;
 
   public readonly nodeType = NodeType.IdentifierExpression;
   public readonly identifier: string;
 
   public get variableSource() {
-    return this.variableSourceValue;
+    return Assert.notNull(this.variableSourceValue, "variableSource");
   }
 
   constructor(identifier: string, source: ExpressionSource, reference: SourceReference) {

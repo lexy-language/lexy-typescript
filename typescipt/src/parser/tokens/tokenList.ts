@@ -86,14 +86,14 @@ export class TokenList {
     return index >= 0
       && index <= this.values.length - 1
       && this.values[index].tokenType == 'OperatorToken'
-      && (this.values[index] as IOperatorToken).type == type;
+      && (this.values[index] as any as IOperatorToken).type == type;
   }
 
   public operatorToken(index: number): IOperatorToken | null {
     return index >= 0
     && index <= this.values.length - 1
     && this.values[index].tokenType == 'OperatorToken'
-      ? this.values[index] as IOperatorToken
+      ? this.values[index] as any as IOperatorToken
       : null;
   }
 

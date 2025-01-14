@@ -8,6 +8,7 @@ import {CodeWriter} from "./codeWriter";
 import {renderTypeDefaultExpression} from "../renderers/renderVariableClass";
 import {LexyCodeConstants} from "../../lexyCodeConstants";
 import {renderValueExpression} from "../renderers/renderExpression";
+import {Assert} from "../../../infrastructure/assert";
 
 export class TableWriter implements IRootTokenWriter {
 
@@ -37,26 +38,28 @@ export class TableWriter implements IRootTokenWriter {
 
     codeWriter.closeScope("();");
 
-    return new GeneratedType(GeneratedTypeKind.type, node, className, codeWriter.toString());
+    return new GeneratedType(GeneratedTypeKind.Table, node, className, codeWriter.toString());
   }
 
   private renderRowClass(rowName: string, table: Table, codeWriter: CodeWriter) {
+    const header = Assert.notNull(table.header, "table.header");
+
     codeWriter.openScope("class " + rowName);
-    for (const column of table.header?.columns) {
+    for (const column of header.columns) {
       codeWriter.startLine(column.name + " = ")
       renderTypeDefaultExpression(column.type, codeWriter);
       codeWriter.endLine(";")
     }
     codeWriter.startLine("constructor(")
-    for (let i = 0; i < table.header?.columns.length; i++) {
-      const column = table.header?.columns[i];
+    for (let i = 0; i < header.columns.length; i++) {
+      const column = header.columns[i];
       codeWriter.write(column?.name ?? "")
-      if (i < table.header?.columns.length - 1) {
+      if (i < header.columns.length - 1) {
         codeWriter.write(", ")
       }
     }
     codeWriter.openInlineScope(")")
-    for (const column of table.header?.columns) {
+    for (const column of header.columns) {
       codeWriter.writeLine(`this.${column.name} = ${column.name} != undefined ? ${column.name} : this.${column.name};`)
     }
 

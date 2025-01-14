@@ -6,10 +6,10 @@ import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
 
 export class SecondFunction extends SingleArgumentFunction {
-   public static readonly name: string = `SECOND`;
+   public static readonly functionName: string = `SECOND`;
 
    protected override get functionHelp(): string {
-      return `'${SecondFunction.name} expects 1 argument (Date)`;
+      return `'${SecondFunction.functionName} expects 1 argument (Date)`;
    }
 
    public readonly nodeType = NodeType.SecondFunction;

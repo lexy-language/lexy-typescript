@@ -1,26 +1,26 @@
 export enum OperatorType {
-  NotSet,
+  NotSet = "NotSet",
 
-  Assignment,
-  Addition,
-  Subtraction,
-  Multiplication,
-  Division,
-  Modulus,
-  OpenParentheses,
-  CloseParentheses,
-  OpenBrackets,
-  CloseBrackets,
-  GreaterThan,
-  LessThan,
-  GreaterThanOrEqual,
-  LessThanOrEqual,
+  Assignment = "Assignment",
+  Addition = "Addition",
+  Subtraction = "Subtraction",
+  Multiplication = "Multiplication",
+  Division = "Division",
+  Modulus = "Modulus",
+  OpenParentheses = "OpenParentheses",
+  CloseParentheses = "CloseParentheses",
+  OpenBrackets = "OpenBrackets",
+  CloseBrackets = "CloseBrackets",
+  GreaterThan = "GreaterThan",
+  LessThan = "LessThan",
+  GreaterThanOrEqual = "GreaterThanOrEqual",
+  LessThanOrEqual = "LessThanOrEqual",
 
-  Equals,
-  NotEqual,
+  Equals = "Equals",
+  NotEqual = "NotEqual",
 
-  And,
-  Or,
+  And = "And",
+  Or = "Or",
 
-  ArgumentSeparator
+  ArgumentSeparator = "ArgumentSeparator"
 }

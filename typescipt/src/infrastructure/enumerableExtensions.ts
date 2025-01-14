@@ -1,5 +1,4 @@
-
-export function any<TItem>(array: Array<TItem>, where: (value: TItem) => boolean = null): boolean {
+export function any<TItem>(array: Array<TItem>, where: ((value: TItem) => boolean) | null = null): boolean {
   for (const item of array) {
     if (where == null || where(item)) return true;
   }
@@ -38,7 +37,7 @@ export function lastOrDefault<TItem>(array: ReadonlyArray<TItem>, where: ((value
 
   if (where == null) return array.length > 0 ? array[array.length - 1] : null;
 
-  for (let i = array.length - 1; i >= 0; i--){
+  for (let i = array.length - 1; i >= 0; i--) {
     const item = array[i];
     if (where(item)) return item;
   }
@@ -59,7 +58,7 @@ export function contains<TItem>(array: ReadonlyArray<TItem>, value: TItem): bool
   return false;
 }
 
-export function where<TItem>(array: ReadonlyArray<TItem>, predicate: (value: TItem) => void): ReadonlyArray<TItem> {
+export function where<TItem>(array: ReadonlyArray<TItem>, predicate: (value: TItem) => boolean): ReadonlyArray<TItem> {
   const results = [];
   for (const item of array) {
     if (predicate(item)) {

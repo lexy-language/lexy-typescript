@@ -29,8 +29,8 @@ export class EnumType extends TypeWithMembers {
     this.enum = enumDefinition;
   }
 
-  protected equals(other: EnumType): boolean {
-    return this.type == other?.type;
+  public override equals(other: VariableType | null): boolean {
+    return other != null && instanceOfEnumType(other) && this.type == other.type;
   }
 
   public toString(): string {

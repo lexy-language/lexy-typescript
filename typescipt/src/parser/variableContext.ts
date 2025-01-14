@@ -1,6 +1,6 @@
-import type {IParserLogger} from "./ParserLogger";
+import type {IParserLogger} from "./parserLogger";
 import type {ITypeWithMembers} from "../language/variableTypes/ITypeWithMembers";
-import type {IValidationContext} from "./ValidationContext";
+import type {IValidationContext} from "./validationContext";
 
 import {VariableType} from "../language/variableTypes/variableType";
 import {SourceReference} from "./sourceReference";
@@ -106,7 +106,7 @@ export class VariableContext implements IVariableContext {
    }
 
    private containChild(parentType: VariableType | null, reference: VariableReference, context: IValidationContext): boolean {
-     let typeWithMembers = (parentType as any).typeWithMember == true ? parentType as ITypeWithMembers : null;
+     let typeWithMembers = (parentType as any).typeWithMember == true ? (parentType as any) as ITypeWithMembers : null;
 
      let memberVariableType = typeWithMembers != null ? typeWithMembers.memberType(reference.parentIdentifier, context) : null;
      if (memberVariableType == null) return false;

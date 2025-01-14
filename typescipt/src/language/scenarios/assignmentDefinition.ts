@@ -12,95 +12,97 @@ import {OperatorType} from "../../parser/tokens/operatorType";
 import {VariableReferenceParser} from "./variableReferenceParser";
 import {ConstantValueParser} from "./constantValueParser";
 import {NodeType} from "../nodeType";
+import {Assert} from "../../infrastructure/assert";
 
 export class AssignmentDefinition extends Node {
 
   public readonly nodeType = NodeType.AssignmentDefinition;
 
-   private readonly valueExpression: Expression;
-   private readonly variableExpression: Expression;
+  private readonly valueExpression: Expression;
+  private readonly variableExpression: Expression;
 
-   private variableTypeValue: VariableType;
+  private variableTypeValue: VariableType | null = null;
 
-   public readonly constantValue: ConstantValue;
-   public readonly variable: VariableReference;
+  public readonly constantValue: ConstantValue;
+  public readonly variable: VariableReference;
 
-   public get variableType(): VariableType {
-     return this.variableTypeValue;
-   }
 
-   constructor(variable: VariableReference, constantValue: ConstantValue, variableExpression: Expression,
-     valueExpression: Expression, reference: SourceReference) {
-     super(reference);
+  public get variableType(): VariableType {
+    return Assert.notNull(this.variableTypeValue, "variableType");
+  }
 
-     this.variable = variable;
-     this.constantValue = constantValue;
+  constructor(variable: VariableReference, constantValue: ConstantValue, variableExpression: Expression,
+              valueExpression: Expression, reference: SourceReference) {
+    super(reference);
 
-     this.variableExpression = variableExpression;
-     this.valueExpression = valueExpression;
-   }
+    this.variable = variable;
+    this.constantValue = constantValue;
 
-   public static parse(context: IParseLineContext): AssignmentDefinition | null {
-     const line = context.line;
-     const tokens = line.tokens;
-     const reference = line.lineStartReference();
+    this.variableExpression = variableExpression;
+    this.valueExpression = valueExpression;
+  }
 
-     const assignmentIndex = tokens.find<OperatorToken>(token => token.type == OperatorType.Assignment, OperatorToken);
-     if (assignmentIndex <= 0 || assignmentIndex == tokens.length - 1) {
-       context.logger.fail(reference, `Invalid assignment. Expected: 'Variable = Value'`);
-       return null;
-     }
+  public static parse(context: IParseLineContext): AssignmentDefinition | null {
+    const line = context.line;
+    const tokens = line.tokens;
+    const reference = line.lineStartReference();
 
-     const targetExpression = context.expressionFactory.parse(tokens.tokensFromStart(assignmentIndex), line);
-     if (targetExpression.state == "failed") {
-       context.logger.fail(reference, targetExpression.errorMessage);
-       return null;
-     }
+    const assignmentIndex = tokens.find<OperatorToken>(token => token.type == OperatorType.Assignment, OperatorToken);
+    if (assignmentIndex <= 0 || assignmentIndex == tokens.length - 1) {
+      context.logger.fail(reference, `Invalid assignment. Expected: 'Variable = Value'`);
+      return null;
+    }
 
-     const valueExpression = context.expressionFactory.parse(tokens.tokensFrom(assignmentIndex + 1), line);
-     if (valueExpression.state == "failed") {
-       context.logger.fail(reference, valueExpression.errorMessage);
-       return null;
-     }
+    const targetExpression = context.expressionFactory.parse(tokens.tokensFromStart(assignmentIndex), line);
+    if (targetExpression.state == "failed") {
+      context.logger.fail(reference, targetExpression.errorMessage);
+      return null;
+    }
 
-     const variableReference = VariableReferenceParser.parseExpression(targetExpression.result);
-     if (variableReference.state == "failed") {
-       context.logger.fail(reference, variableReference.errorMessage);
-       return null;
-     }
+    const valueExpression = context.expressionFactory.parse(tokens.tokensFrom(assignmentIndex + 1), line);
+    if (valueExpression.state == "failed") {
+      context.logger.fail(reference, valueExpression.errorMessage);
+      return null;
+    }
 
-     const constantValue = ConstantValueParser.parse(valueExpression.result);
-     if (constantValue.state == "failed") {
-       context.logger.fail(reference, constantValue.errorMessage);
-       return null;
-     }
+    const variableReference = VariableReferenceParser.parseExpression(targetExpression.result);
+    if (variableReference.state == "failed") {
+      context.logger.fail(reference, variableReference.errorMessage);
+      return null;
+    }
 
-     return new AssignmentDefinition(variableReference.result, constantValue.result, targetExpression.result,
-       valueExpression.result, reference);
-   }
+    const constantValue = ConstantValueParser.parse(valueExpression.result);
+    if (constantValue.state == "failed") {
+      context.logger.fail(reference, constantValue.errorMessage);
+      return null;
+    }
 
-   public override getChildren(): Array<INode> {
-     return [this.variableExpression, this.valueExpression];
-   }
+    return new AssignmentDefinition(variableReference.result, constantValue.result, targetExpression.result,
+      valueExpression.result, reference);
+  }
 
-   protected override validate(context: IValidationContext): void {
-     if (!context.variableContext.containsReference(this.variable, context))
-       //logger by IdentifierExpressionValidation
-       return;
+  public override getChildren(): Array<INode> {
+    return [this.variableExpression, this.valueExpression];
+  }
 
-     let expressionType = this.valueExpression.deriveType(context);
+  protected override validate(context: IValidationContext): void {
+    if (!context.variableContext.containsReference(this.variable, context))
+      //logger by IdentifierExpressionValidation
+      return;
 
-     const variableTypeValue = context.variableContext.getVariableTypeByReference(this.variable, context);
-     if (variableTypeValue == null) {
-       context.logger.fail(this.reference,
-         `Variable '${this.variable}' of type '${this.variableType}' is not assignable from expression of type '${expressionType}'.`);
-       return;
-     }
+    let expressionType = this.valueExpression.deriveType(context);
 
-     this.variableTypeValue = variableTypeValue;
-     if (expressionType != null && !expressionType.equals(variableTypeValue)) {
-       context.logger.fail(this.reference,
-         `Variable '${this.variable}' of type '${this.variableType}' is not assignable from expression of type '${expressionType}'.`);
-     }
-   }
+    const variableTypeValue = context.variableContext.getVariableTypeByReference(this.variable, context);
+    if (variableTypeValue == null) {
+      context.logger.fail(this.reference,
+        `Type of variable '${this.variable}' is unknown.`);
+      return;
+    }
+
+    this.variableTypeValue = variableTypeValue;
+    if (expressionType != null && !expressionType.equals(variableTypeValue)) {
+      context.logger.fail(this.reference,
+        `Variable '${this.variable}' of type '${this.variableType}' is not assignable from expression of type '${expressionType}'.`);
+    }
+  }
 }

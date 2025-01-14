@@ -10,7 +10,6 @@ import {VariableSource} from "../../variableSource";
 import {VariableType} from "../../variableTypes/variableType";
 import {VoidType} from "../../variableTypes/voidType";
 import {NodeType} from "../../nodeType";
-import {ElseExpression} from "../elseExpression";
 
 export function instanceOfExtractResultsFunction(object: any): object is ExtractResultsFunction {
   return object?.nodeType == NodeType.ExtractResultsFunction;
@@ -23,10 +22,10 @@ export function asExtractResultsFunction(object: any): ExtractResultsFunction | 
 export class ExtractResultsFunction extends ExpressionFunction {
 
   public readonly nodeType = NodeType.ExtractResultsFunction;
-  public static readonly name: string = `extract`;
+  public static readonly functionName: string = `extract`;
 
   protected get functionHelp() {
-    return `${ExtractResultsFunction.name} expects 1 argument. extract(variable)`;
+    return `${ExtractResultsFunction.functionName} expects 1 argument. extract(variable)`;
   }
 
    public functionResultVariable: string | null;

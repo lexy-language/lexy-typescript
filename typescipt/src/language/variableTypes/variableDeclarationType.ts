@@ -5,7 +5,7 @@ import {IValidationContext} from "../../parser/validationContext";
 
 export abstract class VariableDeclarationType extends Node {
 
-  private variableTypeValue: VariableType | null;
+  private variableTypeValue: VariableType | null = null;
 
   public get variableType(): VariableType | null {
     return this.variableTypeValue;

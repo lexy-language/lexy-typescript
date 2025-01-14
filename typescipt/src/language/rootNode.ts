@@ -1,6 +1,6 @@
-import type {IParsableNode} from "./ParsableNode";
+import type {IParsableNode} from "./parsableNode";
 
-import {ParsableNode} from "./ParsableNode";
+import {ParsableNode} from "./parsableNode";
 import {SourceReference} from "../parser/sourceReference";
 import {IValidationContext} from "../parser/validationContext";
 import {INode} from "./node";

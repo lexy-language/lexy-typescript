@@ -1,5 +1,5 @@
 import {SingleArgumentFunction} from "./singleArgumentFunction";
-import {PrimitiveType} from "../../variableTypes/PrimitiveType";
+import {PrimitiveType} from "../../variableTypes/primitiveType";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {ExpressionFunction} from "./expressionFunction";
@@ -15,11 +15,11 @@ export function asIntFunction(object: any): IntFunction | null {
 
 export class IntFunction extends SingleArgumentFunction {
    
-   public static name: string = `INT`;
+   public static readonly functionName: string = `INT`;
    public readonly nodeType = NodeType.IntFunction;
 
    protected override get functionHelp(): string {
-      return `${IntFunction.name} expects 1 argument (Value)`;
+      return `${IntFunction.functionName} expects 1 argument (Value)`;
    }
 
    constructor(valueExpression: Expression, reference: SourceReference) {

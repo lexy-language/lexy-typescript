@@ -5,15 +5,15 @@ import {CodeWriter} from "../writers/codeWriter";
 export abstract class MethodFunctionCall<TFunctionExpression extends ExpressionFunction>
   extends FunctionCall<TFunctionExpression> {
 
-  public abstract className: string
-  public abstract methodName: string
+  protected abstract className: string
+  protected abstract methodName: string
 
-  public override renderExpression(expression: TFunctionExpression, codeWriter: CodeWriter) {
+  public override renderExpression(expression: TFunctionExpression, codeWriter: CodeWriter): void {
     codeWriter.writeNamespace();
     codeWriter.write("." + this.className + "." + this.methodName + "(");
     this.renderArguments(expression, codeWriter);
     codeWriter.write(")");
   }
 
-  protected abstract renderArguments(expression: TFunctionExpression, codeWriter: CodeWriter);
+  protected abstract renderArguments(expression: TFunctionExpression, codeWriter: CodeWriter): void ;
 }

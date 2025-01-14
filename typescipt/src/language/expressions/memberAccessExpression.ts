@@ -4,7 +4,7 @@ import type {IValidationContext} from "../../parser/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
 
-import {Expression} from "./Expression";
+import {Expression} from "./expression";
 import {VariableReference} from "../variableReference";
 import {VariableType} from "../variableTypes/variableType";
 import {SourceReference} from "../../parser/sourceReference";
@@ -29,9 +29,9 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
   public readonly memberAccessLiteral: MemberAccessLiteral;
   public readonly variable: VariableReference;
 
-  public variableSource: VariableSource;
-  public variableType: VariableType | null;
-  public parentVariableType: VariableType | null;
+  public variableSource: VariableSource = VariableSource.Unknown;
+  public variableType: VariableType | null = null;
+  public parentVariableType: VariableType | null = null;
 
   constructor(variable: VariableReference, literal: MemberAccessLiteral, source: ExpressionSource, reference: SourceReference) {
     super(source, reference);

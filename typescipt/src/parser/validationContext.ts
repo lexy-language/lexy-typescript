@@ -1,4 +1,4 @@
-import type {IParserLogger} from "./ParserLogger";
+import type {IParserLogger} from "./parserLogger";
 import type {IVariableContext} from "./variableContext"
 
 import {VariableContext} from "./variableContext";
@@ -8,24 +8,12 @@ import {Expression} from "../language/expressions/expression";
 import {VariableType} from "../language/variableTypes/variableType";
 import {SourceReference} from "./sourceReference";
 
-class CodeContextScope  {
-  private readonly func: () => IVariableContext | null;
-
-  constructor(func: (() => IVariableContext | null)) {
-    this.func = func;
-  }
-
-  [Symbol.dispose] = () => {
-    this.func();
-  }
-}
-
 export interface IValidationContext {
   logger: IParserLogger;
   rootNodes: RootNodeList;
 
   variableContext: IVariableContext;
-  createVariableScope() : { [Symbol.dispose] };
+  createVariableScope() : { [Symbol.dispose]: () => void };
 
   validateType(expression: Expression, argumentIndex: number, name: string,
                type: VariableType, reference: SourceReference, functionHelp: string): IValidationContext;
@@ -33,7 +21,7 @@ export interface IValidationContext {
 
 export class ValidationContext implements IValidationContext {
    private contexts: Stack<IVariableContext> = new Stack<IVariableContext>()
-   private variableContextValue: IVariableContext | null;
+   private variableContextValue: IVariableContext | null = null;
 
    public logger: IParserLogger;
    public rootNodes: RootNodeList;
@@ -48,21 +36,25 @@ export class ValidationContext implements IValidationContext {
      return this.variableContextValue;
    }
 
-   public createVariableScope(): { [Symbol.dispose] } {
+  public dispose(): void {
+     if (this.contexts.size() == 0) {
+       this.variableContextValue = null;
+     }
+
+     let variableContextValue = this.contexts.pop();
+     this.variableContextValue = !!variableContextValue ? variableContextValue : null;
+  }
+
+  public createVariableScope(): { [Symbol.dispose]: () => void } {
      if (this.variableContextValue != null) {
        this.contexts.push(this.variableContextValue);
      }
 
      this.variableContextValue = new VariableContext(this.logger, this.variableContextValue);
 
-     return new CodeContextScope(() => {
-       if (this.contexts.size() == 0) {
-         return this.variableContextValue = null;
-       }
-
-       let variableContextValue = this.contexts.pop();
-       return this.variableContextValue = !!variableContextValue ? variableContextValue : null;
-     });
+     return {
+       [Symbol.dispose]: () => this.dispose()
+     };
    }
 
   public validateType(expression: Expression, argumentIndex: number, name: string,

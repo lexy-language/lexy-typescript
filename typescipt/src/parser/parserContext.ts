@@ -1,4 +1,4 @@
-import type {IParserLogger} from "./ParserLogger";
+import type {IParserLogger} from "./parserLogger";
 import type {IExpressionFactory} from "../language/expressions/expressionFactory";
 import type {IFileSystem} from "./IFileSystem";
 import type {ILogger} from "../infrastructure/logger";
@@ -6,7 +6,7 @@ import type {ILogger} from "../infrastructure/logger";
 import {SourceCodeNode} from "../language/sourceCodeNode";
 import {RootNodeList} from "../language/rootNodeList";
 import {contains} from "../infrastructure/enumerableExtensions";
-import {ParserLogger} from "./ParserLogger";
+import {ParserLogger} from "./parserLogger";
 
 export interface IParserContext {
   logger: IParserLogger;
