@@ -1,0 +1,26 @@
+import {parseNodes} from "../parseFunctions";
+import {firstOrDefault} from "../../src/infrastructure/enumerableExtensions";
+import {asFunction, instanceOfFunction} from "../../src/language/functions/function";
+import {LexyCompiler} from "../../src/compiler/lexyCompiler";
+import {ExecutableFunction} from "../../src/compiler/executableFunction";
+import {LoggingConfiguration} from "../loggingConfiguration";
+
+export function compileFunction(code: string): ExecutableFunction {
+  let {nodes, logger} = parseNodes(code);
+
+  logger.assertNoErrors();
+
+  const array = nodes.asArray();
+  const functionNode = asFunction(firstOrDefault(array, value => instanceOfFunction(value)));
+  if (functionNode == null) {
+    throw new Error("No function found.")
+  }
+
+  const compiler = new LexyCompiler(LoggingConfiguration.getCompilerLogger(), LoggingConfiguration.getExecutionLogger());
+  const environment = compiler.compile(array);
+  const executableFunction = environment.getFunction(functionNode);
+  if (executableFunction == null) {
+    throw new Error("No executableFunction found.")
+  }
+  return executableFunction;
+}

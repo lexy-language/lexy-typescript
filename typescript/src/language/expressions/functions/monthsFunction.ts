@@ -1,0 +1,24 @@
+import {EndStartDateFunction} from "./endStartDateFunction";
+import {Expression} from "../expression";
+import {SourceReference} from "../../../parser/sourceReference";
+import {ExpressionFunction} from "./expressionFunction";
+import {NodeType} from "../../nodeType";
+
+export class MonthsFunction extends EndStartDateFunction {
+
+  public static readonly functionName: string = `MONTHS`;
+  public readonly nodeType = NodeType.MonthsFunction;
+
+  protected override get functionName() {
+    return MonthsFunction.name;
+  }
+
+  constructor(endDateExpression: Expression, startDateExpression: Expression, reference: SourceReference) {
+    super(endDateExpression, startDateExpression, reference);
+  }
+
+  public static create(reference: SourceReference, endDateExpression: Expression,
+                       startDateExpression: Expression): ExpressionFunction {
+    return new MonthsFunction(endDateExpression, startDateExpression, reference);
+  }
+}

@@ -1,0 +1,119 @@
+import type {IRootNode} from "../../rootNode";
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
+import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
+
+import {ExpressionFunction} from "./expressionFunction";
+import {Mapping} from "./mapping";
+import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
+import {Expression} from "../expression";
+import {SourceReference} from "../../../parser/sourceReference";
+import {asMemberAccessExpression} from "../memberAccessExpression";
+import {RootNodeList} from "../../rootNodeList";
+import {asComplexType, ComplexType} from "../../variableTypes/complexType";
+import {VariableType} from "../../variableTypes/variableType";
+import {Function} from "../../functions/function";
+import {NodeType} from "../../nodeType";
+import {Assert} from "../../../infrastructure/assert";
+
+export function instanceOfFillParametersFunction(object: any): object is FillParametersFunction {
+  return object?.nodeType == NodeType.FillParametersFunction;
+}
+
+export function asFillParametersFunction(object: any): FillParametersFunction | null {
+  return instanceOfFillParametersFunction(object) ? object as FillParametersFunction : null;
+}
+
+export class FillParametersFunction extends ExpressionFunction implements IHasNodeDependencies {
+
+  public static readonly functionName: string = `fill`;
+
+  private typeValue: ComplexType | null = null;
+
+  public readonly hasNodeDependencies = true;
+  public readonly nodeType = NodeType.FillParametersFunction;
+
+  public readonly typeLiteral: MemberAccessLiteral | undefined;
+  public readonly valueExpression: Expression;
+
+  public get type() {
+    return Assert.notNull(this.typeValue, "type");
+  }
+
+  public readonly mapping: Array<Mapping> = [];
+
+  protected get functionHelp() {
+    return `${FillParametersFunction.functionName} expects 1 argument (Function.Parameters)`;
+  }
+
+  constructor(valueExpression: Expression, reference: SourceReference) {
+    super(reference);
+    this.valueExpression = valueExpression;
+
+    const memberAccessExpression = asMemberAccessExpression(valueExpression);
+    this.typeLiteral = memberAccessExpression?.memberAccessLiteral;
+  }
+
+  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+    const rootNode = rootNodeList.getNode(Assert.notNull(this.type, "type").name);
+    return rootNode != null ? [rootNode] : [];
+  }
+
+  public static create(reference: SourceReference, expression: Expression): ExpressionFunction {
+    return new FillParametersFunction(expression, reference);
+  }
+
+  public override getChildren(): Array<INode> {
+    return [this.valueExpression];
+  }
+
+  protected override validate(context: IValidationContext): void {
+    const valueType = this.valueExpression.deriveType(context);
+    const complexType = asComplexType(valueType);
+    if (complexType == null) {
+      context.logger.fail(this.reference,
+        `Invalid argument 1 'Value' should be of type 'ComplexTypeReference' but is '${valueType}'. ${this.functionHelp}`);
+      return;
+    }
+
+    this.typeValue = complexType;
+
+    FillParametersFunction.getMapping(this.reference, context, complexType, this.mapping);
+  }
+
+  public static getMapping(reference: SourceReference, context: IValidationContext, complexType: ComplexType,
+                           mapping: Array<Mapping>): void {
+
+    for (const member of complexType.members) {
+      let variable = context.variableContext.getVariable(member.name);
+      if (variable == null) continue;
+
+      if (variable.variableType == null || !variable.variableType.equals(member.type)) {
+        context.logger.fail(reference,
+          `Invalid parameter mapping. Variable '${member.name}' of type '${variable.variableType}' can't be mapped to parameter '${member.name}' of type '${member.type}'.`);
+      } else {
+        mapping.push(new Mapping(member.name, variable.variableType, variable.variableSource));
+      }
+    }
+
+    if (mapping.length == 0) {
+      context.logger.fail(reference,
+        `Invalid parameter mapping. No parameter could be mapped from variables.`);
+    }
+  }
+
+  public override deriveReturnType(context: IValidationContext): VariableType | null {
+
+    if (this.typeLiteral == undefined) return null;
+    let functionValue = context.rootNodes.getFunction(this.typeLiteral.parent);
+    if (functionValue == null) return null;
+
+    if (this.typeLiteral.member == Function.parameterName) {
+      return functionValue.getParametersType(context);
+    }
+    if (this.typeLiteral.member == Function.resultsName) {
+      return functionValue.getResultsType(context);
+    }
+    return null;
+  }
+}

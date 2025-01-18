@@ -1,0 +1,25 @@
+import {SingleArgumentFunction} from "./singleArgumentFunction";
+import {Expression} from "../expression";
+import {SourceReference} from "../../../parser/sourceReference";
+import {PrimitiveType} from "../../variableTypes/primitiveType";
+import {ExpressionFunction} from "./expressionFunction";
+import {NodeType} from "../../nodeType";
+
+export class MonthFunction extends SingleArgumentFunction {
+
+   public static readonly functionName: string = `MONTH`;
+
+   public readonly nodeType = NodeType.MonthFunction;
+
+   protected override get functionHelp(): string {
+      return `'${MonthFunction.functionName} expects 1 argument (Date)`;
+   }
+
+   constructor(valueExpression: Expression, reference: SourceReference) {
+      super(valueExpression, reference, PrimitiveType.date, PrimitiveType.number);
+   }
+
+   public static create(reference: SourceReference, expression: Expression): ExpressionFunction {
+     return new MonthFunction(expression, reference);
+   }
+}
