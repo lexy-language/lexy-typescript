@@ -75,15 +75,15 @@ export class AssignmentExpression extends Expression {
 
     const identifierExpression = this.variable as IdentifierExpression;
 
-    let variableName = identifierExpression.identifier;
+    const variableName = identifierExpression.identifier;
 
-    let variableType = context.variableContext?.getVariableTypeByName(variableName);
+    const variableType = context.variableContext?.getVariableTypeByName(variableName);
     if (variableType == null) {
       context.logger.fail(this.reference, `Unknown variable name: '${variableName}'.`);
       return;
     }
 
-    let expressionType = this.assignment.deriveType(context);
+    const expressionType = this.assignment.deriveType(context);
     if (expressionType != null && !variableType?.equals(expressionType)) {
       context.logger.fail(this.reference,
         `Variable '${variableName}' of type '${variableType}' is not assignable from expression of type '${expressionType}'.`);
@@ -91,7 +91,7 @@ export class AssignmentExpression extends Expression {
   }
 
   private validateMemberAccess(context: IValidationContext): void {
-    if (this.variable.nodeType != "MemberAccessExpression") {
+    if (this.variable.nodeType != NodeType.MemberAccessExpression) {
       return;
     }
 
@@ -101,9 +101,10 @@ export class AssignmentExpression extends Expression {
 
     let variableType = context.variableContext?.getVariableTypeByReference(memberAccessExpression.variable, context);
     if (variableType != null) {
-      if (assignmentType == null || !assignmentType.equals(variableType))
+      if (assignmentType == null || !assignmentType.equals(variableType)) {
         context.logger.fail(this.reference,
           `Variable '${memberAccessExpression.variable}' of type '${variableType}' is not assignable from expression of type '${assignmentType}'.`);
+      }
       return;
     }
 

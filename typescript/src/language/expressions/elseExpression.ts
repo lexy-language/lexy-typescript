@@ -41,7 +41,7 @@ export class ElseExpression extends Expression implements IParsableNode, IChildE
   }
 
   public validateParentExpression(expression: IParentExpression | null, context: IParseLineContext): boolean {
-    if (expression == null || expression.nodeType != "IfExpression") {
+    if (expression == null || expression.nodeType != NodeType.IfExpression) {
       context.logger.fail(this.reference, `Else should be following an If statement. No if statement found.`);
       return false;
     }
