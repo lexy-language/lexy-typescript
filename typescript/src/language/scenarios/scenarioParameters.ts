@@ -5,17 +5,14 @@ import {IParseLineContext} from "../../parser/ParseLineContext";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
 import {NodeType} from "../nodeType";
-import {ComplexAssignmentDefinition} from "./complexAssignmentDefinition";
+import {IAssignmentDefinition} from "./IAssignmentDefinition";
+import {flattenAssignments} from "./flattenAssignments";
 
 export class ScenarioParameters extends ParsableNode {
 
-  private assignmentsValue: Array<AssignmentDefinition | ComplexAssignmentDefinition> = [];
+  private assignmentsValue: Array<IAssignmentDefinition> = [];
 
   public nodeType = NodeType.ScenarioParameters;
-
-  public get assignments(): ReadonlyArray<AssignmentDefinition | ComplexAssignmentDefinition> {
-    return this.assignmentsValue;
-  }
 
   constructor(reference: SourceReference) {
     super(reference);
@@ -38,5 +35,9 @@ export class ScenarioParameters extends ParsableNode {
   }
 
   protected override validate(context: IValidationContext): void {
+  }
+
+  public allAssignments(): Array<AssignmentDefinition> {
+    return flattenAssignments(this.assignmentsValue);
   }
 }

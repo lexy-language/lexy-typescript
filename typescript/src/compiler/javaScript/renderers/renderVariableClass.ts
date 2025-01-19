@@ -154,19 +154,16 @@ function renderResultValidation(variable: VariableDefinition, codeWriter: CodeWr
 
 function renderResultsPrimitiveTypeValidation(variableName: string, optional: boolean, primitiveType: PrimitiveType, codeWriter: CodeWriter) {
   const validateMethod = validatePrimitiveTypeMethodName(primitiveType);
-  codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.systemFunctions.${validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.variablePath(name, "${variableName}"), value["${variableName}"], ${optional}, validationErrors);`)
+  codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.validate.${validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.variablePath(name, "${variableName}"), value["${variableName}"], ${optional}, validationErrors);`)
 }
 
 function validatePrimitiveTypeMethodName(primitiveType: PrimitiveType): string {
   switch (primitiveType.type) {
     case TypeNames.string:
-      return "validateString";
     case TypeNames.boolean:
-      return "validateBoolean";
     case TypeNames.date:
-      return "validateDate";
     case TypeNames.number:
-      return "validateNumber";
+      return primitiveType.type;
     default:
       throw new Error(`Invalid primitive type: '${primitiveType.type}'`)
   }

@@ -1,12 +1,12 @@
-import {SystemFunctions} from "../../src/runTime/systemFunctions";
+import {Validate} from "../../src/runTime/Validate";
 
 describe('validateFunctions', () => {
   type ValidateTestCase = [numberA: any, error: string | null];
 
   it("optionalVariablesCanBeUndefined", async () => {
     const errors: Array<string> = [];
-    SystemFunctions.validateString("param", undefined, true, errors)
-    validateError(null, errors);
+    Validate.string("param", undefined, true, errors);
+    checkError(null, errors);
   });
 
   it.each<ValidateTestCase>([
@@ -18,8 +18,8 @@ describe('validateFunctions', () => {
     [new Date(), "'param' should have a 'string' value. Invalid type: "],
   ])("string '%o' validation result '%s'", (value, error) => {
     const errors: Array<string> = [];
-    SystemFunctions.validateString("param", value, false, errors)
-    validateError(error, errors);
+    Validate.string("param", value, false, errors);
+    checkError(error, errors);
   });
 
   it.each<ValidateTestCase>([
@@ -33,8 +33,8 @@ describe('validateFunctions', () => {
     [1 / 0, "'param' should have a 'number' value. Invalid number value: 'Infinity'"],
   ])("number '%o' validation result '%s'", (value, error) => {
     const errors: Array<string> = [];
-    SystemFunctions.validateNumber("param", value, false, errors)
-    validateError(error, errors);
+    Validate.number("param", value, false, errors);
+    checkError(error, errors);
   });
 
   it.each<ValidateTestCase>([
@@ -46,8 +46,8 @@ describe('validateFunctions', () => {
     [123, "'param' should have a 'boolean' value. Invalid type: "],
   ])("boolean '%o' validation result '%s'", (value, error) => {
     const errors: Array<string> = [];
-    SystemFunctions.validateBoolean("param", value, false, errors)
-    validateError(error, errors);
+    Validate.boolean("param", value, false, errors)
+    checkError(error, errors);
   });
 
   it.each<ValidateTestCase>([
@@ -59,15 +59,12 @@ describe('validateFunctions', () => {
     [new Date("abc"), "'param' should have a 'date' value. Invalid date value: 'Invalid Date'"],
   ])("date '%o' validation result '%s'", (value, error) => {
     const errors: Array<string> = [];
-    SystemFunctions.validateDate("param", value, false, errors)
-    validateError(error, errors);
+    Validate.date("param", value, false, errors);
+    checkError(error, errors);
   });
 
-  function validateError(error, errors: Array<string>) {
+  function checkError(error, errors: Array<string>) {
     if (error == null) {
-      if (!errors.length === 0) {
-        throw new Error("Invalid error: " + errors.join("\n"));
-      }
       if (errors.length != 0) {
         throw new Error("No error expected: " + errors[0]);
       }

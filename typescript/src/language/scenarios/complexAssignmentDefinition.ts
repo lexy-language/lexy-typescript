@@ -6,6 +6,9 @@ import {NodeType} from "../nodeType";
 import {IParseLineContext} from "../../parser/ParseLineContext";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
+import {instanceOfComplexType} from "../variableTypes/complexType";
+import {IAssignmentDefinition} from "./IAssignmentDefinition";
+import {instanceOfCustomType} from "../variableTypes/customType";
 
 export function instanceOfComplexAssignmentDefinition(object: any): object is ComplexAssignmentDefinition {
   return object?.nodeType == NodeType.ComplexAssignmentDefinition;
@@ -15,16 +18,13 @@ export function asComplexAssignmentDefinition(object: any): ComplexAssignmentDef
   return instanceOfComplexAssignmentDefinition(object) ? object as ComplexAssignmentDefinition : null;
 }
 
-export class ComplexAssignmentDefinition extends ParsableNode {
+export class ComplexAssignmentDefinition extends ParsableNode implements IAssignmentDefinition {
 
-  private assignmentsValue: Array<AssignmentDefinition | ComplexAssignmentDefinition> = [];
+  private assignmentsValue: Array<IAssignmentDefinition> = [];
+
+  private readonly variable: VariableReference;
 
   public nodeType = NodeType.ComplexAssignmentDefinition;
-  private variable: VariableReference;
-
-  public get assignments(): ReadonlyArray<AssignmentDefinition | ComplexAssignmentDefinition> {
-    return this.assignmentsValue;
-  }
 
   constructor(variable: VariableReference, reference: SourceReference) {
     super(reference);
@@ -48,5 +48,19 @@ export class ComplexAssignmentDefinition extends ParsableNode {
   }
 
   protected override validate(context: IValidationContext): void {
+    if (!context.variableContext.containsReference(this.variable, context)) {
+      context.logger.fail(this.reference, `Variable '${this.variable}' not found.`);
+    }
+
+    const variableType = context.variableContext.getVariableTypeByReference(this.variable, context);
+    if (!instanceOfCustomType(variableType)) {
+      context.logger.fail(this.reference, `Variable '${this.variable}' without assignment should be a complex type, but is ${variableType}.`);
+    }
+  }
+
+  flatten(result: Array<AssignmentDefinition>) {
+    for (const assignment of this.assignmentsValue) {
+      assignment.flatten(result);
+    }
   }
 }

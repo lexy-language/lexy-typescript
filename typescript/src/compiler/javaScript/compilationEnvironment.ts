@@ -8,6 +8,7 @@ import {BuiltInDateFunctions} from "../../runTime/builtInDateFunctions";
 import {BuiltInNumberFunctions} from "../../runTime/builtInNumberFunctions";
 import {BuiltInTableFunctions} from "../../runTime/builtInTableFunctions";
 import {SystemFunctions} from "../../runTime/systemFunctions";
+import {Validate} from "../../runTime/validate";
 
 export interface ICompilationEnvironment {
   addType(generatedType: GeneratedType): void;
@@ -34,6 +35,7 @@ export class CompilationEnvironment implements ICompilationEnvironment {
       builtInNumberFunctions: BuiltInNumberFunctions,
       builtInTableFunctions: BuiltInTableFunctions,
       systemFunctions: SystemFunctions,
+      validate: Validate,
     }
   }
 

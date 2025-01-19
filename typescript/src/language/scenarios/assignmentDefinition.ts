@@ -18,6 +18,7 @@ import {asMemberAccessLiteral, MemberAccessLiteral} from "../../parser/tokens/me
 import {asStringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {TokenCharacter} from "../../parser/tokens/tokenCharacter";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {IAssignmentDefinition} from "./IAssignmentDefinition";
 
 export function instanceOfAssignmentDefinition(object: any): object is AssignmentDefinition {
   return object?.nodeType == NodeType.AssignmentDefinition;
@@ -27,7 +28,7 @@ export function asAssignmentDefinition(object: any): AssignmentDefinition | null
   return instanceOfAssignmentDefinition(object) ? object as AssignmentDefinition : null;
 }
 
-export class AssignmentDefinition extends Node {
+export class AssignmentDefinition extends Node implements IAssignmentDefinition {
 
   public readonly nodeType = NodeType.AssignmentDefinition;
 
@@ -67,7 +68,7 @@ export class AssignmentDefinition extends Node {
 
     let targetTokens = tokens.tokensFromStart(assignmentIndex);
     if (parentVariable != null) {
-      targetTokens = AssignmentDefinition.addParentVariableAccessor(parentVariable.path, targetTokens);
+      targetTokens = AssignmentDefinition.addParentVariableAccessor(parentVariable, targetTokens);
     }
     const targetExpression = context.expressionFactory.parse(targetTokens, line);
     if (targetExpression.state == "failed") {
@@ -101,14 +102,14 @@ export class AssignmentDefinition extends Node {
       valueExpression.result, reference);
   }
 
-  static addParentVariableAccessor(path: string[], targetTokens: TokenList): TokenList {
+  static addParentVariableAccessor(parentVariable: VariableReference, targetTokens: TokenList): TokenList {
     if (targetTokens.length != 1) return targetTokens;
     const variablePath = AssignmentDefinition.getVariablePath(targetTokens);
     if (variablePath == null) {
       return targetTokens;
     }
 
-    const newPath = `${path.join(".")}.${variablePath.parts.join(".")}`;
+    const newPath = parentVariable.append(variablePath.parts).fullPath();
     const newToken = new MemberAccessLiteral(newPath, variablePath.firstCharacter);
     return new TokenList([newToken]);
   }
@@ -150,4 +151,7 @@ export class AssignmentDefinition extends Node {
     }
   }
 
+  flatten(result: Array<AssignmentDefinition>) {
+    result.push(this);
+  }
 }

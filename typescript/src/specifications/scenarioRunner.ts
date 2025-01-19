@@ -103,8 +103,9 @@ export class ScenarioRunner implements IScenarioRunner {
     try {
       return executable.run(values);
     } catch (error: any) {
-      if (this.validateExecutionErrors(error)) return;
-      this.fail('No execution error expected. Execution raised: ' + error.stack)
+      if (!this.validateExecutionErrors(error)) {
+        this.fail('No execution error expected. Execution raised: ' + error.stack)
+      }
       return null;
     }
   }
@@ -129,24 +130,18 @@ export class ScenarioRunner implements IScenarioRunner {
   private getValidationResult(result: FunctionResult, compilerResult: CompilerResult): string {
     const validationResult: Array<string> = [];
     if (this.scenario.results != null) {
-      this.evaluateResults(this.scenario.results.assignments, result, compilerResult, validationResult);
+      this.evaluateResults(this.scenario.results.allAssignments(), result, compilerResult, validationResult);
     }
     return validationResult.join('\n');
   }
 
-  private evaluateResults(assignments: ReadonlyArray<AssignmentDefinition | ComplexAssignmentDefinition>, result: FunctionResult, compilerResult: CompilerResult, validationResult: Array<string>) {
+  private evaluateResults(assignments: ReadonlyArray<AssignmentDefinition>, result: FunctionResult, compilerResult: CompilerResult, validationResult: Array<string>) {
     for (const expected of assignments) {
       this.evaluateResult(expected, result, compilerResult, validationResult);
     }
   }
 
-  private evaluateResult(expected: AssignmentDefinition | ComplexAssignmentDefinition, result: FunctionResult, compilerResult: CompilerResult, validationResult: Array<string>) {
-    const complexAssignment = asComplexAssignmentDefinition(expected);
-    if (complexAssignment != null) {
-      this.evaluateResults(complexAssignment.assignments, result, compilerResult, validationResult);
-      return;
-    }
-
+  private evaluateResult(expected: AssignmentDefinition, result: FunctionResult, compilerResult: CompilerResult, validationResult: Array<string>) {
     const assignmentDefinition = Assert.notNull(asAssignmentDefinition(expected), "assignmentDefinition");
     if (assignmentDefinition.variableType == null) throw new Error("expected.variableType is null")
     let actual = result.getValue(assignmentDefinition.variable);
@@ -235,28 +230,22 @@ export class ScenarioRunner implements IScenarioRunner {
     let result = {};
     if (scenarioParameters != null) {
       if (functionParameters != null) {
-        this.setParameters(scenarioParameters.assignments, functionParameters, compilerResult, result);
+        this.setParameters(scenarioParameters.allAssignments(), functionParameters, compilerResult, result);
       }
     }
     return result;
   }
 
-  private setParameters(parameters: ReadonlyArray<AssignmentDefinition | ComplexAssignmentDefinition>, functionParameters: FunctionParameters, compilerResult: CompilerResult, result: {}) {
+  private setParameters(parameters: ReadonlyArray<AssignmentDefinition>, functionParameters: FunctionParameters, compilerResult: CompilerResult, result: {}) {
     for (const parameter of parameters) {
       this.setParameter(functionParameters, parameter, compilerResult, result);
     }
   }
 
   private setParameter(functionParameters: FunctionParameters,
-                       parameter: AssignmentDefinition | ComplexAssignmentDefinition,
+                       parameter: AssignmentDefinition,
                        compilerResult: CompilerResult,
                        result: {[key: string]: any}) {
-
-    const complexAssignmentDefinition = asComplexAssignmentDefinition(parameter);
-    if (complexAssignmentDefinition != null) {
-      this.setParameters(complexAssignmentDefinition.assignments, functionParameters, compilerResult, result);
-      return;
-    }
 
     const assignmentDefinition = Assert.notNull(asAssignmentDefinition(parameter), "assignmentDefinition");
     let type = firstOrDefault(functionParameters.variables, variable => variable.name == assignmentDefinition.variable.parentIdentifier);

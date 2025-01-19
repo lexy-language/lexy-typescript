@@ -20,13 +20,12 @@ export class VariableReference {
     this.path = variablePath;
   }
 
+  public fullPath(): string {
+    return this.path.join('.');
+  }
+
   public toString(): string {
-    const builder: string[] = [];
-    for (const value of this.path) {
-      if (builder.length > 0) builder.push('.');
-      builder.push(value);
-    }
-    return builder.join('');
+    return this.fullPath();
   }
 
   public childrenReference(): VariableReference {
@@ -38,5 +37,10 @@ export class VariableReference {
     if (isNullOrEmpty(key)) throw new Error("Invalid empty variable reference.")
     const parts = key.split(".");
     return new VariableReference(parts);
+  }
+
+  append(parts: Array<string>): VariableReference {
+    const newPath = [...this.path, ...parts];
+    return new VariableReference(newPath);
   }
 }

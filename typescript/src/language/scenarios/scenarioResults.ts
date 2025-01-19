@@ -1,42 +1,44 @@
 import {instanceOfParsableNode, IParsableNode, ParsableNode} from "../parsableNode";
-import {AssignmentDefinition, instanceOfAssignmentDefinition} from "./assignmentDefinition";
+import {AssignmentDefinition} from "./assignmentDefinition";
 import {SourceReference} from "../../parser/sourceReference";
 import {IParseLineContext} from "../../parser/ParseLineContext";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
 import {NodeType} from "../nodeType";
 import {ComplexAssignmentDefinition} from "./complexAssignmentDefinition";
+import {flattenAssignments} from "./flattenAssignments";
+import {IAssignmentDefinition} from "./IAssignmentDefinition";
 
 export class ScenarioResults extends ParsableNode {
 
-  private assignmentsValue: Array<AssignmentDefinition | ComplexAssignmentDefinition> = [];
+  private assignmentsValue: Array<IAssignmentDefinition> = [];
 
   public nodeType = NodeType.ScenarioResults;
 
-  public get assignments(): ReadonlyArray<AssignmentDefinition | ComplexAssignmentDefinition> {
-    return this.assignmentsValue;
+  constructor(reference: SourceReference) {
+    super(reference);
   }
 
-   constructor(reference: SourceReference) {
-     super(reference);
-   }
+  public override parse(context: IParseLineContext): IParsableNode {
+    let assignment = AssignmentDefinition.parse(context);
+    if (assignment == null) return this;
 
-   public override parse(context: IParseLineContext): IParsableNode {
-     let assignment = AssignmentDefinition.parse(context);
-     if (assignment == null) return this;
+    this.assignmentsValue.push(assignment);
 
-     this.assignmentsValue.push(assignment);
+    if (instanceOfParsableNode(assignment)) {
+      return assignment;
+    }
+    return this;
+  }
 
-     if (instanceOfParsableNode(assignment)) {
-       return assignment;
-     }
-     return this;
-   }
+  public override getChildren(): Array<INode> {
+    return [...this.assignmentsValue];
+  }
 
-   public override getChildren(): Array<INode> {
-     return [...this.assignmentsValue];
-   }
+  protected override validate(context: IValidationContext): void {
+  }
 
-   protected override validate(context: IValidationContext): void {
-   }
+  public allAssignments(): Array<AssignmentDefinition> {
+    return flattenAssignments(this.assignmentsValue);
+  }
 }

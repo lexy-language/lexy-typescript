@@ -27,12 +27,16 @@ describe('ParseScenarioTests', () => {
 
     expect(scenario.name.value).toBe(`TestScenario`);
     expect(scenario.functionName.value).toBe(`TestScenarioFunction`);
-    expect(scenario.parameters.assignments.length).toBe(1);
-    expect(scenario.parameters.assignments[0].variable.parentIdentifier).toBe(`value`);
-    expect(scenario.parameters.assignments[0].constantValue.value).toBe(123);
-    expect(scenario.results.assignments.length).toBe(1);
-    expect(scenario.results.assignments[0].variable.parentIdentifier).toBe(`Result`);
-    expect(scenario.results.assignments[0].constantValue.value).toBe(456);
+
+    const parametersAssignments = scenario.parameters.allAssignments();
+    expect(parametersAssignments.length).toBe(1);
+    expect(parametersAssignments[0].variable.parentIdentifier).toBe(`value`);
+    expect(parametersAssignments[0].constantValue.value).toBe(123);
+
+    const resultsAssignments = scenario.results.allAssignments();
+    expect(resultsAssignments.length).toBe(1);
+    expect(resultsAssignments[0].variable.parentIdentifier).toBe(`Result`);
+    expect(resultsAssignments[0].constantValue.value).toBe(456);
   });
 
   it('testInvalidScenario', async () => {
@@ -119,16 +123,19 @@ describe('ParseScenarioTests', () => {
     expect(scenario.functionNode.code.expressions[0].toString()).toBe(`Result1=Value1`);
     expect(scenario.functionNode.code.expressions[1].toString()).toBe(`Result2=Value2`);
 
-    expect(scenario.parameters.assignments.length).toBe(2);
-    expect(scenario.parameters.assignments[0].variable.parentIdentifier).toBe(`Value1`);
-    expect(scenario.parameters.assignments[0].constantValue.value).toBe(987);
-    expect(scenario.parameters.assignments[1].variable.parentIdentifier).toBe(`Value2`);
-    expect(scenario.parameters.assignments[1].constantValue.value).toBe(654);
-    expect(scenario.results.assignments.length).toBe(2);
-    expect(scenario.results.assignments[0].variable.parentIdentifier).toBe(`Result1`);
-    expect(scenario.results.assignments[0].constantValue.value).toBe(123);
-    expect(scenario.results.assignments[1].variable.parentIdentifier).toBe(`Result2`);
-    expect(scenario.results.assignments[1].constantValue.value).toBe(456);
+    const parametersAssignments = scenario.parameters.allAssignments();
+    expect(parametersAssignments.length).toBe(2);
+    expect(parametersAssignments[0].variable.parentIdentifier).toBe(`Value1`);
+    expect(parametersAssignments[0].constantValue.value).toBe(987);
+    expect(parametersAssignments[1].variable.parentIdentifier).toBe(`Value2`);
+    expect(parametersAssignments[1].constantValue.value).toBe(654);
+
+    const resultsAssignments = scenario.results.allAssignments();
+    expect(resultsAssignments.length).toBe(2);
+    expect(resultsAssignments[0].variable.parentIdentifier).toBe(`Result1`);
+    expect(resultsAssignments[0].constantValue.value).toBe(123);
+    expect(resultsAssignments[1].variable.parentIdentifier).toBe(`Result2`);
+    expect(resultsAssignments[1].constantValue.value).toBe(456);
   });
 
   it('testScenarioWithEmptyParametersAndResults', async () => {
@@ -140,8 +147,8 @@ describe('ParseScenarioTests', () => {
     let {scenario} = parseScenario(code);
 
     expect(scenario.functionName.value).toBe(`ValidateFunctionKeywords`);
-    expect(scenario.parameters.assignments.length).toBe(0);
-    expect(scenario.results.assignments.length).toBe(0);
+    expect(scenario.parameters.allAssignments().length).toBe(0);
+    expect(scenario.results.allAssignments().length).toBe(0);
   });
 
   it('testValidScenarioWithInvalidInlineFunction', async () => {
