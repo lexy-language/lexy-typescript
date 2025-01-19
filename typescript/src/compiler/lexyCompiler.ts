@@ -36,8 +36,8 @@ export class LexyCompiler implements ILexyCompiler {
 
    private generateType(node: IRootNode, environment: ICompilationEnvironment): void {
      let writer = JavaScriptCode.getWriter(node);
-     if (writer == null) throw new Error(`Invalid node type: '${node?.nodeType}'`)
-     let generatedType = writer.createCode(node);
+     if (writer == null) return;
+     let generatedType = writer.writer.createCode(writer.node);
      environment.addType(generatedType);
    }
 }

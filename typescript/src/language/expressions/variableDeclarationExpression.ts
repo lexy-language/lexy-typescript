@@ -110,7 +110,9 @@ export class VariableDeclarationExpression extends Expression {
   }
 
   private getVariableType(context: IValidationContext, assignmentType: VariableType | null): VariableType | null {
-    if (this.type.nodeType == NodeType.ImplicitVariableDeclaration && assignmentType != null) {
+    if (this.type.nodeType == NodeType.ImplicitVariableDeclaration) {
+      if (assignmentType == null) return null;
+
       const implicitVariableType = this.type as ImplicitVariableDeclaration;
       implicitVariableType.define(assignmentType);
       return assignmentType;

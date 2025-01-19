@@ -10,7 +10,7 @@ export class BuiltInDateFunctions {
 
   public static today(): Date {
     let now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDay());
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }
 
   public static year(value: Date): number {
