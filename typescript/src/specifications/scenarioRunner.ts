@@ -8,21 +8,14 @@ import {Scenario} from "../language/scenarios/scenario";
 import {RootNodeList} from "../language/rootNodeList";
 import {format} from "../infrastructure/formatting";
 import {FunctionResult} from "../runTime/functionResult";
-import {TypeConverter} from "./typeConverter";
 import {any, firstOrDefault} from "../infrastructure/enumerableExtensions";
 import {ScenarioParameters} from "../language/scenarios/scenarioParameters";
 import {FunctionParameters} from "../language/functions/functionParameters";
-import {VariableType} from "../language/variableTypes/variableType";
 import {IRootNode} from "../language/rootNode";
 import {ExecutableFunction} from "../compiler/executableFunction";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {Assert} from "../infrastructure/assert";
 import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
-import {
-  asComplexAssignmentDefinition,
-  ComplexAssignmentDefinition
-} from "../language/scenarios/complexAssignmentDefinition";
-import {asEnumType} from "../language/variableTypes/enumType";
 
 export interface IScenarioRunner {
   failed: boolean;
@@ -196,7 +189,7 @@ export class ScenarioRunner implements IScenarioRunner {
     let failedMessages = this.parserLogger.errorMessages();
     if (!any(failedMessages)) {
       this.fail(`No exceptions \n` +
-        ` Expected: ${format(this.scenario.expectRootErrors?.messages, 4)}{Environment.NewLine}` +
+        ` Expected: ${format(this.scenario.expectRootErrors?.messages, 4)}\n` +
         ` Actual: none`);
       return false;
     }

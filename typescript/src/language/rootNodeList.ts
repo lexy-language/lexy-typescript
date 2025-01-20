@@ -15,7 +15,11 @@ import {CustomType} from "./variableTypes/customType";
 
 export class RootNodeList {
 
-  private readonly values: Array<IRootNode> = [];
+  private readonly values: Array<IRootNode>;
+
+  constructor(values: Array<IRootNode> | null = null) {
+    this.values = values != null ? values : [];
+  }
 
   public get length(): number {
     return this.values.length;

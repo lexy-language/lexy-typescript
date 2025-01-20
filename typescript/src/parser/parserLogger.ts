@@ -11,7 +11,7 @@ import {NodesLogger} from "./nodesLogger";
 export class LogEntry {
   public node: IRootNode | null;
   public reference: SourceReference;
-  public sortIndex: number;
+  public sortIndex: string;
   public isError: boolean;
   public message: string;
 
@@ -65,7 +65,7 @@ export class ParserLogger implements IParserLogger {
   private failedMessages: number = 0;
 
   public get entries(): LogEntry[] {
-    return this.logEntries.sort((left, right) => left.sortIndex - right.sortIndex);
+    return this.logEntries.sort(this.sortEntry);
   }
 
   constructor(logger: ILogger) {
@@ -128,26 +128,30 @@ export class ParserLogger implements IParserLogger {
 
   public errorNodeMessages(node: IRootNode): string[] {
     return where(this.logEntries, entry => entry.isError && entry.node === node)
-      .sort((left, right) => left.sortIndex - right.sortIndex)
+      .sort(this.sortEntry)
       .map(entry => entry.message);
   }
 
   public errorNodesMessages(nodes: Array<IRootNode>): string[] {
     return where(this.logEntries, entry => entry.isError && entry.node != null && nodes.indexOf(entry.node) >= 0)
-      .sort((left, right) => left.sortIndex - right.sortIndex)
+      .sort(this.sortEntry)
       .map(entry => entry.message);
   }
 
   public errorRootMessages(): string[] {
     return where(this.logEntries, entry => entry.isError && entry.node === null)
-      .sort((left, right) => left.sortIndex - right.sortIndex)
+      .sort(this.sortEntry)
       .map(entry => entry.message);
   }
 
   public errorMessages(): string[] {
     return where(this.logEntries, entry => entry.isError)
-      .sort((left, right) => left.sortIndex - right.sortIndex)
+      .sort(this.sortEntry)
       .map(entry => entry.message);
+  }
+
+  private sortEntry(left: LogEntry, right: LogEntry) {
+    return left.sortIndex < right.sortIndex ? -1 : 1;
   }
 
   public assertNoErrors(): void {

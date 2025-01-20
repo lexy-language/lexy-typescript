@@ -50,13 +50,13 @@ export class Include {
 
     let directName = context.fileSystem.getDirectoryName(parentFullFileName);
     let fullPath = context.fileSystem.getFullPath(directName);
-    let fullFinName = `${context.fileSystem.combine(fullPath, this.fileName)}.${LexySourceDocument.fileExtension}`;
+    let fullFileName = `${context.fileSystem.combine(fullPath, this.fileName)}.${LexySourceDocument.fileExtension}`;
 
-    if (!context.fileSystem.fileExists(fullFinName)) {
+    if (!context.fileSystem.fileExists(fullFileName)) {
       context.logger.fail(this.reference, `Invalid include file name '${this.fileName}'`);
       return null;
     }
 
-    return fullFinName;
+    return fullFileName;
   }
 }

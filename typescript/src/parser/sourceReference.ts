@@ -6,8 +6,9 @@ export class SourceReference {
 
   public readonly file: SourceFile;
 
-  public get sortIndex(): number {
-    return this.lineNumber * 100000000 + this.characterNumber;
+  public get sortIndex(): string {
+    const value = (this.lineNumber * 100000000 + this.characterNumber).toString();
+    return `${this.file.fileName}/${'0'.repeat(16 - value.toString().length)}${value}}`;
   }
 
   constructor(file: SourceFile, lineNumber: number, characterNumber: number) {
