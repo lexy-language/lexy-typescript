@@ -67,9 +67,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
   public run(): void {
     if (this.parserLogger.nodeHasErrors(this.scenario) && this.scenario.expectExecutionErrors == null) {
-      this.fail(` Parsing scenario failed: ${this.scenario.functionName}`);
-      this.parserLogger.errorNodeMessages(this.scenario)
-        .forEach(message => this.context.logGlobal(message));
+      this.fail(`Parsing scenario failed.`, this.parserLogger.errorNodeMessages(this.scenario));
       return;
     }
 
@@ -86,7 +84,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
     const validationResultText = this.getValidationResult(result, compilerResult);
     if (validationResultText.length > 0) {
-      this.fail(validationResultText);
+      this.fail("Results validation failed.", validationResultText);
     } else {
       this.context.success(this.scenario);
     }
@@ -97,7 +95,8 @@ export class ScenarioRunner implements IScenarioRunner {
       return executable.run(values);
     } catch (error: any) {
       if (!this.validateExecutionErrors(error)) {
-        this.fail('No execution error expected. Execution raised: ' + error.stack)
+        this.fail('Execution error occurred.', [
+          "Error: ", error.stack])
       }
       return null;
     }
@@ -115,17 +114,17 @@ export class ScenarioRunner implements IScenarioRunner {
     return `------- Filename: ${this.fileName}\n${format(this.parserLogger.errorMessages(), 2)}`;
   }
 
-  private fail(message: string): void {
+  private fail(message: string, errors: string[] | null = null): void {
     this.failedValue = true;
-    this.context.fail(this.scenario, message);
+    this.context.fail(this.scenario, message, errors);
   }
 
-  private getValidationResult(result: FunctionResult, compilerResult: CompilerResult): string {
+  private getValidationResult(result: FunctionResult, compilerResult: CompilerResult): Array<string> {
     const validationResult: Array<string> = [];
     if (this.scenario.results != null) {
       this.evaluateResults(this.scenario.results.allAssignments(), result, compilerResult, validationResult);
     }
-    return validationResult.join('\n');
+    return validationResult;
   }
 
   private evaluateResults(assignments: ReadonlyArray<AssignmentDefinition>, result: FunctionResult, compilerResult: CompilerResult, validationResult: Array<string>) {
@@ -154,7 +153,7 @@ export class ScenarioRunner implements IScenarioRunner {
       ?? this.scenario.enum
       ?? this.scenario.table;
     if (node == null) {
-      this.fail(`Scenario has no function, enum or table.`);
+      this.fail(`Scenario has no function, enum or table.`, []);
       return false;
     }
 
@@ -162,22 +161,21 @@ export class ScenarioRunner implements IScenarioRunner {
     const failedMessages = this.parserLogger.errorNodesMessages(dependencies);
 
     if (failedMessages.length > 0 && !this.scenario.expectError?.hasValue) {
-      this.fail(`Exception occurred: ${format(failedMessages, 2)}`);
+      this.fail(`Parsing errors: ${failedMessages.length}`, failedMessages);
       return false;
     }
 
     if (!this.scenario.expectError?.hasValue) return true;
 
     if (failedMessages.length == 0) {
-      this.fail(`No exception \n` +
-        ` Expected: ${this.scenario.expectError.message}\n`);
+      this.fail(`Error expected: ${this.scenario.expectError.message}`, []);
       return false;
     }
 
     if (!any(failedMessages, message => this.scenario.expectError?.hasValue == true && message.includes(this.scenario.expectError.message))) {
-      this.fail(`Wrong exception \n` +
-        ` Expected: ${this.scenario.expectError.message}\n` +
-        ` Actual: ${format(failedMessages, 4)}`);
+      this.fail(`Wrong error occurred.`, [
+        "Expected: " + this.scenario.expectError.message,
+        "Actual: ", ...failedMessages]);
       return false;
     }
 
@@ -186,17 +184,17 @@ export class ScenarioRunner implements IScenarioRunner {
   }
 
   private validateRootErrors(): boolean {
+    const expected = this.scenario.expectRootErrors != null ? this.scenario.expectRootErrors?.messages : [];
     let failedMessages = this.parserLogger.errorMessages();
     if (!any(failedMessages)) {
-      this.fail(`No exceptions \n` +
-        ` Expected: ${format(this.scenario.expectRootErrors?.messages, 4)}\n` +
-        ` Actual: none`);
+      this.fail(`Root errors expected. No errors occurred.`, [
+        "Expected:", ...expected]);
       return false;
     }
 
     let failed = false;
     if (this.scenario.expectRootErrors) {
-      for (const rootMessage of this.scenario.expectRootErrors?.messages) {
+      for (const rootMessage of expected) {
         let failedMessage = firstOrDefault(failedMessages, message => message.includes(rootMessage));
         if (failedMessage != null) {
           failedMessages = failedMessages.filter(item => item !== failedMessage);
@@ -211,9 +209,9 @@ export class ScenarioRunner implements IScenarioRunner {
       return false; // don't compile and run rest of scenario
     }
 
-    this.fail(`Wrong exception \n` +
-      ` Expected: ${format(this.scenario.expectRootErrors?.messages, 4)}\n` +
-      ` Actual: ${format(this.parserLogger.errorMessages(), 4)}`);
+    this.fail(`Wrong error(s) occurred.`, [
+        "Expected:", ...expected,
+        "Actual:", ...this.parserLogger.errorMessages()]);
     return false;
   }
 
@@ -238,7 +236,7 @@ export class ScenarioRunner implements IScenarioRunner {
   private setParameter(functionParameters: FunctionParameters,
                        parameter: AssignmentDefinition,
                        compilerResult: CompilerResult,
-                       result: {[key: string]: any}) {
+                       result: { [key: string]: any }) {
 
     const assignmentDefinition = Assert.notNull(asAssignmentDefinition(parameter), "assignmentDefinition");
     let type = firstOrDefault(functionParameters.variables, variable => variable.name == assignmentDefinition.variable.parentIdentifier);
@@ -252,7 +250,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
     let valueObject = result;
     let reference = assignmentDefinition.variable;
-    while(reference.hasChildIdentifiers) {
+    while (reference.hasChildIdentifiers) {
       if (!valueObject[reference.parentIdentifier]) {
         valueObject[reference.parentIdentifier] = {};
       }
@@ -290,9 +288,9 @@ export class ScenarioRunner implements IScenarioRunner {
     }
 
     if (failedErrors.length > 0) {
-      this.fail(`Execution error not found\n` +
-        ` Not found: ${format(expected, 2)}\n` +
-        ` Actual: ${errorMessage}`)
+      this.fail(`Execution error not found`, [
+        'Not found:', ...expected,
+        'Actual:', ...errorMessage]);
     }
 
     return true;
