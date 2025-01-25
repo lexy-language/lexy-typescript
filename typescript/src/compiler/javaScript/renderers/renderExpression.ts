@@ -2,14 +2,12 @@ import {Expression} from "../../../language/expressions/expression";
 import {CodeWriter} from "../writers/codeWriter";
 import {NodeType} from "../../../language/nodeType";
 import {asMemberAccessExpression, MemberAccessExpression} from "../../../language/expressions/memberAccessExpression";
-import {VariableReference} from "../../../language/variableReference";
 import {VariableTypeName} from "../../../language/variableTypes/variableTypeName";
-import {enumClassName, functionClassName, tableClassName, typeClassName} from "../classNames";
+import {enumClassName, tableClassName, typeClassName} from "../classNames";
 import {asLiteralExpression, LiteralExpression} from "../../../language/expressions/literalExpression";
 import {asAssignmentExpression, AssignmentExpression} from "../../../language/expressions/assignmentExpression";
 import {asBinaryExpression, BinaryExpression} from "../../../language/expressions/binaryExpression";
 import {asBracketedExpression, BracketedExpression} from "../../../language/expressions/bracketedExpression";
-import {asElseExpression, ElseExpression} from "../../../language/expressions/elseExpression";
 import {
   asParenthesizedExpression,
   ParenthesizedExpression
@@ -27,33 +25,44 @@ import {CustomVariableDeclarationType} from "../../../language/variableTypes/cus
 import {asEnumType} from "../../../language/variableTypes/enumType";
 import {asCustomType} from "../../../language/variableTypes/customType";
 import {asTableType} from "../../../language/variableTypes/tableType";
-import {VariableSource} from "../../../language/variableSource";
-import {LexyCodeConstants} from "../lexyCodeConstants";
 import {renderTypeDefaultExpression} from "./renderVariableClass";
-import {
-  asFunctionCallExpression,
-  FunctionCallExpression,
-} from "../../../language/expressions/functionCallExpression";
+import {asFunctionCallExpression, FunctionCallExpression,} from "../../../language/expressions/functionCallExpression";
 import {renderFunctionCall} from "../builtInFunctions/createFunctionCall";
 import {matchesLineExpressionException} from "../lineExpressionExceptions/matchesLineExpressionException";
 import {TokenType} from "../../../parser/tokens/tokenType";
 import {asDateTimeLiteral} from "../../../parser/tokens/dateTimeLiteral";
+import {logAssignmentVariables, logLineAndVariables} from "./rendeLogCalls";
+import {renderVariableReference} from "./renderVariableReference";
+import {LexyCodeConstants} from "../lexyCodeConstants";
 
-export function renderExpressions(expressions: ReadonlyArray<Expression> | undefined, codeWriter: CodeWriter) {
-  if (expressions == undefined) return;
-  for (const expression of expressions) {
-    const line = codeWriter.currentLine;
-    codeWriter.startLine()
+function renderExpressionLine(codeWriter: CodeWriter, expression: Expression) {
+  logLineAndVariables(expression, codeWriter);
+  const line = codeWriter.currentLine;
+  codeWriter.startLine()
 
-    const exception = matchesLineExpressionException(expression);
-    if (exception != null) {
-      exception.render(expression, codeWriter);
-    } else {
-      renderExpression(expression, codeWriter);
-      if (line == codeWriter.currentLine) {
-        codeWriter.endLine(";")
-      }
+  const exception = matchesLineExpressionException(expression);
+  if (exception != null) {
+    exception.render(expression, codeWriter);
+  } else {
+    renderExpression(expression, codeWriter);
+    if (line == codeWriter.currentLine) {
+      codeWriter.endLine(";");
     }
+  }
+  logAssignmentVariables(expression, codeWriter);
+  codeWriter.writeLine();
+}
+
+export function renderExpressions(expressions: ReadonlyArray<Expression> | undefined, createScope: boolean, codeWriter: CodeWriter) {
+  if (expressions == undefined) return;
+  if (createScope) {
+    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.useLastNodeAsScope();`)
+  }
+  for (const expression of expressions) {
+    renderExpressionLine(codeWriter, expression);
+  }
+  if (createScope) {
+    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.revertToParentScope();`)
   }
 }
 
@@ -98,9 +107,6 @@ export function renderExpression(expression: Expression, codeWriter: CodeWriter)
     case NodeType.BracketedExpression:
       return render(asBracketedExpression, renderBracketedExpression);
 
-    case NodeType.ElseExpression:
-      return render(asElseExpression, renderElseExpression);
-
     case NodeType.IfExpression:
       return render(asIfExpression, renderIfExpression);
 
@@ -132,39 +138,13 @@ export function renderExpression(expression: Expression, codeWriter: CodeWriter)
 }
 
 function renderMemberAccessExpression(memberAccessExpression: MemberAccessExpression, codeWriter: CodeWriter) {
-  if (memberAccessExpression.variable.parts < 2) throw new Error(`Invalid MemberAccessExpression: {expression}`);
-
-  const parentIdentifier = translateParentVariableClassName(memberAccessExpression, memberAccessExpression.variable, codeWriter);
-  const parent = fromSource(memberAccessExpression.variableSource, parentIdentifier);
-
-  codeWriter.write(parent)
-
-  let childReference = memberAccessExpression.variable;
-  while (childReference.hasChildIdentifiers) {
-    childReference = childReference.childrenReference();
-    codeWriter.write(".")
-    codeWriter.write(childReference.parentIdentifier)
-  }
-}
-
-function translateParentVariableClassName(expression: MemberAccessExpression, reference: VariableReference, codeWriter: CodeWriter) {
-  switch (expression.parentVariableType?.variableTypeName) {
-    case VariableTypeName.CustomType:
-      return codeWriter.identifierFromEnvironment(typeClassName(reference.parentIdentifier));
-    case VariableTypeName.EnumType:
-      return codeWriter.identifierFromEnvironment(enumClassName(reference.parentIdentifier));
-    case VariableTypeName.FunctionType:
-      return codeWriter.identifierFromEnvironment(functionClassName(reference.parentIdentifier));
-    case VariableTypeName.TableType:
-      return codeWriter.identifierFromEnvironment(tableClassName(reference.parentIdentifier));
-    default:
-      return reference.parentIdentifier;
-  }
+  if (memberAccessExpression.variable == null || memberAccessExpression.variable.path.parts < 2) throw new Error(`Invalid MemberAccessExpression: ${memberAccessExpression}`);
+  renderVariableReference(memberAccessExpression.variable, codeWriter);
 }
 
 function renderIdentifierExpression(expression: IdentifierExpression, codeWriter: CodeWriter) {
-  const value = fromSource(expression.variableSource, expression.identifier);
-  codeWriter.write(value);
+  if (expression.variable == null) throw new Error(`Invalid IdentifierExpression: ${expression}`);
+  renderVariableReference(expression.variable, codeWriter);
 }
 
 function renderLiteralExpression(expression: LiteralExpression, codeWriter: CodeWriter) {
@@ -175,13 +155,14 @@ function renderLiteralExpression(expression: LiteralExpression, codeWriter: Code
     }
     return result;
   }
+
   if (expression.literal.tokenType == TokenType.QuotedLiteralToken) {
     codeWriter.write(`"${expression.literal.value}"`);
   } else if (expression.literal.tokenType == TokenType.DateTimeLiteral) {
     const dateTimeLiteral = asDateTimeLiteral(expression.literal);
-    const dateValue =  dateTimeLiteral?.dateTimeValue;
+    const dateValue = dateTimeLiteral?.dateTimeValue;
     if (dateValue == null) throw new Error("DateTimeLiteral.dateTimeValue expected")
-    codeWriter.write(`new Date("${format(4,dateValue.getFullYear())}-${format(2, dateValue.getMonth() + 1)}-${format(2, dateValue.getDate())}T${format(2, dateValue.getHours())}:${format(2, dateValue.getMinutes())}:${format(2, dateValue.getSeconds())}")`);
+    codeWriter.write(`new Date("${format(4, dateValue.getFullYear())}-${format(2, dateValue.getMonth() + 1)}-${format(2, dateValue.getDate())}T${format(2, dateValue.getHours())}:${format(2, dateValue.getMinutes())}:${format(2, dateValue.getSeconds())}")`);
   } else {
     codeWriter.write(expression.literal.value);
   }
@@ -239,21 +220,16 @@ function renderBracketedExpression(expression: BracketedExpression, codeWriter: 
   codeWriter.write("]");
 }
 
-function renderElseExpression(expression: ElseExpression, codeWriter: CodeWriter) {
-  codeWriter.openScope("else")
-  renderExpressions(expression.falseExpressions, codeWriter);
-  codeWriter.closeScope();
-}
-
 function renderIfExpression(expression: IfExpression, codeWriter: CodeWriter) {
   codeWriter.write("if (");
   renderExpression(expression.condition, codeWriter);
   codeWriter.openInlineScope(")");
-  renderExpressions(expression.trueExpressions, codeWriter);
+  renderExpressions(expression.trueExpressions, true, codeWriter);
 
   if (expression.else != null) {
-    codeWriter.write("} else {");
-    renderExpressions(expression.else.falseExpressions, codeWriter);
+    codeWriter.writeLine("} else {");
+    logLineAndVariables(expression.else, codeWriter);
+    renderExpressions(expression.else.falseExpressions,true, codeWriter);
   }
 
   codeWriter.closeScope();
@@ -266,18 +242,17 @@ function renderParenthesizedExpression(expression: ParenthesizedExpression, code
 }
 
 function renderCaseExpression(caseValue: CaseExpression, codeWriter: CodeWriter) {
+
   if (caseValue.value == null) {
     codeWriter.openScope("default:");
-    renderExpressions(caseValue.expressions, codeWriter);
-    codeWriter.writeLine("break;")
-    codeWriter.closeScope()
-    return;
+  } else {
+    codeWriter.startLine("case ");
+    renderExpression(caseValue.value, codeWriter)
+    codeWriter.openInlineScope(":");
   }
 
-  codeWriter.startLine("case ");
-  renderExpression(caseValue.value, codeWriter)
-  codeWriter.openInlineScope(":");
-  renderExpressions(caseValue.expressions, codeWriter);
+  logLineAndVariables(caseValue, codeWriter);
+  renderExpressions(caseValue.expressions, true, codeWriter);
   codeWriter.writeLine("break;")
   codeWriter.closeScope()
 }
@@ -320,24 +295,6 @@ export function customVariableIdentifier(customVariable: CustomVariableDeclarati
       return codeWriter.identifierFromEnvironment(typeClassName(customType.type));
   }
   throw new Error(`Couldn't map type: ${customVariable.variableType}`)
-}
-
-function fromSource(source: VariableSource, name: string): string {
-  switch (source) {
-    case VariableSource.Parameters:
-      return `${LexyCodeConstants.parameterVariable}.${name}`;
-
-    case VariableSource.Results:
-      return `${LexyCodeConstants.resultsVariable}.${name}`;
-
-    case VariableSource.Code:
-    case VariableSource.Type:
-      return name;
-
-    case VariableSource.Unknown:
-    default:
-      throw new Error(`source: {source}`);
-  }
 }
 
 function renderFunctionCallExpression(expression: FunctionCallExpression, codeWriter: CodeWriter) {

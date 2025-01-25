@@ -7,7 +7,7 @@ import {INode, Node} from "../node";
 import {NodeType} from "../nodeType";
 import {Assert} from "../../infrastructure/assert";
 
-export class ScenarioExpectError extends Node {
+export class ExpectError extends Node {
   private readonly messageValue: string | null = null;
 
   public readonly nodeType = NodeType.ScenarioExpectError;
@@ -25,7 +25,7 @@ export class ScenarioExpectError extends Node {
     this.messageValue = message;
   }
 
-  public static parse(context: IParseLineContext, reference: SourceReference): ScenarioExpectError | null {
+  public static parse(context: IParseLineContext, reference: SourceReference): ExpectError | null {
     let line = context.line;
 
     let valid = context.validateTokens("ScenarioExpectError")
@@ -39,7 +39,7 @@ export class ScenarioExpectError extends Node {
     const token = line.tokens.token<QuotedLiteralToken>(1, asQuotedLiteralToken);
     if (token == null) throw new Error("No token.")
 
-    return new ScenarioExpectError(token.value, reference);
+    return new ExpectError(token.value, reference);
   }
 
   public override getChildren(): Array<INode> {

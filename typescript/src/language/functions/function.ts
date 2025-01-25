@@ -23,6 +23,7 @@ import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
 import {ComplexTypeSource} from "../variableTypes/complexTypeSource";
 import {NodesWalker} from "../nodesWalker";
 import {NodeType} from "../nodeType";
+import {TokenType} from "../../parser/tokens/tokenType";
 
 export function instanceOfFunction(object: any) {
   return object?.nodeType == NodeType.Function;
@@ -87,7 +88,7 @@ export class Function extends RootNode implements IHasNodeDependencies {
   public override parse(context: IParseLineContext): IParsableNode {
     let line = context.line;
     let name = line.tokens.tokenValue(0);
-    if (!line.tokens.isTokenType<KeywordToken>(0, KeywordToken)) return this.invalidToken(name, context);
+    if (!line.tokens.isTokenType<KeywordToken>(0, TokenType.KeywordToken)) return this.invalidToken(name, context);
 
     switch (name) {
       case Keywords.Parameters:

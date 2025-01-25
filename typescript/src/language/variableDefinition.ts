@@ -16,6 +16,7 @@ import {asOperatorToken, OperatorToken} from "../parser/tokens/operatorToken";
 import {validateTypeAndDefault} from "./variableTypes/validationContextExtensions";
 import {VariableDeclarationTypeParser} from "./variableTypes/variableDeclarationTypeParser";
 import {NodeType} from "./nodeType";
+import {TokenType} from "../parser/tokens/tokenType";
 
 export function instanceOfVariableDefinition(object: any): object is VariableDefinition {
   return object?.nodeType == NodeType.VariableDefinition;
@@ -37,72 +38,76 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
   private variableTypeValue: VariableType | null = null;
 
   public get variableType(): VariableType | null {
-     return this.variableTypeValue;
-   }
+    return this.variableTypeValue;
+  }
 
-   constructor(name: string, type: VariableDeclarationType,
-     source: VariableSource, reference: SourceReference, defaultExpression: Expression | null = null) {
-     super(reference);
-     this.type = type;
-     this.name = name;
-     this.defaultExpression = defaultExpression;
-     this.source = source;
-   }
+  constructor(name: string, type: VariableDeclarationType,
+              source: VariableSource, reference: SourceReference, defaultExpression: Expression | null = null) {
+    super(reference);
+    this.type = type;
+    this.name = name;
+    this.defaultExpression = defaultExpression;
+    this.source = source;
+  }
 
-   public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
-     const dependencies = this.variableType?.getDependencies(rootNodeList);
-     return !!dependencies ? dependencies : [];
-   }
+  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+    const dependencies = this.variableType?.getDependencies(rootNodeList);
+    return !!dependencies ? dependencies : [];
+  }
 
-   public static parse(source: VariableSource, context: IParseLineContext): VariableDefinition | null {
-     let line = context.line;
-     let result = context.validateTokens("VariableDefinition")
-       .countMinimum(2)
-       .stringLiteral(0)
-       .stringLiteral(1)
-       .isValid;
+  public static parse(source: VariableSource, context: IParseLineContext): VariableDefinition | null {
+    const line = context.line;
+    const tokens = line.tokens;
+    const result = context.validateTokens("VariableDefinition")
+      .countMinimum(2)
+      .stringLiteral(1)
+      .isValid;
 
-     if (!result) return null;
+    if (!result) return null;
 
-     let tokens = line.tokens;
-     let name = tokens.tokenValue(1);
-     let type = tokens.tokenValue(0);
-     if (name == null || type == null) return null;
+    if (!tokens.isTokenType(0, TokenType.StringLiteralToken) && !tokens.isTokenType(0, TokenType.MemberAccessLiteral)) {
+      context.logger.fail(line.tokenReference(0), `Unexpected token.`);
+      return null;
+    }
 
-     let variableType = VariableDeclarationTypeParser.parse(type, line.tokenReference(0));
-     if (variableType == null) return null;
+    const name = tokens.tokenValue(1);
+    const type = tokens.tokenValue(0);
+    if (name == null || type == null) return null;
 
-     if (tokens.length == 2) return new VariableDefinition(name, variableType, source, line.lineStartReference());
+    const variableType = VariableDeclarationTypeParser.parse(type, line.tokenReference(0));
+    if (variableType == null) return null;
 
-     if (tokens.token<OperatorToken>(2, asOperatorToken)?.type != OperatorType.Assignment) {
-       context.logger.fail(line.tokenReference(2), `Invalid variable declaration token. Expected '='.`);
-       return null;
-     }
+    if (tokens.length == 2) return new VariableDefinition(name, variableType, source, line.lineStartReference());
 
-     if (tokens.length != 4) {
-       context.logger.fail(line.lineEndReference(),
-         `Invalid variable declaration. Expected literal token.`);
-       return null;
-     }
+    if (tokens.token<OperatorToken>(2, asOperatorToken)?.type != OperatorType.Assignment) {
+      context.logger.fail(line.tokenReference(2), `Invalid variable declaration token. Expected '='.`);
+      return null;
+    }
 
-     const defaultValue = context.expressionFactory.parse(tokens.tokensFrom(3), line);
-     if (defaultValue.state == "failed") {
-       context.logger.fail(line.tokenReference(3), defaultValue.errorMessage);
-       return null;
-     }
+    if (tokens.length != 4) {
+      context.logger.fail(line.lineEndReference(),
+        `Invalid variable declaration. Expected literal token.`);
+      return null;
+    }
 
-     return new VariableDefinition(name, variableType, source, line.lineStartReference(), defaultValue.result);
-   }
+    const defaultValue = context.expressionFactory.parse(tokens.tokensFrom(3), line);
+    if (defaultValue.state == "failed") {
+      context.logger.fail(line.tokenReference(3), defaultValue.errorMessage);
+      return null;
+    }
 
-   public override getChildren(): Array<INode> {
+    return new VariableDefinition(name, variableType, source, line.lineStartReference(), defaultValue.result);
+  }
+
+  public override getChildren(): Array<INode> {
     return this.defaultExpression != null ? [this.defaultExpression, this.type] : [this.type];
-   }
+  }
 
-   protected override validate(context: IValidationContext): void {
-     this.variableTypeValue = this.type.createVariableType(context);
+  protected override validate(context: IValidationContext): void {
+    this.variableTypeValue = this.type.createVariableType(context);
 
-     context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, this.variableTypeValue, this.source);
+    context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, this.variableTypeValue, this.source);
 
-     validateTypeAndDefault(context, this.reference, this.type, this.defaultExpression);
-   }
+    validateTypeAndDefault(context, this.reference, this.type, this.defaultExpression);
+  }
 }

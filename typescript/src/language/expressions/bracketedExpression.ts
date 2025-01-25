@@ -12,6 +12,7 @@ import {OperatorType} from "../../parser/tokens/operatorType";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
+import {TokenType} from "../../parser/tokens/tokenType";
 
 export function instanceOfBracketedExpression(object: any): object is BracketedExpression {
   return object?.nodeType == NodeType.BracketedExpression;
@@ -57,7 +58,7 @@ export class BracketedExpression extends Expression {
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length > 1
-      && tokens.isTokenType<StringLiteralToken>(0, StringLiteralToken)
+      && tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken)
       && tokens.isOperatorToken(1, OperatorType.OpenBrackets);
   }
 

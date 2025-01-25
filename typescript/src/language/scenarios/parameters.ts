@@ -5,15 +5,14 @@ import {IParseLineContext} from "../../parser/ParseLineContext";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
 import {NodeType} from "../nodeType";
-import {ComplexAssignmentDefinition} from "./complexAssignmentDefinition";
-import {flattenAssignments} from "./flattenAssignments";
 import {IAssignmentDefinition} from "./IAssignmentDefinition";
+import {flattenAssignments} from "./flattenAssignments";
 
-export class ScenarioResults extends ParsableNode {
+export class Parameters extends ParsableNode {
 
   private assignmentsValue: Array<IAssignmentDefinition> = [];
 
-  public nodeType = NodeType.ScenarioResults;
+  public nodeType = NodeType.ScenarioParameters;
 
   constructor(reference: SourceReference) {
     super(reference);

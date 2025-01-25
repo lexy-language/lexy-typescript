@@ -68,6 +68,10 @@ export class TableHeader extends Node {
      if (parts.length < 2) return null;
      let name = parts[1];
 
-     return firstOrDefault(this.columnsValue, value => value.name == name);
+     return this.getColumn(name);
    }
+
+  public getColumn(name: string) {
+    return firstOrDefault(this.columnsValue, value => value.name == name);
+  }
 }

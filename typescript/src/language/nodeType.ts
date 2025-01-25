@@ -19,6 +19,8 @@ export enum NodeType {
   EnumName = "EnumName",
   ExpressionList = "ExpressionList",
   ExtractResultsFunction = "ExtractResultsFunction",
+  ExecutionLogging = "ExecutionLogging",
+  ExecutionLogEntry = "ExecutionLogEntry",
   FillParametersFunction = "FillParametersFunction",
   Function = "Function",
   FunctionCallExpression = "FunctionCallExpression",

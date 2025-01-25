@@ -4,7 +4,7 @@ import type {IValidationContext} from "../../../parser/validationContext";
 import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
 
 import {ExpressionFunction} from "./expressionFunction";
-import {Mapping} from "./mapping";
+import {Mapping, mapToUsedVariable} from "./mapping";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
@@ -15,6 +15,8 @@ import {VariableType} from "../../variableTypes/variableType";
 import {Function} from "../../functions/function";
 import {NodeType} from "../../nodeType";
 import {Assert} from "../../../infrastructure/assert";
+import {VariableUsage} from "../variableUsage";
+import {VariableAccess} from "../variableAccess";
 
 export function instanceOfFillParametersFunction(object: any): object is FillParametersFunction {
   return object?.nodeType == NodeType.FillParametersFunction;
@@ -115,5 +117,11 @@ export class FillParametersFunction extends ExpressionFunction implements IHasNo
       return functionValue.getResultsType(context);
     }
     return null;
+  }
+
+  public override usedVariables(): ReadonlyArray<VariableUsage> {
+    return [
+      ...this.mapping.map(mapToUsedVariable(VariableAccess.Read)),
+    ];
   }
 }

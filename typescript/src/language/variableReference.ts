@@ -1,46 +1,22 @@
-import {isNullOrEmpty} from "../parser/tokens/character";
+import {VariableSource} from "./variableSource";
+import {VariablePath} from "./variablePath";
+import {VariableType} from "./variableTypes/variableType";
 
 export class VariableReference {
+  public readonly path: VariablePath;
+  public readonly source: VariableSource;
+  public readonly rootType: VariableType | null;
+  public readonly variableType: VariableType | null;
 
-  public readonly path: string[];
-
-  public get parentIdentifier(): string {
-    return this.path[0];
-  }
-
-  public get hasChildIdentifiers(): boolean {
-    return this.path.length > 1;
-  }
-
-  public get parts(): number {
-    return this.path.length;
-  }
-
-  constructor(variablePath: string[]) {
-    this.path = variablePath;
-  }
-
-  public fullPath(): string {
-    return this.path.join('.');
+  constructor(path: VariablePath, rootType: VariableType | null,
+              variableType: VariableType | null, source: VariableSource) {
+    this.path = path;
+    this.rootType = rootType;
+    this.variableType = variableType;
+    this.source = source;
   }
 
   public toString(): string {
-    return this.fullPath();
-  }
-
-  public childrenReference(): VariableReference {
-    const parts = this.path.slice(1);
-    return new VariableReference(parts);
-  }
-
-  static parse(key: string): VariableReference {
-    if (isNullOrEmpty(key)) throw new Error("Invalid empty variable reference.")
-    const parts = key.split(".");
-    return new VariableReference(parts);
-  }
-
-  append(parts: Array<string>): VariableReference {
-    const newPath = [...this.path, ...parts];
-    return new VariableReference(newPath);
+    return this.path.toString();
   }
 }

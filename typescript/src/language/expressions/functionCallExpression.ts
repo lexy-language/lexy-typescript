@@ -17,6 +17,9 @@ import {VariableType} from "../variableTypes/variableType";
 import {LexyFunction} from "./functions/lexyFunction";
 import {BinaryExpression} from "./binaryExpression";
 import {NodeType} from "../nodeType";
+import {VariableUsage} from "./variableUsage";
+import {getReadVariableUsage, getReadVariableUsageNodes} from "./getReadVariableUsage";
+import {TokenType} from "../../parser/tokens/tokenType";
 
 export function instanceOfFunctionCallExpression(object: any): object is FunctionCallExpression {
   return object?.nodeType == NodeType.FunctionCallExpression;
@@ -82,12 +85,12 @@ export class FunctionCallExpression extends Expression {
   }
 
   public static isValid(tokens: TokenList): boolean {
-    return tokens.isTokenType<StringLiteralToken>(0, StringLiteralToken)
+    return tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken)
       && tokens.isOperatorToken(1, OperatorType.OpenParentheses);
   }
 
   public override getChildren(): Array<INode> {
-    return this.expressionFunction != null ? [this.expressionFunction] : [];
+    return this.expressionFunction != null ? [this.expressionFunction, ...this.arguments] : [...this.arguments];
   }
 
   protected override validate(context: IValidationContext): void {
@@ -95,5 +98,12 @@ export class FunctionCallExpression extends Expression {
 
   public override deriveType(context: IValidationContext): VariableType | null {
     return this.expressionFunction != null ? this.expressionFunction.deriveReturnType(context) : null;
+  }
+
+  public override usedVariables(): ReadonlyArray<VariableUsage> {
+    return [
+      ...getReadVariableUsageNodes(this.arguments),
+      ...this.expressionFunction.usedVariables()
+    ];
   }
 }

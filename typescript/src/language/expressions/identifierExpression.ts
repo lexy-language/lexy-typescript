@@ -1,9 +1,7 @@
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
-
 import {Expression} from "./expression";
-import {VariableSource} from "../variableSource";
 import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../../parser/sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
@@ -11,21 +9,31 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
-import {Assert} from "../../infrastructure/assert";
+import {IHasVariableReference} from "./IHasVariableReference";
+import {VariableReference} from "../variableReference";
+import {VariableUsage} from "./variableUsage";
+import {VariablePath} from "../variablePath";
+import {VariablePathParser} from "../scenarios/variablePathParser";
+import {TokenType} from "../../parser/tokens/tokenType";
 
-export function asIdentifierExpression(object: any): IdentifierExpression | null {
-  return object?.nodeType == NodeType.IdentifierExpression ? object as IdentifierExpression : null;
+export function instanceOfIdentifierExpression(object: any): boolean {
+  return object?.nodeType == NodeType.IdentifierExpression;
 }
 
-export class IdentifierExpression extends Expression {
+export function asIdentifierExpression(object: any): IdentifierExpression | null {
+  return instanceOfIdentifierExpression(object) ? object as IdentifierExpression : null;
+}
 
-  private variableSourceValue: VariableSource | null = null;
+export class IdentifierExpression extends Expression implements IHasVariableReference {
 
+  private variableValue: VariableReference | null = null;
+
+  public readonly hasVariableReference = true;
   public readonly nodeType = NodeType.IdentifierExpression;
   public readonly identifier: string;
 
-  public get variableSource() {
-    return Assert.notNull(this.variableSourceValue, "variableSource");
+  public get variable(): VariableReference | null {
+    return this.variableValue;
   }
 
   constructor(identifier: string, source: ExpressionSource, reference: SourceReference) {
@@ -49,7 +57,7 @@ export class IdentifierExpression extends Expression {
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length == 1
-      && tokens.isTokenType<StringLiteralToken>(0, StringLiteralToken);
+      && tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken);
   }
 
   public override getChildren(): Array<INode> {
@@ -57,18 +65,19 @@ export class IdentifierExpression extends Expression {
   }
 
   protected override validate(context: IValidationContext): void {
-    if (!context.variableContext.ensureVariableExists(this.reference, this.identifier)) return;
+    this.createVariableReference(context);
+  }
 
-    let variableSource = context.variableContext.getVariableSource(this.identifier);
-    if (variableSource == null) {
-      context.logger.fail(this.reference, `Can't define source of variable: ${this.identifier}`);
-      return;
-    }
-
-    this.variableSourceValue = variableSource;
+  public createVariableReference(context: IValidationContext) {
+    const path = VariablePathParser.parseString(this.identifier);
+    this.variableValue = context.variableContext.createVariableReference(this.reference, path, context);
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
     return context.variableContext.getVariableTypeByName(this.identifier);
+  }
+
+  public override usedVariables(): Array<VariableUsage> {
+    return this.variableValue != null ? [VariableUsage.read(this.variableValue)] : [];
   }
 }

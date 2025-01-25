@@ -16,6 +16,8 @@ import {Keywords} from "../../parser/Keywords";
 import {PrimitiveType} from "../variableTypes/primitiveType";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
+import {VariableUsage} from "./variableUsage";
+import {getReadVariableUsage} from "./getReadVariableUsage";
 
 export function instanceOfIfExpression(object: any): boolean {
   return object?.nodeType == NodeType.IfExpression;
@@ -105,5 +107,9 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
     if (elseExpression == null) throw new Error(`Invalid node type: ${expression.nodeType}`);
 
     this.else = elseExpression;
+  }
+
+  override usedVariables(): ReadonlyArray<VariableUsage> {
+    return getReadVariableUsage(this.condition);
   }
 }

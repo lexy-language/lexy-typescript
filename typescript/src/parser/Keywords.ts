@@ -23,6 +23,8 @@ export class Keywords {
   public static readonly Include = "Include";
   public static readonly Parameters = "Parameters";
   public static readonly Results = "Results";
+  public static readonly ExecutionLogging = "ExecutionLogging";
+  public static readonly ExecutionLog = "Log";
   public static readonly Code = "Code";
   public static readonly ExpectError = "ExpectError";
   public static readonly ExpectRootErrors = "ExpectRootErrors";
@@ -51,6 +53,8 @@ export class Keywords {
     Keywords.Parameters,
     Keywords.Results,
     Keywords.Code,
+    Keywords.ExecutionLogging,
+    Keywords.ExecutionLog,
     Keywords.ExpectError,
     Keywords.ExpectRootErrors,
     Keywords.ExpectExecutionErrors,

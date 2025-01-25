@@ -1,9 +1,10 @@
-import {VariableReference} from "../language/variableReference";
+import {VariablePath} from "../language/variablePath";
 import {ExecutionContext} from "../runTime/executionContext";
 import {FunctionResult} from "../runTime/functionResult";
 import {ILogger} from "../infrastructure/logger";
 import {GeneratedType} from "./generatedType";
 import {LexyCodeConstants} from "./javaScript/lexyCodeConstants";
+import {VariablePathParser} from "../language/scenarios/variablePathParser";
 
 export class ExecutableFunction {
   private readonly environment: any;
@@ -20,7 +21,7 @@ export class ExecutableFunction {
     let parameters = this.getParameters(values);
     const context = new ExecutionContext(this.logger);
     let results = this.functionReference(this.environment, parameters, context);
-    return new FunctionResult(results);
+    return new FunctionResult(results, context.entries);
   }
 
   private getParameters(values: { [p: string]: any } | null) {
@@ -38,7 +39,7 @@ export class ExecutableFunction {
   }
 
   private getParameterSetter(parameters: any, key: string): ((value: any) => void) {
-    let currentReference = VariableReference.parse(key);
+    let currentReference = VariablePathParser.parseString(key);
     let currentValue = parameters;
     while (currentReference.hasChildIdentifiers) {
       currentValue = parameters[currentReference.parentIdentifier];

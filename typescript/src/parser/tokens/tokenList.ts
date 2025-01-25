@@ -49,8 +49,8 @@ export class TokenList {
     return new TokenList(range);
   }
 
-  public isTokenType<T>(index: number, type: any): boolean {
-    return index >= 0 && index <= this.values.length - 1 && this.values[index] instanceof type;
+  public isTokenType<T>(index: number, type: TokenType): boolean {
+    return index >= 0 && index <= this.values.length - 1 && this.values[index].tokenType == type;
   }
 
   public token<T extends Token>(index: number, castFunction: (object: any) => T | null): T | null {

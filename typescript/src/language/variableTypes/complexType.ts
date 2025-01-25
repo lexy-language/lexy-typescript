@@ -44,4 +44,8 @@ export class ComplexType extends VariableType implements ITypeWithMembers {
   public equals(other: VariableType | null): boolean {
     return other != null && instanceOfComplexType(other) && this.name == other.name && this.source == other.source;
   }
+
+  public toString() {
+    return "(ComplexType) " + this.name;
+  }
 }

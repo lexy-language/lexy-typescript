@@ -7,7 +7,7 @@ import {IValidationContext} from "../../parser/validationContext";
 import {NodeType} from "../nodeType";
 import {Assert} from "../../infrastructure/assert";
 
-export class ScenarioExpectExecutionErrors extends ParsableNode {
+export class ExpectExecutionErrors extends ParsableNode {
 
    private readonly messagesValue: Array<string> = [];
 

@@ -2,7 +2,7 @@ import {Token} from "./token";
 import {ILiteralToken} from "./ILiteralToken";
 import {TokenCharacter} from "./tokenCharacter";
 import {TokenValues} from "./tokenValues";
-import {VariableReference} from "../../language/variableReference";
+import {VariablePath} from "../../language/variablePath";
 import {instanceOfTypeWithMembers, ITypeWithMembers} from "../../language/variableTypes/ITypeWithMembers";
 import {VariableType} from "../../language/variableTypes/variableType";
 import {IValidationContext} from "../validationContext";
@@ -44,8 +44,8 @@ export class MemberAccessLiteral extends Token implements ILiteralToken {
   }
 
   public deriveType(context: IValidationContext): VariableType | null {
-    let variableReference = new VariableReference(this.parts);
-    let variableType = context.variableContext.getVariableTypeByReference(variableReference, context);
+    let variablePath = new VariablePath(this.parts);
+    let variableType = context.variableContext.getVariableTypeByPath(variablePath, context);
     if (variableType != null) return variableType;
 
     if (this.parts.length != 2) return null;

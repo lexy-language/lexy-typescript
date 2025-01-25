@@ -53,6 +53,7 @@ export class LexyParser implements ILexyParser {
 
     this.parseDocument(context, code, fullFileName);
     context.logger.logNodes(context.nodes.asArray());
+
     this.validateNodesTree(context);
     this.detectCircularDependencies(context);
 

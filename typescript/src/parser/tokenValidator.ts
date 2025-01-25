@@ -152,7 +152,7 @@ export class TokenValidator {
 
     let token = this.tokens.get(index);
     if (token.tokenType != tokenType) {
-      this.fail(`Invalid token ${index} type. Expected: '${tokenType}' Actual: '${this.type.name}(${token.value})'`);
+      this.fail(`Invalid token ${index} type. Expected: '${tokenType}' Actual: '${token.tokenType}(${token.value})'`);
       this.isValid = false;
 
       return null;

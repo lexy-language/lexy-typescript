@@ -18,12 +18,12 @@ export class BuiltInTableFunctions {
 
       //let valueComparedToCondition = value.CompareTo(condition);
       if (value == condition) {
-        context.logDebug(`${functionName} returned value from row: ${index + 1}`);
+        context.logChild(`${functionName} returned value from row: ${index + 1}`);
         return row[resultName];
       }
 
       if (value > condition) {
-        context.logDebug(`{functionName} returned value from previous row: {index}`);
+        context.logChild(`{functionName} returned value from previous row: {index}`);
 
         if (lastRow == null) {
           throw new Error(`${functionName} failed. Search value '${condition}' not found.`);
@@ -39,7 +39,7 @@ export class BuiltInTableFunctions {
       throw new Error(`${functionName} failed. Search value '${condition}' not found.`);
     }
 
-    context.logDebug(`${functionName} returned value from last row: ${tableValues.length}`);
+    context.logChild(`${functionName} returned value from last row: ${tableValues.length}`);
     return lastRow[resultName];
   }
 
@@ -58,12 +58,12 @@ export class BuiltInTableFunctions {
 
       //let valueComparedToCondition = value.CompareTo(condition);
       if (value == condition) {
-        context.logDebug(`${functionName} returned value from row: ${index + 1}`);
+        context.logChild(`${functionName} returned value from row: ${index + 1}`);
         return row;
       }
 
       if (value > condition) {
-        context.logDebug(`{functionName} returned value from previous row: {index}`);
+        context.logChild(`{functionName} returned value from previous row: {index}`);
 
         if (lastRow == null) {
           throw new Error(`${functionName} failed. Search value '${condition}' not found.`);
@@ -79,7 +79,7 @@ export class BuiltInTableFunctions {
       throw new Error(`${functionName} failed. Search value '${condition}' not found.`);
     }
 
-    context.logDebug(`${functionName} returned value from last row: ${tableValues.length}`);
+    context.logChild(`${functionName} returned value from last row: ${tableValues.length}`);
     return lastRow;
   }
 }

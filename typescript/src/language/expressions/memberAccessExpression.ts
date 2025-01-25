@@ -5,38 +5,47 @@ import type {IExpressionFactory} from "./expressionFactory";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
 
 import {Expression} from "./expression";
-import {VariableReference} from "../variableReference";
+import {VariablePath} from "../variablePath";
 import {VariableType} from "../variableTypes/variableType";
 import {SourceReference} from "../../parser/sourceReference";
 import {ExpressionSource} from "./expressionSource";
 import {asMemberAccessLiteral, MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
-import {VariableSource} from "../variableSource"
 import {RootNodeList} from "../rootNodeList";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
-import {asTypeWithMembers} from "../variableTypes/ITypeWithMembers";
 import {NodeType} from "../nodeType";
+import {IHasVariableReference} from "./IHasVariableReference";
+import {VariableReference} from "../variableReference";
+import {TokenType} from "../../parser/tokens/tokenType";
 
-export function asMemberAccessExpression(object: any): MemberAccessExpression | null {
-  return object.nodeType == NodeType.MemberAccessExpression ? object as MemberAccessExpression : null;
+export function instanceOfMemberAccessExpression(object: any): boolean {
+  return object?.nodeType == NodeType.MemberAccessExpression;
 }
 
-export class MemberAccessExpression extends Expression implements IHasNodeDependencies {
+export function asMemberAccessExpression(object: any): MemberAccessExpression | null {
+  return instanceOfMemberAccessExpression(object) ? object as MemberAccessExpression : null;
+}
 
+export class MemberAccessExpression extends Expression
+  implements IHasNodeDependencies, IHasVariableReference {
+
+  private variableValue: VariableReference | null = null;
+
+  public readonly hasVariableReference = true;
   public readonly hasNodeDependencies = true;
-  public nodeType = NodeType.MemberAccessExpression;
+  public readonly nodeType = NodeType.MemberAccessExpression;
 
   public readonly memberAccessLiteral: MemberAccessLiteral;
-  public readonly variable: VariableReference;
+  public readonly variablePath: VariablePath;
 
-  public variableSource: VariableSource = VariableSource.Unknown;
-  public variableType: VariableType | null = null;
-  public parentVariableType: VariableType | null = null;
+  public get variable(): VariableReference | null {
+    return this.variableValue;
+  }
 
-  constructor(variable: VariableReference, literal: MemberAccessLiteral, source: ExpressionSource, reference: SourceReference) {
+  constructor(variablePath: VariablePath, literal: MemberAccessLiteral, source: ExpressionSource, reference: SourceReference) {
     super(source, reference);
     this.memberAccessLiteral = literal;
-    this.variable = variable;
+    this.variablePath = variablePath;
   }
 
   public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
@@ -51,7 +60,7 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
     let literal = tokens.token<MemberAccessLiteral>(0, asMemberAccessLiteral);
     if (!literal) return newParseExpressionFailed("MemberAccessExpression", `Invalid expression.`);
 
-    let variable = new VariableReference(literal.parts);
+    let variable = new VariablePath(literal.parts);
     let reference = source.createReference();
 
     let accessExpression = new MemberAccessExpression(variable, literal, source, reference);
@@ -60,7 +69,7 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length == 1
-      && tokens.isTokenType<MemberAccessLiteral>(0, MemberAccessLiteral);
+      && tokens.isTokenType<MemberAccessLiteral>(0, TokenType.MemberAccessLiteral);
   }
 
   public override getChildren(): Array<INode> {
@@ -68,49 +77,11 @@ export class MemberAccessExpression extends Expression implements IHasNodeDepend
   }
 
   protected override validate(context: IValidationContext): void {
-    this.variableType = context.variableContext.getVariableTypeByReference(this.variable, context);
-    this.parentVariableType = context.rootNodes.getType(this.variable.parentIdentifier);
-
-    this.setVariableSource(context);
-
-    if (this.variableType != null) return;
-
-    this.validateMemberType(context);
+    this.createVariableReference(context);
   }
 
-  private validateMemberType(context: IValidationContext) {
-
-    if (this.variableType == null && this.parentVariableType == null) {
-      context.logger.fail(this.reference, `Invalid member access '${this.variable}'. Variable '${this.variable}' not found.`);
-      return;
-    }
-
-    const typeWithMembers = asTypeWithMembers(this.parentVariableType);
-    if (typeWithMembers == null) {
-      context.logger.fail(this.reference,
-        `Invalid member access '${this.variable}'. Variable '${this.variable.parentIdentifier}' not found.`);
-      return;
-    }
-
-    let memberType = typeWithMembers.memberType(this.memberAccessLiteral.member, context);
-    if (memberType == null) {
-      context.logger.fail(this.reference,
-        `Invalid member access '${this.variable}'. Member '${this.memberAccessLiteral.member}' not found on '${this.variable.parentIdentifier}'.`);
-    }
-  }
-
-  private setVariableSource(context: IValidationContext): void {
-    if (this.parentVariableType != null) {
-      this.variableSource = VariableSource.Type;
-      return;
-    }
-
-    let variableSource = context.variableContext.getVariableSource(this.variable.parentIdentifier);
-    if (variableSource == null) {
-      context.logger.fail(this.reference, `Can't define source of variable: ${this.variable.parentIdentifier}`);
-    } else {
-      this.variableSource = variableSource;
-    }
+  private createVariableReference(context: IValidationContext) {
+    this.variableValue = context.variableContext.createVariableReference(this.reference, this.variablePath, context);
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {

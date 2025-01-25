@@ -77,3 +77,16 @@ export function count<TItem>(array: ReadonlyArray<TItem>, predicate: (value: TIt
   }
   return results;
 }
+
+export function unique<TItem>(array: ReadonlyArray<TItem>, identifierProvider: (value: TItem) => string): Array<TItem> {
+  const used: {[key: string]: boolean} = {};
+  const results = [];
+  for (const item of array) {
+    const identifier = identifierProvider(item);
+    if (!used[identifier]) {
+      results.push(item);
+      used[identifier] = true;
+    }
+  }
+  return results;
+}

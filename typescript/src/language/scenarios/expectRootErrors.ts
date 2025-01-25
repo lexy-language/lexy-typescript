@@ -6,7 +6,7 @@ import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
 import {NodeType} from "../nodeType";
 
-export class ScenarioExpectRootErrors extends ParsableNode {
+export class ExpectRootErrors extends ParsableNode {
 
    private readonly messagesValue: Array<string> = [];
 

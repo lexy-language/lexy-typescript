@@ -50,7 +50,7 @@ export class SimpleLexyFunctionFunctionExpressionStatementException implements I
                             parameterVariable: string,
                             resultsVariable: string,
                             codeWriter: CodeWriter) {
-    codeWriter.startLine("let " + resultsVariable + " = ");
+    codeWriter.startLine(`let ${resultsVariable} = `);
     LexyFunctionCall.renderFunction(lexyFunction.functionName, parameterVariable, codeWriter);
     codeWriter.endLine(";");
   }

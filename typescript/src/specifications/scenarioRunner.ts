@@ -9,13 +9,15 @@ import {RootNodeList} from "../language/rootNodeList";
 import {format} from "../infrastructure/formatting";
 import {FunctionResult} from "../runTime/functionResult";
 import {any, firstOrDefault} from "../infrastructure/enumerableExtensions";
-import {ScenarioParameters} from "../language/scenarios/scenarioParameters";
+import {Parameters} from "../language/scenarios/parameters";
 import {FunctionParameters} from "../language/functions/functionParameters";
 import {IRootNode} from "../language/rootNode";
 import {ExecutableFunction} from "../compiler/executableFunction";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {Assert} from "../infrastructure/assert";
 import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
+import validateExecutionLogging from "./validateExecutionLogging";
+import {ExecutionLogEntry} from "../runTime/executionContext";
 
 export interface IScenarioRunner {
   failed: boolean;
@@ -31,9 +33,10 @@ export class ScenarioRunner implements IScenarioRunner {
   private readonly context: ISpecificationRunnerContext;
   private readonly compiler: ILexyCompiler;
   private readonly fileName: string;
-  private readonly functionNode: Function | null = null;
   private readonly parserLogger: IParserLogger;
   private readonly rootNodeList: RootNodeList;
+
+  private functionNode: Function | null = null;
 
   private failedValue: boolean = false;
 
@@ -52,20 +55,10 @@ export class ScenarioRunner implements IScenarioRunner {
     this.parserLogger = parserLogger;
 
     this.scenario = scenario;
-    this.functionNode = ScenarioRunner.getFunctionNode(scenario, rootNodeList);
-  }
-
-  private static getFunctionNode(scenario: Scenario, rootNodeList: RootNodeList): Function | null {
-    if (scenario.functionNode != null) {
-      return scenario.functionNode;
-    }
-    if (scenario.functionName?.hasValue) {
-      return rootNodeList.getFunction(scenario.functionName.value);
-    }
-    return null;
   }
 
   public run(): void {
+    this.functionNode = this.getFunctionNode(this.scenario, this.rootNodeList);
     if (this.parserLogger.nodeHasErrors(this.scenario) && this.scenario.expectExecutionErrors == null) {
       this.fail(`Parsing scenario failed.`, this.parserLogger.errorNodeMessages(this.scenario));
       return;
@@ -73,7 +66,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
     if (!this.validateErrors()) return;
 
-    const functionNode = Assert.notNull(this.functionNode, "this.functionNode");
+    const functionNode = Assert.notNull(this.functionNode, "functionNode");
     const nodes = functionNode.getFunctionAndDependencies(this.rootNodeList);
     const compilerResult = this.compile(nodes);
     const executable = compilerResult.getFunction(functionNode);
@@ -82,12 +75,28 @@ export class ScenarioRunner implements IScenarioRunner {
     const result = this.runFunction(executable, values);
     if (result == null) return;
 
-    const validationResultText = this.getValidationResult(result, compilerResult);
+    if (!this.validateExecutionLogging(result)) return;
+
+    const validationResultText = this.validateResult(result, compilerResult);
     if (validationResultText.length > 0) {
       this.fail("Results validation failed.", validationResultText);
     } else {
-      this.context.success(this.scenario);
+      this.context.success(this.scenario, result.logging);
     }
+  }
+
+  private getFunctionNode(scenario: Scenario, rootNodeList: RootNodeList): Function | null {
+    if (scenario.functionNode != null) {
+      return scenario.functionNode;
+    }
+    if (scenario.functionName?.hasValue) {
+      const functionNode = rootNodeList.getFunction(scenario.functionName.value);
+      if (functionNode == null) {
+        this.fail(`Unknown function: ` + scenario.functionName, this.parserLogger.errorNodeMessages(this.scenario));
+      }
+      return functionNode;
+    }
+    return null;
   }
 
   private runFunction(executable: ExecutableFunction, values: { [key: string]: any } | null) {
@@ -119,7 +128,7 @@ export class ScenarioRunner implements IScenarioRunner {
     this.context.fail(this.scenario, message, errors);
   }
 
-  private getValidationResult(result: FunctionResult, compilerResult: CompilerResult): Array<string> {
+  private validateResult(result: FunctionResult, compilerResult: CompilerResult): Array<string> {
     const validationResult: Array<string> = [];
     if (this.scenario.results != null) {
       this.evaluateResults(this.scenario.results.allAssignments(), result, compilerResult, validationResult);
@@ -179,7 +188,7 @@ export class ScenarioRunner implements IScenarioRunner {
       return false;
     }
 
-    this.context.success(this.scenario);
+    this.context.success(this.scenario, null);
     return false;
   }
 
@@ -205,7 +214,7 @@ export class ScenarioRunner implements IScenarioRunner {
     }
 
     if (!any(failedMessages) && !failed) {
-      this.context.success(this.scenario);
+      this.context.success(this.scenario, null);
       return false; // don't compile and run rest of scenario
     }
 
@@ -215,7 +224,7 @@ export class ScenarioRunner implements IScenarioRunner {
     return false;
   }
 
-  private getValues(scenarioParameters: ScenarioParameters | null,
+  private getValues(scenarioParameters: Parameters | null,
                     functionParameters: FunctionParameters | null,
                     compilerResult: CompilerResult): { [key: string]: any } {
     let result = {};
@@ -256,8 +265,6 @@ export class ScenarioRunner implements IScenarioRunner {
       }
       valueObject = valueObject[reference.parentIdentifier];
       reference = reference.childrenReference();
-
-      //todo verify var types of nested parameters
     }
     valueObject[reference.parentIdentifier] = value;
   }
@@ -293,6 +300,16 @@ export class ScenarioRunner implements IScenarioRunner {
         'Actual:', ...errorMessage]);
     }
 
+    return true;
+  }
+
+  private validateExecutionLogging(result: FunctionResult) {
+    if (this.scenario.executionLogging == null) return true;
+    const errors = validateExecutionLogging(result.logging, this.scenario.executionLogging.entries);
+    if (errors != null) {
+      this.fail("Invalid Execution Logging", errors);
+      return false;
+    }
     return true;
   }
 }

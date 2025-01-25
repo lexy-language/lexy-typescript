@@ -1,7 +1,7 @@
 import {ExpressionFunction} from "./expressionFunction";
 import {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import {Expression} from "../expression";
-import {Mapping} from "./mapping";
+import {Mapping, mapToUsedVariable} from "./mapping";
 import {ComplexType} from "../../variableTypes/complexType";
 import {SourceReference} from "../../../parser/sourceReference";
 import {RootNodeList} from "../../rootNodeList";
@@ -14,6 +14,9 @@ import {asIdentifierExpression} from "../identifierExpression";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
 import {Assert} from "../../../infrastructure/assert";
+import {VariableUsage} from "../variableUsage";
+import {VariableAccess} from "../variableAccess";
+import {VariablePath} from "../../variablePath";
 
 export function instanceOfLexyFunction(object: any): object is LexyFunction {
   return object?.nodeType == NodeType.LexyFunction;
@@ -82,8 +85,7 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
     }
 
     if (this.argumentValues.length == 0) {
-      FillParametersFunction.getMapping(this.reference, context, functionNode.getParametersType(context),
-        this.mappingParametersValue);
+      FillParametersFunction.getMapping(this.reference, context, functionNode.getParametersType(context),this.mappingParametersValue);
       ExtractResultsFunction.getMapping(this.reference, context, functionNode.getResultsType(context), this.mappingResultsValue);
 
       this.functionParametersTypeValue = functionNode.getParametersType(context);
@@ -108,5 +110,12 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
     const functionNode = context.rootNodes.getFunction(this.functionName);
     if (functionNode == null) return null;
     return functionNode.getResultsType(context);
+  }
+
+  public override usedVariables(): ReadonlyArray<VariableUsage> {
+    return [
+      ...this.mappingParameters.map(mapToUsedVariable(VariableAccess.Read)),
+      ...this.mappingResults.map(mapToUsedVariable(VariableAccess.Write))
+    ];
   }
 }

@@ -50,7 +50,7 @@ export class ValidationContext implements IValidationContext {
        this.contexts.push(this.variableContextValue);
      }
 
-     this.variableContextValue = new VariableContext(this.logger, this.variableContextValue);
+     this.variableContextValue = new VariableContext(this.rootNodes, this.logger, this.variableContextValue);
 
      return {
        [Symbol.dispose]: () => this.dispose()

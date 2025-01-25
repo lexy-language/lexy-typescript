@@ -49,7 +49,15 @@ export class FunctionWriter implements IRootTokenWriter {
     codeWriter.openScope(`function ${LexyCodeConstants.runMethod}(${LexyCodeConstants.parameterVariable}, ${LexyCodeConstants.contextVariable})`);
 
     FunctionWriter.renderResults(codeWriter)
+    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.setFileName("${functionNode.reference.file.fileName}");`)
+    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.openScope("Execute: ${functionNode.nodeName}", ${functionNode.reference.lineNumber});`)
+    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Parameters", ${functionNode.parameters?.reference.lineNumber}, ${LexyCodeConstants.parameterVariable});`)
+    codeWriter.writeLine();
+
     FunctionWriter.renderCode(functionNode, codeWriter);
+
+    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Results",  ${functionNode.results?.reference.lineNumber},${LexyCodeConstants.resultsVariable});`)
+    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.closeScope();`)
 
     codeWriter.writeLine(`return ${LexyCodeConstants.resultsVariable};`);
 
@@ -58,7 +66,7 @@ export class FunctionWriter implements IRootTokenWriter {
   }
 
   private static renderCode(functionNode: Function, codeWriter: CodeWriter) {
-    renderExpressions(functionNode.code?.expressions, codeWriter);
+    renderExpressions(functionNode.code?.expressions, false, codeWriter);
   }
 
   private static renderResults(codeWriter: CodeWriter) {

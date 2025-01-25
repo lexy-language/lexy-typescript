@@ -9,6 +9,12 @@ export class SystemFunctions {
     }
   }
 
+  public static valuesToArray(value: any) {
+    if (value == null) return [];
+    const keys = Object.keys(value);
+    return keys.map(key => ({name: key, value: value[key]}));
+  }
+
   public static variablePath(parent: string, name: string) {
     return parent ? parent + "." + name : name;
   }

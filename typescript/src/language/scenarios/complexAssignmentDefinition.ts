@@ -1,4 +1,4 @@
-import {VariableReference} from "../variableReference";
+import {VariablePath} from "../variablePath";
 import {SourceReference} from "../../parser/sourceReference";
 import {instanceOfParsableNode, IParsableNode, ParsableNode} from "../parsableNode";
 import {AssignmentDefinition} from "./assignmentDefinition";
@@ -6,9 +6,9 @@ import {NodeType} from "../nodeType";
 import {IParseLineContext} from "../../parser/ParseLineContext";
 import {INode} from "../node";
 import {IValidationContext} from "../../parser/validationContext";
-import {instanceOfComplexType} from "../variableTypes/complexType";
 import {IAssignmentDefinition} from "./IAssignmentDefinition";
 import {instanceOfCustomType} from "../variableTypes/customType";
+import {instanceOfComplexType} from "../variableTypes/complexType";
 
 export function instanceOfComplexAssignmentDefinition(object: any): object is ComplexAssignmentDefinition {
   return object?.nodeType == NodeType.ComplexAssignmentDefinition;
@@ -22,11 +22,15 @@ export class ComplexAssignmentDefinition extends ParsableNode implements IAssign
 
   private assignmentsValue: Array<IAssignmentDefinition> = [];
 
-  private readonly variable: VariableReference;
+  public readonly variable: VariablePath;
 
   public nodeType = NodeType.ComplexAssignmentDefinition;
 
-  constructor(variable: VariableReference, reference: SourceReference) {
+  public get assignments(): ReadonlyArray<IAssignmentDefinition> {
+    return this.assignmentsValue;
+  }
+
+  constructor(variable: VariablePath, reference: SourceReference) {
     super(reference);
     this.variable = variable;
   }
@@ -48,12 +52,12 @@ export class ComplexAssignmentDefinition extends ParsableNode implements IAssign
   }
 
   protected override validate(context: IValidationContext): void {
-    if (!context.variableContext.containsReference(this.variable, context)) {
+    if (!context.variableContext.containsPath(this.variable, context)) {
       context.logger.fail(this.reference, `Variable '${this.variable}' not found.`);
     }
 
-    const variableType = context.variableContext.getVariableTypeByReference(this.variable, context);
-    if (!instanceOfCustomType(variableType)) {
+    const variableType = context.variableContext.getVariableTypeByPath(this.variable, context);
+    if (!instanceOfCustomType(variableType) && !instanceOfComplexType(variableType)) {
       context.logger.fail(this.reference, `Variable '${this.variable}' without assignment should be a complex type, but is ${variableType}.`);
     }
   }

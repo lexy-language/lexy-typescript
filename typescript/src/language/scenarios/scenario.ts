@@ -8,11 +8,11 @@ import {IRootNode, RootNode} from "../rootNode";
 import {ScenarioName} from "./scenarioName";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {Table} from "../tables/table";
-import {ScenarioExpectError} from "./scenarioExpectError";
-import {ScenarioExpectRootErrors} from "./scenarioExpectRootErrors";
+import {ExpectError} from "./expectError";
+import {ExpectRootErrors} from "./expectRootErrors";
 import {ScenarioTable} from "./scenarioTable";
-import {ScenarioResults} from "./scenarioResults";
-import {ScenarioParameters} from "./scenarioParameters";
+import {Results} from "./results";
+import {Parameters} from "./parameters";
 import {ScenarioFunctionName} from "./scenarioFunctionName";
 import {SourceReference} from "../../parser/sourceReference";
 import {NodeName} from "../../parser/nodeName";
@@ -21,9 +21,11 @@ import {Keywords} from "../../parser/Keywords";
 import {VariableSource} from "../variableSource";
 import {VariableDefinition} from "../variableDefinition";
 import {NodeType} from "../nodeType";
-import {ScenarioExpectExecutionErrors} from "./scenarioExpectExecutionErrors";
+import {ExpectExecutionErrors} from "./expectExecutionErrors";
 import {IHasNodeDependencies} from "../IHasNodeDependencies";
 import {RootNodeList} from "../rootNodeList";
+import {ExecutionLogging} from "./executionLogging";
+import {TokenType} from "../../parser/tokens/tokenType";
 
 export function instanceOfScenario(object: any) {
   return object?.nodeType == NodeType.Scenario;
@@ -40,13 +42,14 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
   private tableValue: Table | null = null;
 
   private functionNameValue: ScenarioFunctionName | null = null;
-  private parametersValue: ScenarioParameters | null = null;
-  private resultsValue: ScenarioResults | null = null;
+  private parametersValue: Parameters | null = null;
+  private resultsValue: Results | null = null;
   private validationTableValue: ScenarioTable | null = null;
+  private executionLoggingValue: ExecutionLogging | null = null;
 
-  private expectErrorValue: ScenarioExpectError | null = null;
-  private expectRootErrorsValue: ScenarioExpectRootErrors | null = null;
-  private expectExecutionErrorsValue: ScenarioExpectExecutionErrors | null = null;
+  private expectErrorValue: ExpectError | null = null;
+  private expectRootErrorsValue: ExpectRootErrors | null = null;
+  private expectExecutionErrorsValue: ExpectExecutionErrors | null = null;
 
   public readonly nodeType = NodeType.Scenario;
   public readonly hasNodeDependencies = true;
@@ -64,12 +67,16 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     return this.enumValue;
   }
 
-  public get parameters(): ScenarioParameters | null {
+  public get parameters(): Parameters | null {
     return this.parametersValue;
   }
 
-  public get results(): ScenarioResults | null {
+  public get results(): Results | null {
     return this.resultsValue;
+  }
+
+  public get executionLogging(): ExecutionLogging | null {
+    return this.executionLoggingValue;
   }
 
   public get table(): Table | null {
@@ -80,15 +87,15 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     return this.validationTableValue;
   }
 
-  public get expectError(): ScenarioExpectError | null {
+  public get expectError(): ExpectError | null {
     return this.expectErrorValue;
   }
 
-  public get expectRootErrors(): ScenarioExpectRootErrors | null {
+  public get expectRootErrors(): ExpectRootErrors | null {
     return this.expectRootErrorsValue;
   }
 
-  public get expectExecutionErrors(): ScenarioExpectExecutionErrors | null {
+  public get expectExecutionErrors(): ExpectExecutionErrors | null {
     return this.expectExecutionErrorsValue;
   }
 
@@ -109,7 +116,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     let line = context.line;
     let name = line.tokens.tokenValue(0);
     let reference = line.lineStartReference();
-    if (!line.tokens.isTokenType<KeywordToken>(0, KeywordToken)) {
+    if (!line.tokens.isTokenType<KeywordToken>(0, TokenType.KeywordToken)) {
       context.logger.fail(reference, `Invalid token '${name}'. Keyword expected.`);
       return this;
     }
@@ -128,20 +135,22 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
         }
         return this.resetRootNode(context, this);
       case Keywords.Parameters:
-        return this.resetRootNode(context, this.parametersValue, () => this.parametersValue = new ScenarioParameters(reference));
+        return this.resetRootNode(context, this.parametersValue, () => this.parametersValue = new Parameters(reference));
       case Keywords.Results:
-        return this.resetRootNode(context, this.resultsValue, () => this.resultsValue = new ScenarioResults(reference));
+        return this.resetRootNode(context, this.resultsValue, () => this.resultsValue = new Results(reference));
+      case Keywords.ExecutionLogging:
+        return this.resetRootNode(context, this.executionLogging, () => this.executionLoggingValue = new ExecutionLogging(reference));
       case Keywords.ValidationTable:
         return this.resetRootNode(context, this.validationTableValue, () => this.validationTableValue = new ScenarioTable(reference));
       case Keywords.ExpectError:
         if (this.expectErrorValue == null) {
-          this.expectErrorValue = ScenarioExpectError.parse(context, reference)
+          this.expectErrorValue = ExpectError.parse(context, reference)
         }
         return this.resetRootNode(context, this);
       case Keywords.ExpectRootErrors:
-        return this.resetRootNode(context, this.expectRootErrorsValue, () => this.expectRootErrorsValue = new ScenarioExpectRootErrors(reference));
+        return this.resetRootNode(context, this.expectRootErrorsValue, () => this.expectRootErrorsValue = new ExpectRootErrors(reference));
       case Keywords.ExpectExecutionErrors:
-        return this.resetRootNode(context, this.expectExecutionErrorsValue, () => this.expectExecutionErrorsValue = new ScenarioExpectExecutionErrors(reference));
+        return this.resetRootNode(context, this.expectExecutionErrorsValue, () => this.expectExecutionErrorsValue = new ExpectExecutionErrors(reference));
       default:
         return this.invalidToken(context, name, reference);
     }

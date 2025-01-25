@@ -6,6 +6,7 @@ import {VariableType} from "./variableType";
 import {PrimitiveType} from "./primitiveType";
 import {VariableTypeName} from "./variableTypeName";
 import {ComplexType} from "./complexType";
+import {ComplexTypeSource} from "./complexTypeSource";
 
 export function instanceOfTableType(object: any): object is TableType {
   return object?.variableTypeName == VariableTypeName.TableType;
@@ -39,6 +40,7 @@ export class TableType extends TypeWithMembers {
 
     if (name == `Count`) return PrimitiveType.number;
     if (name == Table.rowName) return this.tableRowType(context);
+    if (this.table.header?.getColumn(name) != null) return new ComplexType(name, this.table, ComplexTypeSource.TableColumn, []);
     return null;
   }
 

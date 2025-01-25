@@ -16,13 +16,14 @@ class WinstonLogger implements ILogger {
   }
 
   isEnabled(level: LogLevel): boolean {
-    if (this.logger.level == "error") {
+    const currentLevel = (this.logger.transports as any)?.file?.level;
+    if (currentLevel == "error") {
       return level == LogLevel.Error;
     }
-    if (this.logger.level == "warn") {
+    if (currentLevel == "warn") {
       return level == LogLevel.Error || level == LogLevel.Warning;
     }
-    if (this.logger.level == "info") {
+    if (currentLevel == "info") {
       return level == LogLevel.Error || level == LogLevel.Warning || level == LogLevel.Information;
     }
     return true;
@@ -52,7 +53,7 @@ export class LoggingConfiguration {
     LoggingConfiguration.mainLogger(testsLogFile);
     LoggingConfiguration.addLogger("LexyParser", parserLogFile)
     LoggingConfiguration.addLogger("LexyCompiler", compilerLogFile)
-    LoggingConfiguration.addLogger("ExecutionContext", compilerLogFile)
+    LoggingConfiguration.addLogger("ExecutionContext", executionLogFile)
 
     LoggingConfiguration.logFileNames();
 
@@ -88,13 +89,13 @@ export class LoggingConfiguration {
   private static addLogger(name: string, fileName: string) {
     winston.loggers.add(name, {
       transports: [
-        new winston.transports.Console({level: 'silly'}),
+        new winston.transports.Console({level: "debug"}),
         new winston.transports.File({
           filename: LoggingConfiguration.fullLogFile(fileName),
           level: "debug",
           json: false
         })
-      ]
+      ],
     });
   }
 

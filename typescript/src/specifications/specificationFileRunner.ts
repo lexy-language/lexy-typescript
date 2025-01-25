@@ -13,6 +13,7 @@ export interface ISpecificationFileRunner {
   scenarioRunners: ReadonlyArray<IScenarioRunner>;
 
   countScenarioRunners(): number;
+
   run(): void;
 }
 
@@ -41,7 +42,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     let result: ParserResult;
     try {
       result = this.parser.parseFile(this.fileName, false);
-    } catch(error: any) {
+    } catch (error: any) {
       throw new Error("Error while parsing " + this.fileName + "\n" + error.stack + "\n--------------------------------------\n")
     }
     this.result = result

@@ -1,17 +1,24 @@
-import {VariableReference} from "../language/variableReference";
+import {VariablePath} from "../language/variablePath";
+import {ExecutionLogEntry} from "./executionContext";
 
 export type ResultsValue = Date | string | number | boolean | ResultsType;
 export type ResultsType = { [key: string]: ResultsValue };
 
 export class FunctionResult {
   private readonly valueObject: ResultsType;
+  private readonly loggingValue: ReadonlyArray<ExecutionLogEntry>;
 
   public get value(): ResultsType {
     return this.valueObject;
   }
 
-  constructor(valueObject: ResultsType) {
+  public get logging(): ReadonlyArray<ExecutionLogEntry> {
+    return this.loggingValue;
+  }
+
+  constructor(valueObject: ResultsType, logEntries: ReadonlyArray<ExecutionLogEntry>) {
     this.valueObject = valueObject;
+    this.loggingValue = logEntries;
   }
 
   public number(name: string): number {
@@ -19,7 +26,7 @@ export class FunctionResult {
     return value as number;
   }
 
-  public getValue(reference: VariableReference): any {
+  public getValue(reference: VariablePath): any {
     let currentReference = reference;
     let currentValue: ResultsValue = this.valueObject[reference.parentIdentifier];
     while (currentReference.hasChildIdentifiers) {

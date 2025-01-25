@@ -9,6 +9,9 @@ import {instanceOfEnumType} from "./enumType";
 import {asMemberAccessExpression} from "../expressions/memberAccessExpression";
 import {TypeNames} from "./typeNames";
 import {asLiteralExpression} from "../expressions/literalExpression";
+import {VariablePath} from "../variablePath";
+import {VariablePathParser} from "../scenarios/variablePathParser";
+import {VariableTypeName} from "./variableTypeName";
 
 
 function validateCustomVariableType(context: IValidationContext,
@@ -16,39 +19,45 @@ function validateCustomVariableType(context: IValidationContext,
                                     customVariableDeclarationType: CustomVariableDeclarationType,
                                     defaultValueExpression: Expression | null) {
 
-  let type = context.rootNodes.getType(customVariableDeclarationType.type);
-  if (type == null || (!instanceOfEnumType(type) && type.variableTypeName != "CustomType")) {
+  const variable = context.variableContext.createVariableReference(reference, VariablePathParser.parseString(customVariableDeclarationType.type), context);
+  let type = variable?.variableType;
+  if (type == null || (!instanceOfEnumType(type)
+    && type.variableTypeName != VariableTypeName.CustomType
+    && type.variableTypeName != VariableTypeName.ComplexType)) {
     context.logger.fail(reference, `Unknown type: '${customVariableDeclarationType.type}'`);
     return;
   }
 
-  if (defaultValueExpression == null) return;
+  if (defaultValueExpression == null) {
+    return;
+  }
+
 
   if (!(instanceOfEnumType(type))) {
     context.logger.fail(reference,
-      `Invalid default value '${defaultValueExpression}'. Type: '${customVariableDeclarationType.type}' does not support a default value.`);
+      `Invalid default value '${defaultValueExpression}'. (type: '${customVariableDeclarationType.type}') does not support a default value.`);
     return;
   }
 
-  const memberAccessLiteralExpression = asMemberAccessExpression(defaultValueExpression);
-  if (memberAccessLiteralExpression == null) {
+  const memberAccessExpression = asMemberAccessExpression(defaultValueExpression);
+  if (memberAccessExpression == null || memberAccessExpression.variablePath == null) {
     context.logger.fail(reference,
       `Invalid default value '${defaultValueExpression}'. (type: '${customVariableDeclarationType.type}')`);
     return;
   }
 
-  const variableReference = memberAccessLiteralExpression.variable;
-  if (variableReference.parts != 2) {
+  const variablePath = memberAccessExpression.variablePath;
+  if (variablePath.parts != 2) {
     context.logger.fail(reference,
       `Invalid default value '${defaultValueExpression}'. (type: '${customVariableDeclarationType.type}')`);
   }
-  if (variableReference.parentIdentifier != customVariableDeclarationType.type) {
+  if (variablePath.parentIdentifier != customVariableDeclarationType.type) {
     context.logger.fail(reference,
       `Invalid default value '${defaultValueExpression}'. Invalid enum type. (type: '${customVariableDeclarationType.type}')`);
   }
 
-  const enumDeclaration = context.rootNodes.getEnum(variableReference.parentIdentifier);
-  if (enumDeclaration == null || !enumDeclaration.containsMember(variableReference.path[1])) {
+  const enumDeclaration = context.rootNodes.getEnum(variablePath.parentIdentifier);
+  if (enumDeclaration == null || !enumDeclaration.containsMember(variablePath.path[1])) {
     context.logger.fail(reference,
       `Invalid default value '${defaultValueExpression}'. Invalid member. (type: '${customVariableDeclarationType.type}')`);
   }

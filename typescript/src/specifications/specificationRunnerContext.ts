@@ -7,6 +7,7 @@ import {format} from "../infrastructure/formatting";
 import {BuiltInDateFunctions} from "../runTime/builtInDateFunctions";
 import {IRootNode} from "../language/rootNode";
 import {SourceReference} from "../parser/sourceReference";
+import {ExecutionLogEntry} from "../runTime/executionContext";
 
 export interface ISpecificationRunnerContext {
   failed: number;
@@ -14,7 +15,8 @@ export interface ISpecificationRunnerContext {
   logEntries: ReadonlyArray<SpecificationsLogEntry>;
 
   fail(scenario: Scenario, message: string, errors: Array<string> | null): void;
-  success(scenario: Scenario): void;
+
+  success(scenario: Scenario, logging: ReadonlyArray<ExecutionLogEntry> | null): void;
 
   logGlobal(message: string): void;
   logTimeSpent(): void;
@@ -33,13 +35,16 @@ export class SpecificationsLogEntry {
   public readonly isError: boolean;
   public readonly message: string;
   public readonly errors: Array<string> | null;
+  public readonly executionLogging: ReadonlyArray<ExecutionLogEntry> | null;
 
-  constructor(reference: SourceReference | null, node: IRootNode | null, isError: boolean, message: string, errors: Array<string> | null = null) {
+  constructor(reference: SourceReference | null, node: IRootNode | null, isError: boolean, message: string,
+              errors: Array<string> | null = null, executionLogging: ReadonlyArray<ExecutionLogEntry> | null = null) {
     this.reference = reference;
     this.node = node;
     this.isError = isError;
     this.message = message;
     this.errors = errors;
+    this.executionLogging = executionLogging;
   }
 
   public toString(): string {
@@ -102,8 +107,8 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
     this.logger.logInformation(message);
   }
 
-  public success(scenario: Scenario): void {
-    const entry = new SpecificationsLogEntry(scenario.reference, scenario, false, `SUCCESS - ${scenario.name}`);
+  public success(scenario: Scenario, logging: ReadonlyArray<ExecutionLogEntry> | null = null): void {
+    const entry = new SpecificationsLogEntry(scenario.reference, scenario, false, `SUCCESS - ${scenario.name}`, null, logging);
     this.globalLog.push(entry);
     this.logger.logInformation(`- SUCCESS - ${scenario.name}`);
   }

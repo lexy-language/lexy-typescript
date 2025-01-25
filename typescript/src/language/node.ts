@@ -26,10 +26,11 @@ export abstract class Node implements INode {
    }
 
    public validateTree(context: IValidationContext): void {
-     this.validate(context);
 
      let children = this.getChildren();
      children.forEach(child => this.validateNodeTree(context, child));
+
+     this.validate(context);
    }
 
   public abstract nodeType: NodeType;

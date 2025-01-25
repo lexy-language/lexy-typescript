@@ -4,12 +4,12 @@ import type {IValidationContext} from "../../parser/validationContext";
 import {Expression} from "../expressions/expression";
 import {INode, Node} from "../node";
 import {ConstantValue} from "./constantValue";
-import {VariableReference} from "../variableReference";
+import {VariablePath} from "../variablePath";
 import {VariableType} from "../variableTypes/variableType";
 import {SourceReference} from "../../parser/sourceReference";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
-import {VariableReferenceParser} from "./variableReferenceParser";
+import {VariablePathParser} from "./variablePathParser";
 import {ConstantValueParser} from "./constantValueParser";
 import {NodeType} from "../nodeType";
 import {ComplexAssignmentDefinition} from "./complexAssignmentDefinition";
@@ -38,13 +38,13 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
   private variableTypeValue: VariableType | null = null;
 
   public readonly constantValue: ConstantValue;
-  public readonly variable: VariableReference;
+  public readonly variable: VariablePath;
 
   public get variableType(): VariableType | null {
     return this.variableTypeValue;
   }
 
-  constructor(variable: VariableReference, constantValue: ConstantValue, variableExpression: Expression,
+  constructor(variable: VariablePath, constantValue: ConstantValue, variableExpression: Expression,
               valueExpression: Expression, reference: SourceReference) {
     super(reference);
 
@@ -55,7 +55,7 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
     this.valueExpression = valueExpression;
   }
 
-  public static parse(context: IParseLineContext, parentVariable: VariableReference | null = null): AssignmentDefinition | ComplexAssignmentDefinition | null {
+  public static parse(context: IParseLineContext, parentVariable: VariablePath | null = null): AssignmentDefinition | ComplexAssignmentDefinition | null {
     const line = context.line;
     const tokens = line.tokens;
     const reference = line.lineStartReference();
@@ -76,14 +76,14 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
       return null;
     }
 
-    const variableReference = VariableReferenceParser.parseExpression(targetExpression.result);
-    if (variableReference.state == "failed") {
-      context.logger.fail(reference, variableReference.errorMessage);
+    const variablePath = VariablePathParser.parseExpression(targetExpression.result);
+    if (variablePath.state == "failed") {
+      context.logger.fail(reference, variablePath.errorMessage);
       return null;
     }
 
     if (assignmentIndex == tokens.length - 1) {
-      return new ComplexAssignmentDefinition(variableReference.result, reference);
+      return new ComplexAssignmentDefinition(variablePath.result, reference);
     }
 
     const valueExpression = context.expressionFactory.parse(tokens.tokensFrom(assignmentIndex + 1), line);
@@ -98,11 +98,11 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
       return null;
     }
 
-    return new AssignmentDefinition(variableReference.result, constantValue.result, targetExpression.result,
+    return new AssignmentDefinition(variablePath.result, constantValue.result, targetExpression.result,
       valueExpression.result, reference);
   }
 
-  static addParentVariableAccessor(parentVariable: VariableReference, targetTokens: TokenList): TokenList {
+  static addParentVariableAccessor(parentVariable: VariablePath, targetTokens: TokenList): TokenList {
     if (targetTokens.length != 1) return targetTokens;
     const variablePath = AssignmentDefinition.getVariablePath(targetTokens);
     if (variablePath == null) {
@@ -131,13 +131,13 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
   }
 
   protected override validate(context: IValidationContext): void {
-    if (!context.variableContext.containsReference(this.variable, context))
+    if (!context.variableContext.containsPath(this.variable, context))
       //logger by IdentifierExpressionValidation
       return;
 
     let expressionType = this.valueExpression.deriveType(context);
 
-    const variableTypeValue = context.variableContext.getVariableTypeByReference(this.variable, context);
+    const variableTypeValue = context.variableContext.getVariableTypeByPath(this.variable, context);
     if (variableTypeValue == null) {
       context.logger.fail(this.reference,
         `Type of variable '${this.variable}' is unknown.`);

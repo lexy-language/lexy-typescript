@@ -52,5 +52,5 @@ export function validateIdentifierExpression(expression: Expression, value: stri
 
 export function validateMemberAccessExpression(expression: Expression | null, value: string): void {
   validateOfType<MemberAccessExpression>(asMemberAccessExpression, expression,
-    literal => expect(literal.variable.toString()).toBe(value));
+    literal => expect(literal.variablePath.toString()).toBe(value));
 }

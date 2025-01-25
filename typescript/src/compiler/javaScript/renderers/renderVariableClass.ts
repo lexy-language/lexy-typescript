@@ -147,6 +147,10 @@ function renderResultValidation(variable: VariableDefinition, codeWriter: CodeWr
       const primitiveType = Assert.notNull(asPrimitiveType(variable.variableType), "primitiveType");
       renderResultsPrimitiveTypeValidation(variable.name, optional, primitiveType, codeWriter);
       break;
+    case VariableTypeName.ComplexType:
+      const complexType = Assert.notNull(asComplexType(variable.variableType), "complexType");
+      codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${translateComplexType(complexType)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.variablePath(name, "${variable.name}"), value["${variable.name}"], validationErrors);`)
+      break;
     default:
       throw new Error(`Unexpected variable type: '${variable.variableType?.variableTypeName}'`)
   }

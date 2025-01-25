@@ -10,11 +10,13 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
-import {IdentifierExpression} from "./identifierExpression";
-import {MemberAccessExpression} from "./memberAccessExpression";
-import {asTypeWithMembers} from "../variableTypes/ITypeWithMembers";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
+import {VariableUsage} from "./variableUsage";
+import {asHasVariableReference} from "./IHasVariableReference";
+import {VariableAccess} from "./variableAccess";
+import {getReadVariableUsage} from "./getReadVariableUsage";
+import {TokenType} from "../../parser/tokens/tokenType";
 
 export function instanceOfAssignmentExpression(object: any): object is AssignmentExpression {
   return object?.nodeType == NodeType.AssignmentExpression;
@@ -55,8 +57,8 @@ export class AssignmentExpression extends Expression {
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length >= 3
-      && (tokens.isTokenType<StringLiteralToken>(0, StringLiteralToken)
-        || tokens.isTokenType<MemberAccessLiteral>(0, MemberAccessLiteral))
+      && (tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken)
+        || tokens.isTokenType<MemberAccessLiteral>(0, TokenType.MemberAccessLiteral))
       && tokens.isOperatorToken(1, OperatorType.Assignment);
   }
 
@@ -68,63 +70,31 @@ export class AssignmentExpression extends Expression {
   }
 
   protected override validate(context: IValidationContext): void {
-    if (this.variable.nodeType != NodeType.IdentifierExpression) {
-      this.validateMemberAccess(context);
+
+    const hasVariableReference = asHasVariableReference(this.variable);
+    if (hasVariableReference == null || hasVariableReference.variable == null) {
+      context.logger.fail(this.reference, `Unknown variable name: '${this.variable}'.`);
       return;
     }
 
-    const identifierExpression = this.variable as IdentifierExpression;
-
-    const variableName = identifierExpression.identifier;
-
-    const variableType = context.variableContext?.getVariableTypeByName(variableName);
-    if (variableType == null) {
-      context.logger.fail(this.reference, `Unknown variable name: '${variableName}'.`);
-      return;
-    }
-
+    const variableReference = hasVariableReference.variable;
     const expressionType = this.assignment.deriveType(context);
-    if (expressionType != null && !variableType?.equals(expressionType)) {
+    if (expressionType != null && !variableReference.variableType?.equals(expressionType)) {
       context.logger.fail(this.reference,
-        `Variable '${variableName}' of type '${variableType}' is not assignable from expression of type '${expressionType}'.`);
+        `Variable '${variableReference}' of type '${variableReference.variableType}' is not assignable from expression of type '${expressionType}'.`);
     }
-  }
-
-  private validateMemberAccess(context: IValidationContext): void {
-    if (this.variable.nodeType != NodeType.MemberAccessExpression) {
-      return;
-    }
-
-    const memberAccessExpression = this.variable as MemberAccessExpression;
-
-    let assignmentType = this.assignment.deriveType(context);
-
-    let variableType = context.variableContext?.getVariableTypeByReference(memberAccessExpression.variable, context);
-    if (variableType != null) {
-      if (assignmentType == null || !assignmentType.equals(variableType)) {
-        context.logger.fail(this.reference,
-          `Variable '${memberAccessExpression.variable}' of type '${variableType}' is not assignable from expression of type '${assignmentType}'.`);
-      }
-      return;
-    }
-
-    let literal = memberAccessExpression.memberAccessLiteral;
-    let parentType = context.rootNodes.getType(literal.parent);
-
-    const typeWithMembers = asTypeWithMembers(parentType);
-
-    if (typeWithMembers == null) {
-      context.logger.fail(this.reference, `Type '${literal.parent}' has no members.`);
-      return;
-    }
-
-    let memberType = typeWithMembers.memberType(literal.member, context);
-    if (assignmentType == null || !assignmentType.equals(memberType))
-      context.logger.fail(this.reference,
-        `Variable '${literal}' of type '${memberType}' is not assignable from expression of type '${assignmentType}'.`);
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
     return this.assignment.deriveType(context);
+  }
+
+  override usedVariables(): ReadonlyArray<VariableUsage> {
+    const hasVariableReference = asHasVariableReference(this.variable);
+    if (hasVariableReference == null || hasVariableReference.variable == null) return getReadVariableUsage(this.assignment);
+
+    const assignmentVariable = hasVariableReference.variable;
+    const writeVariableUsage = new VariableUsage(assignmentVariable.path, assignmentVariable.rootType, assignmentVariable.variableType, assignmentVariable.source, VariableAccess.Write);
+    return [writeVariableUsage, ...getReadVariableUsage(this.assignment)];
   }
 }
