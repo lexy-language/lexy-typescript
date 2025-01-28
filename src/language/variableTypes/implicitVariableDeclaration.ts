@@ -1,7 +1,8 @@
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {VariableDeclarationType} from "./variableDeclarationType";
 import {VariableType} from "./variableType";
 import {SourceReference} from "../../parser/sourceReference";
-import {IValidationContext} from "../../parser/validationContext";
 import {INode} from "../node";
 import {NodeType} from "../nodeType";
 

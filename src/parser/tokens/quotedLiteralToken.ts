@@ -1,5 +1,7 @@
+import type {IValidationContext} from "../validationContext";
+import type {ILiteralToken} from "./ILiteralToken";
+
 import {ParsableToken} from "./parsableToken";
-import {ILiteralToken} from "./ILiteralToken";
 import {TokenCharacter} from "./tokenCharacter";
 import {TokenValues} from "./tokenValues";
 import {
@@ -8,7 +10,6 @@ import {
   newParseTokenInvalidResult,
   ParseTokenResult
 } from "./parseTokenResult";
-import {IValidationContext} from "../validationContext";
 import {VariableType} from "../../language/variableTypes/variableType";
 import {PrimitiveType} from "../../language/variableTypes/primitiveType";
 import {TokenType} from "./tokenType";

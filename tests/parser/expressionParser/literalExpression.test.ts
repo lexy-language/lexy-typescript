@@ -7,7 +7,8 @@ import {asAssignmentExpression, AssignmentExpression} from "../../../src/languag
 import {
   asFunctionCallExpression,
   FunctionCallExpression
-} from "../../../src/language/expressions/functionCallExpression";
+} from "../../../src/language/expressions/functions/functionCallExpression";
+import {AbsFunction, asAbsFunction} from "../../../src/language/expressions/functions/absFunction";
 
 describe('LiteralExpressionTests', () => {
   it('number', async () => {
@@ -51,10 +52,9 @@ describe('LiteralExpressionTests', () => {
     let expression = parseExpression(`Result = ABS(-2)`);
     validateOfType<AssignmentExpression>(asAssignmentExpression, expression, assignment => {
       validateIdentifierExpression(assignment.variable, `Result`);
-      validateOfType<FunctionCallExpression>(asFunctionCallExpression, assignment.assignment, functionCall => {
+      validateOfType<AbsFunction>(asAbsFunction, assignment.assignment, functionCall => {
         expect(functionCall.functionName).toBe(`ABS`);
-        expect(functionCall.arguments.length).toBe(1);
-        validateNumericLiteralExpression(functionCall.arguments[0], -2);
+        validateNumericLiteralExpression(functionCall.valueExpression, -2);
       });
     });
   });

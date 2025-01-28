@@ -20,16 +20,16 @@ import {HoursFunctionCall} from "./hoursFunctionCall";
 import {MinutesFunctionCall} from "./minutesFunctionCall";
 import {SecondsFunctionCall} from "./secondsFunctionCall";
 import {LexyFunctionCall} from "./lexyFunctionCall";
+import {FunctionCallExpression} from "../../../language/expressions/functions/functionCallExpression";
 import {CodeWriter} from "../writers/codeWriter";
-import {ExpressionFunction} from "../../../language/expressions/functions/expressionFunction";
 
-export function renderFunctionCall(expression: ExpressionFunction, codeWriter: CodeWriter) {
+export function renderFunctionCall(expression: FunctionCallExpression, codeWriter: CodeWriter) {
   const functionCall = createFunctionCall(expression);
   if (functionCall == null) throw new Error("Invalid expression function: " + expression.nodeType)
   functionCall.renderExpression(expression, codeWriter);
 }
 
-function createFunctionCall(expression: ExpressionFunction): any | null {
+function createFunctionCall(expression: FunctionCallExpression): any | null {
 
   switch (expression.nodeType) {
     case NodeType.LookupFunction:

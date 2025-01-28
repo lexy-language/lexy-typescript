@@ -2,12 +2,12 @@ import type {IValidationContext} from "../../parser/validationContext";
 import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
+import type {IRootNode} from "../rootNode";
 
 import {RootNode} from "../rootNode";
 import {TypeName} from "./typeName";
 import {VariableDefinition} from "../variableDefinition";
 import {SourceReference} from "../../parser/sourceReference";
-import {NodeName} from "../../parser/nodeName";
 import {VariableSource} from "../variableSource";
 import {NodeType} from "../nodeType";
 
@@ -17,6 +17,10 @@ export function instanceOfTypeDefinition(object: any) {
 
 export function asTypeDefinition(object: any): TypeDefinition | null {
   return instanceOfTypeDefinition(object) ? object as TypeDefinition : null;
+}
+
+export interface ITypeDefinition extends IRootNode {
+ get variables(): ReadonlyArray<VariableDefinition>;
 }
 
 export class TypeDefinition extends RootNode {

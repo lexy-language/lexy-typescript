@@ -68,6 +68,17 @@ export function where<TItem>(array: ReadonlyArray<TItem>, predicate: (value: TIt
   return results;
 }
 
+export function whereSelect<TItem, TResult>(array: ReadonlyArray<TItem>, predicate: (value: TItem) => TResult | null): Array<TResult> {
+  const results: Array<TResult> = [];
+  for (const item of array) {
+    let value = predicate(item);
+    if (value != null) {
+      results.push(value);
+    }
+  }
+  return results;
+}
+
 export function count<TItem>(array: ReadonlyArray<TItem>, predicate: (value: TItem) => boolean): number {
   let results = 0;
   for (const item of array) {

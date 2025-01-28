@@ -14,7 +14,8 @@ import {IdentifierExpression} from "./identifierExpression";
 import {MemberAccessExpression} from "./memberAccessExpression";
 import {LiteralExpression} from "./literalExpression";
 import {BinaryExpression} from "./binaryExpression";
-import {FunctionCallExpression} from "./functionCallExpression";
+import {FunctionCallExpression} from "./functions/functionCallExpression";
+import {FunctionCallExpressionParser} from "./functions/functionCallExpressionParser";
 
 export interface IExpressionFactory {
   parse(tokens: TokenList, currentLine: Line): ParseExpressionResult;
@@ -37,7 +38,7 @@ export class ExpressionFactory implements IExpressionFactory {
          { criteria: MemberAccessExpression.isValid, factory: MemberAccessExpression.parse },
          { criteria: LiteralExpression.isValid, factory: LiteralExpression.parse },
          { criteria: BinaryExpression.isValid, factory: BinaryExpression.parse },
-         { criteria: FunctionCallExpression.isValid, factory: FunctionCallExpression.parse }
+         { criteria: FunctionCallExpression.isValid, factory: FunctionCallExpressionParser.parse }
        ];
 
    public parse(tokens: TokenList, currentLine: Line): ParseExpressionResult {

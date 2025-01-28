@@ -1,4 +1,5 @@
-import {LogVariables, VariablesLogger} from "./executionContext";
+import type {LogVariables, VariablesLogger} from "./executionContext";
+
 import {NodeType} from "../language/nodeType";
 
 export class ExecutionLogEntry {

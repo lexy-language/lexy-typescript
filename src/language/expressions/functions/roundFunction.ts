@@ -1,13 +1,22 @@
-import {SourceReference} from "../../../parser/sourceReference";
-import {INode} from "../../node";
-import {IValidationContext} from "../../../parser/validationContext";
-import {ExpressionFunction} from "./expressionFunction";
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
+
 import {Expression} from "../expression";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
 
-export class RoundFunction extends ExpressionFunction {
+export function instanceOfRoundFunction(object: any): object is RoundFunction {
+  return object?.nodeType == NodeType.RoundFunction;
+}
+
+export function asRoundFunction(object: any): RoundFunction | null {
+  return instanceOfRoundFunction(object) ? object as RoundFunction : null;
+}
+
+export class RoundFunction extends FunctionCallExpression {
    public static readonly functionName: string = `ROUND`;
 
    private get functionHelp() {
@@ -18,8 +27,8 @@ export class RoundFunction extends ExpressionFunction {
   public numberExpression: Expression;
   public digitsExpression: Expression;
 
-  constructor(numberExpression: Expression, digitsExpression: Expression, reference: SourceReference) {
-     super(reference);
+  constructor(numberExpression: Expression, digitsExpression: Expression, source: ExpressionSource) {
+     super(RoundFunction.functionName, source);
      this.numberExpression = numberExpression;
      this.digitsExpression = digitsExpression;
    }
@@ -37,11 +46,11 @@ export class RoundFunction extends ExpressionFunction {
        .validateType(this.digitsExpression, 2, `Digits`, PrimitiveType.number, this.reference, this.functionHelp);
    }
 
-   public override deriveReturnType(context: IValidationContext): VariableType {
+   public override deriveType(context: IValidationContext): VariableType {
      return PrimitiveType.number;
    }
 
-   public static create(reference: SourceReference, numberExpression: Expression, powerExpression: Expression): ExpressionFunction {
-     return new RoundFunction(numberExpression, powerExpression, reference);
+   public static create(source: ExpressionSource, numberExpression: Expression, powerExpression: Expression): FunctionCallExpression {
+     return new RoundFunction(numberExpression, powerExpression, source);
    }
 }

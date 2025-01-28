@@ -1,7 +1,8 @@
+import type {ILiteralToken} from "./ILiteralToken";
+import type {IValidationContext} from "../validationContext";
+
 import {Token} from "./token";
-import {ILiteralToken} from "./ILiteralToken";
 import {TokenCharacter} from "./tokenCharacter";
-import {IValidationContext} from "../validationContext";
 import {VariableType} from "../../language/variableTypes/variableType";
 import {TokenType} from "./tokenType";
 

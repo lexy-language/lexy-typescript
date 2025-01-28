@@ -1,6 +1,7 @@
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {SourceReference} from "../../parser/sourceReference";
 import {INode, Node} from "../node";
-import {IValidationContext} from "../../parser/validationContext";
 import {isNullOrEmpty, isValidIdentifier} from "../../parser/tokens/character";
 import {NodeType} from "../nodeType";
 import {Assert} from "../../infrastructure/assert";

@@ -1,16 +1,25 @@
 import {isNullOrEmpty} from "../../../parser/tokens/character";
 import {LexyCodeConstants} from "../lexyCodeConstants";
+import {Expression} from "../../../language/expressions/expression";
+import {CustomVariableDeclarationType} from "../../../language/variableTypes/customVariableDeclarationType";
+import {VariableTypeName} from "../../../language/variableTypes/variableTypeName";
+import {asEnumType} from "../../../language/variableTypes/enumType";
+import {enumClassName, tableClassName, typeClassName} from "../classNames";
+import {asTableType} from "../../../language/variableTypes/tableType";
+import {asCustomType} from "../../../language/variableTypes/customType";
 
 export class CodeWriter {
   private readonly builder: Array<string> = [];
+  private readonly renderExpressionHandler: ((expression: Expression, codeWriter: CodeWriter) => void);
   private indent = 0;
   private currentLineValue = 0;
 
-  constructor() {
-  }
-
   public get currentLine() {
     return this.currentLineValue;
+  }
+
+  constructor(renderExpression: ((expression: Expression, codeWriter: CodeWriter) => void)) {
+    this.renderExpressionHandler = renderExpression;
   }
 
   startLine(value: string | null = null) {
@@ -96,8 +105,12 @@ export class CodeWriter {
     return ' '.repeat(this.indent * 2);
   }
 
-  identifierFromEnvironment(value: string) {
+  public identifierFromEnvironment(value: string) {
     if (isNullOrEmpty(value)) throw new Error("Value is null or empty")
     return `${LexyCodeConstants.environmentVariable}.${value}`;
+  }
+
+  public renderExpression(expression: Expression) {
+    this.renderExpressionHandler(expression, this);
   }
 }

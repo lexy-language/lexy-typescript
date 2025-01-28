@@ -1,10 +1,10 @@
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {VariableDeclarationType} from "../variableTypes/variableDeclarationType";
 import {SourceReference} from "../../parser/sourceReference";
 import {INode, Node} from "../node";
-import {IValidationContext} from "../../parser/validationContext";
 import {VariableDeclarationTypeParser} from "../variableTypes/variableDeclarationTypeParser";
 import {NodeType} from "../nodeType";
-import {Table} from "./table";
 
 export function instanceOfColumnHeader(object: any) {
   return object?.nodeType == NodeType.ColumnHeader;

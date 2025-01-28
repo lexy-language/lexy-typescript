@@ -1,6 +1,7 @@
-import {ILineExpressionException} from "./ILineExpressionException";
+import type {ILineExpressionException} from "./ILineExpressionException";
+
 import {Expression} from "../../../language/expressions/expression";
-import {asFunctionCallExpression} from "../../../language/expressions/functionCallExpression";
+import {asFunctionCallExpression} from "../../../language/expressions/functions/functionCallExpression";
 import {
   asLexyFunction,
   instanceOfLexyFunction,
@@ -18,7 +19,7 @@ export class SimpleLexyFunctionFunctionExpressionStatementException implements I
     const functionCallExpression = asFunctionCallExpression(expression);
     if (functionCallExpression == null) return false;
 
-    const instanceOfLexyFunction1 = instanceOfLexyFunction(functionCallExpression.expressionFunction);
+    const instanceOfLexyFunction1 = instanceOfLexyFunction(functionCallExpression);
     return instanceOfLexyFunction1;
   }
 
@@ -26,8 +27,8 @@ export class SimpleLexyFunctionFunctionExpressionStatementException implements I
     const functionCallExpression = asFunctionCallExpression(expression);
     if (functionCallExpression == null) throw new Error(`expression should be FunctionCallExpression`);
 
-    const lexyFunction = asLexyFunction(functionCallExpression.expressionFunction);
-    if (lexyFunction == null) throw new Error(`functionCallExpression.ExpressionFunction should be ExtractResultsFunction`);
+    const lexyFunction = asLexyFunction(functionCallExpression);
+    if (lexyFunction == null) throw new Error(`functionCallExpression.FunctionCallExpression should be ExtractResultsFunction`);
 
     let parameterVariable = `${LexyCodeConstants.parameterVariable}_${codeWriter.currentLine}`;
     let resultsVariable = `${LexyCodeConstants.resultsVariable}_${codeWriter.currentLine}`;

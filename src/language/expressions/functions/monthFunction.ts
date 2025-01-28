@@ -2,8 +2,9 @@ import {SingleArgumentFunction} from "./singleArgumentFunction";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
-import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
+import {ExpressionSource} from "../expressionSource";
+import {FunctionCallExpression} from "./functionCallExpression";
 
 export class MonthFunction extends SingleArgumentFunction {
 
@@ -15,11 +16,11 @@ export class MonthFunction extends SingleArgumentFunction {
       return `'${MonthFunction.functionName} expects 1 argument (Date)`;
    }
 
-   constructor(valueExpression: Expression, reference: SourceReference) {
-      super(valueExpression, reference, PrimitiveType.date, PrimitiveType.number);
+   constructor(valueExpression: Expression, source: ExpressionSource) {
+      super(MonthFunction.functionName, valueExpression, source, PrimitiveType.date, PrimitiveType.number);
    }
 
-   public static create(reference: SourceReference, expression: Expression): ExpressionFunction {
-     return new MonthFunction(expression, reference);
+   public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
+     return new MonthFunction(expression, source);
    }
 }

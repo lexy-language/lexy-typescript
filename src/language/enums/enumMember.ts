@@ -1,12 +1,12 @@
+import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {asNumberLiteralToken, NumberLiteralToken} from "../../parser/tokens/numberLiteralToken";
 import {SourceReference} from "../../parser/sourceReference";
 import {INode, Node} from "../node";
-import {IParseLineContext} from "../../parser/ParseLineContext";
 import {OperatorType} from "../../parser/tokens/operatorType";
-import {IValidationContext} from "../../parser/validationContext";
 import {isValidIdentifier} from "../../parser/tokens/character";
 import {NodeType} from "../nodeType";
-import {EnumDefinition} from "./enumDefinition";
 
 export function instanceOfEnumMember(object: any) {
   return object?.nodeType == NodeType.EnumMember;

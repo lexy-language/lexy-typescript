@@ -1,22 +1,23 @@
-import {IHasNodeDependencies} from "../../IHasNodeDependencies";
-import {ExpressionFunction} from "./expressionFunction";
+import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
+import type {IRootNode} from "../../rootNode";
+import type {IRootNodeList} from "../../rootNodeList";
+
 import {Expression} from "../expression";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
 import {VariableType} from "../../variableTypes/variableType";
-import {SourceReference} from "../../../parser/sourceReference";
-import {IRootNode} from "../../rootNode";
-import {RootNodeList} from "../../rootNodeList";
 import {
-  newParseExpressionFunctionsFailed,
-  newParseExpressionFunctionsSuccess,
-  ParseExpressionFunctionsResult
-} from "../parseExpressionFunctionsResult";
+  newParseFunctionCallExpressionsFailed,
+  newParseFunctionCallExpressionsSuccess,
+  ParseFunctionCallExpressionsResult
+} from "../parseFunctionCallExpressionsResult";
 import {asIdentifierExpression} from "../identifierExpression";
 import {asMemberAccessExpression} from "../memberAccessExpression";
-import {INode} from "../../node";
-import {IValidationContext} from "../../../parser/validationContext";
 import {NodeType} from "../../nodeType";
 import {Assert} from "../../../infrastructure/assert";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
 
 const argumentsNumber = 4;
 const argumentTable = 0;
@@ -25,7 +26,7 @@ const argumentSearchValueColumn = 2;
 const argumentResultColumn = 3;
 const functionHelp = `Arguments: LOOKUP(Table, lookUpValue, Table.searchValueColumn, Table.resultColumn)`;
 
-export class LookupFunction extends ExpressionFunction implements IHasNodeDependencies {
+export class LookupFunction extends FunctionCallExpression implements IHasNodeDependencies {
 
   public static readonly functionName: string = `LOOKUP`;
 
@@ -52,40 +53,40 @@ export class LookupFunction extends ExpressionFunction implements IHasNodeDepend
 
   constructor(tableType: string, valueExpression: Expression,
               resultColumn: MemberAccessLiteral, searchValueColumn: MemberAccessLiteral,
-              tableNameArgumentReference: SourceReference) {
-    super(tableNameArgumentReference);
+              source: ExpressionSource) {
+    super(LookupFunction.functionName, source);
     this.table = tableType;
     this.valueExpression = valueExpression;
     this.resultColumn = resultColumn;
     this.searchValueColumn = searchValueColumn;
   }
 
-  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
     let table = rootNodeList.getTable(this.table);
     return table != null ? [table] : [];
   }
 
-  public static parse(name: string, functionCallReference: SourceReference,
-                      argumentValues: Array<Expression>): ParseExpressionFunctionsResult {
+  public static create(name: string, source: ExpressionSource,
+                      argumentValues: Array<Expression>): ParseFunctionCallExpressionsResult {
     if (argumentValues.length != argumentsNumber) {
-      return newParseExpressionFunctionsFailed(`Invalid number of arguments. ${functionHelp}`);
+      return newParseFunctionCallExpressionsFailed(`Invalid number of arguments. ${functionHelp}`);
     }
 
     const tableNameExpression = asIdentifierExpression(argumentValues[argumentTable]);
     if (tableNameExpression == null) {
-      return newParseExpressionFunctionsFailed(
+      return newParseFunctionCallExpressionsFailed(
         `Invalid argument ${argumentTable}. Should be valid table name. ${functionHelp}`);
     }
 
     const searchValueColumnHeader = asMemberAccessExpression(argumentValues[argumentSearchValueColumn]);
     if (searchValueColumnHeader == null) {
-      return newParseExpressionFunctionsFailed(
+      return newParseFunctionCallExpressionsFailed(
         `Invalid argument ${argumentSearchValueColumn}. Should be search column. ${functionHelp}`);
     }
 
     const resultColumnExpression = asMemberAccessExpression(argumentValues[argumentResultColumn]);
     if (resultColumnExpression == null) {
-      return newParseExpressionFunctionsFailed(
+      return newParseFunctionCallExpressionsFailed(
         `Invalid argument ${argumentResultColumn}. Should be result column. ${functionHelp}`);
     }
 
@@ -95,8 +96,8 @@ export class LookupFunction extends ExpressionFunction implements IHasNodeDepend
     const resultColumn = resultColumnExpression.memberAccessLiteral;
 
     const lookupFunction = new LookupFunction(tableName, valueExpression, resultColumn, searchValueColumn,
-      functionCallReference);
-    return newParseExpressionFunctionsSuccess(lookupFunction);
+      source);
+    return newParseFunctionCallExpressionsSuccess(lookupFunction);
   }
 
   public override getChildren(): Array<INode> {
@@ -150,7 +151,7 @@ export class LookupFunction extends ExpressionFunction implements IHasNodeDepend
     }
   }
 
-  public override deriveReturnType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): VariableType | null {
     let tableType = context.rootNodes.getTable(this.table);
     let resultColumnHeader = tableType?.header?.get(this.resultColumn);
 

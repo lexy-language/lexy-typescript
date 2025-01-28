@@ -1,13 +1,12 @@
-import {ExpressionFunction} from "./expressionFunction";
-import {IHasNodeDependencies} from "../../IHasNodeDependencies";
+import type {IRootNode} from "../../rootNode";
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
+import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
+import type {IRootNodeList} from "../../rootNodeList";
+
 import {Expression} from "../expression";
 import {Mapping, mapToUsedVariable} from "./mapping";
 import {ComplexType} from "../../variableTypes/complexType";
-import {SourceReference} from "../../../parser/sourceReference";
-import {RootNodeList} from "../../rootNodeList";
-import {IRootNode} from "../../rootNode";
-import {INode} from "../../node";
-import {IValidationContext} from "../../../parser/validationContext";
 import {FillParametersFunction} from "./fillParametersFunction";
 import {ExtractResultsFunction} from "./extractResultsFunction";
 import {asIdentifierExpression} from "../identifierExpression";
@@ -16,7 +15,8 @@ import {NodeType} from "../../nodeType";
 import {Assert} from "../../../infrastructure/assert";
 import {VariableUsage} from "../variableUsage";
 import {VariableAccess} from "../variableAccess";
-import {VariablePath} from "../../variablePath";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
 
 export function instanceOfLexyFunction(object: any): object is LexyFunction {
   return object?.nodeType == NodeType.LexyFunction;
@@ -26,7 +26,7 @@ export function asLexyFunction(object: any): LexyFunction | null {
   return instanceOfLexyFunction(object) ? object as LexyFunction : null;
 }
 
-export class LexyFunction extends ExpressionFunction implements IHasNodeDependencies {
+export class LexyFunction extends FunctionCallExpression implements IHasNodeDependencies {
 
   private variableNameValue: string | null = null;
   private functionParametersTypeValue: ComplexType | null = null;
@@ -57,13 +57,13 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
     return this.mappingResultsValue;
   }
 
-  constructor(functionName: string, argumentValues: Array<Expression>, reference: SourceReference) {
-    super(reference);
+  constructor(functionName: string, argumentValues: Array<Expression>, source: ExpressionSource) {
+    super(functionName, source);
     this.functionName = functionName;
     this.argumentValues = argumentValues;
   }
 
-  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
     let functionNode = rootNodeList.getFunction(this.functionName);
     return functionNode != null ? [functionNode] : [];
   }
@@ -85,7 +85,7 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
     }
 
     if (this.argumentValues.length == 0) {
-      FillParametersFunction.getMapping(this.reference, context, functionNode.getParametersType(),this.mappingParametersValue);
+      FillParametersFunction.getMapping(this.reference, context, functionNode.getParametersType(), this.mappingParametersValue);
       ExtractResultsFunction.getMapping(this.reference, context, functionNode.getResultsType(), this.mappingResultsValue);
 
       this.functionParametersTypeValue = functionNode.getParametersType();
@@ -106,7 +106,7 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
     this.variableNameValue = identifierExpression != null ? identifierExpression.identifier : null;
   }
 
-  public override deriveReturnType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): VariableType | null {
     const functionNode = context.rootNodes.getFunction(this.functionName);
     if (functionNode == null) return null;
     return functionNode.getResultsType();
@@ -114,6 +114,7 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {
     return [
+      ...super.usedVariables(),
       ...this.mappingParameters.map(mapToUsedVariable(VariableAccess.Read)),
       ...this.mappingResults.map(mapToUsedVariable(VariableAccess.Write))
     ];

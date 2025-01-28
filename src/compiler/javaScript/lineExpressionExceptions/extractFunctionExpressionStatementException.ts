@@ -1,9 +1,9 @@
-import {ILineExpressionException} from "./ILineExpressionException";
+import type {ILineExpressionException} from "./ILineExpressionException";
+
 import {Expression} from "../../../language/expressions/expression";
 import {
-  asFunctionCallExpression,
-  instanceOfFunctionCallExpression
-} from "../../../language/expressions/functionCallExpression";
+  asFunctionCallExpression
+} from "../../../language/expressions/functions/functionCallExpression";
 import {CodeWriter} from "../writers/codeWriter";
 import {Mapping} from "../../../language/expressions/functions/mapping";
 import {VariableSource} from "../../../language/variableSource";
@@ -19,15 +19,15 @@ export class ExtractFunctionExpressionStatementException implements ILineExpress
     const functionCallExpression = asFunctionCallExpression(expression);
     if (functionCallExpression == null) return false;
 
-    return instanceOfExtractResultsFunction(functionCallExpression.expressionFunction);
+    return instanceOfExtractResultsFunction(functionCallExpression);
    }
 
    public render(expression: Expression, codeWriter: CodeWriter) {
      const functionCallExpression = asFunctionCallExpression(expression);
      if (functionCallExpression == null) throw new Error("Expression not FunctionCallExpression: " + expression.nodeType)
 
-     const extractResultsFunction = asExtractResultsFunction(functionCallExpression.expressionFunction);
-     if (extractResultsFunction == null) throw new Error("Expression not ExtractResultsFunction: " + functionCallExpression.expressionFunction)
+     const extractResultsFunction = asExtractResultsFunction(functionCallExpression);
+     if (extractResultsFunction == null) throw new Error("Expression not ExtractResultsFunction: " + functionCallExpression)
      if (extractResultsFunction.functionResultVariable == null) throw new Error("extractResultsFunction.functionResultVariable is null");
 
      return ExtractFunctionExpressionStatementException.renderExtract(extractResultsFunction.mapping, extractResultsFunction.functionResultVariable, codeWriter);

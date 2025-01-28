@@ -1,6 +1,6 @@
 import {ILineExpressionException} from "./ILineExpressionException";
 import {Expression} from "../../../language/expressions/expression";
-import {asFunctionCallExpression} from "../../../language/expressions/functionCallExpression";
+import {asFunctionCallExpression} from "../../../language/expressions/functions/functionCallExpression";
 import {asVariableDeclarationExpression} from "../../../language/expressions/variableDeclarationExpression";
 import {
   asFillParametersFunction,
@@ -22,7 +22,7 @@ export class FillFunctionExpressionStatementException implements ILineExpression
     const functionCallExpression = asFunctionCallExpression(assignmentExpression.assignment);
     if (functionCallExpression == null) return false;
 
-    return instanceOfFillParametersFunction(functionCallExpression.expressionFunction);
+    return instanceOfFillParametersFunction(functionCallExpression);
   }
 
    public render(expression: Expression, codeWriter: CodeWriter) {
@@ -32,8 +32,8 @@ export class FillFunctionExpressionStatementException implements ILineExpression
      const functionCallExpression = asFunctionCallExpression(assignmentExpression.assignment);
      if (functionCallExpression == null) throw new Error(`assignmentExpression.assignment should be FunctionCallExpression`);
 
-     const fillParametersFunction = asFillParametersFunction(functionCallExpression.expressionFunction);
-     if (fillParametersFunction == null) throw new Error("Expression not FillParametersFunction: " + functionCallExpression.expressionFunction)
+     const fillParametersFunction = asFillParametersFunction(functionCallExpression);
+     if (fillParametersFunction == null) throw new Error("Expression not FillParametersFunction: " + functionCallExpression)
 
      return FillFunctionExpressionStatementException.renderFill(assignmentExpression.name, fillParametersFunction.type, fillParametersFunction.mapping, codeWriter);
    }

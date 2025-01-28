@@ -1,10 +1,11 @@
+import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {INode} from "../node";
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {VariableDefinition} from "../variableDefinition";
 import {SourceReference} from "../../parser/sourceReference";
-import {IParseLineContext} from "../../parser/ParseLineContext";
 import {IParsableNode, ParsableNode} from "../parsableNode";
 import {VariableSource} from "../variableSource";
-import {INode} from "../node";
-import {IValidationContext} from "../../parser/validationContext";
 import {NodeType} from "../nodeType";
 
 export class FunctionResults extends ParsableNode {

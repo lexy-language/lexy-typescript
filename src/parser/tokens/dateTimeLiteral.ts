@@ -1,5 +1,7 @@
+import type {IValidationContext} from "../validationContext";
+import type {ILiteralToken} from "./ILiteralToken";
+
 import {ParsableToken} from "./parsableToken";
-import {ILiteralToken} from "./ILiteralToken";
 import {
   newParseTokenFinishedResult,
   newParseTokenInProgressResult,
@@ -10,7 +12,6 @@ import {TokenCharacter} from "./tokenCharacter";
 import {TokenValues} from "./tokenValues";
 import {formatLine} from "../../formatting/formatLine";
 import {Character, isDigit} from "./character";
-import {IValidationContext} from "../validationContext";
 import {VariableType} from "../../language/variableTypes/variableType";
 import {PrimitiveType} from "../../language/variableTypes/primitiveType";
 import {TokenType} from "./tokenType";

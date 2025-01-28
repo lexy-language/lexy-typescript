@@ -1,15 +1,16 @@
+import type {IRootNodeList} from "../rootNodeList";
+import type {IValidationContext} from "../../parser/validationContext";
+import type {INode} from "../node";
+import type {IHasNodeDependencies} from "../IHasNodeDependencies";
+import type {IRootNode} from "../rootNode";
+
 import {VariableDeclarationType} from "./variableDeclarationType";
 import {SourceReference} from "../../parser/sourceReference";
-import {IValidationContext} from "../../parser/validationContext";
 import {VariableType} from "./variableType";
-import {INode} from "../node";
 import {NodeType} from "../nodeType";
-import {IHasNodeDependencies} from "../IHasNodeDependencies";
 import {VariableTypeName} from "./variableTypeName";
 import {asCustomType} from "./customType";
 import {asComplexType} from "./complexType";
-import {RootNodeList} from "../rootNodeList";
-import {IRootNode} from "../rootNode";
 
 export function instanceOfCustomVariableDeclarationType(object: any): boolean {
   return object?.nodeType == NodeType.CustomVariableDeclarationType;
@@ -34,7 +35,7 @@ export class CustomVariableDeclarationType extends VariableDeclarationType imple
     return this.type;
   }
 
-  public getDependencies(rootNodeList: RootNodeList): ReadonlyArray<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): ReadonlyArray<IRootNode> {
     switch (this.variableType?.variableTypeName) {
       case VariableTypeName.CustomType: {
         const customType = asCustomType(this.variableType);

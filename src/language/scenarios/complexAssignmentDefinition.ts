@@ -1,12 +1,14 @@
+import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {INode} from "../node";
+import type {IValidationContext} from "../../parser/validationContext";
+import type {IAssignmentDefinition} from "./assignmentDefinition";
+import type {AssignmentDefinitionParserHandler} from "./assignmentDefinitionParser";
+
 import {VariablePath} from "../variablePath";
 import {SourceReference} from "../../parser/sourceReference";
 import {instanceOfParsableNode, IParsableNode, ParsableNode} from "../parsableNode";
 import {AssignmentDefinition} from "./assignmentDefinition";
 import {NodeType} from "../nodeType";
-import {IParseLineContext} from "../../parser/ParseLineContext";
-import {INode} from "../node";
-import {IValidationContext} from "../../parser/validationContext";
-import {IAssignmentDefinition} from "./IAssignmentDefinition";
 import {instanceOfCustomType} from "../variableTypes/customType";
 import {instanceOfComplexType} from "../variableTypes/complexType";
 
@@ -25,18 +27,20 @@ export class ComplexAssignmentDefinition extends ParsableNode implements IAssign
   public readonly variable: VariablePath;
 
   public nodeType = NodeType.ComplexAssignmentDefinition;
+  private assignmentDefinitionParser: AssignmentDefinitionParserHandler;
 
   public get assignments(): ReadonlyArray<IAssignmentDefinition> {
     return this.assignmentsValue;
   }
 
-  constructor(variable: VariablePath, reference: SourceReference) {
+  constructor(variable: VariablePath, reference: SourceReference, assignmentDefinitionParser: AssignmentDefinitionParserHandler) {
     super(reference);
     this.variable = variable;
+    this.assignmentDefinitionParser = assignmentDefinitionParser;
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
-    let assignment = AssignmentDefinition.parse(context, this.variable);
+    let assignment = this.assignmentDefinitionParser(context, this.variable);
     if (assignment == null) return this;
 
     this.assignmentsValue.push(assignment);

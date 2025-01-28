@@ -1,10 +1,11 @@
+import type {ITypeWithMembers} from "./ITypeWithMembers";
+import type {IValidationContext} from "../../parser/validationContext";
+import type {IRootNode} from "../rootNode";
+
 import {VariableType} from "./variableType";
-import {ITypeWithMembers} from "./ITypeWithMembers";
 import {ComplexTypeMember} from "./complexTypeMember";
-import {IValidationContext} from "../../parser/validationContext";
 import {ComplexTypeSource} from "./complexTypeSource";
 import {VariableTypeName} from "./variableTypeName";
-import {IRootNode} from "../rootNode";
 
 export function instanceOfComplexType(object: any): object is ComplexType {
   return object.variableTypeName == VariableTypeName.ComplexType;

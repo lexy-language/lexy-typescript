@@ -1,4 +1,3 @@
-import {VariablePath} from "../language/variablePath";
 import {ExecutionContext} from "../runTime/executionContext";
 import {FunctionResult} from "../runTime/functionResult";
 import {ILogger} from "../infrastructure/logger";

@@ -1,5 +1,3 @@
-import {ComplexAssignmentDefinition} from "./scenarios/complexAssignmentDefinition";
-
 export enum NodeType {
   AbsFunction = "AbsFunction",
   AssignmentDefinition = "AssignmentDefinition",

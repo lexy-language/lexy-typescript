@@ -1,9 +1,17 @@
 import {SingleArgumentFunction} from "./singleArgumentFunction";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
-import {SourceReference} from "../../../parser/sourceReference";
 import {Expression} from "../expression";
-import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
+
+export function instanceOfAbsFunction(object: any): object is AbsFunction {
+   return object?.nodeType == NodeType.AbsFunction;
+}
+
+export function asAbsFunction(object: any): AbsFunction | null {
+   return instanceOfAbsFunction(object) ? object as AbsFunction : null;
+}
 
 export class AbsFunction extends SingleArgumentFunction {
 
@@ -14,11 +22,11 @@ export class AbsFunction extends SingleArgumentFunction {
       return `${AbsFunction.functionName} expects 1 argument (Value)`;
    }
 
-   constructor(valueExpression: Expression, reference: SourceReference) {
-     super(valueExpression, reference, PrimitiveType.number, PrimitiveType.number);
+   constructor(valueExpression: Expression, source: ExpressionSource) {
+     super(AbsFunction.functionName, valueExpression, source, PrimitiveType.number, PrimitiveType.number);
    }
 
-   public static create(reference: SourceReference, expression: Expression): ExpressionFunction {
-     return new AbsFunction(expression, reference);
+   public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
+     return new AbsFunction(expression, source);
    }
 }

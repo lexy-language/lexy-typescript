@@ -1,11 +1,11 @@
 import type {IRootNode} from "../rootNode";
 import type {IValidationContext} from "../../parser/validationContext";
+import type {IRootNodeList} from "../rootNodeList";
+import type {ITypeDefinition} from "../types/typeDefinition";
 
 import {TypeWithMembers} from "./typeWithMembers";
-import {TypeDefinition} from "../types/typeDefinition";
 import {VariableType} from "./variableType";
 import {firstOrDefault} from "../../infrastructure/enumerableExtensions";
-import {RootNodeList} from "../rootNodeList";
 import {VariableTypeName} from "./variableTypeName";
 
 export function instanceOfCustomType(object: any): object is CustomType {
@@ -20,9 +20,9 @@ export class CustomType extends TypeWithMembers {
 
   public readonly variableTypeName = VariableTypeName.CustomType;
   public type: string;
-  public typeDefinition: TypeDefinition;
+  public typeDefinition: ITypeDefinition;
 
-  constructor(type: string, typeDefinition: TypeDefinition) {
+  constructor(type: string, typeDefinition: ITypeDefinition) {
     super();
     this.type = type;
     this.typeDefinition = typeDefinition;
@@ -42,7 +42,7 @@ export class CustomType extends TypeWithMembers {
     return variableType ? variableType : null;
   }
 
-  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
     return [this.typeDefinition];
   }
 }

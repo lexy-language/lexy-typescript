@@ -1,17 +1,19 @@
-import {ExpressionFunction} from "./expressionFunction";
+import type {IValidationContext} from "../../../parser/validationContext";
+import type {INode} from "../../node";
+
 import {Mapping, mapToUsedVariable} from "./mapping";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {IdentifierExpression} from "../identifierExpression";
-import {INode} from "../../node";
 import {asComplexType, ComplexType} from "../../variableTypes/complexType";
-import {IValidationContext} from "../../../parser/validationContext";
 import {VariableSource} from "../../variableSource";
 import {VariableType} from "../../variableTypes/variableType";
 import {VoidType} from "../../variableTypes/voidType";
 import {NodeType} from "../../nodeType";
 import {VariableUsage} from "../variableUsage";
 import {VariableAccess} from "../variableAccess";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
 
 export function instanceOfExtractResultsFunction(object: any): object is ExtractResultsFunction {
   return object?.nodeType == NodeType.ExtractResultsFunction;
@@ -21,7 +23,7 @@ export function asExtractResultsFunction(object: any): ExtractResultsFunction | 
   return instanceOfExtractResultsFunction(object) ? object as ExtractResultsFunction : null;
 }
 
-export class ExtractResultsFunction extends ExpressionFunction {
+export class ExtractResultsFunction extends FunctionCallExpression {
 
   public readonly nodeType = NodeType.ExtractResultsFunction;
   public static readonly functionName: string = `extract`;
@@ -35,8 +37,8 @@ export class ExtractResultsFunction extends ExpressionFunction {
 
   public readonly mapping: Array<Mapping> = [];
 
-  constructor(valueExpression: Expression, reference: SourceReference) {
-    super(reference);
+  constructor(valueExpression: Expression, source: ExpressionSource) {
+    super(ExtractResultsFunction.functionName, source);
     this.valueExpression = valueExpression;
     const identifierExpression = valueExpression as IdentifierExpression
     this.functionResultVariable = identifierExpression != null ? identifierExpression.identifier : null;
@@ -93,16 +95,17 @@ export class ExtractResultsFunction extends ExpressionFunction {
     }
   }
 
-  public override deriveReturnType(context: IValidationContext): VariableType {
+  public override deriveType(context: IValidationContext): VariableType {
     return new VoidType();
   }
 
-  public static create(reference: SourceReference, expression: Expression): ExpressionFunction {
-    return new ExtractResultsFunction(expression, reference);
+  public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
+    return new ExtractResultsFunction(expression, source);
   }
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {
     return [
+      ...super.usedVariables(),
       ...this.mapping.map(mapToUsedVariable(VariableAccess.Write)),
     ];
   }

@@ -12,7 +12,6 @@ import {NodeType} from "../nodeType";
 import {IHasVariableReference} from "./IHasVariableReference";
 import {VariableReference} from "../variableReference";
 import {VariableUsage} from "./variableUsage";
-import {VariablePath} from "../variablePath";
 import {VariablePathParser} from "../scenarios/variablePathParser";
 import {TokenType} from "../../parser/tokens/tokenType";
 

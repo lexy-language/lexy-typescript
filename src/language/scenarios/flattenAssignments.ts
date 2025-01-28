@@ -1,5 +1,5 @@
 import {AssignmentDefinition} from "./assignmentDefinition";
-import {IAssignmentDefinition} from "./IAssignmentDefinition";
+import {IAssignmentDefinition} from "./assignmentDefinition";
 
 export function flattenAssignments(values: Array<IAssignmentDefinition>) {
   const result: Array<AssignmentDefinition> = [];

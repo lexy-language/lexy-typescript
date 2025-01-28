@@ -1,6 +1,5 @@
 import {VariableDefinition} from "../../../language/variableDefinition";
 import {CodeWriter} from "../writers/codeWriter";
-import {customVariableIdentifier, renderExpression} from "./renderExpression";
 import {VariableDeclarationType} from "../../../language/variableTypes/variableDeclarationType";
 import {
   asPrimitiveVariableDeclarationType,
@@ -20,6 +19,7 @@ import {Assert} from "../../../infrastructure/assert";
 import {asCustomType} from "../../../language/variableTypes/customType";
 import {enumClassName, typeClassName} from "../classNames";
 import {asPrimitiveType, PrimitiveType} from "../../../language/variableTypes/primitiveType";
+import {customVariableIdentifier} from "./customVariableIdentifier";
 
 export function createVariableClass(name: string,
                                     className: string,
@@ -49,7 +49,7 @@ function renderDefaultExpression(variable: VariableDefinition,
                                  codeWriter: CodeWriter) {
 
   if (variable.defaultExpression != null) {
-    renderExpression(variable.defaultExpression, codeWriter);
+    codeWriter.renderExpression(variable.defaultExpression);
   } else {
     renderTypeDefaultExpression(variable.type, codeWriter);
   }

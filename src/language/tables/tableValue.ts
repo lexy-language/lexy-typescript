@@ -1,9 +1,10 @@
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {INode, Node} from "../node";
 import {TableHeader} from "./tableHeader";
 import {Expression} from "../expressions/expression";
 import {NodeType} from "../nodeType";
 import {SourceReference} from "../../parser/sourceReference";
-import {IValidationContext} from "../../parser/validationContext";
 
 export class TableValue extends Node {
 

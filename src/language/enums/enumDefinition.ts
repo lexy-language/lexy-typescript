@@ -1,12 +1,13 @@
+import type {IParsableNode} from "../parsableNode";
+import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {INode} from "../node";
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {RootNode} from "../rootNode";
 import {EnumName} from "./enumName";
 import {EnumMember} from "./enumMember";
 import {SourceReference} from "../../parser/sourceReference";
-import {IParsableNode} from "../parsableNode";
-import {IParseLineContext} from "../../parser/ParseLineContext";
 import {any, lastOrDefault} from "../../infrastructure/enumerableExtensions";
-import {INode} from "../node";
-import {IValidationContext} from "../../parser/validationContext";
 import {DuplicateChecker} from "../duplicateChecker";
 import {NodeType} from "../nodeType";
 

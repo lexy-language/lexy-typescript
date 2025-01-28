@@ -1,12 +1,13 @@
+import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParsableNode} from "../parsableNode";
+import type {INode} from "../node";
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {RootNode} from "../rootNode";
 import {TableName} from "./tableName";
 import {TableHeader} from "./tableHeader";
 import {TableRow} from "./tableRow";
 import {SourceReference} from "../../parser/sourceReference";
-import {IParseLineContext} from "../../parser/ParseLineContext";
-import {IParsableNode} from "../parsableNode";
-import {INode} from "../node";
-import {IValidationContext} from "../../parser/validationContext";
 import {ComplexType} from "../variableTypes/complexType";
 import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
 import {NodeType} from "../nodeType";

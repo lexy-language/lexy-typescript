@@ -1,9 +1,9 @@
 import {SingleArgumentFunction} from "./singleArgumentFunction";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
-import {SourceReference} from "../../../parser/sourceReference";
 import {Expression} from "../expression";
-import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
+import {ExpressionSource} from "../expressionSource";
+import {FunctionCallExpression} from "./functionCallExpression";
 
 export class MinuteFunction extends SingleArgumentFunction {
    public static readonly functionName: string = `MINUTE`;
@@ -14,11 +14,11 @@ export class MinuteFunction extends SingleArgumentFunction {
       return `'${MinuteFunction.functionName} expects 1 argument (Date)`
    }
 
-   constructor(valueExpression: Expression, reference: SourceReference) {
-     super(valueExpression, reference, PrimitiveType.date, PrimitiveType.number);
+   constructor(valueExpression: Expression, soure: ExpressionSource) {
+     super(MinuteFunction.functionName, valueExpression, soure, PrimitiveType.date, PrimitiveType.number);
    }
 
-   public static create(reference: SourceReference, expression: Expression): ExpressionFunction {
-     return new MinuteFunction(expression, reference);
+   public static create(soure: ExpressionSource, expression: Expression): FunctionCallExpression {
+     return new MinuteFunction(expression, soure);
    }
 }

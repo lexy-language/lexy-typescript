@@ -1,9 +1,6 @@
 import {Expression} from "../../../language/expressions/expression";
-import {CodeWriter} from "../writers/codeWriter";
 import {NodeType} from "../../../language/nodeType";
 import {asMemberAccessExpression, MemberAccessExpression} from "../../../language/expressions/memberAccessExpression";
-import {VariableTypeName} from "../../../language/variableTypes/variableTypeName";
-import {enumClassName, tableClassName, typeClassName} from "../classNames";
 import {asLiteralExpression, LiteralExpression} from "../../../language/expressions/literalExpression";
 import {asAssignmentExpression, AssignmentExpression} from "../../../language/expressions/assignmentExpression";
 import {asBinaryExpression, BinaryExpression} from "../../../language/expressions/binaryExpression";
@@ -21,12 +18,11 @@ import {
   asVariableDeclarationExpression,
   VariableDeclarationExpression
 } from "../../../language/expressions/variableDeclarationExpression";
-import {CustomVariableDeclarationType} from "../../../language/variableTypes/customVariableDeclarationType";
-import {asEnumType} from "../../../language/variableTypes/enumType";
-import {asCustomType} from "../../../language/variableTypes/customType";
-import {asTableType} from "../../../language/variableTypes/tableType";
 import {renderTypeDefaultExpression} from "./renderVariableClass";
-import {asFunctionCallExpression, FunctionCallExpression,} from "../../../language/expressions/functionCallExpression";
+import {
+  asFunctionCallExpression,
+  FunctionCallExpression
+} from "../../../language/expressions/functions/functionCallExpression";
 import {renderFunctionCall} from "../builtInFunctions/createFunctionCall";
 import {matchesLineExpressionException} from "../lineExpressionExceptions/matchesLineExpressionException";
 import {TokenType} from "../../../parser/tokens/tokenType";
@@ -34,6 +30,7 @@ import {asDateTimeLiteral} from "../../../parser/tokens/dateTimeLiteral";
 import {logAssignmentVariables, logLineAndVariables} from "./rendeLogCalls";
 import {renderVariableReference} from "./renderVariableReference";
 import {LexyCodeConstants} from "../lexyCodeConstants";
+import {CodeWriter} from "../writers/codeWriter";
 
 function renderExpressionLine(codeWriter: CodeWriter, expression: Expression) {
   logLineAndVariables(expression, codeWriter);
@@ -276,27 +273,7 @@ function renderVariableDeclarationExpression(expression: VariableDeclarationExpr
   }
 }
 
-export function customVariableIdentifier(customVariable: CustomVariableDeclarationType, codeWriter: CodeWriter) {
-  if (customVariable.variableType == null) throw new Error("Variable type expected: " + customVariable.nodeType);
-
-  const variableTypeName = customVariable.variableType.variableTypeName;
-  switch (variableTypeName) {
-    case VariableTypeName.EnumType:
-      const enumType = asEnumType(customVariable.variableType);
-      if (enumType == null) throw new Error("Invalid EnumType")
-      return codeWriter.identifierFromEnvironment(enumClassName(enumType.type));
-    case VariableTypeName.TableType:
-      const tableType = asTableType(customVariable.variableType);
-      if (tableType == null) throw new Error("Invalid TableType")
-      return codeWriter.identifierFromEnvironment(tableClassName(tableType.tableName));
-    case VariableTypeName.CustomType:
-      const customType = asCustomType(customVariable.variableType);
-      if (customType == null) throw new Error("Invalid CustomType")
-      return codeWriter.identifierFromEnvironment(typeClassName(customType.type));
-  }
-  throw new Error(`Couldn't map type: ${customVariable.variableType}`)
-}
 
 function renderFunctionCallExpression(expression: FunctionCallExpression, codeWriter: CodeWriter) {
-  renderFunctionCall(expression.expressionFunction, codeWriter);
+  renderFunctionCall(expression, codeWriter);
 }

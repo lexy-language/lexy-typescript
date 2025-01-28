@@ -1,25 +1,24 @@
-import {ExpressionFunction} from "./expressionFunction";
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
+
 import {Expression} from "../expression";
-import {SourceReference} from "../../../parser/sourceReference";
-import {INode} from "../../node";
-import {IValidationContext} from "../../../parser/validationContext";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
 import {VariableType} from "../../variableTypes/variableType";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
 
-export abstract class EndStartDateFunction extends ExpressionFunction {
+export abstract class EndStartDateFunction extends FunctionCallExpression {
 
    private get functionHelp() {
      return `'${this.functionName}' expects 2 arguments (EndDate, StartDate).`;
    }
 
-  protected abstract functionName: string
-
   public endDateExpression: Expression;
   public startDateExpression: Expression;
 
-  protected constructor(endDateExpression: Expression, startDateExpression: Expression,
-                        reference: SourceReference) {
-     super(reference);
+  protected constructor(functionName: string, endDateExpression: Expression, startDateExpression: Expression,
+                        source: ExpressionSource) {
+     super(functionName, source);
      this.endDateExpression = endDateExpression;
      this.startDateExpression = startDateExpression;
    }
@@ -34,7 +33,7 @@ export abstract class EndStartDateFunction extends ExpressionFunction {
        .validateType(this.startDateExpression, 2, `StartDate`, PrimitiveType.date, this.reference, this.functionHelp);
    }
 
-   public override deriveReturnType(context: IValidationContext): VariableType {
+   public override deriveType(context: IValidationContext): VariableType {
      return PrimitiveType.number;
    }
 }

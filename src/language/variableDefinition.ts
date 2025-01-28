@@ -3,6 +3,7 @@ import type {IHasNodeDependencies} from "./IHasNodeDependencies";
 import type {IValidationContext} from "../parser/validationContext";
 import type {IParseLineContext} from "../parser/ParseLineContext";
 import type {IRootNode} from "./rootNode";
+import type {IRootNodeList} from "./rootNodeList";
 
 import {VariableType} from "./variableTypes/variableType";
 import {VariableDeclarationType} from "./variableTypes/variableDeclarationType";
@@ -10,7 +11,6 @@ import {SourceReference} from "../parser/sourceReference";
 import {Expression} from "./expressions/expression";
 import {VariableSource} from "./variableSource";
 import {Node} from "./node";
-import {RootNodeList} from "./rootNodeList";
 import {OperatorType} from "../parser/tokens/operatorType";
 import {asOperatorToken, OperatorToken} from "../parser/tokens/operatorToken";
 import {validateTypeAndDefault} from "./variableTypes/validationContextExtensions";
@@ -50,7 +50,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     this.source = source;
   }
 
-  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
     const dependencies = this.variableType?.getDependencies(rootNodeList);
     return !!dependencies ? dependencies : [];
   }

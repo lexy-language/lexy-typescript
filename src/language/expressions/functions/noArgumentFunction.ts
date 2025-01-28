@@ -1,15 +1,16 @@
-import {ExpressionFunction} from "./expressionFunction";
-import {VariableType} from "../../variableTypes/variableType";
-import {SourceReference} from "../../../parser/sourceReference";
-import {INode} from "../../node";
-import {IValidationContext} from "../../../parser/validationContext";
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
 
-export abstract class NoArgumentFunction extends ExpressionFunction {
+import {VariableType} from "../../variableTypes/variableType";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
+
+export abstract class NoArgumentFunction extends FunctionCallExpression {
 
   protected readonly resultType: VariableType;
 
-  protected constructor(reference: SourceReference, resultType: VariableType){
-   super(reference);
+  protected constructor(functionName: string, source: ExpressionSource, resultType: VariableType){
+   super(functionName, source);
    this.resultType = resultType;
  }
 
@@ -20,7 +21,7 @@ export abstract class NoArgumentFunction extends ExpressionFunction {
    protected override validate(context: IValidationContext): void {
    }
 
-   public override deriveReturnType(context: IValidationContext): VariableType {
+   public override deriveType(context: IValidationContext): VariableType {
      return this.resultType;
    }
 }

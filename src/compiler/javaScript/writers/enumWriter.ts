@@ -5,6 +5,7 @@ import {enumClassName} from "../classNames";
 import {CodeWriter} from "./codeWriter";
 import {asEnumDefinition, EnumDefinition} from "../../../language/enums/enumDefinition";
 import {LexyCodeConstants} from "../lexyCodeConstants";
+import {renderExpression} from "../renderers/renderExpression";
 
 export class EnumWriter implements IRootTokenWriter {
 
@@ -14,7 +15,7 @@ export class EnumWriter implements IRootTokenWriter {
 
     const enumName = enumClassName(enumDefinition.name.value);
 
-    const codeWriter = new CodeWriter();
+    const codeWriter = new CodeWriter(renderExpression);
     codeWriter.openScope();
     for (const member of enumDefinition.members) {
       codeWriter.writeLine(`${member.name}: "${enumDefinition.name.value}.${member.name}",`);

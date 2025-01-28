@@ -1,8 +1,9 @@
+import type {IParseLineContext} from "../parser/ParseLineContext";
+import type {IValidationContext} from "../parser/validationContext";
+
 import {IParsableNode, ParsableNode} from "./parsableNode";
 import {SourceReference} from "../parser/sourceReference";
-import {IParseLineContext} from "../parser/ParseLineContext";
 import {INode} from "./node";
-import {IValidationContext} from "../parser/validationContext";
 import {NodeType} from "./nodeType";
 
 export class Comments extends ParsableNode {

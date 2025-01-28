@@ -1,8 +1,8 @@
 import {FunctionCall} from "./functionCall";
-import {ExpressionFunction} from "../../../language/expressions/functions/expressionFunction";
+import {FunctionCallExpression} from "../../../language/expressions/functions/functionCallExpression";
 import {CodeWriter} from "../writers/codeWriter";
 
-export abstract class MethodFunctionCall<TFunctionExpression extends ExpressionFunction>
+export abstract class MethodFunctionCall<TFunctionExpression extends FunctionCallExpression>
   extends FunctionCall<TFunctionExpression> {
 
   protected abstract className: string

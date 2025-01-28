@@ -2,14 +2,13 @@ import type {IRootNode} from "../../rootNode";
 import type {INode} from "../../node";
 import type {IValidationContext} from "../../../parser/validationContext";
 import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
+import type {IRootNodeList} from "../../rootNodeList";
 
-import {ExpressionFunction} from "./expressionFunction";
 import {Mapping, mapToUsedVariable} from "./mapping";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
 import {Expression} from "../expression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {asMemberAccessExpression} from "../memberAccessExpression";
-import {RootNodeList} from "../../rootNodeList";
 import {asComplexType, ComplexType} from "../../variableTypes/complexType";
 import {VariableType} from "../../variableTypes/variableType";
 import {Function} from "../../functions/function";
@@ -17,6 +16,8 @@ import {NodeType} from "../../nodeType";
 import {Assert} from "../../../infrastructure/assert";
 import {VariableUsage} from "../variableUsage";
 import {VariableAccess} from "../variableAccess";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
 
 export function instanceOfFillParametersFunction(object: any): object is FillParametersFunction {
   return object?.nodeType == NodeType.FillParametersFunction;
@@ -26,7 +27,7 @@ export function asFillParametersFunction(object: any): FillParametersFunction | 
   return instanceOfFillParametersFunction(object) ? object as FillParametersFunction : null;
 }
 
-export class FillParametersFunction extends ExpressionFunction implements IHasNodeDependencies {
+export class FillParametersFunction extends FunctionCallExpression implements IHasNodeDependencies {
 
   public static readonly functionName: string = `fill`;
 
@@ -48,21 +49,21 @@ export class FillParametersFunction extends ExpressionFunction implements IHasNo
     return `${FillParametersFunction.functionName} expects 1 argument (Function.Parameters)`;
   }
 
-  constructor(valueExpression: Expression, reference: SourceReference) {
-    super(reference);
+  constructor(valueExpression: Expression, source: ExpressionSource) {
+    super(FillParametersFunction.functionName, source);
     this.valueExpression = valueExpression;
 
     const memberAccessExpression = asMemberAccessExpression(valueExpression);
     this.typeLiteral = memberAccessExpression?.memberAccessLiteral;
   }
 
-  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
     const rootNode = rootNodeList.getNode(Assert.notNull(this.type, "type").name);
     return rootNode != null ? [rootNode] : [];
   }
 
-  public static create(reference: SourceReference, expression: Expression): ExpressionFunction {
-    return new FillParametersFunction(expression, reference);
+  public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
+    return new FillParametersFunction(expression, source);
   }
 
   public override getChildren(): Array<INode> {
@@ -104,7 +105,7 @@ export class FillParametersFunction extends ExpressionFunction implements IHasNo
     }
   }
 
-  public override deriveReturnType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): VariableType | null {
 
     if (this.typeLiteral == undefined) return null;
     let functionValue = context.rootNodes.getFunction(this.typeLiteral.parent);
@@ -121,6 +122,7 @@ export class FillParametersFunction extends ExpressionFunction implements IHasNo
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {
     return [
+      ...super.usedVariables(),
       ...this.mapping.map(mapToUsedVariable(VariableAccess.Read)),
     ];
   }

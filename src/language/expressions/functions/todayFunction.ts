@@ -1,19 +1,19 @@
-import {SourceReference} from "../../../parser/sourceReference";
 import {NoArgumentFunction} from "./noArgumentFunction";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
-import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
+import {ExpressionSource} from "../expressionSource";
+import {FunctionCallExpression} from "./functionCallExpression";
 
 export class TodayFunction extends NoArgumentFunction {
    public static readonly functionName: string = `TODAY`;
 
   public readonly nodeType = NodeType.TodayFunction;
 
-   constructor(reference: SourceReference) {
-     super(reference, PrimitiveType.date);
+   constructor(source: ExpressionSource) {
+     super(TodayFunction.functionName, source, PrimitiveType.date);
    }
 
-   public static create(reference: SourceReference): ExpressionFunction {
-     return new TodayFunction(reference);
+   public static create(source: ExpressionSource): FunctionCallExpression {
+     return new TodayFunction(source);
    }
 }

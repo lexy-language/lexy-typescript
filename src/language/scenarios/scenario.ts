@@ -2,6 +2,8 @@ import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
+import type {IHasNodeDependencies} from "../IHasNodeDependencies";
+import type {IRootNodeList} from "../rootNodeList";
 
 import {Function} from "../functions/function";
 import {IRootNode, RootNode} from "../rootNode";
@@ -21,8 +23,6 @@ import {VariableSource} from "../variableSource";
 import {VariableDefinition} from "../variableDefinition";
 import {NodeType} from "../nodeType";
 import {ExpectExecutionErrors} from "./expectExecutionErrors";
-import {IHasNodeDependencies} from "../IHasNodeDependencies";
-import {RootNodeList} from "../rootNodeList";
 import {ExecutionLogging} from "./executionLogging";
 import {TokenType} from "../../parser/tokens/tokenType";
 
@@ -299,7 +299,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     }
   }
 
-  getDependencies(rootNodeList: RootNodeList): ReadonlyArray<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): ReadonlyArray<IRootNode> {
     const result: Array<IRootNode> = [];
     if (this.functionNode != null) result.push(this.functionNode);
     if (this.enum != null) result.push(this.enum);

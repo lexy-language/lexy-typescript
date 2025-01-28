@@ -7,7 +7,7 @@ import {tableClassName} from "../classNames";
 import {CodeWriter} from "./codeWriter";
 import {renderTypeDefaultExpression} from "../renderers/renderVariableClass";
 import {LexyCodeConstants} from "../lexyCodeConstants";
-import {renderValueExpression} from "../renderers/renderExpression";
+import {renderExpression, renderValueExpression} from "../renderers/renderExpression";
 import {Assert} from "../../../infrastructure/assert";
 
 export class TableWriter implements IRootTokenWriter {
@@ -18,7 +18,7 @@ export class TableWriter implements IRootTokenWriter {
 
     const className = tableClassName(table.name.value);
 
-    const codeWriter = new CodeWriter();
+    const codeWriter = new CodeWriter(renderExpression);
     codeWriter.openScope(`function ${className}()`);
 
     this.renderRowClass(LexyCodeConstants.rowType, table, codeWriter);

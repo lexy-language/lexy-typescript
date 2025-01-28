@@ -1,9 +1,10 @@
+import type {IValidationContext} from "../../parser/validationContext";
+import type {INode} from "../node";
+
 import {VariableDeclarationType} from "./variableDeclarationType";
 import {SourceReference} from "../../parser/sourceReference";
-import {IValidationContext} from "../../parser/validationContext";
 import {VariableType} from "./variableType";
 import {PrimitiveType} from "./primitiveType";
-import {INode} from "../node";
 import {NodeType} from "../nodeType";
 
 export function instanceOfPrimitiveVariableDeclarationType(object: any): boolean {

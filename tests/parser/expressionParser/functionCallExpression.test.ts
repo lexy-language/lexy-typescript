@@ -3,7 +3,7 @@ import {validateOfType} from "../../validateOfType";
 import {
   asFunctionCallExpression,
   FunctionCallExpression
-} from "../../../src/language/expressions/functionCallExpression";
+} from "../../../src/language/expressions/functions/functionCallExpression";
 import {asIntFunction, IntFunction} from "../../../src/language/expressions/functions/intFunction";
 import {
   validateIdentifierExpression,
@@ -16,13 +16,19 @@ import {
   ParenthesizedExpression
 } from "../../../src/language/expressions/parenthesizedExpression";
 import {ExpressionOperator} from "../../../src/language/expressions/expressionOperator";
+import {asRoundFunction, RoundFunction} from "../../../src/language/expressions/functions/roundFunction";
+import {asPowerFunction, PowerFunction} from "../../../src/language/expressions/functions/powerFunction";
+import {
+  asExtractResultsFunction,
+  ExtractResultsFunction
+} from "../../../src/language/expressions/functions/extractResultsFunction";
 
 describe('FunctionCallExpressionTests', () => {
   it('functionCallExpression', async () => {
     let expression = parseExpression(`INT(y)`);
     validateOfType<FunctionCallExpression>(asFunctionCallExpression, expression, functionCallExpression => {
       expect(functionCallExpression.functionName).toBe(`INT`);
-      validateOfType<IntFunction>(asIntFunction, functionCallExpression.expressionFunction, functionExpression =>
+      validateOfType<IntFunction>(asIntFunction, functionCallExpression, functionExpression =>
         validateVariableExpression(functionExpression.valueExpression, `y`));
     });
   });
@@ -31,7 +37,7 @@ describe('FunctionCallExpressionTests', () => {
     let expression = parseExpression(`INT(5 * (3 + A))`);
     validateOfType<FunctionCallExpression>(asFunctionCallExpression, expression, functionCall => {
       expect(functionCall.functionName).toBe(`INT`);
-      validateOfType<IntFunction>(asIntFunction, functionCall.expressionFunction, functionExpression =>
+      validateOfType<IntFunction>(asIntFunction, functionCall, functionExpression =>
         validateOfType<BinaryExpression>(asBinaryExpression, functionExpression.valueExpression, multiplication =>
           validateOfType<ParenthesizedExpression>(asParenthesizedExpression, multiplication.right, inner =>
             validateOfType<BinaryExpression>(asBinaryExpression, inner.expression, addition =>
@@ -41,24 +47,21 @@ describe('FunctionCallExpressionTests', () => {
 
   it('nestedParenthesizedMultipleArguments', async () => {
     let expression = parseExpression(`ROUND(POWER(98.6,3.2),3)`);
-    validateOfType<FunctionCallExpression>(asFunctionCallExpression, expression, round => {
+    validateOfType<RoundFunction>(asRoundFunction, expression, round => {
       expect(round.functionName).toBe(`ROUND`);
-      expect(round.arguments.length).toBe(2);
-      validateOfType<FunctionCallExpression>(asFunctionCallExpression, round.arguments[0], power => {
-        expect(power.arguments.length).toBe(2);
-        validateNumericLiteralExpression(power.arguments[0], 98.6);
-        validateNumericLiteralExpression(power.arguments[1], 3.2);
+      validateOfType<PowerFunction>(asPowerFunction, round.numberExpression, power => {
+        validateNumericLiteralExpression(power.numberExpression, 98.6);
+        validateNumericLiteralExpression(power.powerExpression, 3.2);
       });
-      validateNumericLiteralExpression(round.arguments[1], 3);
+      validateNumericLiteralExpression(round.digitsExpression, 3);
     });
   });
 
   it('callExtract', async () => {
     let expression = parseExpression(`extract(results)`);
-    validateOfType<FunctionCallExpression>(asFunctionCallExpression, expression, round => {
+    validateOfType<ExtractResultsFunction>(asExtractResultsFunction, expression, round => {
       expect(round.functionName).toBe(`extract`);
-      expect(round.arguments.length).toBe(1);
-      validateIdentifierExpression(round.arguments[0], `results`);
+      validateIdentifierExpression(round.valueExpression, `results`);
     });
   });
 

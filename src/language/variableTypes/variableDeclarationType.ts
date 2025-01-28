@@ -1,7 +1,8 @@
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {VariableType} from "./variableType";
 import {SourceReference} from "../../parser/sourceReference";
 import {Node} from "../node"
-import {IValidationContext} from "../../parser/validationContext";
 
 export abstract class VariableDeclarationType extends Node {
 

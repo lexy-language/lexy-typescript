@@ -1,13 +1,22 @@
-import {ExpressionFunction} from './expressionFunction';
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
+
 import {Expression} from '../expression';
-import {SourceReference} from "../../../parser/sourceReference";
-import {INode} from "../../node";
-import {IValidationContext} from "../../../parser/validationContext";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
 
-export class PowerFunction extends ExpressionFunction {
+export function instanceOfPowerFunction(object: any): object is PowerFunction {
+  return object?.nodeType == NodeType.PowerFunction;
+}
+
+export function asPowerFunction(object: any): PowerFunction | null {
+  return instanceOfPowerFunction(object) ? object as PowerFunction : null;
+}
+
+export class PowerFunction extends FunctionCallExpression {
 
   public static readonly functionName: string = `POWER`;
 
@@ -19,8 +28,8 @@ export class PowerFunction extends ExpressionFunction {
   public numberExpression: Expression;
   public powerExpression: Expression;
 
-  constructor(numberExpression: Expression, powerExpression: Expression, reference: SourceReference) {
-    super(reference);
+  constructor(numberExpression: Expression, powerExpression: Expression, source: ExpressionSource) {
+    super(PowerFunction.functionName, source);
     this.numberExpression = numberExpression;
     this.powerExpression = powerExpression;
   }
@@ -38,12 +47,12 @@ export class PowerFunction extends ExpressionFunction {
       .validateType(this.powerExpression, 2, `Power`, PrimitiveType.number, this.reference, this.functionHelp);
   }
 
-  public override deriveReturnType(context: IValidationContext): VariableType {
+  public override deriveType(context: IValidationContext): VariableType {
     return PrimitiveType.number;
   }
 
-  public static create(reference: SourceReference, numberExpression: Expression,
-                       powerExpression: Expression): ExpressionFunction {
-    return new PowerFunction(numberExpression, powerExpression, reference);
+  public static create(source: ExpressionSource, numberExpression: Expression,
+                       powerExpression: Expression): FunctionCallExpression {
+    return new PowerFunction(numberExpression, powerExpression, source);
   }
 }

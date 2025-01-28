@@ -1,6 +1,7 @@
-import {ILineExpressionException} from "./ILineExpressionException";
+import type {ILineExpressionException} from "./ILineExpressionException";
+
 import {Expression} from "../../../language/expressions/expression";
-import {asFunctionCallExpression} from "../../../language/expressions/functionCallExpression";
+import {asFunctionCallExpression} from "../../../language/expressions/functions/functionCallExpression";
 import {asVariableDeclarationExpression} from "../../../language/expressions/variableDeclarationExpression";
 import {asNewFunction, instanceOfNewFunction} from "../../../language/expressions/functions/newFunction";
 import {CodeWriter} from "../writers/codeWriter";
@@ -15,7 +16,7 @@ export class NewFunctionExpressionStatementException implements ILineExpressionE
     const functionCallExpression = asFunctionCallExpression(assignmentExpression.assignment);
     if (functionCallExpression == null) return false;
 
-    return instanceOfNewFunction(functionCallExpression.expressionFunction);
+    return instanceOfNewFunction(functionCallExpression);
   }
 
 
@@ -27,8 +28,8 @@ export class NewFunctionExpressionStatementException implements ILineExpressionE
     const functionCallExpression = asFunctionCallExpression(assignmentExpression.assignment);
     if (functionCallExpression == null) throw new Error(`assignmentExpression.assignment should be FunctionCallExpression`);
 
-    const newFunction = asNewFunction(functionCallExpression.expressionFunction)
-    if (newFunction == null) throw new Error(`functionCallExpression.ExpressionFunction should be NewFunction`);
+    const newFunction = asNewFunction(functionCallExpression)
+    if (newFunction == null) throw new Error(`functionCallExpression.FunctionCallExpression should be NewFunction`);
 
     const type = translateType(assignmentExpression.type.variableType);
     codeWriter.write("const " + assignmentExpression.name + " = new ");

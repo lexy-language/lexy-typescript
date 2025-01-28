@@ -1,9 +1,8 @@
-import {LogVariable, LogVariables} from "../runTime/executionContext";
+import type {LogVariable, LogVariables} from "../runTime/executionContext";
+import type {IAssignmentDefinition} from "../language/scenarios/assignmentDefinition";
+
 import {ExecutionLog} from "../language/scenarios/executionLog";
-import {IAssignmentDefinition} from "../language/scenarios/IAssignmentDefinition";
-import {
-  asComplexAssignmentDefinition,
-} from "../language/scenarios/complexAssignmentDefinition";
+import {asComplexAssignmentDefinition} from "../language/scenarios/complexAssignmentDefinition";
 import {asAssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {ExecutionLogEntry} from "../runTime/executionLogEntry";
 

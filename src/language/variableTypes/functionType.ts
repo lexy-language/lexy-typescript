@@ -1,7 +1,8 @@
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {TypeWithMembers} from "./typeWithMembers";
 import {VariableType} from "./variableType";
 import {Function} from "../functions/function";
-import {IValidationContext} from "../../parser/validationContext";
 import {VariableTypeName} from "./variableTypeName";
 import {ComplexType} from "./complexType";
 

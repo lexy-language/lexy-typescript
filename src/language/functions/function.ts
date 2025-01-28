@@ -3,6 +3,8 @@ import type {INode} from "../node";
 import type {IExpressionFactory} from "../expressions/expressionFactory";
 import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IParsableNode} from "../parsableNode";
+import type {IValidationContext} from "../../parser/validationContext";
+import type {IRootNodeList} from "../rootNodeList";
 
 import {RootNode} from "../rootNode";
 import {asHasNodeDependencies, IHasNodeDependencies} from "../IHasNodeDependencies";
@@ -11,13 +13,11 @@ import {FunctionParameters} from "./functionParameters";
 import {FunctionResults} from "./functionResults";
 import {FunctionCode} from "./functionCode";
 import {SourceReference} from "../../parser/sourceReference";
-import {RootNodeList} from "../rootNodeList";
 import {Keywords} from "../../parser/Keywords";
 import {KeywordToken} from "../../parser/tokens/keywordToken";
 import {contains} from "../../infrastructure/enumerableExtensions";
 import {VariableDefinition} from "../variableDefinition";
 import {asCustomVariableDeclarationType} from "../variableTypes/customVariableDeclarationType";
-import {IValidationContext} from "../../parser/validationContext";
 import {ComplexType} from "../variableTypes/complexType";
 import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
 import {ComplexTypeSource} from "../variableTypes/complexTypeSource";
@@ -70,7 +70,7 @@ export class Function extends RootNode implements IHasNodeDependencies {
     this.name = FunctionName.parseName(name, reference);
   }
 
-  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
     let result = new Array<IRootNode>();
     if (this.parameters != null) {
       Function.addEnumTypes(rootNodeList, this.parameters.variables, result);
@@ -116,7 +116,7 @@ export class Function extends RootNode implements IHasNodeDependencies {
     return this;
   }
 
-  public getFunctionAndDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+  public getFunctionAndDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
     let result: Array<IRootNode> = [this];
     this.addDependentNodes(this, rootNodeList, result);
 
@@ -131,7 +131,7 @@ export class Function extends RootNode implements IHasNodeDependencies {
     return result;
   }
 
-  private addDependentNodes(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
+  private addDependentNodes(node: INode, rootNodeList: IRootNodeList, result: Array<IRootNode>): void {
     Function.addNodeDependencies(node, rootNodeList, result);
 
     let children = node.getChildren();
@@ -139,7 +139,7 @@ export class Function extends RootNode implements IHasNodeDependencies {
     NodesWalker.walkNodes(children, eachNode => Function.addNodeDependencies(eachNode, rootNodeList, result));
   }
 
-  private static addNodeDependencies(node: INode, rootNodeList: RootNodeList, result: Array<IRootNode>): void {
+  private static addNodeDependencies(node: INode, rootNodeList: IRootNodeList, result: Array<IRootNode>): void {
     const hasDependencies = asHasNodeDependencies(node);
     if (hasDependencies == null) return;
 
@@ -151,7 +151,7 @@ export class Function extends RootNode implements IHasNodeDependencies {
     }
   }
 
-  private static addEnumTypes(rootNodeList: RootNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
+  private static addEnumTypes(rootNodeList: IRootNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
                               result: Array<IRootNode>) {
     for (const parameter of variableDefinitions) {
 

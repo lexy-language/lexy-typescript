@@ -4,10 +4,10 @@ import type {IRootNode} from "../../../language/rootNode";
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {GeneratedType, GeneratedTypeKind} from "../../generatedType";
 import {asFunction, Function} from "../../../language/functions/function";
-import {CodeWriter} from "./codeWriter";
 import {functionClassName} from "../classNames";
-import {renderExpressions} from "../renderers/renderExpression";
+import {renderExpression, renderExpressions} from "../renderers/renderExpression";
 import {createVariableClass} from "../renderers/renderVariableClass";
+import {CodeWriter} from "./codeWriter";
 
 export class FunctionWriter implements IRootTokenWriter {
 
@@ -15,7 +15,7 @@ export class FunctionWriter implements IRootTokenWriter {
     const functionNode = asFunction(node);
     if (functionNode == null) throw new Error(`Root token not Function`);
 
-    const codeWriter = new CodeWriter()
+    const codeWriter = new CodeWriter(renderExpression)
 
     return this.createFunction(functionNode, codeWriter);
   }

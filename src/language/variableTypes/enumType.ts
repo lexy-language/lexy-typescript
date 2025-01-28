@@ -1,11 +1,11 @@
 import type {IRootNode} from "../rootNode";
 import type {IValidationContext} from "../../parser/validationContext";
+import type {IRootNodeList} from "../rootNodeList";
 
 import {TypeWithMembers} from "./typeWithMembers";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {VariableType} from "./variableType";
 import {any, firstOrDefault} from "../../infrastructure/enumerableExtensions";
-import {RootNodeList} from "../rootNodeList";
 import {VariableTypeName} from "./variableTypeName";
 
 export function instanceOfEnumType(object: any): object is EnumType {
@@ -41,7 +41,7 @@ export class EnumType extends TypeWithMembers {
     return any(this.enum.members, member => member.name == name) ? this : null;
   }
 
-  public getDependencies(rootNodeList: RootNodeList): Array<IRootNode> {
+  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
     const enumDefinition = rootNodeList.getEnum(this.type);
     return enumDefinition != null ? [enumDefinition] : [];
   }

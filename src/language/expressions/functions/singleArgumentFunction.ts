@@ -1,11 +1,12 @@
-import {Expression} from "../expression";
-import {ExpressionFunction} from "./expressionFunction";
-import {VariableType} from "../../variableTypes/variableType";
-import {SourceReference} from "../../../parser/sourceReference";
-import {INode} from "../../node";
-import {IValidationContext} from "../../../parser/validationContext";
+import type {INode} from "../../node";
+import type {IValidationContext} from "../../../parser/validationContext";
 
-export abstract class SingleArgumentFunction extends ExpressionFunction {
+import {Expression} from "../expression";
+import {VariableType} from "../../variableTypes/variableType";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
+
+export abstract class SingleArgumentFunction extends FunctionCallExpression {
    protected abstract functionHelp: string;
 
   protected readonly argumentType: VariableType;
@@ -13,9 +14,9 @@ export abstract class SingleArgumentFunction extends ExpressionFunction {
 
   public readonly valueExpression: Expression;
 
-   constructor(valueExpression: Expression, reference: SourceReference,
+   protected constructor(functionName: string, valueExpression: Expression, source: ExpressionSource,
                argumentType: VariableType, resultType: VariableType) {
-     super(reference);
+     super(functionName, source);
      this.valueExpression = valueExpression;
      this.argumentType = argumentType;
      this.resultType = resultType;
@@ -29,7 +30,7 @@ export abstract class SingleArgumentFunction extends ExpressionFunction {
      context.validateType(this.valueExpression, 1, `Value`, this.argumentType, this.reference, this.functionHelp);
    }
 
-   public override deriveReturnType(context: IValidationContext): VariableType {
+   public override deriveType(context: IValidationContext): VariableType {
      return this.resultType;
    }
 }

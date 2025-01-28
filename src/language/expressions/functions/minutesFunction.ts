@@ -1,24 +1,21 @@
 import {EndStartDateFunction} from "./endStartDateFunction";
-import {SourceReference} from "../../../parser/sourceReference";
 import {Expression} from "../expression";
-import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
+import {FunctionCallExpression} from "./functionCallExpression";
+import {ExpressionSource} from "../expressionSource";
 
 export class MinutesFunction extends EndStartDateFunction {
-   public static readonly functionName: string = `MINUTES`;
+  public static readonly functionName: string = `MINUTES`;
 
-   public readonly nodeType = NodeType.MinutesFunction;
+  public readonly nodeType = NodeType.MinutesFunction;
 
-  protected override get functionName() {
-    return MinutesFunction.name;
+
+  constructor(endDateExpression: Expression, startDateExpression: Expression, source: ExpressionSource) {
+    super(MinutesFunction.functionName, endDateExpression, startDateExpression, source);
   }
 
-   constructor(endDateExpression: Expression, startDateExpression: Expression, reference: SourceReference) {
-     super(endDateExpression, startDateExpression, reference);
-   }
-
-   public static create(reference: SourceReference, endDateExpression: Expression,
-     startDateExpression: Expression): ExpressionFunction  {
-     return new MinutesFunction(endDateExpression, startDateExpression, reference);
-   }
+  public static create(source: ExpressionSource, endDateExpression: Expression,
+                       startDateExpression: Expression): FunctionCallExpression {
+    return new MinutesFunction(endDateExpression, startDateExpression, source);
+  }
 }

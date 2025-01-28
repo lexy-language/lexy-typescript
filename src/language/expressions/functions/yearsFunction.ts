@@ -1,25 +1,21 @@
 import {EndStartDateFunction} from "./endStartDateFunction";
 import {Expression} from "../expression";
-import {SourceReference} from "../../../parser/sourceReference";
-import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
+import {ExpressionSource} from "../expressionSource";
+import {FunctionCallExpression} from "./functionCallExpression";
 
 export class YearsFunction extends EndStartDateFunction {
 
-   public static readonly functionName: string = `YEARS`;
+  public static readonly functionName: string = `YEARS`;
 
-   public readonly nodeType = NodeType.YearsFunction;
+  public readonly nodeType = NodeType.YearsFunction;
 
-  protected override get functionName() {
-    return YearsFunction.functionName;
+  constructor(endDateExpression: Expression, startDateExpression: Expression, source: ExpressionSource) {
+    super(YearsFunction.functionName, endDateExpression, startDateExpression, source);
   }
 
-  constructor(endDateExpression: Expression, startDateExpression: Expression, reference: SourceReference) {
-    super(endDateExpression, startDateExpression, reference);
+  public static create(source: ExpressionSource, endDateExpression: Expression,
+                       startDateExpression: Expression): FunctionCallExpression {
+    return new YearsFunction(endDateExpression, startDateExpression, source);
   }
-
-   public static create(reference: SourceReference, endDateExpression: Expression,
-     startDateExpression: Expression): ExpressionFunction {
-     return new YearsFunction(endDateExpression, startDateExpression, reference);
-   }
 }

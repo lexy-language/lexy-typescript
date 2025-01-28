@@ -1,10 +1,11 @@
+import type {IValidationContext} from "../../parser/validationContext";
+
 import {INode, Node} from "../node";
 import {ColumnHeader} from "./columnHeader";
 import {SourceReference} from "../../parser/sourceReference";
 import {IParseLineContext} from "../../parser/ParseLineContext";
 import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
-import {IValidationContext} from "../../parser/validationContext";
 import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
 import {firstOrDefault} from "../../infrastructure/enumerableExtensions";
 import {NodeType} from "../nodeType";

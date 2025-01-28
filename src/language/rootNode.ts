@@ -1,9 +1,9 @@
 import type {IParsableNode} from "./parsableNode";
+import type {IValidationContext} from "../parser/validationContext";
+import type {INode} from "./node";
 
 import {ParsableNode} from "./parsableNode";
 import {SourceReference} from "../parser/sourceReference";
-import {IValidationContext} from "../parser/validationContext";
-import {INode} from "./node";
 
 export function instanceOfRootNode(object: any): object is IRootNode {
    return object?.isRootNode == true;

@@ -1,9 +1,9 @@
 import {SingleArgumentFunction} from "./singleArgumentFunction";
-import {SourceReference} from "../../../parser/sourceReference";
 import {Expression} from "../expression";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
-import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
+import {ExpressionSource} from "../expressionSource";
+import {FunctionCallExpression} from "./functionCallExpression";
 
 export class SecondFunction extends SingleArgumentFunction {
    public static readonly functionName: string = `SECOND`;
@@ -14,11 +14,11 @@ export class SecondFunction extends SingleArgumentFunction {
 
    public readonly nodeType = NodeType.SecondFunction;
 
-   constructor(valueExpression: Expression, reference: SourceReference) {
-      super(valueExpression, reference, PrimitiveType.date, PrimitiveType.number);
+   constructor(valueExpression: Expression, source: ExpressionSource) {
+      super(SecondFunction.functionName, valueExpression, source, PrimitiveType.date, PrimitiveType.number);
    }
 
-   public static create(reference: SourceReference, expression: Expression): ExpressionFunction {
-     return new SecondFunction(expression, reference);
+   public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
+     return new SecondFunction(expression, source);
    }
 }

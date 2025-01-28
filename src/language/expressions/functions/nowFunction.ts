@@ -1,8 +1,8 @@
 import {NoArgumentFunction} from "./noArgumentFunction";
-import {SourceReference} from "../../../parser/sourceReference";
 import {PrimitiveType} from "../../variableTypes/primitiveType";
-import {ExpressionFunction} from "./expressionFunction";
 import {NodeType} from "../../nodeType";
+import {ExpressionSource} from "../expressionSource";
+import {FunctionCallExpression} from "./functionCallExpression";
 
 export class NowFunction extends NoArgumentFunction {
 
@@ -10,11 +10,11 @@ export class NowFunction extends NoArgumentFunction {
 
   public readonly nodeType = NodeType.NowFunction;
 
-  constructor(reference: SourceReference) {
-    super(reference, PrimitiveType.date);
+  constructor(source: ExpressionSource) {
+    super(NowFunction.functionName, source, PrimitiveType.date);
   }
 
-  public static create(reference: SourceReference): ExpressionFunction {
-    return new NowFunction(reference);
+  public static create(source: ExpressionSource): FunctionCallExpression {
+    return new NowFunction(source);
   }
 }

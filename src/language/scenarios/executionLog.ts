@@ -1,13 +1,15 @@
+import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {INode} from "../node";
+import type {IValidationContext} from "../../parser/validationContext";
+import type {IAssignmentDefinition} from "./assignmentDefinition";
+
 import {instanceOfParsableNode, IParsableNode, ParsableNode} from "../parsableNode";
 import {SourceReference} from "../../parser/sourceReference";
-import {IParseLineContext} from "../../parser/ParseLineContext";
-import {INode} from "../node";
-import {IValidationContext} from "../../parser/validationContext";
 import {NodeType} from "../nodeType";
 import {Keywords} from "../../parser/Keywords";
 import {asQuotedLiteralToken} from "../../parser/tokens/quotedLiteralToken";
 import {AssignmentDefinition} from "./assignmentDefinition";
-import {IAssignmentDefinition} from "./IAssignmentDefinition";
+import {AssignmentDefinitionParser} from "./assignmentDefinitionParser";
 
 export class ExecutionLog extends ParsableNode {
 
@@ -49,7 +51,7 @@ export class ExecutionLog extends ParsableNode {
   }
 
   private parseAssignment(context: IParseLineContext) {
-    let assignment = AssignmentDefinition.parse(context);
+    let assignment = AssignmentDefinitionParser.parse(context);
     if (assignment == null) return this;
 
     this.assignmentsValue.push(assignment);
