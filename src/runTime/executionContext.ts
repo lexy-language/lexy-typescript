@@ -1,58 +1,10 @@
 import type {ILogger} from "../infrastructure/logger";
 import {Stack} from "../infrastructure/stack";
-
-export class ExecutionLogEntry {
-
-  private entriesValue: Array<ExecutionLogEntry> = [];
-  private writeVariablesValue: LogVariables | null = null;
-  private logVariables: LogVariablesHandler;
-
-  public readonly fileName: string | null;
-  public readonly lineNumber: number | null;
-  public readonly message: string;
-  public readonly readVariables: LogVariables;
-
-  public get writeVariables(): LogVariables | null {
-    return this.writeVariablesValue;
-  }
-
-  public get entries(): ReadonlyArray<ExecutionLogEntry> {
-    return this.entriesValue;
-  }
-
-  constructor(logVariables: LogVariablesHandler, fileName: string | null, lineNumber: number | null, message: string, variables: LogVariables) {
-    this.fileName = fileName;
-    this.lineNumber = lineNumber;
-    this.message = message;
-    this.logVariables = logVariables;
-    this.readVariables = this.deepCopy(variables);
-  }
-
-  public addEntry(entry: ExecutionLogEntry) {
-    this.entriesValue.push(entry);
-  }
-
-  addVariables(variables: LogVariables) {
-    this.writeVariablesValue = this.deepCopy(variables);
-    this.logVariables(variables);
-  }
-
-  public deepCopy<T>(obj: T): T {
-    if (obj instanceof Date) return new Date(obj) as T;
-    if (typeof obj !== 'object' || obj === null) return obj;
-    if (Array.isArray(obj)) return obj.map(item => this.deepCopy(item)) as unknown as T;
-    const copy = {} as { [K in keyof T]: T[K] };
-    Object.keys(obj).forEach(key => {
-      if (key.startsWith("__")) return;
-      copy[key as keyof T] = this.deepCopy((obj as { [key: string]: any })[key]);
-    });
-    return copy;
-  }
-}
+import {ExecutionLogEntry} from "./executionLogEntry";
 
 export type LogVariable = Date | string | number | boolean | LogVariables;
 export type LogVariables = { [key: string]: LogVariable };
-export type LogVariablesHandler = (variables: LogVariables) => void;
+export type VariablesLogger = (variables: LogVariables) => void;
 
 export interface IExecutionContext {
   setFileName(fileName: string): void;

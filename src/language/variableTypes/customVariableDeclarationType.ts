@@ -30,10 +30,6 @@ export class CustomVariableDeclarationType extends VariableDeclarationType imple
     this.type = type;
   }
 
-  private equals(other: CustomVariableDeclarationType): boolean {
-    return this.type == other.type;
-  }
-
   public toString(): string {
     return this.type;
   }
@@ -79,9 +75,5 @@ export class CustomVariableDeclarationType extends VariableDeclarationType imple
 
   public override getChildren(): Array<INode> {
     return [];
-  }
-
-  protected override validate(context: IValidationContext): void {
-    this.setVariableType(this.createVariableType(context));
   }
 }

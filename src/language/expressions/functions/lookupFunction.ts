@@ -129,8 +129,8 @@ export class LookupFunction extends ExpressionFunction implements IHasNodeDepend
     }
 
     const conditionValueType = this.valueExpression.deriveType(context);
-    this.resultColumnTypeValue = resultColumnHeader.type.createVariableType(context);
-    this.searchValueColumnTypeValue = searchColumnHeader.type.createVariableType(context);
+    this.resultColumnTypeValue = resultColumnHeader.type.variableType;
+    this.searchValueColumnTypeValue = searchColumnHeader.type.variableType;
 
     if (conditionValueType == null || !conditionValueType.equals(this.searchValueColumnTypeValue)) {
       context.logger.fail(this.reference,
@@ -154,7 +154,7 @@ export class LookupFunction extends ExpressionFunction implements IHasNodeDepend
     let tableType = context.rootNodes.getTable(this.table);
     let resultColumnHeader = tableType?.header?.get(this.resultColumn);
 
-    const variableType = resultColumnHeader?.type.createVariableType(context);
+    const variableType = resultColumnHeader?.type.variableType;
     return !!variableType ? variableType : null;
   }
 }

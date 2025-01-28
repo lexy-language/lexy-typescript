@@ -16,60 +16,64 @@ export class TableHeader extends Node {
 
   public readonly nodeType = NodeType.TableHeader;
 
-   public get columns(): ReadonlyArray<ColumnHeader> {
-     return this.columnsValue;
-   }
+  public get columns(): ReadonlyArray<ColumnHeader> {
+    return this.columnsValue;
+  }
 
-   constructor(columns: ColumnHeader[], reference: SourceReference) {
-     super(reference);
-     this.columnsValue = columns;
-   }
+  constructor(columns: ColumnHeader[], reference: SourceReference) {
+    super(reference);
+    this.columnsValue = columns;
+  }
 
-   public static parse(context: IParseLineContext): TableHeader | null {
-     let index = 0;
-     let validator = context.validateTokens("TableHeader");
+  public static parse(context: IParseLineContext): TableHeader | null {
+    let index = 0;
+    let validator = context.validateTokens("TableHeader");
 
-     if (!validator.type<TableSeparatorToken>(index, TokenType.TableSeparatorToken).isValid) return null;
+    if (!validator.type<TableSeparatorToken>(index, TokenType.TableSeparatorToken).isValid) return null;
 
-     let headers = new Array<ColumnHeader>();
-     let tokens = context.line.tokens;
-     while (++index < tokens.length) {
-       if (!validator
-           .type<StringLiteralToken>(index, TokenType.StringLiteralToken)
-           .type<StringLiteralToken>(index + 1, TokenType.StringLiteralToken)
-           .type<TableSeparatorToken>(index + 2, TokenType.TableSeparatorToken)
-           .isValid)
-         return null;
+    let headers = new Array<ColumnHeader>();
+    let tokens = context.line.tokens;
+    while (++index < tokens.length) {
+      if (!validator
+        .type<StringLiteralToken>(index, TokenType.StringLiteralToken)
+        .type<StringLiteralToken>(index + 1, TokenType.StringLiteralToken)
+        .type<TableSeparatorToken>(index + 2, TokenType.TableSeparatorToken)
+        .isValid)
+        return null;
 
-       let typeName = tokens.tokenValue(index)
-       let name = tokens.tokenValue(++index);
-       let reference = context.line.tokenReference(index);
+      let typeName = tokens.tokenValue(index)
+      let name = tokens.tokenValue(++index);
+      let reference = context.line.tokenReference(index);
 
-       if (typeName == null || name == null) return null;
+      if (typeName == null || name == null) return null;
 
-       let header = ColumnHeader.parse(name, typeName, reference);
-       headers.push(header);
+      let header = ColumnHeader.parse(name, typeName, reference);
+      headers.push(header);
 
-       ++index;
-     }
+      ++index;
+    }
 
-     return new TableHeader(headers, context.line.lineStartReference());
-   }
+    return new TableHeader(headers, context.line.lineStartReference());
+  }
 
-   public override getChildren(): Array<INode> {
-     return [...this.columnsValue];
-   }
+  public override getChildren(): Array<INode> {
+    return [...this.columnsValue];
+  }
 
-   protected override validate(context: IValidationContext): void {
-   }
+  protected override validate(context: IValidationContext): void {
+  }
 
-   public get(memberAccess: MemberAccessLiteral): ColumnHeader | null {
-     let parts = memberAccess.parts;
-     if (parts.length < 2) return null;
-     let name = parts[1];
+  public get(memberAccess: MemberAccessLiteral): ColumnHeader | null {
+    let parts = memberAccess.parts;
+    if (parts.length < 2) return null;
+    let name = parts[1];
 
-     return this.getColumn(name);
-   }
+    return this.getColumn(name);
+  }
+
+  public getColumnByIndex(index: number) {
+    return index >= 0 && index < this.columns.length ? this.columns[index] : null;
+  }
 
   public getColumn(name: string) {
     return firstOrDefault(this.columnsValue, value => value.name == name);

@@ -183,17 +183,17 @@ export class Function extends RootNode implements IHasNodeDependencies {
   protected override validate(context: IValidationContext): void {
   }
 
-  public getParametersType(context: IValidationContext): ComplexType {
+  public getParametersType(): ComplexType {
     let members = this.parameters != null
-      ? this.parameters.variables.map(parameter => new ComplexTypeMember(parameter.name, parameter.type.createVariableType(context)))
+      ? this.parameters.variables.map(parameter => new ComplexTypeMember(parameter.name, parameter.type.variableType))
       : [];
 
     return new ComplexType(this.name.value, this, ComplexTypeSource.FunctionParameters, members);
   }
 
-  public getResultsType(context: IValidationContext): ComplexType {
+  public getResultsType(): ComplexType {
     let members = this.results != null
-      ? this.results.variables.map(parameter => new ComplexTypeMember(parameter.name, parameter.type.createVariableType(context)))
+      ? this.results.variables.map(parameter => new ComplexTypeMember(parameter.name, parameter.type.variableType))
       : [];
 
     return new ComplexType(this.name.value, this, ComplexTypeSource.FunctionResults, members);

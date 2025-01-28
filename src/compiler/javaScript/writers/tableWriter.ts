@@ -66,7 +66,7 @@ export class TableWriter implements IRootTokenWriter {
     for (const row of table.rows) {
       codeWriter.startLine("new " + rowName + "(")
       for (let rowIndex = 0; rowIndex < row.values.length; rowIndex++) {
-        const value = row.values[rowIndex];
+        const value = row.values[rowIndex].expression;
         renderValueExpression(value, codeWriter)
         if (rowIndex < row.values.length - 1) {
           codeWriter.write(",")

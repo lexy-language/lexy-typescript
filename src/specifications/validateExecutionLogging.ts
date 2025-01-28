@@ -1,10 +1,11 @@
-import {ExecutionLogEntry, LogVariable, LogVariables} from "../runTime/executionContext";
+import {LogVariable, LogVariables} from "../runTime/executionContext";
 import {ExecutionLog} from "../language/scenarios/executionLog";
 import {IAssignmentDefinition} from "../language/scenarios/IAssignmentDefinition";
 import {
   asComplexAssignmentDefinition,
 } from "../language/scenarios/complexAssignmentDefinition";
 import {asAssignmentDefinition} from "../language/scenarios/assignmentDefinition";
+import {ExecutionLogEntry} from "../runTime/executionLogEntry";
 
 function validateEntry(indent: number, actualEntry: ExecutionLogEntry | null, expectedEntry: ExecutionLog | null, errors: string[]) {
 
@@ -31,7 +32,7 @@ function validateEntry(indent: number, actualEntry: ExecutionLogEntry | null, ex
     }
   }
 
-  function validateVariable(index: number, actualValue: LogVariable, expectedVariable: IAssignmentDefinition) {
+  function validateVariable(actualValue: LogVariable, expectedVariable: IAssignmentDefinition) {
     function notEqual(expectedValue: any, actualValue: any) {
       if (expectedValue instanceof Date) {
         if (!(actualValue instanceof Date)) {
@@ -77,7 +78,7 @@ function validateEntry(indent: number, actualEntry: ExecutionLogEntry | null, ex
       if (actualVariable == null) {
         addLog(`${expectedVariable.reference} - Variable not found: '${name}'`);
       } else {
-        validateVariable(index, actualVariable, expectedVariable);
+        validateVariable(actualVariable, expectedVariable);
       }
     }
   }

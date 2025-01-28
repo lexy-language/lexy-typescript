@@ -1,21 +1,22 @@
 import {compileFunction} from "../compiler/compileFunction";
-import {ExecutionLogEntry} from "../../src/runTime/executionContext";
 import {ExecutableFunction} from "../../src/compiler/executableFunction";
+import {ExecutionLogEntry} from "../../src/runTime/executionLogEntry";
+import {LexyCodeConstants} from "../../dist/compiler/javaScript/lexyCodeConstants";
 
 describe('executionLogging', () => {
 
   function walkLogging(logging: ReadonlyArray<ExecutionLogEntry>, handler: (log: ExecutionLogEntry) => void) {
-    logging.forEach(log => {
+    for (const log of logging) {
       handler(log);
       walkLogging(log.entries, handler);
-    });
+    }
   }
 
   function expectNoTableValuesProperty(script: ExecutableFunction) {
     let result = script.run();
     walkLogging(result.logging, log => {
       console.log(JSON.stringify(log))
-      const table = log.readVariables["SimpleTable"];
+      const table = log.readVariables[LexyCodeConstants.valuesVariable];
       if (table != null) {
         const values = table["__values"];
         if (values != null) {

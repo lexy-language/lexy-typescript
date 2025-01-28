@@ -41,12 +41,12 @@ export class FunctionType extends TypeWithMembers {
   }
 
   private functionParametersType(context: IValidationContext): ComplexType | null {
-    const resultsType = context.rootNodes.getFunction(this.type)?.getParametersType(context);
+    const resultsType = context.rootNodes.getFunction(this.type)?.getParametersType();
     return !!resultsType ? resultsType : null;
   }
 
   private functionResultsType(context: IValidationContext): ComplexType | null {
-    const resultsType = context.rootNodes.getFunction(this.type)?.getResultsType(context);
+    const resultsType = context.rootNodes.getFunction(this.type)?.getResultsType();
     return !!resultsType ? resultsType : null;
   }
 }

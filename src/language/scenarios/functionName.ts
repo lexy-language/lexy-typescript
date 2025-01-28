@@ -6,7 +6,7 @@ import {isNullOrEmpty, isValidIdentifier} from "../../parser/tokens/character";
 import {NodeType} from "../nodeType";
 import {Assert} from "../../infrastructure/assert";
 
-export class ScenarioFunctionName extends Node {
+export class functionName extends Node {
 
   private valueValue: string | null = null;
 
@@ -25,13 +25,13 @@ export class ScenarioFunctionName extends Node {
     this.valueValue = name;
   }
 
-  public static parse(context: IParseLineContext, reference: SourceReference): ScenarioFunctionName | null {
+  public static parse(context: IParseLineContext, reference: SourceReference): functionName | null {
     const name = context.line.tokens.tokenValue(1);
     if (!name) {
       context.logger.fail(reference, "No function functionName found. Use 'Function:' for inline functions.")
       return null;
     }
-    return new ScenarioFunctionName(name, reference);
+    return new functionName(name, reference);
   }
 
   public override getChildren(): Array<INode> {

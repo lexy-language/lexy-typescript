@@ -56,7 +56,7 @@ export class FunctionWriter implements IRootTokenWriter {
 
     FunctionWriter.renderCode(functionNode, codeWriter);
 
-    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Results",  ${functionNode.results?.reference.lineNumber},${LexyCodeConstants.resultsVariable});`)
+    codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Results",  ${functionNode.results?.reference.lineNumber}, ${LexyCodeConstants.resultsVariable});`)
     codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.closeScope();`)
 
     codeWriter.writeLine(`return ${LexyCodeConstants.resultsVariable};`);

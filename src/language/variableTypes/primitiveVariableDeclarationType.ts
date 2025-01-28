@@ -32,14 +32,11 @@ export class PrimitiveVariableDeclarationType extends VariableDeclarationType {
     return this.type;
   }
 
-  public override createVariableType(context: IValidationContext): VariableType {
+  protected override createVariableType(context: IValidationContext): VariableType {
     return PrimitiveType.parse(this.type);
   }
 
   public override getChildren(): Array<INode> {
     return [];
-  }
-
-  protected override validate(context: IValidationContext): void {
   }
 }

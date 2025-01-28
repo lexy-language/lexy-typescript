@@ -24,10 +24,10 @@ describe('ParseTablesTests', () => {
     expect(table.header?.columns[1].name).toBe(`Result`);
     shouldBePrimitiveType(table.header?.columns[1].type, TypeNames.string);
     expect(table.rows.length).toBe(2);
-    validateNumericLiteralExpression(table.rows[0].values[0], 7);
-    validateQuotedLiteralExpression(table.rows[0].values[1], `Test quoted`);
-    validateNumericLiteralExpression(table.rows[1].values[0], 8);
-    validateQuotedLiteralExpression(table.rows[1].values[1], `Test`);
+    validateNumericLiteralExpression(table.rows[0].values[0].expression, 7);
+    validateQuotedLiteralExpression(table.rows[0].values[1].expression, `Test quoted`);
+    validateNumericLiteralExpression(table.rows[1].values[0].expression, 8);
+    validateQuotedLiteralExpression(table.rows[1].values[1].expression, `Test`);
   });
 
   it('testDateTimeAndBoolean', async () => {
@@ -45,9 +45,9 @@ describe('ParseTablesTests', () => {
     expect(table.header?.columns[1].name).toBe(`Result`);
     shouldBePrimitiveType(table.header?.columns[1].type, TypeNames.boolean);
     expect(table.rows.length).toBe(2);
-    validateDateTimeLiteralExpression(table.rows[0].values[0], `2024-12-18T17:07:45`);
-    validateBooleanLiteralExpression(table.rows[0].values[1], false);
-    validateDateTimeLiteralExpression(table.rows[1].values[0], `2024-12-18T17:08:12`);
-    validateBooleanLiteralExpression(table.rows[1].values[1], true);
+    validateDateTimeLiteralExpression(table.rows[0].values[0].expression, `2024-12-18T17:07:45`);
+    validateBooleanLiteralExpression(table.rows[0].values[1].expression, false);
+    validateDateTimeLiteralExpression(table.rows[1].values[0].expression, `2024-12-18T17:08:12`);
+    validateBooleanLiteralExpression(table.rows[1].values[1].expression, true);
   });
 });

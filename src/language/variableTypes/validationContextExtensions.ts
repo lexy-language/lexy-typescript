@@ -12,6 +12,8 @@ import {asLiteralExpression} from "../expressions/literalExpression";
 import {VariablePath} from "../variablePath";
 import {VariablePathParser} from "../scenarios/variablePathParser";
 import {VariableTypeName} from "./variableTypeName";
+import {instanceOfCustomType} from "./customType";
+import {instanceOfComplexType} from "./complexType";
 
 
 function validateCustomVariableType(context: IValidationContext,
@@ -19,11 +21,13 @@ function validateCustomVariableType(context: IValidationContext,
                                     customVariableDeclarationType: CustomVariableDeclarationType,
                                     defaultValueExpression: Expression | null) {
 
-  const variable = context.variableContext.createVariableReference(reference, VariablePathParser.parseString(customVariableDeclarationType.type), context);
+  const variablePathComplex = VariablePathParser.parseString(customVariableDeclarationType.type);
+  const variable = context.variableContext.createVariableReference(reference, variablePathComplex, context);
   let type = variable?.variableType;
-  if (type == null || (!instanceOfEnumType(type)
-    && type.variableTypeName != VariableTypeName.CustomType
-    && type.variableTypeName != VariableTypeName.ComplexType)) {
+  if (type == null ||
+    (!instanceOfEnumType(type)
+    && !instanceOfCustomType(type)
+    && !instanceOfComplexType(type))) {
     context.logger.fail(reference, `Unknown type: '${customVariableDeclarationType.type}'`);
     return;
   }

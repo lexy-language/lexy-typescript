@@ -4,8 +4,6 @@ import {SourceReference} from "../../parser/sourceReference";
 import {IValidationContext} from "../../parser/validationContext";
 import {INode} from "../node";
 import {NodeType} from "../nodeType";
-import {SwitchExpression} from "../expressions/switchExpression";
-
 
 export function instanceOfImplicitVariableDeclaration(object: any): boolean {
   return object?.nodeType == NodeType.ImplicitVariableDeclaration;
@@ -23,7 +21,7 @@ export class ImplicitVariableDeclaration extends VariableDeclarationType {
     super(reference);
   }
 
-  public override createVariableType(context: IValidationContext): VariableType {
+  protected override createVariableType(context: IValidationContext): VariableType {
     if (this.variableType == null) {
       throw new Error(`Not supported. Nodes should be Validated first.`)
     }
@@ -39,5 +37,6 @@ export class ImplicitVariableDeclaration extends VariableDeclarationType {
   }
 
   protected override validate(context: IValidationContext): void {
+    //suppress base validator
   }
 }

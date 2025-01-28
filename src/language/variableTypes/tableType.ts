@@ -45,7 +45,7 @@ export class TableType extends TypeWithMembers {
   }
 
   private tableRowType(context: IValidationContext): ComplexType | null {
-    let complexType = context.rootNodes.getTable(this.tableName)?.getRowType(context);
+    let complexType = context.rootNodes.getTable(this.tableName)?.getRowType();
     return !!complexType ? complexType : null;
   }
 }

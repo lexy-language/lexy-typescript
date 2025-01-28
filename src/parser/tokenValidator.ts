@@ -10,6 +10,7 @@ import {Token} from "./tokens/token";
 import {OperatorToken} from "./tokens/operatorToken";
 import {NumberLiteralToken} from "./tokens/numberLiteralToken";
 import {TokenType} from "./tokens/tokenType";
+import {SourceReference} from "./sourceReference";
 
 export class TokenValidator {
 
@@ -18,13 +19,9 @@ export class TokenValidator {
   private readonly parserName: string;
   private readonly tokens: TokenList;
 
-  private errorsExpected: boolean = false;
-
   public isValid: boolean
 
   constructor(parserName: string, line: Line, logger: IParserLogger) {
-    if (line.tokens == null) throw new Error("line and line.tokens should not be null.")
-
     this.parserName = parserName;
     this.logger = logger;
 
@@ -36,7 +33,7 @@ export class TokenValidator {
 
   public count(count: number): TokenValidator {
     if (this.tokens.length != count) {
-      this.fail(`Invalid number of tokens '${this.tokens.length}', should be '${this.count}'.`);
+      this.fail(0, `Invalid number of tokens '${this.tokens.length}', should be '${this.count}'.`);
       this.isValid = false;
     }
 
@@ -45,7 +42,7 @@ export class TokenValidator {
 
   public countMinimum(count: number): TokenValidator {
     if (this.tokens.length < count) {
-      this.fail(`Invalid number of tokens '${this.tokens.length}', should be at least '${this.count}'.`);
+      this.fail(0, `Invalid number of tokens '${this.tokens.length}', should be at least '${this.count}'.`);
       this.isValid = false;
     }
 
@@ -65,12 +62,12 @@ export class TokenValidator {
   }
 
   public operator(index: number, operatorType: OperatorType): TokenValidator {
-    if (!this.checkValidTokenIndex(index)) return this;
+    if (!this.checkValidTokenIndex(index, `${operatorType.toString()} operator`)) return this;
 
     this.type(index, TokenType.OperatorToken);
     const token = this.tokens.get(index) as OperatorToken;
     if (token?.type != operatorType) {
-      this.fail(`Invalid operator token {index} value. Expected: '${operatorType}' Actual: '${token?.type}'`);
+      this.fail(index, `Invalid operator token {index} value. Expected: '${operatorType}' Actual: '${token?.type}'`);
       this.isValid = false;
     }
 
@@ -91,7 +88,7 @@ export class TokenValidator {
   public quotedString(index: number, literal: string | null = null): TokenValidator {
     const token = this.validateType<QuotedLiteralToken>(index, TokenType.QuotedLiteralToken);
     if (token != null && literal != null && token.value != literal) {
-      this.fail(`Invalid token ${index} value. Expected: '${literal}' Actual: '${token?.value}'`);
+      this.fail(index, `Invalid token ${index} value. Expected: '${literal}' Actual: '${token?.value}'`);
       this.isValid = false;
     }
     return this;
@@ -100,7 +97,7 @@ export class TokenValidator {
   public numberLiteral(index: number, value: number | null = null): TokenValidator {
     let token = this.validateType<NumberLiteralToken>(index, TokenType.NumberLiteralToken);
     if (token != null && value != null && token.numberValue != value) {
-      this.fail(`Invalid token ${index} value. Expected: '${value}' Actual: '${token.value}'`);
+      this.fail(index,`Invalid token ${index} value. Expected: '${value}' Actual: '${token.value}'`);
       this.isValid = false;
     }
 
@@ -110,7 +107,7 @@ export class TokenValidator {
   public boolean(index: number, value: boolean): TokenValidator {
     const token = this.validateType<BooleanLiteral>(index, TokenType.BooleanLiteral);
     if (token != null && token.booleanValue != value) {
-      this.fail(`Invalid token ${index} value. Expected: '${value}' Actual: '${token.value}'`);
+      this.fail(index, `Invalid token ${index} value. Expected: '${value}' Actual: '${token.value}'`);
       this.isValid = false;
     }
 
@@ -121,7 +118,7 @@ export class TokenValidator {
     let token = this.validateType<DateTimeLiteral>(index, TokenType.DateTimeLiteral);
     let expected = new Date(year, month-1, day, hours, minutes, seconds);
     if (token != null && token.dateTimeValue != null && token.dateTimeValue.getTime() != expected.getTime()) {
-      this.fail(`Invalid token value at ${index}. Expected: '${expected.toISOString()}' Actual: '${token.dateTimeValue.toISOString()}'`);
+      this.fail(index, `Invalid token value at ${index}. Expected: '${expected.toISOString()}' Actual: '${token.dateTimeValue.toISOString()}'`);
       this.isValid = false;
     }
 
@@ -134,12 +131,12 @@ export class TokenValidator {
   }
 
   public isLiteralToken(index: number): TokenValidator {
-    if (!this.checkValidTokenIndex(index)) return this;
+    if (!this.checkValidTokenIndex(index, "LiteralToken")) return this;
 
     let token = this.tokens.get(index);
     let literalToken = token.tokenIsLiteral ? token as unknown as ILiteralToken : null;
     if (literalToken == null) {
-      this.fail(`Invalid token type as ${index}. Expected: 'ILiteralToken' Actual: '${this.tokens.get(index)?.tokenType}'`);
+      this.fail(index, `Invalid token type as ${index}. Expected: 'ILiteralToken' Actual: '${this.tokens.get(index)?.tokenType}'`);
       this.isValid = false;
 
       return this;
@@ -148,11 +145,11 @@ export class TokenValidator {
   }
 
   private validateType<T>(index: number, tokenType: TokenType): T | null {
-    if (!this.checkValidTokenIndex(index)) return null;
+    if (!this.checkValidTokenIndex(index, tokenType.toString())) return null;
 
     let token = this.tokens.get(index);
     if (token.tokenType != tokenType) {
-      this.fail(`Invalid token ${index} type. Expected: '${tokenType}' Actual: '${token.tokenType}(${token.value})'`);
+      this.fail(index, `Invalid token. Expected: '${tokenType}' Actual: '${token.tokenType}(${token.value})'`);
       this.isValid = false;
 
       return null;
@@ -162,35 +159,35 @@ export class TokenValidator {
   }
 
   public value(index: number, expectedValue: string): TokenValidator {
-    if (!this.checkValidTokenIndex(index)) return this;
+    if (!this.checkValidTokenIndex(index, '')) return this;
 
     const token = this.tokens.get(index);
     if (token.value != expectedValue) {
-      this.fail(`Invalid token value as ${index}. Expected: '${expectedValue}' Actual: '${token.value}'`);
+      this.fail(index, `Invalid token value as ${index}. Expected: '${expectedValue}' Actual: '${token.value}'`);
       this.isValid = false;
     }
 
     return this;
   }
 
-  private checkValidTokenIndex(index: number): boolean {
+  private checkValidTokenIndex(index: number, name: string): boolean {
     if (index < this.tokens.length) return true;
 
-    this.fail(`Token expected at '${index}' but not found. Length: '${this.tokens.length}'`);
+    this.failReference(this.line.lineEndReference(), `Token expected: '${name}'`);
     this.isValid = false;
 
     return false;
   }
 
-  private fail(error: string) {
-    this.logger.fail(this.line.lineStartReference(), `(${this.parserName}) ${error}`);
+  private failReference(reference: SourceReference, error: string) {
+    this.logger.fail(reference, `(${this.parserName}) ${error}`);
+  }
+
+  private fail(index: number, error: string) {
+    this.logger.fail(this.line.tokenReference(index), `(${this.parserName}) ${error}`);
   }
 
   public assert() {
-    if (!this.errorsExpected && this.logger.hasErrors()) {
-      throw new Error(this.logger.formatMessages());
-    }
-
     if (!this.isValid) throw new Error(this.logger.formatMessages());
   }
 }

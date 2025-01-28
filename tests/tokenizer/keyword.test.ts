@@ -17,9 +17,9 @@ describe('KeywordTests', () => {
   });
 
   it('TestExpectErrorKeywordWithQuotedLiteral', async () => {
-    tokenize("  ExpectError \"Invalid token 'Paraeters'\"")
+    tokenize("  ExpectErrors \"Invalid token 'Paraeters'\"")
       .count(2)
-      .keyword(0, "ExpectError")
+      .keyword(0, "ExpectErrors")
       .quotedString(1, "Invalid token 'Paraeters'")
       .assert();
   });

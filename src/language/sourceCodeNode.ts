@@ -76,7 +76,7 @@ export class SourceCodeNode extends RootNode {
       case Keywords.ScenarioKeyword:
         return Scenario.parse(tokenName.name, reference);
       case Keywords.TableKeyword:
-        return Table.parse(tokenName.name, reference);
+        return new Table(tokenName.name, reference);
       case Keywords.TypeKeyword:
         return TypeDefinition.parse(tokenName.name, reference);
       default:
@@ -90,7 +90,27 @@ export class SourceCodeNode extends RootNode {
   }
 
   public override getChildren(): Array<INode> {
-    return this.rootNodes.asArray();
+    return this.rootNodes.asArray().sort(this.sortNode);
+  }
+
+  private sortNode(left: IRootNode, right: IRootNode) {
+    return SourceCodeNode.nodeImportance(left) < SourceCodeNode.nodeImportance(right) ? -1 : 1;
+  }
+
+  private static nodeImportance(rootNode: IRootNode): number {
+    switch (rootNode.nodeType) {
+      case NodeType.EnumDefinition:
+        return 0;
+      case NodeType.Table:
+      case NodeType.TypeDefinition:
+        return 1;
+      case NodeType.Function:
+        return 2;
+      case NodeType.Scenario:
+        return 3;
+      default:
+        return 0;
+    }
   }
 
   protected override validate(context: IValidationContext): void {

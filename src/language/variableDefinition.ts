@@ -104,7 +104,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
   }
 
   protected override validate(context: IValidationContext): void {
-    this.variableTypeValue = this.type.createVariableType(context);
+    this.variableTypeValue = this.type.variableType;
 
     context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, this.variableTypeValue, this.source);
 

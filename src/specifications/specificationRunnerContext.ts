@@ -5,16 +5,15 @@ import type {ILogger} from "../infrastructure/logger";
 import {Scenario} from "../language/scenarios/scenario";
 import {format} from "../infrastructure/formatting";
 import {BuiltInDateFunctions} from "../runTime/builtInDateFunctions";
-import {IRootNode} from "../language/rootNode";
-import {SourceReference} from "../parser/sourceReference";
-import {ExecutionLogEntry} from "../runTime/executionContext";
+import {ExecutionLogEntry} from "../runTime/executionLogEntry";
+import {SpecificationsLogEntry} from "./specificationsLogEntry";
 
 export interface ISpecificationRunnerContext {
   failed: number;
   fileRunners: ReadonlyArray<ISpecificationFileRunner>;
   logEntries: ReadonlyArray<SpecificationsLogEntry>;
 
-  fail(scenario: Scenario, message: string, errors: Array<string> | null): void;
+  fail(scenario: Scenario, message: string, errors: ReadonlyArray<string> | null): void;
 
   success(scenario: Scenario, logging: ReadonlyArray<ExecutionLogEntry> | null): void;
 
@@ -29,42 +28,17 @@ export interface ISpecificationRunnerContext {
   formatGlobalLog(): string;
 }
 
-export class SpecificationsLogEntry {
-  public readonly node: IRootNode | null;
-  public readonly reference: SourceReference | null;
-  public readonly isError: boolean;
-  public readonly message: string;
-  public readonly errors: Array<string> | null;
-  public readonly executionLogging: ReadonlyArray<ExecutionLogEntry> | null;
-
-  constructor(reference: SourceReference | null, node: IRootNode | null, isError: boolean, message: string,
-              errors: Array<string> | null = null, executionLogging: ReadonlyArray<ExecutionLogEntry> | null = null) {
-    this.reference = reference;
-    this.node = node;
-    this.isError = isError;
-    this.message = message;
-    this.errors = errors;
-    this.executionLogging = executionLogging;
-  }
-
-  public toString(): string {
-    return this.errors == null
-      ? this.message
-      : this.message + '\n' + this.errors?.join("\n");
-  }
-}
-
 export class SpecificationRunnerContext implements ISpecificationRunnerContext {
 
   private readonly fileRunnersValue: Array<ISpecificationFileRunner> = [];
   private readonly logger: ILogger;
   private readonly startTimestamp: Date;
 
-  private globalLog: Array<SpecificationsLogEntry> = [];
+  private logEntriesValue: Array<SpecificationsLogEntry> = [];
   private failedValues = 0;
 
   public get logEntries(): ReadonlyArray<SpecificationsLogEntry> {
-    return this.globalLog;
+    return this.logEntriesValue;
   }
 
   constructor(logger: ILogger) {
@@ -84,7 +58,7 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
     this.failedValues++;
 
     const entry = new SpecificationsLogEntry(scenario.reference, scenario, true, `FAILED - ${scenario.name}: ${message}`, errors);
-    this.globalLog.push(entry)
+    this.logEntriesValue.push(entry)
     this.logger.logError(`- FAILED - ${scenario.name}: ${message}`);
     if (errors != null) {
       errors.forEach(message => this.logger.logInformation(`  ${message}`));
@@ -93,7 +67,7 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
 
   public logGlobal(message: string): void {
     const entry = new SpecificationsLogEntry(null, null, false, message);
-    this.globalLog.push(entry)
+    this.logEntriesValue.push(entry)
     this.logger.logInformation(message);
   }
 
@@ -103,13 +77,13 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
     const message = `Time: ${difference} milliseconds`;
 
     const entry = new SpecificationsLogEntry(null, null, false, message);
-    this.globalLog.push(entry)
+    this.logEntriesValue.push(entry)
     this.logger.logInformation(message);
   }
 
   public success(scenario: Scenario, logging: ReadonlyArray<ExecutionLogEntry> | null = null): void {
     const entry = new SpecificationsLogEntry(scenario.reference, scenario, false, `SUCCESS - ${scenario.name}`, null, logging);
-    this.globalLog.push(entry);
+    this.logEntriesValue.push(entry);
     this.logger.logInformation(`- SUCCESS - ${scenario.name}`);
   }
 
@@ -133,6 +107,6 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
   }
 
   public formatGlobalLog(): string {
-    return format(this.globalLog, 2);
+    return format(this.logEntriesValue, 2);
   }
 }

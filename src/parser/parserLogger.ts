@@ -30,8 +30,6 @@ export class LogEntry {
 
 export interface IParserLogger {
 
-  get entries(): LogEntry[];
-
   logInfo(message: string): void;
   log(reference: SourceReference, message: string): void;
 
@@ -63,10 +61,6 @@ export class ParserLogger implements IParserLogger {
 
   private currentNode: IRootNode | null = null;
   private failedMessages: number = 0;
-
-  public get entries(): LogEntry[] {
-    return this.logEntries.sort(this.sortEntry);
-  }
 
   constructor(logger: ILogger) {
     this.logger = logger;

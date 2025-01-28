@@ -38,7 +38,7 @@ export class CustomType extends TypeWithMembers {
 
   public override memberType(name: string, context: IValidationContext): VariableType | null {
     const definition = firstOrDefault(this.typeDefinition.variables, variable => variable.name == name);
-    const variableType = definition?.type.createVariableType(context);
+    const variableType = definition?.type.variableType;
     return variableType ? variableType : null;
   }
 

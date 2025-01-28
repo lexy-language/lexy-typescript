@@ -4,6 +4,7 @@ dist/
 /build/
 /dist/
 .DS_Store
+*.tgz
 
 bin/
 obj/

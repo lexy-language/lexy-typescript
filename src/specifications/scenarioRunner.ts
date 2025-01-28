@@ -1,6 +1,7 @@
 import type {ILexyCompiler} from "../compiler/lexyCompiler";
 import type {IParserLogger} from "../parser/parserLogger";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
+import type {IRootNode} from "../language/rootNode";
 
 import {CompilerResult} from "../compiler/compilerResult";
 import {Function} from "../language/functions/function";
@@ -11,13 +12,12 @@ import {FunctionResult} from "../runTime/functionResult";
 import {any, firstOrDefault} from "../infrastructure/enumerableExtensions";
 import {Parameters} from "../language/scenarios/parameters";
 import {FunctionParameters} from "../language/functions/functionParameters";
-import {IRootNode} from "../language/rootNode";
 import {ExecutableFunction} from "../compiler/executableFunction";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {Assert} from "../infrastructure/assert";
 import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
 import validateExecutionLogging from "./validateExecutionLogging";
-import {ExecutionLogEntry} from "../runTime/executionContext";
+import StringArrayBuilder from "../infrastructure/stringArrayBuilder";
 
 export interface IScenarioRunner {
   failed: boolean;
@@ -123,7 +123,7 @@ export class ScenarioRunner implements IScenarioRunner {
     return `------- Filename: ${this.fileName}\n${format(this.parserLogger.errorMessages(), 2)}`;
   }
 
-  private fail(message: string, errors: string[] | null = null): void {
+  private fail(message: string, errors: ReadonlyArray<string> | null = null): void {
     this.failedValue = true;
     this.context.fail(this.scenario, message, errors);
   }
@@ -169,22 +169,26 @@ export class ScenarioRunner implements IScenarioRunner {
     const dependencies = DependencyGraphFactory.nodeAndDependencies(this.rootNodeList, node);
     const failedMessages = this.parserLogger.errorNodesMessages(dependencies);
 
-    if (failedMessages.length > 0 && !this.scenario.expectError?.hasValue) {
+    if (failedMessages.length > 0 && !this.scenario.expectErrors?.hasValues) {
       this.fail(`Parsing errors: ${failedMessages.length}`, failedMessages);
       return false;
     }
 
-    if (!this.scenario.expectError?.hasValue) return true;
+    if (!this.scenario.expectErrors || !this.scenario.expectErrors.hasValues) {
+      return true;
+    }
 
     if (failedMessages.length == 0) {
-      this.fail(`Error expected: ${this.scenario.expectError.message}`, []);
+      this.fail(`No errors but errors expected:`, this.scenario.expectErrors.messages);
       return false;
     }
 
-    if (!any(failedMessages, message => this.scenario.expectError?.hasValue == true && message.includes(this.scenario.expectError.message))) {
-      this.fail(`Wrong error occurred.`, [
-        "Expected: " + this.scenario.expectError.message,
-        "Actual: ", ...failedMessages]);
+    if (any(this.scenario.expectErrors.messages, message =>
+      !any(failedMessages, failedMessage => failedMessage.includes(message)))) {
+
+      this.fail(`Wrong error occurred.`, StringArrayBuilder
+        .new("Expected:").list(this.scenario.expectErrors.messages)
+        .add("Actual:").list(failedMessages).array());
       return false;
     }
 
@@ -196,8 +200,9 @@ export class ScenarioRunner implements IScenarioRunner {
     const expected = this.scenario.expectRootErrors != null ? this.scenario.expectRootErrors?.messages : [];
     let failedMessages = this.parserLogger.errorMessages();
     if (!any(failedMessages)) {
-      this.fail(`Root errors expected. No errors occurred.`, [
-        "Expected:", ...expected]);
+      this.fail(`Root errors expected. No errors occurred.`, StringArrayBuilder
+        .new("Expected:").list(expected)
+        .array());
       return false;
     }
 
@@ -218,9 +223,10 @@ export class ScenarioRunner implements IScenarioRunner {
       return false; // don't compile and run rest of scenario
     }
 
-    this.fail(`Wrong error(s) occurred.`, [
-        "Expected:", ...expected,
-        "Actual:", ...this.parserLogger.errorMessages()]);
+    this.fail(`Wrong error(s) occurred.`, StringArrayBuilder
+      .new("Expected:").list(expected)
+      .add("Actual:").list(this.parserLogger.errorMessages())
+      .array());
     return false;
   }
 
@@ -295,9 +301,10 @@ export class ScenarioRunner implements IScenarioRunner {
     }
 
     if (failedErrors.length > 0) {
-      this.fail(`Execution error not found`, [
-        'Not found:', ...expected,
-        'Actual:', ...errorMessage]);
+      this.fail(`Execution error not found`, StringArrayBuilder
+        .new('Not found:').list(expected)
+        .add('Actual:').add(errorMessage, 2)
+        .array());
     }
 
     return true;

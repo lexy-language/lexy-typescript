@@ -8,12 +8,11 @@ import {IRootNode, RootNode} from "../rootNode";
 import {ScenarioName} from "./scenarioName";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {Table} from "../tables/table";
-import {ExpectError} from "./expectError";
+import {ExpectErrors} from "./expectErrors";
 import {ExpectRootErrors} from "./expectRootErrors";
-import {ScenarioTable} from "./scenarioTable";
 import {Results} from "./results";
 import {Parameters} from "./parameters";
-import {ScenarioFunctionName} from "./scenarioFunctionName";
+import {functionName} from "./functionName";
 import {SourceReference} from "../../parser/sourceReference";
 import {NodeName} from "../../parser/nodeName";
 import {KeywordToken} from "../../parser/tokens/keywordToken";
@@ -41,13 +40,13 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
   private enumValue: EnumDefinition | null = null;
   private tableValue: Table | null = null;
 
-  private functionNameValue: ScenarioFunctionName | null = null;
+  private functionNameValue: functionName | null = null;
   private parametersValue: Parameters | null = null;
   private resultsValue: Results | null = null;
-  private validationTableValue: ScenarioTable | null = null;
+  private validationTableValue: Table | null = null;
   private executionLoggingValue: ExecutionLogging | null = null;
 
-  private expectErrorValue: ExpectError | null = null;
+  private expectErrorsValue: ExpectErrors | null = null;
   private expectRootErrorsValue: ExpectRootErrors | null = null;
   private expectExecutionErrorsValue: ExpectExecutionErrors | null = null;
 
@@ -55,7 +54,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
   public readonly hasNodeDependencies = true;
   public readonly name: ScenarioName;
 
-  public get functionName(): ScenarioFunctionName | null {
+  public get functionName(): functionName | null {
     return this.functionNameValue;
   }
 
@@ -83,12 +82,12 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     return this.tableValue;
   }
 
-  public get validationTable(): ScenarioTable | null {
+  public get validationTable(): Table | null {
     return this.validationTableValue;
   }
 
-  public get expectError(): ExpectError | null {
-    return this.expectErrorValue;
+  public get expectErrors(): ExpectErrors | null {
+    return this.expectErrorsValue;
   }
 
   public get expectRootErrors(): ExpectRootErrors | null {
@@ -131,22 +130,21 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
 
       case Keywords.Function:
         if (this.functionNameValue == null) {
-          this.functionNameValue = ScenarioFunctionName.parse(context, reference)
+          this.functionNameValue = functionName.parse(context, reference)
         }
         return this.resetRootNode(context, this);
       case Keywords.Parameters:
         return this.resetRootNode(context, this.parametersValue, () => this.parametersValue = new Parameters(reference));
       case Keywords.Results:
         return this.resetRootNode(context, this.resultsValue, () => this.resultsValue = new Results(reference));
+      case Keywords.ValidationTable:
+        return this.parseValidationTable(context, reference);
+
       case Keywords.ExecutionLogging:
         return this.resetRootNode(context, this.executionLogging, () => this.executionLoggingValue = new ExecutionLogging(reference));
-      case Keywords.ValidationTable:
-        return this.resetRootNode(context, this.validationTableValue, () => this.validationTableValue = new ScenarioTable(reference));
-      case Keywords.ExpectError:
-        if (this.expectErrorValue == null) {
-          this.expectErrorValue = ExpectError.parse(context, reference)
-        }
-        return this.resetRootNode(context, this);
+
+      case Keywords.ExpectErrors:
+        return this.resetRootNode(context, this.expectErrorsValue, () => this.expectErrorsValue = new ExpectErrors(reference));
       case Keywords.ExpectRootErrors:
         return this.resetRootNode(context, this.expectRootErrorsValue, () => this.expectRootErrorsValue = new ExpectRootErrors(reference));
       case Keywords.ExpectExecutionErrors:
@@ -202,16 +200,34 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
 
   private parseTable(context: IParseLineContext, reference: SourceReference): IParsableNode {
     if (this.tableValue != null) {
-      context.logger.fail(reference, `Duplicated inline Enum '${this.nodeName}'.`);
+      context.logger.fail(reference, `Duplicated inline table '${this.nodeName}'.`);
       return this.tableValue;
     }
 
     let tokenName = NodeName.parse(context);
     if (tokenName == null || tokenName.name == null) return this;
 
-    this.tableValue = Table.parse(tokenName.name, reference);
+    this.tableValue = new Table(tokenName.name, reference);
     context.logger.setCurrentNode(this.tableValue);
     return this.tableValue;
+  }
+
+  private parseValidationTable(context: IParseLineContext, reference: SourceReference): IParsableNode {
+    if (this.validationTableValue != null) {
+      context.logger.fail(reference, `Duplicated validation table '${this.nodeName}'.`);
+      return this.validationTableValue;
+    }
+
+    let tokenName = NodeName.parse(context);
+    if (tokenName != null && tokenName.name != null) {
+      context.logger.fail(context.line.tokenReference(1),
+        `Unexpected table name. 'ValidationTable' should not have a name: '${tokenName.name}'`);
+    }
+
+    const tableName = this.name?.value != null ? this.name?.value + Keywords.ValidationTable : Keywords.ValidationTable;
+    this.validationTableValue = new Table(tableName, reference);
+    context.logger.setCurrentNode(this.validationTableValue);
+    return this.validationTableValue;
   }
 
   private invalidToken(context: IParseLineContext, name: string | null, reference: SourceReference): IParsableNode {
@@ -229,7 +245,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     if (this.parameters != null) result.push(this.parameters);
     if (this.results != null) result.push(this.results);
     if (this.validationTable != null) result.push(this.validationTable);
-    if (this.expectError != null) result.push(this.expectError);
+    if (this.expectErrors != null) result.push(this.expectErrors);
     if (this.expectRootErrors != null) result.push(this.expectRootErrors);
     return result;
   }
@@ -267,7 +283,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
 
     if (definitions == null) return;
     for (const definition of definitions) {
-      let variableType = definition.type.createVariableType(context);
+      let variableType = definition.type.variableType;
       if (variableType == null) continue;
       context.variableContext.addVariable(definition.name, variableType, source);
     }

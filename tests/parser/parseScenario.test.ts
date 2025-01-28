@@ -158,7 +158,8 @@ describe('ParseScenarioTests', () => {
     number Result
    Code
     Result = 123A
-  ExpectError "Invalid token at 18: Invalid number token character: A"`;
+  ExpectErrors 
+    "Invalid token at 18: Invalid number token character: A"`;
 
     let {scenario, logger} = parseScenario(code);
 
@@ -167,7 +168,7 @@ describe('ParseScenarioTests', () => {
     expect(logger.nodeHasErrors(scenario.functionNode)).toBe(true);
 
     expect(scenario.functionNode).not.toBeNull();
-    expect(scenario.expectError).not.toBeNull();
+    expect(scenario.expectErrors).not.toBeNull();
   });
 
   it('scenarioWithInlineFunctionShouldNotHaveAfunctionNameAfterKeywords', async () => {

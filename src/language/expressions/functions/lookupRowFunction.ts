@@ -105,7 +105,7 @@ export class LookupRowFunction extends ExpressionFunction implements IHasNodeDep
     }
 
     let conditionValueType = this.valueExpression.deriveType(context);
-    this.searchValueColumnTypeValue = searchColumnHeader.type.createVariableType(context);
+    this.searchValueColumnTypeValue = searchColumnHeader.type.variableType;
 
     if (conditionValueType == null || !conditionValueType.equals(this.searchValueColumnType)) {
       context.logger.fail(this.reference,
@@ -125,7 +125,7 @@ export class LookupRowFunction extends ExpressionFunction implements IHasNodeDep
 
   public override deriveReturnType(context: IValidationContext): VariableType | null {
     let tableType = context.rootNodes.getTable(this.table);
-    const rowTypeValue = tableType?.getRowType(context);
+    const rowTypeValue = tableType?.getRowType();
     return !!rowTypeValue ? rowTypeValue : null;
   }
 }

@@ -26,7 +26,7 @@ export class Keywords {
   public static readonly ExecutionLogging = "ExecutionLogging";
   public static readonly ExecutionLog = "Log";
   public static readonly Code = "Code";
-  public static readonly ExpectError = "ExpectError";
+  public static readonly ExpectErrors = "ExpectErrors";
   public static readonly ExpectRootErrors = "ExpectRootErrors";
   public static readonly ExpectExecutionErrors = "ExpectExecutionErrors";
 
@@ -55,7 +55,7 @@ export class Keywords {
     Keywords.Code,
     Keywords.ExecutionLogging,
     Keywords.ExecutionLog,
-    Keywords.ExpectError,
+    Keywords.ExpectErrors,
     Keywords.ExpectRootErrors,
     Keywords.ExpectExecutionErrors,
     Keywords.ImplicitVariableDeclaration

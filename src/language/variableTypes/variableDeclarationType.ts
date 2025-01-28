@@ -19,5 +19,9 @@ export abstract class VariableDeclarationType extends Node {
     this.variableTypeValue = value;
   }
 
-  public abstract createVariableType(context: IValidationContext): VariableType | null;
+  protected abstract createVariableType(context: IValidationContext): VariableType | null;
+
+  protected override validate(context: IValidationContext): void {
+    this.variableTypeValue = this.createVariableType(context);
+  }
 }

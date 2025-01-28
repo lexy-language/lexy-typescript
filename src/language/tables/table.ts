@@ -22,13 +22,16 @@ export function asTable(object: any): Table | null {
 
 export class Table extends RootNode {
 
+  private invalidHeader: boolean = false;
+
+  private rowsValue: Array<TableRow> = [];
+  private headerValue: TableHeader | null = null;
+
+
   public static readonly rowName: string = `Row`;
 
   public readonly nodeType = NodeType.Table;
   public readonly name: TableName = new TableName();
-
-  private rowsValue: Array<TableRow> = [];
-  private headerValue: TableHeader | null = null;
 
   public get header(): TableHeader | null {
     return this.headerValue;
@@ -47,25 +50,22 @@ export class Table extends RootNode {
     this.name.parseName(name);
   }
 
-  public static parse(name: string, reference: SourceReference): Table {
-    return new Table(name, reference);
-  }
-
   public override parse(context: IParseLineContext): IParsableNode {
-    if (this.isFirstLine()) {
+    if (this.invalidHeader) return this;
+
+    if (this.headerValue == null) {
       this.headerValue = TableHeader.parse(context);
+      if (this.headerValue == null){
+        this.invalidHeader = true;
+      }
       return this;
     }
 
-    const tableRow = TableRow.parse(context);
+    const tableRow = TableRow.parse(context, this.headerValue);
     if (tableRow != null) {
       this.rows.push(tableRow);
     }
     return this;
-  }
-
-  private isFirstLine(): boolean {
-    return this.header == null;
   }
 
   public override getChildren(): Array<INode> {
@@ -77,6 +77,9 @@ export class Table extends RootNode {
   }
 
   protected override validate(context: IValidationContext): void {
+    if (this.header == null) {
+      context.logger.fail(this.reference, "No table header found.");
+    }
   }
 
   public override validateTree(context: IValidationContext): void {
@@ -88,10 +91,10 @@ export class Table extends RootNode {
     }
   }
 
-  public getRowType(context: IValidationContext): ComplexType {
+  public getRowType(): ComplexType {
     if (this.header == null) throw new Error("Header not set.");
     const members = this.header.columns.map(column => {
-      const type = column.type.createVariableType(context);
+      const type = column.type.variableType;
       return new ComplexTypeMember(column.name, type)
     });
 

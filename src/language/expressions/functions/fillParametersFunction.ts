@@ -111,10 +111,10 @@ export class FillParametersFunction extends ExpressionFunction implements IHasNo
     if (functionValue == null) return null;
 
     if (this.typeLiteral.member == Function.parameterName) {
-      return functionValue.getParametersType(context);
+      return functionValue.getParametersType();
     }
     if (this.typeLiteral.member == Function.resultsName) {
-      return functionValue.getResultsType(context);
+      return functionValue.getResultsType();
     }
     return null;
   }

@@ -1,5 +1,5 @@
 import {VariablePath} from "../language/variablePath";
-import {ExecutionLogEntry} from "./executionContext";
+import {ExecutionLogEntry} from "./executionLogEntry";
 
 export type ResultsValue = Date | string | number | boolean | ResultsType;
 export type ResultsType = { [key: string]: ResultsValue };
@@ -16,9 +16,9 @@ export class FunctionResult {
     return this.loggingValue;
   }
 
-  constructor(valueObject: ResultsType, logEntries: ReadonlyArray<ExecutionLogEntry>) {
+  constructor(valueObject: ResultsType, logging: ReadonlyArray<ExecutionLogEntry>) {
     this.valueObject = valueObject;
-    this.loggingValue = logEntries;
+    this.loggingValue = logging;
   }
 
   public number(name: string): number {

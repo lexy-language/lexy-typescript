@@ -85,17 +85,17 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
     }
 
     if (this.argumentValues.length == 0) {
-      FillParametersFunction.getMapping(this.reference, context, functionNode.getParametersType(context),this.mappingParametersValue);
-      ExtractResultsFunction.getMapping(this.reference, context, functionNode.getResultsType(context), this.mappingResultsValue);
+      FillParametersFunction.getMapping(this.reference, context, functionNode.getParametersType(),this.mappingParametersValue);
+      ExtractResultsFunction.getMapping(this.reference, context, functionNode.getResultsType(), this.mappingResultsValue);
 
-      this.functionParametersTypeValue = functionNode.getParametersType(context);
-      this.functionResultsTypeValue = functionNode.getResultsType(context);
+      this.functionParametersTypeValue = functionNode.getParametersType();
+      this.functionResultsTypeValue = functionNode.getResultsType();
 
       return;
     }
 
     let argumentType = this.argumentValues[0].deriveType(context);
-    let parametersType = functionNode.getParametersType(context);
+    let parametersType = functionNode.getParametersType();
 
     if (argumentType == null || !argumentType.equals(parametersType)) {
       context.logger.fail(this.reference, `Invalid function argument: '${this.functionName}'. ` +
@@ -109,7 +109,7 @@ export class LexyFunction extends ExpressionFunction implements IHasNodeDependen
   public override deriveReturnType(context: IValidationContext): VariableType | null {
     const functionNode = context.rootNodes.getFunction(this.functionName);
     if (functionNode == null) return null;
-    return functionNode.getResultsType(context);
+    return functionNode.getResultsType();
   }
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {

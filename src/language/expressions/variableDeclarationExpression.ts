@@ -129,7 +129,7 @@ export class VariableDeclarationExpression extends Expression {
       return assignmentType;
     }
 
-    let variableType = this.type.createVariableType(context);
+    let variableType = this.type.variableType;
     if (this.assignment != null && !assignmentType?.equals(variableType)) {
       context.logger.fail(this.reference, `Invalid expression. Literal or enum value expression expected.`);
     }
