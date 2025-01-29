@@ -10,8 +10,8 @@ import {Expression} from "../expression";
 import {
   newParseFunctionCallExpressionsFailed,
   newParseFunctionCallExpressionsSuccess,
-  ParseFunctionCallExpressionsResult
-} from "../parseFunctionCallExpressionsResult";
+  ParseFunctionCallExpressionResult
+} from "../parseFunctionCallExpressionResult";
 import {asIdentifierExpression} from "../identifierExpression";
 import {asMemberAccessExpression} from "../memberAccessExpression";
 import {NodeType} from "../../nodeType";
@@ -57,7 +57,7 @@ export class LookupRowFunction extends FunctionCallExpression implements IHasNod
   }
 
   public static create(name: string, source: ExpressionSource,
-                      argumentValues: Array<Expression>): ParseFunctionCallExpressionsResult {
+                      argumentValues: Array<Expression>): ParseFunctionCallExpressionResult {
     if (argumentValues.length != argumentsNumber) {
       return newParseFunctionCallExpressionsFailed(`Invalid number of arguments. ${functionHelp}`);
     }

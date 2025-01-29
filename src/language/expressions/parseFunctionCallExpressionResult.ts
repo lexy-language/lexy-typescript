@@ -24,4 +24,4 @@ export function newParseFunctionCallExpressionsSuccess(result: FunctionCallExpre
   } as const;
 }
 
-export type ParseFunctionCallExpressionsResult = ParseFunctionCallExpressionsFailed | ParseFunctionCallExpressionsSuccess;
+export type ParseFunctionCallExpressionResult = ParseFunctionCallExpressionsFailed | ParseFunctionCallExpressionsSuccess;

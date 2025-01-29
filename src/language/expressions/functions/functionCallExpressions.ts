@@ -28,13 +28,13 @@ import {FunctionCallExpression} from "./functionCallExpression";
 import {
   newParseFunctionCallExpressionsFailed,
   newParseFunctionCallExpressionsSuccess,
-  ParseFunctionCallExpressionsResult
-} from "../parseFunctionCallExpressionsResult";
+  ParseFunctionCallExpressionResult
+} from "../parseFunctionparseFunctionCallExpressionResultCallExpressionResult";
 
 export class FunctionCallExpressions {
   private static readonly values: {
     key: string,
-    factory: (value: string, source: ExpressionSource, expressions: Array<Expression>) => ParseFunctionCallExpressionsResult
+    factory: (value: string, source: ExpressionSource, expressions: Array<Expression>) => ParseFunctionCallExpressionResult
   }[] = [
     {key: IntFunction.functionName, factory: FunctionCallExpressions.create1(IntFunction.create)},
     {key: AbsFunction.functionName, factory: FunctionCallExpressions.create1(AbsFunction.create)},
@@ -66,7 +66,7 @@ export class FunctionCallExpressions {
     {key: ExtractResultsFunction.functionName, factory: FunctionCallExpressions.create1(ExtractResultsFunction.create)}
   ];
 
-  public static parse(functionName: string, source: ExpressionSource, argumentValues: Array<Expression>): ParseFunctionCallExpressionsResult {
+  public static parse(functionName: string, source: ExpressionSource, argumentValues: Array<Expression>): ParseFunctionCallExpressionResult {
     for (let index = 0; index < this.values.length; index++) {
       let functionValue = this.values[index];
       if (functionValue.key == functionName) {
@@ -77,7 +77,7 @@ export class FunctionCallExpressions {
   }
 
   private static create0(factory: (source: ExpressionSource) => FunctionCallExpression):
-    (value: string, source: ExpressionSource, expressions: Array<Expression>) => ParseFunctionCallExpressionsResult {
+    (value: string, source: ExpressionSource, expressions: Array<Expression>) => ParseFunctionCallExpressionResult {
 
     return function (name: string, source: ExpressionSource, argumentValues: Array<Expression>) {
       if (argumentValues.length != 0) {
@@ -90,7 +90,7 @@ export class FunctionCallExpressions {
   }
 
   private static create1(factory: (source: ExpressionSource, expression: Expression) => FunctionCallExpression):
-    (value: string, source: ExpressionSource, expressions: Array<Expression>) => ParseFunctionCallExpressionsResult {
+    (value: string, source: ExpressionSource, expressions: Array<Expression>) => ParseFunctionCallExpressionResult {
 
     return function (name: string, source: ExpressionSource, argumentValues: Array<Expression>) {
       if (argumentValues.length != 1) {
@@ -103,7 +103,7 @@ export class FunctionCallExpressions {
   }
 
   private static create2(factory: (source: ExpressionSource, expression: Expression, expression2: Expression) => FunctionCallExpression):
-    (value: string, source: ExpressionSource, expressions: Array<Expression>) => ParseFunctionCallExpressionsResult {
+    (value: string, source: ExpressionSource, expressions: Array<Expression>) => ParseFunctionCallExpressionResult {
 
     return function (name: string, source: ExpressionSource, argumentValues: Array<Expression>) {
       if (argumentValues.length != 2) {
