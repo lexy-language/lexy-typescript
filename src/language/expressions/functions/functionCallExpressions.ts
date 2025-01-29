@@ -29,7 +29,7 @@ import {
   newParseFunctionCallExpressionsFailed,
   newParseFunctionCallExpressionsSuccess,
   ParseFunctionCallExpressionResult
-} from "../parseFunctionparseFunctionCallExpressionResultCallExpressionResult";
+} from "../parseFunctionCallExpressionResult";
 
 export class FunctionCallExpressions {
   private static readonly values: {
