@@ -116,41 +116,6 @@ export class Function extends RootNode implements IHasNodeDependencies {
     return this;
   }
 
-  public getFunctionAndDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    let result: Array<IRootNode> = [this];
-    this.addDependentNodes(this, rootNodeList, result);
-
-    let processed = 0;
-    while (processed != result.length) {
-      processed = result.length;
-      for (const node of result) {
-        this.addDependentNodes(node, rootNodeList, result);
-      }
-    }
-
-    return result;
-  }
-
-  private addDependentNodes(node: INode, rootNodeList: IRootNodeList, result: Array<IRootNode>): void {
-    Function.addNodeDependencies(node, rootNodeList, result);
-
-    let children = node.getChildren();
-
-    NodesWalker.walkNodes(children, eachNode => Function.addNodeDependencies(eachNode, rootNodeList, result));
-  }
-
-  private static addNodeDependencies(node: INode, rootNodeList: IRootNodeList, result: Array<IRootNode>): void {
-    const hasDependencies = asHasNodeDependencies(node);
-    if (hasDependencies == null) return;
-
-    let dependencies = hasDependencies.getDependencies(rootNodeList);
-    for (const dependency of dependencies) {
-      if (!contains(result, dependency)) {
-        result.push(dependency);
-      }
-    }
-  }
-
   private static addEnumTypes(rootNodeList: IRootNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
                               result: Array<IRootNode>) {
     for (const parameter of variableDefinitions) {
@@ -184,18 +149,18 @@ export class Function extends RootNode implements IHasNodeDependencies {
   }
 
   public getParametersType(): ComplexType {
-    let members = this.parameters != null
-      ? this.parameters.variables.map(parameter => new ComplexTypeMember(parameter.name, parameter.type.variableType))
-      : [];
-
-    return new ComplexType(this.name.value, this, ComplexTypeSource.FunctionParameters, members);
+    return this.complexType(this.parameters?.variables, ComplexTypeSource.FunctionParameters);
   }
 
   public getResultsType(): ComplexType {
-    let members = this.results != null
-      ? this.results.variables.map(parameter => new ComplexTypeMember(parameter.name, parameter.type.variableType))
+    return this.complexType(this.results?.variables, ComplexTypeSource.FunctionResults);
+  }
+
+  private complexType(variableDefinitions: ReadonlyArray<VariableDefinition> | undefined, source: ComplexTypeSource) {
+    let members = variableDefinitions
+      ? variableDefinitions.map(parameter => new ComplexTypeMember(parameter.name, parameter.type.variableType))
       : [];
 
-    return new ComplexType(this.name.value, this, ComplexTypeSource.FunctionResults, members);
+    return new ComplexType(this.name.value, this, source, members);
   }
 }

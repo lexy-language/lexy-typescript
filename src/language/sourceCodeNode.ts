@@ -61,14 +61,16 @@ export class SourceCodeNode extends RootNode {
       }
     }
 
-    let tokenName = NodeName.parse(context);
-    if (tokenName == null || tokenName.name == null) return null;
-
     let reference = context.line.lineStartReference();
 
+    let tokenName = NodeName.parse(context);
+    if (tokenName == null || tokenName.name == null) {
+      const token = context.line.tokens.length > 0 ? context.line.tokens.get(0) : context.line.content;
+      context.logger.fail(reference, `Invalid token '${token}'. Keyword expected.`);
+      return null;
+    }
+
     switch (tokenName.keyword) {
-      case null:
-        return null;
       case Keywords.FunctionKeyword:
         return Function.create(tokenName.name, reference, this.expressionFactory);
       case Keywords.EnumKeyword:

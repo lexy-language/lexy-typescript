@@ -67,7 +67,7 @@ export class ScenarioRunner implements IScenarioRunner {
     if (!this.validateErrors()) return;
 
     const functionNode = Assert.notNull(this.functionNode, "functionNode");
-    const nodes = functionNode.getFunctionAndDependencies(this.rootNodeList);
+    const nodes = DependencyGraphFactory.nodeAndDependencies(this.rootNodeList, functionNode);
     const compilerResult = this.compile(nodes);
     const executable = compilerResult.getFunction(functionNode);
     const values = this.getValues(this.scenario.parameters, functionNode.parameters, compilerResult);
