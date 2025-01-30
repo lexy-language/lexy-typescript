@@ -1,6 +1,27 @@
-# Setup
+# lexy-typescript
+
+An implementations of the [lexy-language](https://github.com/lexy-language/lexy-language) in typescript. 
+Check the [lexy-language](https://github.com/lexy-language/lexy-language) or the online [demo](https://lexy-language.github.io/lexy-demo/)
+to understand the purpose of Lexy.
+
+npm JavaScript package: **todo**
+
+# Contribution
+
+Check [lexy-language](https://github.com/lexy-language/lexy-language) for more information about how to contribute.
+
+## Known improvements
+
+- [ ] Code: get rid of all warnings, make the source maps work
+- [ ] Packaging: publish npm package (use is on **lexy-editor**)
+
+
+# Implementations notes
 
 ## Run locally
+
+Ensure node.js (v16 or above) is installed.
+Tested with node.js v16.20.2.
 
 Compile
 `tsc`
@@ -10,13 +31,6 @@ Run tests
 
 Check circular dependencies
 `yarn check-circular-dependencies`
-
-
-## Known Todo's
-
-- [ ] Document versioning strategy for lexy-langage and it's dependencies.
-
-# Implementations notes
 
 ## Submodules
 
