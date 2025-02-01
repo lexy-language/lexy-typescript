@@ -72,13 +72,13 @@ export class VariableContext implements IVariableContext {
 
   public createVariableReference(reference: SourceReference, path: VariablePath, validationContext: IValidationContext): VariableReference | null {
 
-    type CreateHandler = (reference: SourceReference, path: VariablePath, validationContext: IValidationContext) => VariableReference | null;
+    type CreateHandler = (path: VariablePath, validationContext: IValidationContext) => VariableReference | null;
 
-    function executWithPriority(firstPriorityHandler: CreateHandler, secondPriorityHandler: CreateHandler, logger: IParserLogger) {
-      const value1 = firstPriorityHandler(reference, path, validationContext);
+    function executeWithPriority(firstPriorityHandler: CreateHandler, secondPriorityHandler: CreateHandler, logger: IParserLogger) {
+      const value1 = firstPriorityHandler(path, validationContext);
       if (value1 != null) return value1;
 
-      const value2 = secondPriorityHandler(reference, path, validationContext);
+      const value2 = secondPriorityHandler(path, validationContext);
       if (value2 != null) return value2;
 
       logger.fail(reference, `Unknown variable name: '${path.fullPath()}'`);
@@ -86,30 +86,27 @@ export class VariableContext implements IVariableContext {
     }
 
     const containsMemberAccess = path.parts > 1;
-    const fromTypeSystem = this.createTypeVariableReference.bind(this);
+    const fromTypeSystem = this.createVariableReferenceFromTypeSystem.bind(this);
     const fromVariables = this.createVariableReferenceFromRegisteredVariables.bind(this);
 
-    if (containsMemberAccess) {
-      return executWithPriority(fromTypeSystem, fromVariables, this.logger);
-    } else {
-      return executWithPriority(fromVariables, fromTypeSystem, this.logger);
-    }
+    return containsMemberAccess
+      ? executeWithPriority(fromTypeSystem, fromVariables, this.logger)
+      : executeWithPriority(fromVariables, fromTypeSystem, this.logger);
   }
 
-  private createVariableReferenceFromRegisteredVariables(reference: SourceReference, path: VariablePath, validationContext: IValidationContext) {
+  private createVariableReferenceFromRegisteredVariables(path: VariablePath, validationContext: IValidationContext) {
     const variable = this.getVariable(path.parentIdentifier);
-    if (variable == null) {
-      return null;
-    }
+    if (variable == null) return null;
 
     const variableType = this.getVariableTypeByPath(path, validationContext);
-    if (variableType == null) {
-      return null;
-    }
-    return new VariableReference(path, null, variableType, variable.variableSource);
+    return variableType == null
+      ? null
+      : new VariableReference(path, null, variableType, variable.variableSource);
   }
 
-  private createTypeVariableReference(reference: SourceReference, path: VariablePath, validationContext: IValidationContext): VariableReference | null {
+  private createVariableReferenceFromTypeSystem(path: VariablePath, validationContext: IValidationContext): VariableReference | null {
+
+    if (path.parts > 2) return null;
 
     const rootVariableType = this.rootNodes.getType(path.parentIdentifier);
     if (rootVariableType == null) return null;
@@ -118,13 +115,8 @@ export class VariableContext implements IVariableContext {
       return new VariableReference(path, rootVariableType, rootVariableType, VariableSource.Type);
     }
 
-    if (path.parts > 2) return null;
-
-    const typeWithMembers = asTypeWithMembers(rootVariableType);
-    if (typeWithMembers == null) return null;
-
     const member = path.lastPart();
-    let memberType = typeWithMembers.memberType(member, validationContext);
+    let memberType = rootVariableType.memberType(member, validationContext);
     if (memberType == null) return null;
 
     return new VariableReference(path, rootVariableType, memberType, VariableSource.Type);
