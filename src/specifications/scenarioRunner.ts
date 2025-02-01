@@ -183,10 +183,11 @@ export class ScenarioRunner implements IScenarioRunner {
       return false;
     }
 
-    if (any(this.scenario.expectErrors.messages, message =>
-      !any(failedMessages, failedMessage => failedMessage.includes(message)))) {
+    let errorNotFound = any(this.scenario.expectErrors.messages, message =>
+      !any(failedMessages, failedMessage => failedMessage.includes(message)));
 
-      this.fail(`Wrong error occurred.`, StringArrayBuilder
+    if (errorNotFound) {
+      this.fail(`Wrong error(s) occurred.`, StringArrayBuilder
         .new("Expected:").list(this.scenario.expectErrors.messages)
         .add("Actual:").list(failedMessages).array());
       return false;
@@ -223,7 +224,7 @@ export class ScenarioRunner implements IScenarioRunner {
       return false; // don't compile and run rest of scenario
     }
 
-    this.fail(`Wrong error(s) occurred.`, StringArrayBuilder
+    this.fail(`Wrong root error(s) occurred.`, StringArrayBuilder
       .new("Expected:").list(expected)
       .add("Actual:").list(this.parserLogger.errorMessages())
       .array());

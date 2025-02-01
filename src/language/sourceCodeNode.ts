@@ -65,8 +65,8 @@ export class SourceCodeNode extends RootNode {
 
     let tokenName = NodeName.parse(context);
     if (tokenName == null || tokenName.name == null) {
-      const token = context.line.tokens.length > 0 ? context.line.tokens.get(0) : context.line.content;
-      context.logger.fail(reference, `Invalid token '${token}'. Keyword expected.`);
+      const token = context.line.tokens.length > 0 ? context.line.tokens.get(0)?.value : context.line.content;
+      context.logger.fail(reference, `Invalid token '${token}'. Keyword and name expected.`);
       return null;
     }
 

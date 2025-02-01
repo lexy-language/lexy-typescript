@@ -10,7 +10,6 @@ import {VariablePath} from "../language/variablePath";
 import {VariableSource} from "../language/variableSource";
 import {VariableReference} from "../language/variableReference";
 import {RootNodeList} from "../language/rootNodeList";
-import {TypeWithMembers} from "../language/variableTypes/typeWithMembers";
 
 export interface IVariableContext {
   addVariable(variableName: string, type: VariableType, source: VariableSource): void;
@@ -73,53 +72,61 @@ export class VariableContext implements IVariableContext {
 
   public createVariableReference(reference: SourceReference, path: VariablePath, validationContext: IValidationContext): VariableReference | null {
 
-    const rootVariableType = this.rootNodes.getType(path.parentIdentifier);
-    if (rootVariableType != null) {
-      return this.createTypeVariableReference(reference, path, rootVariableType, validationContext);
+    type CreateHandler = (reference: SourceReference, path: VariablePath, validationContext: IValidationContext) => VariableReference | null;
+
+    function executWithPriority(firstPriorityHandler: CreateHandler, secondPriorityHandler: CreateHandler, logger: IParserLogger) {
+      const value1 = firstPriorityHandler(reference, path, validationContext);
+      if (value1 != null) return value1;
+
+      const value2 = secondPriorityHandler(reference, path, validationContext);
+      if (value2 != null) return value2;
+
+      logger.fail(reference, `Unknown variable name: '${path.fullPath()}'`);
+      return null;
     }
-    return this.createVariableReferenceFromRegisteredVariables(path, reference, validationContext);
+
+    const containsMemberAccess = path.parts > 1;
+    const fromTypeSystem = this.createTypeVariableReference.bind(this);
+    const fromVariables = this.createVariableReferenceFromRegisteredVariables.bind(this);
+
+    if (containsMemberAccess) {
+      return executWithPriority(fromTypeSystem, fromVariables, this.logger);
+    } else {
+      return executWithPriority(fromVariables, fromTypeSystem, this.logger);
+    }
   }
 
-  private createVariableReferenceFromRegisteredVariables(path: VariablePath, reference: SourceReference, validationContext: IValidationContext) {
+  private createVariableReferenceFromRegisteredVariables(reference: SourceReference, path: VariablePath, validationContext: IValidationContext) {
     const variable = this.getVariable(path.parentIdentifier);
     if (variable == null) {
-      this.logger.fail(reference, `Unknown variable name: '${path.fullPath()}'`);
       return null;
     }
 
     const variableType = this.getVariableTypeByPath(path, validationContext);
     if (variableType == null) {
-      this.logger.fail(reference, `Unknown variable name: '${path.fullPath()}'`);
       return null;
     }
     return new VariableReference(path, null, variableType, variable.variableSource);
   }
 
-  private createTypeVariableReference(reference: SourceReference, path: VariablePath,
-                                      rootVariableType: TypeWithMembers, validationContext: IValidationContext): VariableReference | null {
+  private createTypeVariableReference(reference: SourceReference, path: VariablePath, validationContext: IValidationContext): VariableReference | null {
+
+    const rootVariableType = this.rootNodes.getType(path.parentIdentifier);
+    if (rootVariableType == null) return null;
 
     if (path.parts == 1) {
       return new VariableReference(path, rootVariableType, rootVariableType, VariableSource.Type);
     }
 
-    const parentIdentifier = path.parentIdentifier;
-    if (path.parts > 2) {
-      this.logger.fail(reference, `Invalid member access '${path}'. Variable '${parentIdentifier}' not found.`);
-      return null;
-    }
+    if (path.parts > 2) return null;
 
     const typeWithMembers = asTypeWithMembers(rootVariableType);
-    if (typeWithMembers == null) {
-      this.logger.fail(reference, `Invalid member access '${path}'. Variable '${parentIdentifier}' not found.`);
-      return null;
-    }
+    if (typeWithMembers == null) return null;
 
     const member = path.lastPart();
     let memberType = typeWithMembers.memberType(member, validationContext);
-    if (memberType == null) {
-      this.logger.fail(reference,
-        `Invalid member access '${path}'. Member '${member}' not found on '${parentIdentifier}'.`);
-    }
+    if (memberType == null) return null;
+
     return new VariableReference(path, rootVariableType, memberType, VariableSource.Type);
   }
 

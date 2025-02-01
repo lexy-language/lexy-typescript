@@ -12,6 +12,7 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
+import {PrimitiveType} from "../variableTypes/primitiveType";
 
 class OperatorEntry {
   public operatorType: OperatorType;
@@ -189,6 +190,11 @@ export class BinaryExpression extends Expression {
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
+    if (this.operator == ExpressionOperator.Equals
+      || this.operator == ExpressionOperator.NotEqual) {
+      return PrimitiveType.boolean;
+    }
+
     let left = this.left.deriveType(context);
     let right = this.right.deriveType(context);
 
