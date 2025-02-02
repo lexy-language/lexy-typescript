@@ -1,4 +1,4 @@
-import {Validate} from "../../src/runTime/Validate";
+import {Validate} from "../../src/runTime/validate";
 
 describe('validateFunctions', () => {
   type ValidateTestCase = [numberA: any, error: string | null];
