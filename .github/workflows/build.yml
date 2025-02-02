@@ -35,8 +35,9 @@ jobs:
     - run: coverage-badges --output coverage/badges.svg
     
     - name: Deploy
-      uses: peaceiris/actions-gh-pages@v4
-      if: github.ref == 'refs/heads/main'
+      uses: exuanbo/actions-deploy-gist@v1
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./coverage
+        token: ${{ secrets.TOKEN }}
+        gist_id: 9179085a171f9629b868662611e06fbd
+        gist_file_name: badges.svg
+        file_path: coverage/badges.svg
