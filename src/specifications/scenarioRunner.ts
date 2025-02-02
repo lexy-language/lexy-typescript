@@ -15,7 +15,7 @@ import {Assert} from "../infrastructure/assert";
 import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
 import validateExecutionLogging from "./validateExecutionLogging";
 import StringArrayBuilder from "../infrastructure/stringArrayBuilder";
-import {getScenarioParameterValues, getTableRowValues} from "./mapValues";
+import {getScenarioParameterValues, getTableRowValues} from "./getValues";
 import {VariablePathParser} from "../language/scenarios/variablePathParser";
 import {VariablePath} from "../language/variablePath";
 import {ValidationTableRow} from "../language/scenarios/validationTableRow";

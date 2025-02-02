@@ -15,6 +15,14 @@ const config: Config = {
     "**/__tests__/**/*.[jt]s?(x)",
     "**/?(*.)+(spec|test).[tj]s?(x)"
   ],
+  "collectCoverageFrom": [
+    "<rootDir>/**/*.{tsx,ts}",
+    "!**/*.{js,d.ts}"
+  ],
+  "coverageReporters": [
+    "lcov",
+    "json-summary"
+  ]
 };
 
 export default config;

@@ -30,7 +30,9 @@
     "build": "tsc",
     "pack": "tsc && npm pack",
     "update-submodules": "cd tests/lexy-language/ && git pull   #needs to check why git update --recursive is not working",
-    "check-circular-dependencies": "npx madge -c --extensions ts ./"
+    "check-circular-dependencies": "npx madge -c --extensions ts ./",
+    "coverage": "jest --coverage",
+    "make-badges": "coverage-badges"
   },
   "dependencies": {
     "winston": "^2.4.7",
