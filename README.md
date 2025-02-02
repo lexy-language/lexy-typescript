@@ -1,6 +1,6 @@
 # lexy-typescript v0.1
 
-[![Build lexy-typescript](https://github.com/lexy-language/lexy-typescript/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/lexy-language/lexy-typescript/actions/workflows/build.yml) ![Coverage](./coverage/badges.svg)
+[![Build lexy-typescript](https://github.com/lexy-language/lexy-typescript/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/lexy-language/lexy-typescript/actions/workflows/build.yml) ![Coverage](https://gist.githubusercontent.com/lexy-language/9179085a171f9629b868662611e06fbd/raw/badges.svg)
 
 Implementation of the [lexy-language](https://github.com/lexy-language/lexy-language) in typescript. 
 Check the [lexy-language](https://github.com/lexy-language/lexy-language) or the online [demo](https://lexy-language.github.io/lexy-demo/)
