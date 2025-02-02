@@ -91,7 +91,7 @@ export class SpecificationsRunner implements ISpecificationsRunner {
       ? folder
       : this.fileSystem.getFullPath(folder);
     if (!this.fileSystem.directoryExists(absoluteFolder)) {
-      throw new Error(`Specifications folder doesn't exist: ${absoluteFolder}`);
+      throw new Error(`Specifications folder doesn't exist: ${absoluteFolder}` + this.fileSystem.logFolders());
     }
 
     return absoluteFolder;

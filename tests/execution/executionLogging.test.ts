@@ -1,7 +1,7 @@
 import {compileFunction} from "../compiler/compileFunction";
 import {ExecutableFunction} from "../../src/compiler/executableFunction";
 import {ExecutionLogEntry} from "../../src/runTime/executionLogEntry";
-import {LexyCodeConstants} from "../../dist/compiler/javaScript/lexyCodeConstants";
+import {LexyCodeConstants} from "../../src/compiler/javaScript/lexyCodeConstants";
 
 describe('executionLogging', () => {
 

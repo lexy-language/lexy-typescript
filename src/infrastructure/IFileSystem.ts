@@ -15,4 +15,6 @@ export interface IFileSystem {
 
   getDirectoryFiles(folder: string, filter: string): Array<string>;
   getDirectories(folder: string): Array<string>;
+
+  logFolders(): string;
 }
