@@ -22,6 +22,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    - name: Check lexy-language
+      run: |
+        cd tests/lexy-language
+        git pull
+        ls
+
     - name: Build
       run: |
         yarn update-submodules
