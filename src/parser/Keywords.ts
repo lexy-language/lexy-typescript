@@ -6,7 +6,6 @@ export class Keywords {
   public static readonly ScenarioKeyword = "Scenario:";
 
   public static readonly Function = "Function";
-  public static readonly ValidationTable = "ValidationTable";
 
   public static readonly If = "if";
   public static readonly Else = "else";
@@ -21,8 +20,10 @@ export class Keywords {
   public static readonly While = "while";
 
   public static readonly Include = "Include";
+
   public static readonly Parameters = "Parameters";
   public static readonly Results = "Results";
+  public static readonly ValidationTable = "ValidationTable";
   public static readonly ExecutionLogging = "ExecutionLogging";
   public static readonly ExecutionLog = "Log";
   public static readonly Code = "Code";

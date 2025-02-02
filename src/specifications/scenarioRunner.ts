@@ -3,21 +3,23 @@ import type {IParserLogger} from "../parser/parserLogger";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
 import type {IRootNode} from "../language/rootNode";
 
-import {CompilerResult} from "../compiler/compilerResult";
 import {Function} from "../language/functions/function";
 import {Scenario} from "../language/scenarios/scenario";
 import {RootNodeList} from "../language/rootNodeList";
 import {format} from "../infrastructure/formatting";
 import {FunctionResult} from "../runTime/functionResult";
 import {any, firstOrDefault} from "../infrastructure/enumerableExtensions";
-import {Parameters} from "../language/scenarios/parameters";
-import {FunctionParameters} from "../language/functions/functionParameters";
 import {ExecutableFunction} from "../compiler/executableFunction";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {Assert} from "../infrastructure/assert";
 import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
 import validateExecutionLogging from "./validateExecutionLogging";
 import StringArrayBuilder from "../infrastructure/stringArrayBuilder";
+import {getScenarioParameterValues, getTableRowValues} from "./mapValues";
+import {VariablePathParser} from "../language/scenarios/variablePathParser";
+import {VariablePath} from "../language/variablePath";
+import {ValidationTableRow} from "../language/scenarios/validationTableRow";
+import {ValidationTableValue} from "../language/scenarios/validationTableValue";
 
 export interface IScenarioRunner {
   failed: boolean;
@@ -26,6 +28,8 @@ export interface IScenarioRunner {
   run(): void;
 
   parserLogging(): string;
+
+  countScenarios(): number;
 }
 
 export class ScenarioRunner implements IScenarioRunner {
@@ -57,6 +61,10 @@ export class ScenarioRunner implements IScenarioRunner {
     this.scenario = scenario;
   }
 
+  public countScenarios(): number {
+    return this.scenario.validationTable ? this.scenario.validationTable.rows.length : 1
+  }
+
   public run(): void {
     this.functionNode = this.getFunctionNode(this.scenario, this.rootNodeList);
     if (this.parserLogger.nodeHasErrors(this.scenario) && this.scenario.expectExecutionErrors == null) {
@@ -70,18 +78,34 @@ export class ScenarioRunner implements IScenarioRunner {
     const nodes = DependencyGraphFactory.nodeAndDependencies(this.rootNodeList, functionNode);
     const compilerResult = this.compile(nodes);
     const executable = compilerResult.getFunction(functionNode);
-    const values = this.getValues(this.scenario.parameters, functionNode.parameters, compilerResult);
+    if (this.scenario.validationTable != null) {
+      this.runFunctionWithValidationTable(executable, functionNode);
+    } else {
+      const values = getScenarioParameterValues(functionNode, this.scenario.parameters, functionNode.parameters);
+      this.runFunctionWithValues(values, null, executable);
+    }
+  }
+
+  private runFunctionWithValidationTable(executable: ExecutableFunction, functionNode: Function) {
+    if (this.scenario.validationTable == null || this.scenario.validationTable.header == null) return;
+    for (const row of this.scenario.validationTable.rows) {
+      const values = getTableRowValues(functionNode, this.scenario.validationTable.header, row);
+      this.runFunctionWithValues(values, row, executable);
+    }
+  }
+
+  private runFunctionWithValues(values: { [key: string]: any }, tableRow: ValidationTableRow | null, executable: ExecutableFunction) {
 
     const result = this.runFunction(executable, values);
     if (result == null) return;
 
     if (!this.validateExecutionLogging(result)) return;
 
-    const validationResultText = this.validateResult(result, compilerResult);
+    const validationResultText = this.validateResult(result, tableRow);
     if (validationResultText.length > 0) {
-      this.fail("Results validation failed.", validationResultText);
+      this.fail("Results validation failed.", validationResultText, tableRow?.index);
     } else {
-      this.context.success(this.scenario, result.logging);
+      this.context.success(this.scenario, result.logging, tableRow?.index);
     }
   }
 
@@ -104,8 +128,7 @@ export class ScenarioRunner implements IScenarioRunner {
       return executable.run(values);
     } catch (error: any) {
       if (!this.validateExecutionErrors(error)) {
-        this.fail('Execution error occurred.', [
-          "Error: ", error.stack])
+        this.fail('Execution error occurred.', ["Error: ", error.stack])
       }
       return null;
     }
@@ -123,26 +146,29 @@ export class ScenarioRunner implements IScenarioRunner {
     return `------- Filename: ${this.fileName}\n${format(this.parserLogger.errorMessages(), 2)}`;
   }
 
-  private fail(message: string, errors: ReadonlyArray<string> | null = null): void {
+  private fail(message: string, errors: ReadonlyArray<string> | null = null, index: number | null | undefined = null): void {
     this.failedValue = true;
-    this.context.fail(this.scenario, message, errors);
+    this.context.fail(this.scenario, message, errors, index);
   }
 
-  private validateResult(result: FunctionResult, compilerResult: CompilerResult): Array<string> {
+  private validateResult(result: FunctionResult, tableRow: ValidationTableRow | null): Array<string> {
     const validationResult: Array<string> = [];
+    if (tableRow != null) {
+      this.validateTableResults(tableRow, result, validationResult);
+    }
     if (this.scenario.results != null) {
-      this.evaluateResults(this.scenario.results.allAssignments(), result, compilerResult, validationResult);
+      ScenarioRunner.validateResults(this.scenario.results.allAssignments(), result, validationResult);
     }
     return validationResult;
   }
 
-  private evaluateResults(assignments: ReadonlyArray<AssignmentDefinition>, result: FunctionResult, compilerResult: CompilerResult, validationResult: Array<string>) {
+  private static validateResults(assignments: ReadonlyArray<AssignmentDefinition>, result: FunctionResult, validationResult: Array<string>) {
     for (const expected of assignments) {
-      this.evaluateResult(expected, result, compilerResult, validationResult);
+      ScenarioRunner.validateResult(expected, result, validationResult);
     }
   }
 
-  private evaluateResult(expected: AssignmentDefinition, result: FunctionResult, compilerResult: CompilerResult, validationResult: Array<string>) {
+  private static validateResult(expected: AssignmentDefinition, result: FunctionResult, validationResult: Array<string>) {
     const assignmentDefinition = Assert.notNull(asAssignmentDefinition(expected), "assignmentDefinition");
     if (assignmentDefinition.variableType == null) throw new Error("expected.variableType is null")
     let actual = result.getValue(assignmentDefinition.variable);
@@ -150,7 +176,36 @@ export class ScenarioRunner implements IScenarioRunner {
 
     if (actual == null || expectedValue == null || !ScenarioRunner.compare(actual, expectedValue)) {
       validationResult.push(
-        `'${assignmentDefinition.variable}' should be '${expectedValue ?? `<null>`}' (${expectedValue?.constructor.name}) but is '${actual ?? `<null>`} (${actual?.constructor.name})'`);
+        `'${assignmentDefinition.variable}' should be '${expectedValue ?? `<null>`}' (${expectedValue?.constructor.name}) but is '${actual ?? `<null>`}' (${actual?.constructor.name})`);
+    }
+  }
+
+  private validateTableResults(tableRow: ValidationTableRow, result: FunctionResult, validationResult: Array<string>) {
+    for (let index = 0; index < tableRow.values.length; index++) {
+      const column = this.scenario.validationTable?.header?.getColumnByIndex(index);
+      if (column == null) continue;
+
+      const variable = VariablePathParser.parseString(column.name);
+      if (!this.isResult(variable)) continue;
+
+      const expected = tableRow.values[index];
+      ScenarioRunner.validateRowValueResult(variable, expected, result, validationResult);
+    }
+  }
+
+  private isResult(path: VariablePath) {
+    if (this.functionNode?.results == null) return
+    return any(this.functionNode.results.variables, result => result.name == path.parentIdentifier);
+  }
+
+  private static validateRowValueResult(path: VariablePath, value: ValidationTableValue, result: FunctionResult, validationResult: Array<string>) {
+
+    let actual = result.getValue(path);
+    let expectedValue = value.getValue();
+
+    if (actual == null || expectedValue == null || !ScenarioRunner.compare(actual, expectedValue)) {
+      validationResult.push(
+        `'${path}' should be '${expectedValue ?? `<null>`}' (${expectedValue?.constructor.name}) but is '${actual ?? `<null>`}' (${actual?.constructor.name})`);
     }
   }
 
@@ -193,7 +248,7 @@ export class ScenarioRunner implements IScenarioRunner {
       return false;
     }
 
-    this.context.success(this.scenario, null);
+    this.context.success(this.scenario, null, null);
     return false;
   }
 
@@ -220,7 +275,7 @@ export class ScenarioRunner implements IScenarioRunner {
     }
 
     if (!any(failedMessages) && !failed) {
-      this.context.success(this.scenario, null);
+      this.context.success(this.scenario, null, null);
       return false; // don't compile and run rest of scenario
     }
 
@@ -229,62 +284,6 @@ export class ScenarioRunner implements IScenarioRunner {
       .add("Actual:").list(this.parserLogger.errorMessages())
       .array());
     return false;
-  }
-
-  private getValues(scenarioParameters: Parameters | null,
-                    functionParameters: FunctionParameters | null,
-                    compilerResult: CompilerResult): { [key: string]: any } {
-    let result = {};
-    if (scenarioParameters != null) {
-      if (functionParameters != null) {
-        this.setParameters(scenarioParameters.allAssignments(), functionParameters, compilerResult, result);
-      }
-    }
-    return result;
-  }
-
-  private setParameters(parameters: ReadonlyArray<AssignmentDefinition>, functionParameters: FunctionParameters, compilerResult: CompilerResult, result: {}) {
-    for (const parameter of parameters) {
-      this.setParameter(functionParameters, parameter, compilerResult, result);
-    }
-  }
-
-  private setParameter(functionParameters: FunctionParameters,
-                       parameter: AssignmentDefinition,
-                       compilerResult: CompilerResult,
-                       result: { [key: string]: any }) {
-
-    const assignmentDefinition = Assert.notNull(asAssignmentDefinition(parameter), "assignmentDefinition");
-    let type = firstOrDefault(functionParameters.variables, variable => variable.name == assignmentDefinition.variable.parentIdentifier);
-
-    if (type == null) {
-      throw new Error(`Function '${this.functionNode?.name?.value}' parameter '${assignmentDefinition.variable.parentIdentifier}' not found.`);
-    }
-
-    if (assignmentDefinition.variableType == null) throw new Error("parameter.variableType is null")
-    const value = ScenarioRunner.getValue(assignmentDefinition);
-
-    let valueObject = result;
-    let reference = assignmentDefinition.variable;
-    while (reference.hasChildIdentifiers) {
-      if (!valueObject[reference.parentIdentifier]) {
-        valueObject[reference.parentIdentifier] = {};
-      }
-      valueObject = valueObject[reference.parentIdentifier];
-      reference = reference.childrenReference();
-    }
-    valueObject[reference.parentIdentifier] = value;
-  }
-
-  private static getValue(assignmentDefinition: AssignmentDefinition) {
-    return assignmentDefinition.constantValue.value;
-  }
-
-  private static compare(actual: any, expectedValue: any): boolean {
-    if (expectedValue?.constructor == Date && actual?.constructor == Date) {
-      return actual.toISOString() == expectedValue.toISOString();
-    }
-    return actual == expectedValue;
   }
 
   private validateExecutionErrors(error: any): boolean {
@@ -319,5 +318,12 @@ export class ScenarioRunner implements IScenarioRunner {
       return false;
     }
     return true;
+  }
+
+  private static compare(actual: any, expectedValue: any): boolean {
+    if (expectedValue?.constructor == Date && actual?.constructor == Date) {
+      return actual.toISOString() == expectedValue.toISOString();
+    }
+    return actual == expectedValue;
   }
 }

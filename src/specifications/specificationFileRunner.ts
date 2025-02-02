@@ -1,12 +1,13 @@
-import {ISpecificationRunnerContext} from "./specificationRunnerContext";
-import {ILexyParser} from "../parser/lexyParser";
-import {IParserLogger} from "../parser/parserLogger";
+import type {ILexyParser} from "../parser/lexyParser";
+import type {IParserLogger} from "../parser/parserLogger";
+import type {ILexyCompiler} from "../compiler/lexyCompiler";
+import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
+
 import {IScenarioRunner, ScenarioRunner} from "./scenarioRunner";
-import {firstOrDefault} from "../infrastructure/enumerableExtensions";
+import {firstOrDefault, sum} from "../infrastructure/enumerableExtensions";
 import {format} from "../infrastructure/formatting";
 import {Scenario} from "../language/scenarios/scenario";
 import {RootNodeList} from "../language/rootNodeList";
-import {ILexyCompiler} from "../compiler/lexyCompiler";
 import {ParserResult} from "../parser/parserResult";
 
 export interface ISpecificationFileRunner {
@@ -74,7 +75,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
   }
 
   public countScenarioRunners(): number {
-    return this.scenarioRunners.length;
+    return sum(this.scenarioRunners, runner => runner.countScenarios());
   }
 
   private validateHasScenarioCheckingRootErrors(logger: IParserLogger): void {

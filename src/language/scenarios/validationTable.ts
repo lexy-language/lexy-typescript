@@ -3,46 +3,29 @@ import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
 
-import {RootNode} from "../rootNode";
-import {TableName} from "./tableName";
-import {TableHeader} from "./tableHeader";
-import {TableRow} from "./tableRow";
 import {SourceReference} from "../../parser/sourceReference";
-import {ComplexType} from "../variableTypes/complexType";
-import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
 import {NodeType} from "../nodeType";
-import {ComplexTypeSource} from "../variableTypes/complexTypeSource";
+import {ValidationTableRow} from "./validationTableRow";
+import {ValidationTableName} from "./validationTableName";
+import {ValidationTableHeader} from "./validationTableHeader";
+import {ParsableNode} from "../parsableNode";
 
-export function instanceOfTable(object: any) {
-  return object?.nodeType == NodeType.Table;
-}
-
-export function asTable(object: any): Table | null {
-  return instanceOfTable(object) ? object as Table : null;
-}
-
-export class Table extends RootNode {
+export class ValidationTable extends ParsableNode {
 
   private invalidHeader: boolean = false;
 
-  private rowsValue: Array<TableRow> = [];
-  private headerValue: TableHeader | null = null;
+  private rowsValue: Array<ValidationTableRow> = [];
+  private headerValue: ValidationTableHeader | null = null;
 
-  public static readonly rowName: string = `Row`;
+  public readonly nodeType = NodeType.ValidationTable;
+  public readonly name: ValidationTableName = new ValidationTableName();
 
-  public readonly nodeType = NodeType.Table;
-  public readonly name: TableName = new TableName();
-
-  public get header(): TableHeader | null {
+  public get header(): ValidationTableHeader | null {
     return this.headerValue;
   }
 
-  get rows(): Array<TableRow> {
+  get rows(): Array<ValidationTableRow> {
     return this.rowsValue;
-  }
-
-  public override get nodeName() {
-    return this.name.value;
   }
 
   constructor(name: string, reference: SourceReference) {
@@ -54,14 +37,14 @@ export class Table extends RootNode {
     if (this.invalidHeader) return this;
 
     if (this.headerValue == null) {
-      this.headerValue = TableHeader.parse(context);
+      this.headerValue = ValidationTableHeader.parse(context);
       if (this.headerValue == null){
         this.invalidHeader = true;
       }
       return this;
     }
 
-    const tableRow = TableRow.parse(context, this.headerValue);
+    const tableRow = ValidationTableRow.parse(context, this.rows.length, this.headerValue);
     if (tableRow != null) {
       this.rows.push(tableRow);
     }
@@ -89,15 +72,5 @@ export class Table extends RootNode {
     } finally {
       scope[Symbol.dispose]();
     }
-  }
-
-  public getRowType(): ComplexType {
-    if (this.header == null) throw new Error("Header not set.");
-    const members = this.header.columns.map(column => {
-      const type = column.type.variableType;
-      return new ComplexTypeMember(column.name, type)
-    });
-
-    return new ComplexType(this.name.value, this, ComplexTypeSource.TableRow, members);
   }
 }

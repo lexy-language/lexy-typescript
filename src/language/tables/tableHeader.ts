@@ -27,20 +27,28 @@ export class TableHeader extends Node {
   }
 
   public static parse(context: IParseLineContext): TableHeader | null {
+
+    let startsWithTableSeparator = context.validateTokens("TableHeader")
+      .type<TableSeparatorToken>(0, TokenType.TableSeparatorToken)
+      .isValid;
+
+    if (!startsWithTableSeparator) return null;
+
+    return TableHeader.parseWithColumnType(context);
+  }
+
+  private static parseWithColumnType(context: IParseLineContext): TableHeader | null {
     let index = 0;
-    let validator = context.validateTokens("TableHeader");
-
-    if (!validator.type<TableSeparatorToken>(index, TokenType.TableSeparatorToken).isValid) return null;
-
     let headers = new Array<ColumnHeader>();
     let tokens = context.line.tokens;
     while (++index < tokens.length) {
-      if (!validator
+      if (!context.validateTokens("TableHeader")
         .type<StringLiteralToken>(index, TokenType.StringLiteralToken)
         .type<StringLiteralToken>(index + 1, TokenType.StringLiteralToken)
         .type<TableSeparatorToken>(index + 2, TokenType.TableSeparatorToken)
-        .isValid)
+        .isValid) {
         return null;
+      }
 
       let typeName = tokens.tokenValue(index)
       let name = tokens.tokenValue(++index);
@@ -72,11 +80,11 @@ export class TableHeader extends Node {
     return this.getColumn(name);
   }
 
-  public getColumnByIndex(index: number) {
+  public getColumnByIndex(index: number): ColumnHeader | null {
     return index >= 0 && index < this.columns.length ? this.columns[index] : null;
   }
 
-  public getColumn(name: string) {
+  public getColumn(name: string): ColumnHeader | null {
     return firstOrDefault(this.columnsValue, value => value.name == name);
   }
 }

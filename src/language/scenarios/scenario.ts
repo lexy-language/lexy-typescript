@@ -25,6 +25,7 @@ import {NodeType} from "../nodeType";
 import {ExpectExecutionErrors} from "./expectExecutionErrors";
 import {ExecutionLogging} from "./executionLogging";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {ValidationTable} from "./validationTable";
 
 export function instanceOfScenario(object: any) {
   return object?.nodeType == NodeType.Scenario;
@@ -43,7 +44,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
   private functionNameValue: functionName | null = null;
   private parametersValue: Parameters | null = null;
   private resultsValue: Results | null = null;
-  private validationTableValue: Table | null = null;
+  private validationTableValue: ValidationTable | null = null;
   private executionLoggingValue: ExecutionLogging | null = null;
 
   private expectErrorsValue: ExpectErrors | null = null;
@@ -82,7 +83,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     return this.tableValue;
   }
 
-  public get validationTable(): Table | null {
+  public get validationTable(): ValidationTable | null {
     return this.validationTableValue;
   }
 
@@ -138,7 +139,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
       case Keywords.Results:
         return this.resetRootNode(context, this.resultsValue, () => this.resultsValue = new Results(reference));
       case Keywords.ValidationTable:
-        return this.parseValidationTable(context, reference);
+        return this.resetRootNode(context, this.validationTableValue, () => this.validationTableValue = new ValidationTable(`${this.name.value}Table`, reference));
 
       case Keywords.ExecutionLogging:
         return this.resetRootNode(context, this.executionLogging, () => this.executionLoggingValue = new ExecutionLogging(reference));
@@ -210,24 +211,6 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     this.tableValue = new Table(tokenName.name, reference);
     context.logger.setCurrentNode(this.tableValue);
     return this.tableValue;
-  }
-
-  private parseValidationTable(context: IParseLineContext, reference: SourceReference): IParsableNode {
-    if (this.validationTableValue != null) {
-      context.logger.fail(reference, `Duplicated validation table '${this.nodeName}'.`);
-      return this.validationTableValue;
-    }
-
-    let tokenName = NodeName.parse(context);
-    if (tokenName != null && tokenName.name != null) {
-      context.logger.fail(context.line.tokenReference(1),
-        `Unexpected table name. 'ValidationTable' should not have a name: '${tokenName.name}'`);
-    }
-
-    const tableName = this.name?.value != null ? this.name?.value + Keywords.ValidationTable : Keywords.ValidationTable;
-    this.validationTableValue = new Table(tableName, reference);
-    context.logger.setCurrentNode(this.validationTableValue);
-    return this.validationTableValue;
   }
 
   private invalidToken(context: IParseLineContext, name: string | null, reference: SourceReference): IParsableNode {

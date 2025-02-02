@@ -31,6 +31,9 @@ export class FunctionResult {
     let currentValue: ResultsValue = this.valueObject[reference.parentIdentifier];
     while (currentReference.hasChildIdentifiers) {
       currentReference = currentReference.childrenReference();
+      if (currentValue == null) {
+        throw new Error(`Can't get variable: '${reference}'` )
+      }
       currentValue = (currentValue as ResultsType)[currentReference.parentIdentifier];
     }
 

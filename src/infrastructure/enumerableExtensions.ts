@@ -89,6 +89,15 @@ export function count<TItem>(array: ReadonlyArray<TItem>, predicate: (value: TIt
   return results;
 }
 
+export function sum<TItem>(array: ReadonlyArray<TItem>, predicate: (value: TItem) => number): number {
+  let results = 0;
+  for (const item of array) {
+    const value = predicate(item);
+    results += value;
+  }
+  return results;
+}
+
 export function unique<TItem>(array: ReadonlyArray<TItem>, identifierProvider: (value: TItem) => string): Array<TItem> {
   const used: {[key: string]: boolean} = {};
   const results = [];

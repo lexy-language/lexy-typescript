@@ -35,5 +35,4 @@ export class TableValue extends Node {
       context.logger.fail(this.reference, `Invalid value type '${actualType}'. Expected '${expectedType}'.`);
     }
   }
-
 }

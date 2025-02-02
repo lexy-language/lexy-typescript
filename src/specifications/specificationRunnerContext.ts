@@ -13,9 +13,9 @@ export interface ISpecificationRunnerContext {
   fileRunners: ReadonlyArray<ISpecificationFileRunner>;
   logEntries: ReadonlyArray<SpecificationsLogEntry>;
 
-  fail(scenario: Scenario, message: string, errors: ReadonlyArray<string> | null): void;
+  fail(scenario: Scenario, message: string, errors: ReadonlyArray<string> | null, index: number | null | undefined): void;
 
-  success(scenario: Scenario, logging: ReadonlyArray<ExecutionLogEntry> | null): void;
+  success(scenario: Scenario, logging: ReadonlyArray<ExecutionLogEntry> | null, index: number | null | undefined): void;
 
   logGlobal(message: string): void;
   logTimeSpent(): void;
@@ -54,12 +54,14 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
     return this.fileRunnersValue;
   }
 
-  public fail(scenario: Scenario, message: string, errors: Array<string> | null): void {
+  public fail(scenario: Scenario, message: string, errors: Array<string> | null, index: number | null | undefined): void {
     this.failedValues++;
 
-    const entry = new SpecificationsLogEntry(scenario.reference, scenario, true, `FAILED - ${scenario.name}: ${message}`, errors);
+    const suffix = index != null ? `[${index}]` : ''
+
+    const entry = new SpecificationsLogEntry(scenario.reference, scenario, true, `FAILED - ${scenario.name}${suffix}: ${message}`, errors);
     this.logEntriesValue.push(entry)
-    this.logger.logError(`- FAILED - ${scenario.name}: ${message}`);
+    this.logger.logError(`- FAILED - ${scenario.name}${suffix}: ${message}`);
     if (errors != null) {
       errors.forEach(message => this.logger.logInformation(`  ${message}`));
     }
@@ -81,10 +83,11 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
     this.logger.logInformation(message);
   }
 
-  public success(scenario: Scenario, logging: ReadonlyArray<ExecutionLogEntry> | null = null): void {
-    const entry = new SpecificationsLogEntry(scenario.reference, scenario, false, `SUCCESS - ${scenario.name}`, null, logging);
+  public success(scenario: Scenario, logging: ReadonlyArray<ExecutionLogEntry> | null = null, index: number | null | undefined): void {
+    const suffix = index != null ? `[${index}]` : ''
+    const entry = new SpecificationsLogEntry(scenario.reference, scenario, false, `SUCCESS - ${scenario.name}${suffix}`, null, logging);
     this.logEntriesValue.push(entry);
-    this.logger.logInformation(`- SUCCESS - ${scenario.name}`);
+    this.logger.logInformation(`- SUCCESS - ${scenario.name}${suffix}`);
   }
 
   public add(fileRunner: ISpecificationFileRunner): void {

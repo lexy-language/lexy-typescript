@@ -67,6 +67,11 @@ export enum NodeType {
   TypeDefinition = "TypeDefinition",
   VariableDeclarationExpression = "VariableDeclarationExpression",
   VariableDefinition = "VariableDefinition",
+  ValidationColumnHeader = "ValidationColumnHeader",
+  ValidationTable = "ValidationTable",
+  ValidationTableHeader = "ValidationTableHeader",
+  ValidationTableRow = "ValidationTableRow",
+  ValidationTableValue = "ValidationTableValue",
   YearFunction = "YearFunction",
   YearsFunction = "YearsFunction",
 }
