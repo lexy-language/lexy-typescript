@@ -17,6 +17,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - uses: actions/checkout@v4
+      with:
+        repository: tests/lext-language
+        path: submodule-repo
+        token: ${{ secrets.SUBMODULE-PAT }}
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
