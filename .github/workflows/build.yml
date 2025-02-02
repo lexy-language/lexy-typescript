@@ -39,17 +39,13 @@ jobs:
         yarn update-submodules
         yarn install
         yarn coverage
-    
-    - name: Create Coverage Badges
-      uses: jaywcjlove/coverage-badges-cli@main
-      with:
-        style: flat
-        source: coverage/coverage-summary.json
-        output: coverage/badges.svg
-        jsonPath: totals.percent_covered
+
+    - run: npm i coverage-badges-cli -g
+    - run: coverage-badges --output coverage/badges.svg
     
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build
+      if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./coverage
