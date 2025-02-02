@@ -62,7 +62,7 @@ export class NodeFileSystem implements IFileSystem {
   private addFolder(folder: string, result: any[]) {
     const folders = this.getDirectories(folder);
     for (const each of folders) {
-      const fullPath = this.getFullPath(each);
+      const fullPath = this.combine(folder, each);
       result.push(fullPath);
       this.addFolder(fullPath, result);
     }
