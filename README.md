@@ -1,4 +1,4 @@
-# lexy-typescript
+# lexy-typescript v0.1
 
 [![Build lexy-typescript](https://github.com/lexy-language/lexy-typescript/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/lexy-language/lexy-typescript/actions/workflows/build.yml) ![Coverage](./coverage/badges.svg)
 
@@ -15,8 +15,8 @@ Check [lexy-language](https://github.com/lexy-language/lexy-language) for more i
 ## Known improvements
 
 - [ ] Code: get rid of all warnings, make the source maps work
-- [ ] Packaging: publish npm package (use is on **lexy-editor**)
-
+- [ ] Packaging: publish npm package (use it on **lexy-editor**) from GitHub Actions
+- [ ] Readme: Use /coverage/badges.svg from publish gh-page (once repo is public)
 
 # Implementations notes
 

@@ -27,13 +27,6 @@ jobs:
 
     - name: Build
       run: |
-        cd tests/lexy-language
-        git pull
-        git status
-        ls
-
-    - name: Build
-      run: |
         yarn update-submodules
         yarn install
         yarn coverage
