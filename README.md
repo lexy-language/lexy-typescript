@@ -1,5 +1,7 @@
 # lexy-typescript
 
+[![Build lexy-typescript](https://github.com/lexy-language/lexy-typescript/actions/workflows/build.yml/badge.svg)](https://github.com/lexy-language/lexy-typescript/actions/workflows/build.yml)
+
 Implementation of the [lexy-language](https://github.com/lexy-language/lexy-language) in typescript. 
 Check the [lexy-language](https://github.com/lexy-language/lexy-language) or the online [demo](https://lexy-language.github.io/lexy-demo/)
 to understand the purpose of Lexy.
