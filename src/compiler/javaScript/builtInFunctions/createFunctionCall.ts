@@ -22,6 +22,8 @@ import {SecondsFunctionCall} from "./secondsFunctionCall";
 import {LexyFunctionCall} from "./lexyFunctionCall";
 import {FunctionCallExpression} from "../../../language/expressions/functions/functionCallExpression";
 import {CodeWriter} from "../writers/codeWriter";
+import {LookUpByFunctionCall} from "./lookUpByFunctionCall";
+import {LookUpRowByFunctionCall} from "./lookUpRowByFunctionCall";
 
 export function renderFunctionCall(expression: FunctionCallExpression, codeWriter: CodeWriter) {
   const functionCall = createFunctionCall(expression);
@@ -36,6 +38,12 @@ function createFunctionCall(expression: FunctionCallExpression): any | null {
       return new LookUpFunctionCall();
     case NodeType.LookupRowFunction:
       return new LookUpRowFunctionCall();
+
+    case NodeType.LookupByFunction:
+      return new LookUpByFunctionCall();
+    case NodeType.LookupRowByFunction:
+      return new LookUpRowByFunctionCall();
+
     case NodeType.IntFunction:
       return new IntFunctionCall();
     case NodeType.AbsFunction:

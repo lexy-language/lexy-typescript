@@ -30,6 +30,8 @@ import {
   newParseFunctionCallExpressionsSuccess,
   ParseFunctionCallExpressionResult
 } from "../parseFunctionCallExpressionResult";
+import {LookupByFunction} from "./lookupByFunction";
+import {LookupRowByFunction} from "./lookupRowByFunction";
 
 export class FunctionCallExpressions {
   private static readonly values: {
@@ -60,6 +62,9 @@ export class FunctionCallExpressions {
 
     {key: LookupFunction.functionName, factory: LookupFunction.create},
     {key: LookupRowFunction.functionName, factory: LookupRowFunction.create},
+
+    {key: LookupByFunction.functionName, factory: LookupByFunction.create},
+    {key: LookupRowByFunction.functionName, factory: LookupRowByFunction.create},
 
     {key: NewFunction.functionName, factory: FunctionCallExpressions.create1(NewFunction.create)},
     {key: FillParametersFunction.functionName, factory: FunctionCallExpressions.create1(FillParametersFunction.create)},

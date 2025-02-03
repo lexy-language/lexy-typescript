@@ -15,40 +15,46 @@ import {NodeType} from "../../nodeType";
 import {ExpressionSource} from "../expressionSource";
 import {TableFunction} from "./tableFunction";
 
-const argumentsNumber = 4;
+const argumentsNumber = 6;
 const argumentTable = 0;
-const argumentLookupValue = 1;
-const argumentSearchValueColumn = 2;
-const argumentResultColumn = 3;
-const functionHelp = `Arguments: LOOKUP(Table, lookUpValue, Table.searchValueColumn, Table.resultColumn)`;
+const argumentDiscriminatorValue = 1;
+const argumentLookupValue = 2;
+const argumentDiscriminatorValueColumn = 3;
+const argumentSearchValueColumn = 4;
+const argumentResultColumn = 5;
+const functionHelp = `Arguments: LOOKUPBY(Table, discriminatorValue, lookUpValue, Table.DiscriminatorColumn, Table.SearchValueColumn, Table.ResultColumn)`;
 
-export class LookupFunction extends TableFunction {
+export class LookupByFunction extends TableFunction {
 
-  public static readonly functionName: string = `LOOKUP`;
+  public static readonly functionName: string = `LOOKUPBY`;
 
   private resultColumnTypeValue: VariableType | null = null;
+  private discriminatorValueColumnTypeValue: VariableType | null = null;
   private searchValueColumnTypeValue: VariableType | null = null;
 
-  public readonly nodeType = NodeType.LookupFunction;
+  public readonly nodeType = NodeType.LookupByFunction;
 
+  public readonly discriminatorExpression: Expression
   public readonly valueExpression: Expression
 
   public readonly resultColumn: MemberAccessLiteral;
+  public readonly discriminatorValueColumn: MemberAccessLiteral;
   public readonly searchValueColumn: MemberAccessLiteral;
 
   override get functionHelp() {
     return functionHelp;
   }
 
-  constructor(tableType: string, valueExpression: Expression,
-              resultColumn: MemberAccessLiteral, searchValueColumn: MemberAccessLiteral,
+  constructor(tableType: string, discriminatorExpression: Expression, valueExpression: Expression,
+              discriminatorColumn: MemberAccessLiteral, searchValueColumn: MemberAccessLiteral, resultColumn: MemberAccessLiteral,
               source: ExpressionSource) {
-    super(tableType, LookupFunction.functionName, source);
+    super(tableType, LookupByFunction.functionName, source);
+    this.discriminatorExpression = discriminatorExpression;
     this.valueExpression = valueExpression;
-    this.resultColumn = resultColumn;
+    this.discriminatorValueColumn = discriminatorColumn;
     this.searchValueColumn = searchValueColumn;
+    this.resultColumn = resultColumn;
   }
-
 
   public static create(name: string, source: ExpressionSource,
                       argumentValues: Array<Expression>): ParseFunctionCallExpressionResult {
@@ -60,6 +66,12 @@ export class LookupFunction extends TableFunction {
     if (tableNameExpression == null) {
       return newParseFunctionCallExpressionsFailed(
         `Invalid argument ${argumentTable}. Should be valid table name. ${functionHelp}`);
+    }
+
+    const discriminatorValueColumnHeader = asMemberAccessExpression(argumentValues[argumentDiscriminatorValueColumn]);
+    if (discriminatorValueColumnHeader == null) {
+      return newParseFunctionCallExpressionsFailed(
+        `Invalid argument ${argumentDiscriminatorValue}. Should be discriminator column. ${functionHelp}`);
     }
 
     const searchValueColumnHeader = asMemberAccessExpression(argumentValues[argumentSearchValueColumn]);
@@ -75,35 +87,44 @@ export class LookupFunction extends TableFunction {
     }
 
     const tableName = tableNameExpression.identifier;
+    const discriminatorExpression = argumentValues[argumentDiscriminatorValue];
     const valueExpression = argumentValues[argumentLookupValue];
     const searchValueColumn = searchValueColumnHeader.memberAccessLiteral;
+    const discriminatorValueColumn = discriminatorValueColumnHeader.memberAccessLiteral;
     const resultColumn = resultColumnExpression.memberAccessLiteral;
 
-    const lookupFunction = new LookupFunction(tableName, valueExpression, resultColumn, searchValueColumn,
-      source);
+    const lookupFunction = new LookupByFunction(tableName, discriminatorExpression, valueExpression,
+      discriminatorValueColumn, searchValueColumn, resultColumn, source);
     return newParseFunctionCallExpressionsSuccess(lookupFunction);
   }
 
   public override getChildren(): Array<INode> {
-    return [this.valueExpression];
+    return [this.valueExpression, this.discriminatorExpression];
   }
 
   protected override validate(context: IValidationContext): void {
     super.validate(context);
 
-    const resultColumnHeader = this.getColumnHeader(context, argumentResultColumn, this.resultColumn);
+    const discriminatorColumnHeader = this.getColumnHeader(context, argumentDiscriminatorValueColumn, this.discriminatorValueColumn);
     const searchColumnHeader = this.getColumnHeader(context, argumentSearchValueColumn, this.searchValueColumn);
-    if (resultColumnHeader == null || searchColumnHeader == null) return;
+    const resultColumnHeader = this.getColumnHeader(context, argumentResultColumn, this.resultColumn);
+    if (discriminatorColumnHeader == null || searchColumnHeader == null || resultColumnHeader == null) return;
 
     this.resultColumnTypeValue = resultColumnHeader.type.variableType;
     this.searchValueColumnTypeValue = searchColumnHeader.type.variableType;
+    this.discriminatorValueColumnTypeValue = discriminatorColumnHeader.type.variableType;
 
     this.validateColumnValueType(
       argumentSearchValueColumn, this.searchValueColumn,
       this.valueExpression.deriveType(context), this.searchValueColumnTypeValue, context);
+
+    this.validateColumnValueType(
+      argumentDiscriminatorValueColumn, this.discriminatorValueColumn,
+      this.discriminatorExpression.deriveType(context), this.discriminatorValueColumnTypeValue, context);
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
     return this.resultColumnTypeValue;
   }
 }
+

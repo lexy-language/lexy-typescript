@@ -82,4 +82,93 @@ export class BuiltInTableFunctions {
     context.logChild(`${functionName} returned value from last row: ${tableValues.length}`);
     return lastRow;
   }
+
+  public static lookUpBy(resultName: string,
+                         discriminatorName: string,
+                         valueName: string,
+                         tableName: string,
+                         tableValues: any,
+                         discriminator: any,
+                         condition: any,
+                         context: IExecutionContext) {
+    let functionName = `Lookup '${resultName}' by '${valueName}' from table '${tableName}'`;
+
+    let lastRow = null;
+
+    for (let index = 0; index < tableValues.length; index++) {
+      let row = tableValues[index];
+
+      let discriminatorValue = row[discriminatorName];
+      if (discriminatorValue != discriminator) continue;
+
+      let value = row[valueName];
+      if (value == condition) {
+        context.logChild(`${functionName} returned value from row: ${index + 1}`);
+        return row[resultName];
+      }
+
+      if (value > condition) {
+        context.logChild(`{functionName} returned value from previous row: {index}`);
+
+        if (lastRow == null) {
+          throw new Error(`${functionName} failed. Search value '${condition}' not found.`);
+        }
+
+        return lastRow[resultName];
+      }
+
+      lastRow = row;
+    }
+
+    if (lastRow == null) {
+      throw new Error(`${functionName} failed. Search value '${condition}' not found.`);
+    }
+
+    context.logChild(`${functionName} returned value from last row: ${tableValues.length}`);
+    return lastRow[resultName];
+  }
+
+  public static lookUpRowBy(discriminatorName: string,
+                            valueName: string,
+                            tableName: string,
+                            tableValues: any,
+                            discriminator: any,
+                            condition: any,
+                            context: IExecutionContext) {
+    let functionName = `Lookup row by '${valueName}' from table '${tableName}'`;
+
+    let lastRow = null;
+
+    for (let index = 0; index < tableValues.length; index++) {
+      let row = tableValues[index];
+
+      let discriminatorValue = row[discriminatorName];
+      if (discriminatorValue != discriminator) continue;
+
+      let value = row[valueName];
+      if (value == condition) {
+        context.logChild(`${functionName} returned value from row: ${index + 1}`);
+        return row;
+      }
+
+      if (value > condition) {
+        context.logChild(`{functionName} returned value from previous row: {index}`);
+
+        if (lastRow == null) {
+          throw new Error(`${functionName} failed. Search value '${condition}' not found.`);
+        }
+
+        return lastRow;
+      }
+
+      lastRow = row;
+    }
+
+    if (lastRow == null) {
+      throw new Error(`${functionName} failed. Search value '${condition}' not found.`);
+    }
+
+    context.logChild(`${functionName} returned value from last row: ${tableValues.length}`);
+    return lastRow;
+  }
 }
