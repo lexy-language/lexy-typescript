@@ -17,6 +17,7 @@ Check [lexy-language](https://github.com/lexy-language/lexy-language) for more i
 - [ ] Code: get rid of all warnings, make the source maps work
 - [ ] Packaging: publish npm package (use it on **lexy-editor**) from GitHub Actions
 - [ ] Readme: Use /coverage/badges.svg from publish gh-page (once repo is public)
+- [ ] Code: verify new, extract, and fill functions work with custom types and table row types
 
 # Implementations notes
 

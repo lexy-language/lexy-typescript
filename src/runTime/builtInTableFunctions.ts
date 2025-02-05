@@ -91,7 +91,7 @@ export class BuiltInTableFunctions {
                          discriminator: any,
                          condition: any,
                          context: IExecutionContext) {
-    let functionName = `Lookup '${resultName}' by '${valueName}' from table '${tableName}'`;
+    let functionName = `Lookup '${resultName}' by discriminator '${discriminatorName}' and value '${valueName}' from table '${tableName}'`;
 
     let lastRow = null;
 
@@ -135,7 +135,7 @@ export class BuiltInTableFunctions {
                             discriminator: any,
                             condition: any,
                             context: IExecutionContext) {
-    let functionName = `Lookup row by '${valueName}' from table '${tableName}'`;
+    let functionName = `Lookup row by discriminator '${discriminatorName}' and value '${valueName}' from table '${tableName}'`;
 
     let lastRow = null;
 

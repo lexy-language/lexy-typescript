@@ -71,7 +71,7 @@ export function translateType(variableType: VariableType): string {
     }
     case VariableTypeName.TableType: {
       const tableType = asTableType(variableType);
-      if (tableType == null) throw new Error("Is not tableType");
+      if (tableType == null) throw new Error("Is not table");
       return tableType.tableName;
     }
     case VariableTypeName.ComplexType: {

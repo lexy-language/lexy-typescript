@@ -36,7 +36,7 @@ export class TableWriter implements IRootTokenWriter {
   }
 
   private renderRowClass(rowName: string, table: Table, codeWriter: CodeWriter) {
-    const header = Assert.notNull(table.header, "table.header");
+    const header = Assert.notNull(table.header, "tableName.header");
 
     codeWriter.openScope("class " + rowName);
     for (const column of header.columns) {

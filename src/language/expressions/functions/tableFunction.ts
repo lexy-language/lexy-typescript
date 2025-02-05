@@ -11,33 +11,33 @@ import {VariableType} from "../../variableTypes/variableType";
 
 export abstract class TableFunction extends FunctionCallExpression implements IHasNodeDependencies {
 
-  private tableTypeValue: Table | null = null;
+  private tableNameValue: Table | null = null;
 
   public readonly hasNodeDependencies = true;
 
-  public readonly table: string
+  public readonly tableName: string
 
-  public get tableType(): Table | null{
-    return this.tableTypeValue;
+  public get table(): Table | null{
+    return this.tableNameValue;
   }
 
   public abstract get functionHelp(): string;
 
-  protected constructor(tableType: string, functionName: string, source: ExpressionSource) {
+  protected constructor(tableName: string, functionName: string, source: ExpressionSource) {
     super(functionName, source);
-    this.table = tableType;
+    this.tableName = tableName;
   }
 
   public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    let table = rootNodeList.getTable(this.table);
+    let table = rootNodeList.getTable(this.tableName);
     return table != null ? [table] : [];
   }
 
   protected override validate(context: IValidationContext): void {
-    this.tableTypeValue = context.rootNodes.getTable(this.table);
-    if (this.tableTypeValue == null) {
+    this.tableNameValue = context.rootNodes.getTable(this.tableName);
+    if (this.tableNameValue == null) {
       context.logger.fail(this.reference,
-        `Invalid argument. Table name '${this.table}' not found. ${this.functionHelp}`);
+        `Invalid argument. Table name '${this.tableName}' not found. ${this.functionHelp}`);
       return;
     }
   }
@@ -46,19 +46,19 @@ export abstract class TableFunction extends FunctionCallExpression implements IH
 
     if (!this.validateColumn(context, column, argumentIndex)) return null;
 
-    const columnHeader = this.tableTypeValue?.header?.get(column);
+    const columnHeader = this.tableNameValue?.header?.get(column);
     if (columnHeader == null) {
       context.logger.fail(this.reference,
-        `Invalid argument ${argumentIndex}. Column name '${column}' not found in table '${this.table}'. ${this.functionHelp}`);
+        `Invalid argument ${argumentIndex}. Column name '${column}' not found in table '${this.tableName}'. ${this.functionHelp}`);
       return null;
     }
     return columnHeader;
   }
 
   private validateColumn(context: IValidationContext, column: MemberAccessLiteral, index: number): boolean {
-    if (column.parent != this.table || column.parts.length != 2) {
+    if (column.parent != this.tableName || column.parts.length != 2) {
       context.logger.fail(this.reference,
-        `Invalid argument ${index}. Result column table '${column.parent}' should be table name '${this.table}'. ${this.functionHelp}`);
+        `Invalid argument ${index}. Result column table '${column.parent}' should be table name '${this.tableName}'. ${this.functionHelp}`);
       return false;
     }
     return true;

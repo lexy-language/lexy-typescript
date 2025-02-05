@@ -11,8 +11,8 @@ export class LookUpByFunctionCall extends FunctionCall<LookupByFunction> {
     codeWriter.write(`"${expression.resultColumn.member}", `);
     codeWriter.write(`"${expression.discriminatorValueColumn.member}", `);
     codeWriter.write(`"${expression.searchValueColumn.member}", `);
-    codeWriter.write(`"${expression.table}", `);
-    codeWriter.writeEnvironment(`.${tableClassName(expression.table)}.__values, `);
+    codeWriter.write(`"${expression.tableName}", `);
+    codeWriter.writeEnvironment(`.${tableClassName(expression.tableName)}.__values, `);
     codeWriter.renderExpression(expression.discriminatorExpression);
     codeWriter.write(`, `);
     codeWriter.renderExpression(expression.valueExpression);

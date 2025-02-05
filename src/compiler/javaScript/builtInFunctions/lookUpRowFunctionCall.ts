@@ -9,8 +9,8 @@ export class LookUpRowFunctionCall extends FunctionCall<LookupRowFunction> {
      codeWriter.writeEnvironment();
      codeWriter.write(".builtInTableFunctions.lookUpRow(");
      codeWriter.write(`"${expression.searchValueColumn.member}", `);
-     codeWriter.write(`"${expression.table}", `);
-     codeWriter.writeEnvironment(`.${tableClassName(expression.table)}.__values, ` );
+     codeWriter.write(`"${expression.tableName}", `);
+     codeWriter.writeEnvironment(`.${tableClassName(expression.tableName)}.__values, ` );
      codeWriter.renderExpression(expression.valueExpression);
      codeWriter.write(`, ${LexyCodeConstants.contextVariable})`);
   }

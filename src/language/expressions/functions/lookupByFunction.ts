@@ -104,6 +104,7 @@ export class LookupByFunction extends TableFunction {
 
   protected override validate(context: IValidationContext): void {
     super.validate(context);
+    if (this.table == null) return;
 
     const discriminatorColumnHeader = this.getColumnHeader(context, argumentDiscriminatorValueColumn, this.discriminatorValueColumn);
     const searchColumnHeader = this.getColumnHeader(context, argumentSearchValueColumn, this.searchValueColumn);

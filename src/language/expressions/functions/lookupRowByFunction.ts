@@ -92,6 +92,7 @@ export class LookupRowByFunction extends TableFunction {
 
   protected override validate(context: IValidationContext): void {
     super.validate(context);
+    if (this.table == null) return;
 
     const discriminatorColumnHeader = this.getColumnHeader(context, argumentDiscriminatorValueColumn, this.discriminatorValueColumn);
     const searchColumnHeader = this.getColumnHeader(context, argumentSearchValueColumn, this.searchValueColumn);
@@ -110,7 +111,7 @@ export class LookupRowByFunction extends TableFunction {
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
-    const rowTypeValue = this.tableType?.getRowType();
+    const rowTypeValue = this.table?.getRowType();
     return !!rowTypeValue ? rowTypeValue : null;
   }
 }
