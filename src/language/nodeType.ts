@@ -12,6 +12,7 @@ export enum NodeType {
   DayFunction = "DayFunction",
   DaysFunction = "DaysFunction",
   ElseExpression = "ElseExpression",
+  ElseifExpression = "ElseifExpression",
   EnumDefinition = "EnumDefinition",
   EnumMember = "EnumMember",
   EnumName = "EnumName",

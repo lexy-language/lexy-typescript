@@ -31,6 +31,8 @@ import {logAssignmentVariables, logLineAndVariables} from "./rendeLogCalls";
 import {renderVariableReference} from "./renderVariableReference";
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {CodeWriter} from "../writers/codeWriter";
+import {asElseifExpression, ElseifExpression} from "../../../language/expressions/elseifExpression";
+import {asElseExpression, ElseExpression} from "../../../language/expressions/elseExpression";
 
 function renderExpressionLine(codeWriter: CodeWriter, expression: Expression) {
   logLineAndVariables(expression, codeWriter);
@@ -217,19 +219,39 @@ function renderBracketedExpression(expression: BracketedExpression, codeWriter: 
   codeWriter.write("]");
 }
 
+
 function renderIfExpression(expression: IfExpression, codeWriter: CodeWriter) {
   codeWriter.write("if (");
   renderExpression(expression.condition, codeWriter);
   codeWriter.openInlineScope(")");
   renderExpressions(expression.trueExpressions, true, codeWriter);
 
-  if (expression.else != null) {
-    codeWriter.writeLine("} else {");
-    logLineAndVariables(expression.else, codeWriter);
-    renderExpressions(expression.else.falseExpressions,true, codeWriter);
+  for (const childExpression of expression.elseExpressions) {
+    const elseExpression = asElseExpression(childExpression);
+    if (elseExpression != null) {
+      renderElseExpression(elseExpression, codeWriter);
+      continue;
+    }
+    const elseifExpression = asElseifExpression(childExpression);
+    if (elseifExpression != null) {
+      renderElseifExpression(elseifExpression, codeWriter);
+    }
   }
 
   codeWriter.closeScope();
+}
+
+function renderElseExpression(expression: ElseExpression, codeWriter: CodeWriter) {
+  codeWriter.writeLine("} else {");
+  logLineAndVariables(expression, codeWriter);
+  renderExpressions(expression.falseExpressions, true, codeWriter);
+}
+
+function renderElseifExpression(expression: ElseifExpression, codeWriter: CodeWriter) {
+  codeWriter.startLine("} else if (");
+  renderExpression(expression.condition, codeWriter);
+  codeWriter.openInlineScope(")");
+  renderExpressions(expression.trueExpressions, true, codeWriter);
 }
 
 function renderParenthesizedExpression(expression: ParenthesizedExpression, codeWriter: CodeWriter) {

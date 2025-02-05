@@ -9,15 +9,19 @@ export class Keywords {
 
   public static readonly If = "if";
   public static readonly Else = "else";
+  public static readonly Elseif = "elseif";
+
   public static readonly Switch = "switch";
   public static readonly Case = "case";
   public static readonly Default = "default";
 
+  /*
   public static readonly For = "for";
   public static readonly From = "from";
   public static readonly To = "to";
 
   public static readonly While = "while";
+  */
 
   public static readonly Include = "Include";
 
@@ -43,13 +47,10 @@ export class Keywords {
     Keywords.ValidationTable,
     Keywords.If,
     Keywords.Else,
+    Keywords.Elseif,
     Keywords.Switch,
     Keywords.Case,
     Keywords.Default,
-    Keywords.For,
-    Keywords.From,
-    Keywords.To,
-    Keywords.While,
     Keywords.Include,
     Keywords.Parameters,
     Keywords.Results,

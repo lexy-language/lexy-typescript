@@ -7,7 +7,7 @@ import type {IChildExpression, IParentExpression} from "./IChildExpression";
 import {Expression} from "./expression";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
-import {asElseExpression, ElseExpression, instanceOfElseExpression} from "./elseExpression";
+import {asElseExpression, ElseExpression} from "./elseExpression";
 import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../../parser/sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
@@ -18,34 +18,27 @@ import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
 import {VariableUsage} from "./variableUsage";
 import {getReadVariableUsage} from "./getReadVariableUsage";
-import {asElseifExpression, ElseifExpression, instanceOfElseifExpression} from "./elseifExpression";
-import {lastOrDefault} from "../../infrastructure/enumerableExtensions";
 
-export function instanceOfIfExpression(object: any): boolean {
-  return object?.nodeType == NodeType.IfExpression;
+export function instanceOfElseifExpression(object: any): object is ElseifExpression {
+  return object?.nodeType == NodeType.ElseifExpression;
 }
 
-export function asIfExpression(object: any): IfExpression | null {
-  return instanceOfIfExpression(object) ? object as IfExpression : null;
+export function asElseifExpression(object: any): ElseifExpression | null {
+  return instanceOfElseifExpression(object) ? object as ElseifExpression : null;
 }
 
-export class IfExpression extends Expression implements IParsableNode, IParentExpression {
+export class ElseifExpression extends Expression implements IParsableNode, IChildExpression {
 
   private readonly trueExpressionsValues: ExpressionList;
-  private readonly elseExpressionsValues: Array<Expression> = [];
 
-  public readonly isParentExpression = true;
   public readonly isParsableNode = true;
-  public readonly nodeType = NodeType.IfExpression;
+  public readonly isChildExpression = true;
+  public readonly nodeType = NodeType.ElseifExpression;
 
   public condition: Expression
 
   public get trueExpressions(): ReadonlyArray<Expression> {
     return this.trueExpressionsValues.asArray();
-  }
-
-  public get elseExpressions(): ReadonlyArray<Expression> {
-    return this.elseExpressionsValues;
   }
 
   constructor(condition: Expression, source: ExpressionSource, reference: SourceReference, factory: IExpressionFactory) {
@@ -62,14 +55,14 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
   }
 
   public override getChildren(): Array<INode> {
-    return [this.condition, this.trueExpressionsValues, ...this.elseExpressions];
+    return [this.condition, this.trueExpressionsValues];
   }
 
   public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
     let tokens = source.tokens;
-    if (!IfExpression.isValid(tokens)) return newParseExpressionFailed("IfExpression", `Not valid.`);
+    if (!ElseifExpression.isValid(tokens)) return newParseExpressionFailed("ElseifExpression", `Not valid.`);
 
-    if (tokens.length == 1) return newParseExpressionFailed("IfExpression", `No condition found`);
+    if (tokens.length == 1) return newParseExpressionFailed("ElseifExpression", `No condition found`);
 
     let condition = tokens.tokensFrom(1);
     let conditionExpression = factory.parse(condition, source.line);
@@ -77,13 +70,13 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
 
     let reference = source.createReference();
 
-    let expression = new IfExpression(conditionExpression.result, source, reference, factory);
+    let expression = new ElseifExpression(conditionExpression.result, source, reference, factory);
 
     return newParseExpressionSuccess(expression);
   }
 
   public static isValid(tokens: TokenList): boolean {
-    return tokens.isKeyword(0, Keywords.If);
+    return tokens.isKeyword(0, Keywords.Elseif);
   }
 
   protected override validate(context: IValidationContext): void {
@@ -97,13 +90,12 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
     return null;
   }
 
-  linkChildExpression(expression: IChildExpression): void {
-    if (instanceOfElseExpression(expression) || instanceOfElseifExpression(expression)) {
-      if (instanceOfElseExpression(lastOrDefault(this.elseExpressions))) throw new Error(`'else' already defined.`);
-      this.elseExpressionsValues.push(expression);
-      return;
+  public validateParentExpression(expression: IParentExpression | null, context: IParseLineContext): boolean {
+    if (expression == null || (expression.nodeType != NodeType.IfExpression)) {
+      context.logger.fail(this.reference, `'elseif' should be following an 'if' statement. No 'if' statement found.`);
+      return false;
     }
-    throw new Error(`Invalid node type: ${expression.nodeType}`);
+    return true;
   }
 
   override usedVariables(): ReadonlyArray<VariableUsage> {

@@ -16,6 +16,7 @@ import {LiteralExpression} from "./literalExpression";
 import {BinaryExpression} from "./binaryExpression";
 import {FunctionCallExpression} from "./functions/functionCallExpression";
 import {FunctionCallExpressionParser} from "./functions/functionCallExpressionParser";
+import {ElseifExpression} from "./elseifExpression";
 
 export interface IExpressionFactory {
   parse(tokens: TokenList, currentLine: Line): ParseExpressionResult;
@@ -28,6 +29,7 @@ export class ExpressionFactory implements IExpressionFactory {
       factory: ((source: ExpressionSource, factory: IExpressionFactory) => ParseExpressionResult) }[] = [
          { criteria: IfExpression.isValid, factory: IfExpression.parse },
          { criteria: ElseExpression.isValid, factory: ElseExpression.parse },
+         { criteria: ElseifExpression.isValid, factory: ElseifExpression.parse },
          { criteria: SwitchExpression.isValid, factory: SwitchExpression.parse },
          { criteria: CaseExpression.isValid, factory: CaseExpression.parse },
          { criteria: VariableDeclarationExpression.isValid, factory: VariableDeclarationExpression.parse },
