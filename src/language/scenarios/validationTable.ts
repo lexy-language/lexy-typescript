@@ -61,7 +61,7 @@ export class ValidationTable extends ParsableNode {
 
   protected override validate(context: IValidationContext): void {
     if (this.header == null) {
-      context.logger.fail(this.reference, "No tableName header found.");
+      context.logger.fail(this.reference, "No table header found.");
     }
   }
 

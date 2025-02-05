@@ -13,6 +13,7 @@ import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
 import {PrimitiveType} from "../variableTypes/primitiveType";
+import {any} from "../../infrastructure/enumerableExtensions";
 
 class OperatorEntry {
   public operatorType: OperatorType;
@@ -45,6 +46,16 @@ export function asBinaryExpression(object: any): BinaryExpression | null {
 }
 
 export class BinaryExpression extends Expression {
+
+  private static readonly ComparisonOperators: Array<ExpressionOperator> = [
+    ExpressionOperator.GreaterThan,
+    ExpressionOperator.GreaterThanOrEqual,
+    ExpressionOperator.LessThan,
+    ExpressionOperator.LessThanOrEqual,
+    ExpressionOperator.Equals,
+    ExpressionOperator.NotEqual
+  ];
+
   private static readonly SupportedOperatorsByPriority: Array<OperatorEntry> = [
     new OperatorEntry(OperatorType.Multiplication, ExpressionOperator.Multiplication),
     new OperatorEntry(OperatorType.Division, ExpressionOperator.Division),
@@ -184,14 +195,14 @@ export class BinaryExpression extends Expression {
     let left = this.left.deriveType(context);
     let right = this.right.deriveType(context);
 
-    if (!left?.equals(right))
+    if (!left?.equals(right)) {
       context.logger.fail(this.reference,
         `Invalid expression type. Left expression: '${left}'. Right expression '${right}.`);
+    }
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
-    if (this.operator == ExpressionOperator.Equals
-      || this.operator == ExpressionOperator.NotEqual) {
+    if (any(BinaryExpression.ComparisonOperators, operator => operator == this.operator)) {
       return PrimitiveType.boolean;
     }
 

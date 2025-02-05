@@ -3,7 +3,7 @@ import {createRunner} from "./createRunner";
 describe('runSingleSpecification', () => {
   it('specificFile',  async() => {
     const runner = createRunner();
-    runner.run(`tests/lexy-language/src/Specifications/Table/LookupRowByDiscriminator.lexy`);
+    runner.run(`tests/lexy-language/src/Specifications/Language/ComparisonOperators.lexy`);
     //runner.run(`tests/lexy-language/src/specifications/Isolate.lexy`);
 
     //runner.run(`../laws/Specifications/ExecutionLogging/CallFunction.lexy`);
