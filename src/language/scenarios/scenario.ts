@@ -234,7 +234,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
   }
 
   protected override validateNodeTree(context: IValidationContext, child: INode): void {
-    if (child === this.parameters || child === this.results) {
+    if (child === this.parameters || child === this.results || child === this.validationTable) {
       this.validateParameterOrResultNode(context, child);
       return;
     }

@@ -6,6 +6,7 @@ import {SpecificationFileRunner} from "./specificationFileRunner";
 import {LexySourceDocument} from "../parser/lexySourceDocument";
 import {ILexyParser} from "../parser/lexyParser";
 import {ILexyCompiler} from "../compiler/lexyCompiler";
+import {format} from "../infrastructure/formatting";
 
 export interface ISpecificationsRunner {
   run(folder: string): void;
@@ -48,6 +49,8 @@ export class SpecificationsRunner implements ISpecificationsRunner {
 
     context.logGlobal(`Specifications succeed: ${countScenarios - context.failed} / ${countScenarios}`);
     context.logTimeSpent();
+
+    console.log(format(context.logEntries, 0));
 
     if (context.failed > 0) SpecificationsRunner.failed(context);
   }

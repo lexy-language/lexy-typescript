@@ -103,7 +103,7 @@ export class LexyParser implements ILexyParser {
 
   private processLine(context: IParserContext): boolean {
     let line = this.sourceCode.nextLine();
-    if (context.options.lineFilter != null && !context.options.lineFilter.useLine(line.content)) {
+    if (context.options.lineFilter != undefined && !context.options.lineFilter.useLine(line.content)) {
       context.logger.log(line.lineStartReference(), `Skip line by filter: '${line.content}'`);
       return false;
     }

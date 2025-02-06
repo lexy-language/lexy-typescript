@@ -67,11 +67,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
   public run(): void {
     this.functionNode = this.getFunctionNode(this.scenario, this.rootNodeList);
-    if (this.parserLogger.nodeHasErrors(this.scenario) && this.scenario.expectExecutionErrors == null) {
-      this.fail(`Parsing scenario failed.`, this.parserLogger.errorNodeMessages(this.scenario));
-      return;
-    }
-
+    if (!this.validateScenarioErrors()) return;
     if (!this.validateErrors()) return;
 
     const functionNode = Assert.notNull(this.functionNode, "functionNode");
@@ -171,8 +167,8 @@ export class ScenarioRunner implements IScenarioRunner {
   private static validateResult(expected: AssignmentDefinition, result: FunctionResult, validationResult: Array<string>) {
     const assignmentDefinition = Assert.notNull(asAssignmentDefinition(expected), "assignmentDefinition");
     if (assignmentDefinition.variableType == null) throw new Error("expected.variableType is null")
-    let actual = result.getValue(assignmentDefinition.variable);
-    let expectedValue = assignmentDefinition.constantValue.value;
+    const actual = result.getValue(assignmentDefinition.variable);
+    const expectedValue = assignmentDefinition.constantValue.value;
 
     if (actual == null || expectedValue == null || !ScenarioRunner.compare(actual, expectedValue)) {
       validationResult.push(
@@ -209,10 +205,23 @@ export class ScenarioRunner implements IScenarioRunner {
     }
   }
 
+  private validateScenarioErrors(): boolean {
+    const failedMessages = this.parserLogger.errorNodeMessages(this.scenario);
+    if (failedMessages.length == 0) return true;
+
+    const skipValidationWhenExecutionErrorsAreExpected = failedMessages.length > 0 &&
+      this.scenario.expectExecutionErrors != null;
+
+    if (skipValidationWhenExecutionErrorsAreExpected) return true;
+
+    const expectErrors = this.scenario.expectErrors;
+    return this.validateExpectedErrors("Parsing Scenario", failedMessages, expectErrors?.messages);
+  }
+
   private validateErrors(): boolean {
     if (this.scenario.expectRootErrors?.hasValues) return this.validateRootErrors();
 
-    let node = this.functionNode
+    const node = this.functionNode
       ?? this.scenario.functionNode
       ?? this.scenario.enum
       ?? this.scenario.table;
@@ -223,91 +232,62 @@ export class ScenarioRunner implements IScenarioRunner {
 
     const dependencies = DependencyGraphFactory.nodeAndDependencies(this.rootNodeList, node);
     const failedMessages = this.parserLogger.errorNodesMessages(dependencies);
+    const expectErrors = this.scenario.expectErrors;
+    return this.validateExpectedErrors("Parsing", failedMessages, expectErrors?.messages);
+  }
 
-    if (failedMessages.length > 0 && !this.scenario.expectErrors?.hasValues) {
-      this.fail(`Parsing errors: ${failedMessages.length}`, failedMessages);
+  private validateRootErrors(): boolean {
+    const failedMessages = this.parserLogger.errorMessages();
+    return this.validateExpectedErrors("Root", failedMessages, this.scenario.expectRootErrors?.messages, true);
+  }
+
+  private validateExecutionErrors(error: any): boolean {
+    return !this.validateExpectedErrors("Execution", error.message.split("\n"), this.scenario.expectExecutionErrors?.messages);
+  }
+
+  private validateExpectedErrors(title: string,
+                                 actualErrors: string[],
+                                 expectErrors: string[] | undefined,
+                                 strictAllMessages: boolean = false) {
+
+    if (actualErrors.length > 0 && expectErrors == undefined) {
+      this.fail(`${title} errors: ${actualErrors.length}`, StringArrayBuilder
+        .new("Expected:").list(actualErrors)
+        .array());
       return false;
     }
 
-    if (!this.scenario.expectErrors || !this.scenario.expectErrors.hasValues) {
+    if (expectErrors == undefined || expectErrors.length == 0) {
       return true;
     }
 
-    if (failedMessages.length == 0) {
-      this.fail(`No errors but errors expected:`, this.scenario.expectErrors.messages);
+    if (actualErrors.length == 0) {
+      this.fail(`No ${title} errors, but errors expected:`, StringArrayBuilder
+        .new("Expected:").list(expectErrors)
+        .array());
       return false;
     }
 
-    let errorNotFound = any(this.scenario.expectErrors.messages, message =>
-      !any(failedMessages, failedMessage => failedMessage.includes(message)));
+    let errorNotFound = false;
+    let remainingMessages = [...actualErrors];
+    for (const rootMessage of expectErrors) {
+      let failedMessage = firstOrDefault(remainingMessages, message => message.includes(rootMessage));
+      if (failedMessage != null) {
+        remainingMessages = remainingMessages.filter(item => item !== failedMessage);
+      } else {
+        errorNotFound = true;
+      }
+    }
 
-    if (errorNotFound) {
-      this.fail(`Wrong error(s) occurred.`, StringArrayBuilder
-        .new("Expected:").list(this.scenario.expectErrors.messages)
-        .add("Actual:").list(failedMessages).array());
+    if ((strictAllMessages && any(remainingMessages)) || errorNotFound) {
+      this.fail(`Wrong ${title} error(s) occurred.`, StringArrayBuilder
+        .new("Expected:").list(expectErrors)
+        .add("Actual:").list(actualErrors).array());
       return false;
     }
 
     this.context.success(this.scenario, null, null);
     return false;
-  }
-
-  private validateRootErrors(): boolean {
-    const expected = this.scenario.expectRootErrors != null ? this.scenario.expectRootErrors?.messages : [];
-    let failedMessages = this.parserLogger.errorMessages();
-    if (!any(failedMessages)) {
-      this.fail(`Root errors expected. No errors occurred.`, StringArrayBuilder
-        .new("Expected:").list(expected)
-        .array());
-      return false;
-    }
-
-    let failed = false;
-    if (this.scenario.expectRootErrors) {
-      for (const rootMessage of expected) {
-        let failedMessage = firstOrDefault(failedMessages, message => message.includes(rootMessage));
-        if (failedMessage != null) {
-          failedMessages = failedMessages.filter(item => item !== failedMessage);
-        } else {
-          failed = true;
-        }
-      }
-    }
-
-    if (!any(failedMessages) && !failed) {
-      this.context.success(this.scenario, null, null);
-      return false; // don't compile and run rest of scenario
-    }
-
-    this.fail(`Wrong root error(s) occurred.`, StringArrayBuilder
-      .new("Expected:").list(expected)
-      .add("Actual:").list(this.parserLogger.errorMessages())
-      .array());
-    return false;
-  }
-
-  private validateExecutionErrors(error: any): boolean {
-    if (!this.scenario.expectExecutionErrors) return false;
-
-    const errorMessage = error.message as string;
-    const failedErrors = [];
-    let expected = [...this.scenario.expectExecutionErrors.messages];
-    for (const error of this.scenario.expectExecutionErrors.messages) {
-      if (!errorMessage.includes(error)) {
-        failedErrors.push(error);
-      } else {
-        expected = expected.filter(where => where !== error)
-      }
-    }
-
-    if (failedErrors.length > 0) {
-      this.fail(`Execution error not found`, StringArrayBuilder
-        .new('Not found:').list(expected)
-        .add('Actual:').add(errorMessage, 2)
-        .array());
-    }
-
-    return true;
   }
 
   private validateExecutionLogging(result: FunctionResult) {

@@ -8,7 +8,7 @@ import {ComplexTypeSource} from "./complexTypeSource";
 import {VariableTypeName} from "./variableTypeName";
 
 export function instanceOfComplexType(object: any): object is ComplexType {
-  return object.variableTypeName == VariableTypeName.ComplexType;
+  return object?.variableTypeName == VariableTypeName.ComplexType;
 }
 
 export function asComplexType(object: any): ComplexType | null {
