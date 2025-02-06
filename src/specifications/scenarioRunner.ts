@@ -246,8 +246,8 @@ export class ScenarioRunner implements IScenarioRunner {
   }
 
   private validateExpectedErrors(title: string,
-                                 actualErrors: string[],
-                                 expectErrors: string[] | undefined,
+                                 actualErrors: ReadonlyArray<string>,
+                                 expectErrors: ReadonlyArray<string> | undefined,
                                  strictAllMessages: boolean = false) {
 
     if (actualErrors.length > 0 && expectErrors == undefined) {
