@@ -42,7 +42,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
   initialize() {
     let result: ParserResult;
     try {
-      result = this.parser.parseFile(this.fileName, false);
+      result = this.parser.parseFile(this.fileName, {suppressException: true});
     } catch (error: any) {
       throw new Error("Error while parsing " + this.fileName + "\n" + error.stack + "\n--------------------------------------\n")
     }

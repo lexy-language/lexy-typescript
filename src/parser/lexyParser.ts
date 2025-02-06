@@ -15,10 +15,11 @@ import {ValidationContext} from "./validationContext";
 import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
 import {SourceCodeDocument} from "./sourceCodeDocument";
 import {ParserContext} from "./parserContext";
+import {ParseOptions} from "./parseOptions";
 
 export interface ILexyParser {
-  parseFile(fileName: string, throwException: boolean): ParserResult;
-  parse(code: string[], fileName: string, throwException: boolean): ParserResult;
+  parseFile(fileName: string, options: ParseOptions | null): ParserResult;
+  parse(code: string[], fileName: string, options: ParseOptions | null): ParserResult;
 }
 
 export class LexyParser implements ILexyParser {
@@ -36,7 +37,7 @@ export class LexyParser implements ILexyParser {
     this.sourceCode = new SourceCodeDocument();
   }
 
-  public parseFile(fileName: string, throwException: boolean = true): ParserResult {
+  public parseFile(fileName: string, options: ParseOptions | null): ParserResult {
     const fullFileName = this.fileSystem.isPathRooted(fileName)
       ? fileName
       : this.fileSystem.getFullPath(fileName);
@@ -44,11 +45,11 @@ export class LexyParser implements ILexyParser {
     this.baseLogger.logInformation(`Parse file: ` + fullFileName);
 
     const code = this.fileSystem.readAllLines(fullFileName);
-    return this.parse(code, fileName, throwException);
+    return this.parse(code, fileName, options);
   }
 
-  public parse(code: string[], fullFileName: string, throwException: boolean = true): ParserResult {
-    const context = new ParserContext(this.baseLogger, this.fileSystem, this.expressionFactory);
+  public parse(code: string[], fullFileName: string, options: ParseOptions | null): ParserResult {
+    const context = new ParserContext(this.baseLogger, this.fileSystem, this.expressionFactory, options);
     context.addFileIncluded(fullFileName);
 
     this.parseDocument(context, code, fullFileName);
@@ -57,7 +58,9 @@ export class LexyParser implements ILexyParser {
     this.validateNodesTree(context);
     this.detectCircularDependencies(context);
 
-    if (throwException) context.logger.assertNoErrors();
+    if (context.options.suppressException != true) {
+      context.logger.assertNoErrors();
+    }
 
     return new ParserResult(context.nodes, context.logger);
   }
@@ -100,6 +103,11 @@ export class LexyParser implements ILexyParser {
 
   private processLine(context: IParserContext): boolean {
     let line = this.sourceCode.nextLine();
+    if (context.options.lineFilter != null && !context.options.lineFilter.useLine(line.content)) {
+      context.logger.log(line.lineStartReference(), `Skip line by filter: '${line.content}'`);
+      return false;
+    }
+
     context.logger.log(line.lineStartReference(), `'${line.content}'`);
 
     let tokens = line.tokenize(this.tokenizer);

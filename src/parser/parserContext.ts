@@ -7,6 +7,7 @@ import {SourceCodeNode} from "../language/sourceCodeNode";
 import {RootNodeList} from "../language/rootNodeList";
 import {contains} from "../infrastructure/enumerableExtensions";
 import {ParserLogger} from "./parserLogger";
+import {ParseOptions} from "./parseOptions";
 
 export interface IParserContext {
   logger: IParserLogger;
@@ -14,6 +15,7 @@ export interface IParserContext {
   fileSystem: IFileSystem;
   nodes: RootNodeList;
   rootNode: SourceCodeNode;
+  options: ParseOptions;
 
   addFileIncluded(fileName: string): void;
   isFileIncluded(fileName: string ): boolean;
@@ -30,8 +32,10 @@ export class ParserContext implements IParserContext {
   public readonly rootNode: SourceCodeNode;
   public readonly logger: IParserLogger;
   public readonly fileSystem: IFileSystem;
+  public readonly options: ParseOptions;
 
-   constructor(logger: ILogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory) {
+   constructor(logger: ILogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory, options: ParseOptions | null) {
+     this.options = options ?? {};
      this.logger = new ParserLogger(logger);
      this.fileSystem = fileSystem;
      this.rootNode = new SourceCodeNode(expressionFactory);

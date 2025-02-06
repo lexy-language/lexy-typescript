@@ -23,7 +23,7 @@ export function createParser() {
 export function parseNodes(code: string): { nodes: RootNodeList, logger: IParserLogger } {
   const parser = createParser();
   const codeLines = code.split("\n");
-  const result = parser.parse(codeLines, `tests.lexy`, false);
+  const result = parser.parse(codeLines, `tests.lexy`, {suppressException: true});
 
   return {nodes: result.rootNodes, logger: result.logger};
 }
