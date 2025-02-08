@@ -1,18 +1,25 @@
+import Decimal from 'decimal.js';
+
 export class BuiltInNumberFunctions {
-   public static int(value: number): number {
-     return Math.floor(value);
-   }
 
-   public static abs(value: number): number {
-     return Math.abs(value);
-   }
+  public static int(value: Decimal): Decimal {
+    return value.floor();
+  }
 
-   public static power(number: number, power: number): number {
-     return Math.pow(number, power);
-   }
+  public static abs(value: Decimal): Decimal {
+    return value.abs();
+  }
 
-   public static round(number: number, digits: number): number {
-     const factor = Math.pow(10, digits);
-     return (number >= 0 ? 1 : -1) *  Math.round(Math.abs(number) * factor)/factor;
-   }
+  public static power(number: Decimal, power: Decimal): Decimal {
+    return number.pow(power);
+  }
+
+  public static round(number: Decimal, digits: Decimal): Decimal {
+    const factor = new Decimal(10).pow(digits);
+    return number.abs()
+      .mul(factor)
+      .round()
+      .div(factor)
+      .mul(number.greaterThanOrEqualTo(0) ? 1 : -1);
+  }
 }

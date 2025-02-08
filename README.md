@@ -43,5 +43,10 @@ ensure that the parser and compiler are running against the latest lexy language
 
 To update the submodule to the latest version: `cd tests/lexy-language/ && git pull` (ensure you pull the right branch is you're implementing a new branch of lexy-language)
 
-## Circular references
-`import type`
+## Circular references (import)
+
+`import type` is used to import interfaces without creating a circular reference.
+
+## Floating point precision
+
+To avoid floating-point manipulation problems `decimal.js` is used to handle number operations.

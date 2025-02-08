@@ -1,6 +1,7 @@
 import type {LogVariables, VariablesLogger} from "./executionContext";
 
 import {NodeType} from "../language/nodeType";
+import Decimal from "decimal.js";
 
 export class ExecutionLogEntry {
 
@@ -41,6 +42,7 @@ export class ExecutionLogEntry {
 
   public deepCopy<T>(obj: T): T {
     if (obj instanceof Date) return new Date(obj) as T;
+    if (toString.call(obj) === '[object Decimal]' || obj === null) return Decimal(obj) as T;
     if (typeof obj !== 'object' || obj === null) return obj;
     if (Array.isArray(obj)) return obj.map(item => this.deepCopy(item)) as unknown as T;
     const copy = {} as { [K in keyof T]: T[K] };

@@ -9,6 +9,7 @@ import {BuiltInNumberFunctions} from "../../runTime/builtInNumberFunctions";
 import {BuiltInTableFunctions} from "../../runTime/builtInTableFunctions";
 import {SystemFunctions} from "../../runTime/systemFunctions";
 import {Validate} from "../../runTime/validate";
+import Decimal from "decimal.js";
 
 export interface ICompilationEnvironment {
   addType(generatedType: GeneratedType): void;
@@ -36,6 +37,7 @@ export class CompilationEnvironment implements ICompilationEnvironment {
       builtInTableFunctions: BuiltInTableFunctions,
       systemFunctions: SystemFunctions,
       validate: Validate,
+      Decimal: Decimal
     }
   }
 

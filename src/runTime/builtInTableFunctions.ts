@@ -1,4 +1,5 @@
 import {IExecutionContext} from "./executionContext";
+import Decimal from "decimal.js";
 
 export class BuiltInTableFunctions {
 
@@ -17,12 +18,12 @@ export class BuiltInTableFunctions {
       let value = row[valueName];
 
       //let valueComparedToCondition = value.CompareTo(condition);
-      if (value == condition) {
+      if (this.equals(value, condition)) {
         context.logChild(`${functionName} returned value from row: ${index + 1}`);
         return row[resultName];
       }
 
-      if (value > condition) {
+      if (this.greaterThan(value, condition)) {
         context.logChild(`{functionName} returned value from previous row: {index}`);
 
         if (lastRow == null) {
@@ -56,13 +57,12 @@ export class BuiltInTableFunctions {
       let row = tableValues[index];
       let value = row[valueName];
 
-      //let valueComparedToCondition = value.CompareTo(condition);
-      if (value == condition) {
+      if (this.equals(value, condition)) {
         context.logChild(`${functionName} returned value from row: ${index + 1}`);
         return row;
       }
 
-      if (value > condition) {
+      if (this.greaterThan(value, condition)) {
         context.logChild(`{functionName} returned value from previous row: {index}`);
 
         if (lastRow == null) {
@@ -102,12 +102,12 @@ export class BuiltInTableFunctions {
       if (discriminatorValue != discriminator) continue;
 
       let value = row[valueName];
-      if (value == condition) {
+      if (this.equals(value, condition)) {
         context.logChild(`${functionName} returned value from row: ${index + 1}`);
         return row[resultName];
       }
 
-      if (value > condition) {
+      if (this.greaterThan(value, condition)) {
         context.logChild(`{functionName} returned value from previous row: {index}`);
 
         if (lastRow == null) {
@@ -146,12 +146,12 @@ export class BuiltInTableFunctions {
       if (discriminatorValue != discriminator) continue;
 
       let value = row[valueName];
-      if (value == condition) {
+      if (this.equals(value, condition)) {
         context.logChild(`${functionName} returned value from row: ${index + 1}`);
         return row;
       }
 
-      if (value > condition) {
+      if (this.greaterThan(value, condition)) {
         context.logChild(`{functionName} returned value from previous row: {index}`);
 
         if (lastRow == null) {
@@ -170,5 +170,19 @@ export class BuiltInTableFunctions {
 
     context.logChild(`${functionName} returned value from last row: ${tableValues.length}`);
     return lastRow;
+  }
+
+  private static equals(value: any, condition: any) {
+    if (toString.call(value) === '[object Decimal]') {
+      return value.equals(condition);
+    }
+    return value == condition;
+  }
+
+  private static greaterThan(value: any, condition: any) {
+    if (toString.call(value) === '[object Decimal]') {
+      return value.greaterThan(condition);
+    }
+    return value > condition;
   }
 }

@@ -1,5 +1,5 @@
 import {compileFunction} from "./compileFunction";
-import {LoggingConfiguration} from "../loggingConfiguration";
+import Decimal from "decimal.js";
 
 describe('CompileFunctionTests', () => {
   it('testSimpleReturn', async () => {
@@ -9,7 +9,7 @@ describe('CompileFunctionTests', () => {
   Code
     Result = 777`);
      const result = script.run();
-     expect(result.number(`Result`)).toBe(777);
+     expect(result.number(`Result`)).toEqual(Decimal(777));
    });
 
   it('testParameterDefaultReturn', async () => {
@@ -21,7 +21,7 @@ describe('CompileFunctionTests', () => {
   Code
     Result = Input`);
      let result = script.run();
-     expect(result.number(`Result`)).toBe(5);
+     expect(result.number(`Result`)).toEqual(Decimal(5));
    });
 
   it('testAssignmentReturn', async () => {
@@ -36,7 +36,7 @@ describe('CompileFunctionTests', () => {
      let result = script.run({
        Input: 777
      });
-     expect(result.number(`Result`)).toBe(777);
+     expect(result.number(`Result`)).toEqual(Decimal(777));
    });
 
   it('testMemberAccessAssignment', async () => {
@@ -55,7 +55,7 @@ Function: ValidateTableKeywordFunction
     Result = ValidateTableKeyword.Count`);
 
      let result = script.run();
-     expect(result.number(`Result`)).toBe(2);
+     expect(result.number(`Result`)).toEqual(Decimal(2));
    });
 
   it('variableDeclarationInCode', async () => {
@@ -70,7 +70,7 @@ Function: ValidateTableKeywordFunction
     Result = temp`);
 
      let result = script.run();
-     expect(result.number(`Result`)).toBe(5);
+     expect(result.number(`Result`)).toEqual(Decimal(5));
    });
 
   it('variableDeclarationWithDefaultInCode', async () => {
@@ -82,7 +82,7 @@ Function: ValidateTableKeywordFunction
     Result = temp
 `);
      let result = script.run();
-     expect(result.number(`Result`)).toBe(5);
+     expect(result.number(`Result`)).toEqual(Decimal(5));
    });
 
   it('variableDeclarationWithDefaultEnumInCode', async () => {
@@ -98,7 +98,7 @@ Function: TestEnum
     Result = SimpleEnum.Second
 `);
     let result = script.run();
-    expect(result.number(`Result`)).toBe("SimpleEnum.Second");
+    expect(result.string(`Result`)).toEqual("SimpleEnum.Second");
   });
 
   it('customType', async () => {
@@ -115,8 +115,8 @@ Function: TestCustomType
     Result.Second = "123"
 `);
     let result = script.run();
-    expect(result.number(`Result`)).toEqual({
-      First: 777,
+    expect(result.object(`Result`)).toEqual({
+      First: Decimal(777),
       Second: "123"
     });
   });
@@ -138,9 +138,9 @@ Function: TestCustomType
     Result.Inner.Second = "123"
 `);
     let result = script.run();
-    expect(result.number(`Result`)).toEqual({
+    expect(result.object(`Result`)).toEqual({
       Inner: {
-        First: 777,
+        First: Decimal(777),
         Second: "123"
       }
     });

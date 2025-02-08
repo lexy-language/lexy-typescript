@@ -184,6 +184,6 @@ describe('ParseScenarioTests', () => {
     expect(errors.length).toBe(1);
     expect(errors[0]).toBe(
       `tests.lexy(2, 13): ERROR - Unexpected function name. ` +
-      `Inline function should not have a name: 'ThisShouldNotBeAllowed'`);
+      `Inline function should not have a name: 'ThisShouldNotBeAllowed'. Remove ':' to target an existing function.`);
   });
 });

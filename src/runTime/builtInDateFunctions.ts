@@ -1,3 +1,5 @@
+import Decimal from "decimal.js";
+
 export class BuiltInDateFunctions {
 
   private static readonly millisecondsInDay = 86400000;
@@ -13,70 +15,70 @@ export class BuiltInDateFunctions {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }
 
-  public static year(value: Date): number {
-    return value.getFullYear();
+  public static year(value: Date): Decimal {
+    return Decimal(value.getFullYear());
   }
 
-  public static month(value: Date): number {
-    return value.getMonth() + 1;
+  public static month(value: Date): Decimal {
+    return Decimal(value.getMonth() + 1);
   }
 
-  public static day(value: Date): number {
-    return value.getDate();
+  public static day(value: Date): Decimal {
+    return Decimal(value.getDate());
   }
 
-  public static hour(value: Date): number {
-    return value.getHours();
+  public static hour(value: Date): Decimal {
+    return Decimal(value.getHours());
   }
 
-  public static minute(value: Date): number {
-    return value.getMinutes();
+  public static minute(value: Date): Decimal {
+    return Decimal(value.getMinutes());
   }
 
-  public static second(value: Date): number {
-    return value.getSeconds();
+  public static second(value: Date): Decimal {
+    return Decimal(value.getSeconds());
   }
 
-  public static years(end: Date, start: Date): number {
+  public static years(end: Date, start: Date): Decimal {
     return BuiltInDateFunctions.differenceInYears(end, start);
   }
 
-  public static months(end: Date, start: Date): number {
+  public static months(end: Date, start: Date): Decimal {
     return BuiltInDateFunctions.differenceInMonths(end, start);
   }
 
-  public static days(end: Date, start: Date): number {
+  public static days(end: Date, start: Date): Decimal {
     return BuiltInDateFunctions.differenceInDays(end, start);
   }
 
-  public static hours(end: Date, start: Date): number {
+  public static hours(end: Date, start: Date): Decimal {
     return BuiltInDateFunctions.differenceInHours(end, start);
   }
 
-  public static minutes(end: Date, start: Date): number {
+  public static minutes(end: Date, start: Date): Decimal {
     return BuiltInDateFunctions.differenceInMinutes(end, start);
   }
 
-  public static seconds(end: Date, start: Date): number {
+  public static seconds(end: Date, start: Date): Decimal {
     return BuiltInDateFunctions.differenceInSeconds(end, start);
   }
 
-  public static milliseconds(end: Date, start: Date): number {
+  public static milliseconds(end: Date, start: Date): Decimal {
     return BuiltInDateFunctions.differenceInMilliseconds(end, start);
   }
 
-  private static differenceInCalendarYears(laterDate: Date, earlierDate: Date): number {
-    return laterDate.getFullYear() - earlierDate.getFullYear();
+  private static differenceInCalendarYears(laterDate: Date, earlierDate: Date): Decimal {
+    return Decimal(laterDate.getFullYear()).sub(earlierDate.getFullYear());
   }
 
-  private static compareAsc(dateLeft: Date, dateRight: Date): number {
+  private static compareAsc(dateLeft: Date, dateRight: Date): Decimal {
     const diff = +dateLeft - +dateRight;
 
-    if (diff < 0) return -1;
-    else if (diff > 0) return 1;
+    if (diff < 0) return Decimal(-1);
+    else if (diff > 0) return Decimal(1);
 
     // Return 0 if diff is 0; return NaN if diff is NaN
-    return diff;
+    return Decimal(diff);
   }
 
   private static startOfDay(date: Date): Date {
@@ -104,12 +106,6 @@ export class BuiltInDateFunctions {
     return +BuiltInDateFunctions.endOfDay(_date) === +BuiltInDateFunctions.endOfMonth(_date);
   }
 
-  private static round(number: number): number{
-    const result = Math.trunc(number);
-    // Prevent negative zero
-    return result === 0 ? 0 : result;
-  };
-
   private static getTimezoneOffsetInMilliseconds(date: Date): number {
     const _date = new Date(date);
     const utcDate = new Date(
@@ -127,7 +123,7 @@ export class BuiltInDateFunctions {
     return +date - +utcDate;
   }
 
-  private static differenceInYears(laterDate: Date, earlierDate: Date,): number {
+  private static differenceInYears(laterDate: Date, earlierDate: Date,): Decimal {
 
     const laterDate_ = new Date(laterDate);
     const earlierDate_ = new Date(earlierDate);
@@ -138,7 +134,7 @@ export class BuiltInDateFunctions {
 
     // First calculate the difference in calendar years
     // 2024-01-01 - 2023-12-31 = 1 year
-    const diff = Math.abs(BuiltInDateFunctions.differenceInCalendarYears(laterDate_, earlierDate_));
+    const diff = BuiltInDateFunctions.differenceInCalendarYears(laterDate_, earlierDate_).abs();
 
     // Now we need to calculate if the difference is full. To do that we set
     // both dates to the same year and check if the both date's month and day
@@ -153,33 +149,28 @@ export class BuiltInDateFunctions {
     // is partial, hence we need to subtract 1 from the difference 3 - 1 = 2.
     const partial = BuiltInDateFunctions.compareAsc(laterDate_, earlierDate_) === -sign;
 
-    const result = sign * (diff - +partial);
-
-    // Prevent negative zero
-    return result === 0 ? 0 : result;
+    return sign.mul(diff.sub(+partial));
   }
 
-  private static differenceInCalendarMonths(laterDate: Date, earlierDate: Date): number {
+  private static differenceInCalendarMonths(laterDate: Date, earlierDate: Date): Decimal {
     const laterDate_ = new Date(laterDate);
     const earlierDate_ = new Date(earlierDate);
 
-    const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
-    const monthsDiff = laterDate_.getMonth() - earlierDate_.getMonth();
+    const yearsDiff = Decimal(laterDate_.getFullYear() - earlierDate_.getFullYear());
+    const monthsDiff = Decimal(laterDate_.getMonth() - earlierDate_.getMonth());
 
-    return yearsDiff * 12 + monthsDiff;
+    return yearsDiff.mul(12).add(monthsDiff);
   }
 
-  private static differenceInMonths(laterDate: Date, earlierDate: Date): number {
+  private static differenceInMonths(laterDate: Date, earlierDate: Date): Decimal {
     const laterDate_ = new Date(laterDate);
     const workingLaterDate = new Date(laterDate);
     const earlierDate_ = new Date(earlierDate);
 
     const sign = BuiltInDateFunctions.compareAsc(workingLaterDate, earlierDate_);
-    const difference = Math.abs(
-      BuiltInDateFunctions.differenceInCalendarMonths(workingLaterDate, earlierDate_),
-    );
+    const difference = BuiltInDateFunctions.differenceInCalendarMonths(workingLaterDate, earlierDate_).abs();
 
-    if (difference < 1) return 0;
+    if (difference < 1) return Decimal(0);
 
     if (workingLaterDate.getMonth() === 1 && workingLaterDate.getDate() > 27)
       workingLaterDate.setDate(30);
@@ -196,12 +187,10 @@ export class BuiltInDateFunctions {
       isLastMonthNotFull = false;
     }
 
-    const result = sign * (difference - +isLastMonthNotFull);
-    return result === 0 ? 0 : result;
+    return sign.mul(difference.sub(+isLastMonthNotFull));
   }
 
-
-  private static differenceInCalendarDays(laterDate: Date, earlierDate: Date): number {
+  private static differenceInCalendarDays(laterDate: Date, earlierDate: Date): Decimal {
     const laterDate_ = new Date(laterDate);
     const earlierDate_ = new Date(earlierDate);
 
@@ -216,17 +205,15 @@ export class BuiltInDateFunctions {
     // Round the number of days to the nearest integer because the number of
     // milliseconds in a day is not constant (e.g. it's different in the week of
     // the daylight saving time clock shift).
-    return Math.round((laterTimestamp - earlierTimestamp) / BuiltInDateFunctions.millisecondsInDay);
+    return Decimal((laterTimestamp - earlierTimestamp) / BuiltInDateFunctions.millisecondsInDay).round();
   }
 
-  private static differenceInDays(laterDate: Date, earlierDate: Date): number {
+  private static differenceInDays(laterDate: Date, earlierDate: Date): Decimal {
     const laterDate_ = new Date(laterDate);
     const earlierDate_ = new Date(earlierDate);
 
     const sign = BuiltInDateFunctions.compareLocalAsc(laterDate_, earlierDate_);
-    const difference = Math.abs(
-      BuiltInDateFunctions.differenceInCalendarDays(laterDate_, earlierDate_),
-    );
+    const difference = BuiltInDateFunctions.differenceInCalendarDays(laterDate_, earlierDate_).abs();
 
     laterDate_.setDate(laterDate_.getDate() - sign * difference);
 
@@ -236,16 +223,14 @@ export class BuiltInDateFunctions {
       BuiltInDateFunctions.compareLocalAsc(laterDate_, earlierDate_) === -sign,
     );
 
-    const result = sign * (difference - isLastDayNotFull);
-    // Prevent negative zero
-    return result === 0 ? 0 : result;
+    return sign.mul(difference.sub(isLastDayNotFull));
   }
 
   // Like `compareAsc` but uses local time not UTC, which is needed
   // for accurate equality comparisons of UTC timestamps that end up
   // having the same representation in local time, e.g. one hour before
   // DST ends vs. the instant that DST ends.
-  private static compareLocalAsc(laterDate: Date, earlierDate: Date): number {
+  private static compareLocalAsc(laterDate: Date, earlierDate: Date): Decimal {
     const diff =
       laterDate.getFullYear() - earlierDate.getFullYear() ||
       laterDate.getMonth() - earlierDate.getMonth() ||
@@ -255,32 +240,32 @@ export class BuiltInDateFunctions {
       laterDate.getSeconds() - earlierDate.getSeconds() ||
       laterDate.getMilliseconds() - earlierDate.getMilliseconds();
 
-    if (diff < 0) return -1;
-    if (diff > 0) return 1;
+    if (diff < 0) return Decimal(-1);
+    if (diff > 0) return Decimal(1);
 
     // Return 0 if diff is 0; return NaN if diff is NaN
-    return diff;
+    return Decimal(diff);
   }
 
-  private static differenceInHours(laterDate: Date, earlierDate: Date): number {
+  private static differenceInHours(laterDate: Date, earlierDate: Date): Decimal {
     const laterDate_ = new Date(laterDate);
     const earlierDate_ = new Date(earlierDate);
-    const diff = (+laterDate_ - +earlierDate_) / BuiltInDateFunctions.millisecondsInHour;
-    return BuiltInDateFunctions.round(diff);
+    const diff = Decimal(+laterDate_ - +earlierDate_).div(BuiltInDateFunctions.millisecondsInHour);
+    return diff.round();
   }
 
-  private static differenceInMinutes(laterDate: Date, earlierDate: Date): number {
+  private static differenceInMinutes(laterDate: Date, earlierDate: Date): Decimal {
     const diff =
-      BuiltInDateFunctions.differenceInMilliseconds(laterDate, earlierDate) / BuiltInDateFunctions.millisecondsInMinute;
-    return BuiltInDateFunctions.round(diff);
+      BuiltInDateFunctions.differenceInMilliseconds(laterDate, earlierDate).div(BuiltInDateFunctions.millisecondsInMinute);
+    return diff.round();
   }
 
-  private static differenceInSeconds(laterDate: Date, earlierDate: Date): number {
-    const diff = BuiltInDateFunctions.differenceInMilliseconds(laterDate, earlierDate) / 1000;
-    return BuiltInDateFunctions.round(diff);
+  private static differenceInSeconds(laterDate: Date, earlierDate: Date): Decimal {
+    const diff = BuiltInDateFunctions.differenceInMilliseconds(laterDate, earlierDate).div(1000);
+    return diff.round();
   }
 
-  private static differenceInMilliseconds(laterDate: Date, earlierDate: Date): number {
-    return +laterDate - +earlierDate;
+  private static differenceInMilliseconds(laterDate: Date, earlierDate: Date): Decimal {
+    return Decimal(+laterDate - +earlierDate);
   }
 }

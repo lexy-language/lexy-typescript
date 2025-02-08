@@ -80,6 +80,7 @@ export class BinaryExpression extends Expression {
   public left: Expression;
   public right: Expression;
   public operator: ExpressionOperator;
+  public variableType: VariableType | null;
 
   constructor(left: Expression, right: Expression, operatorValue: ExpressionOperator,
               source: ExpressionSource, reference: SourceReference) {
@@ -198,6 +199,8 @@ export class BinaryExpression extends Expression {
     if (!left?.equals(right)) {
       context.logger.fail(this.reference,
         `Invalid expression type. Left expression: '${left}'. Right expression '${right}.`);
+    } else {
+      this.variableType = left;
     }
   }
 

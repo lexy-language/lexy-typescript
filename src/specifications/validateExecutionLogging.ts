@@ -39,6 +39,9 @@ function validateEntry(indent: number, actualEntry: ExecutionLogEntry | null, ex
         }
         return (expectedValue as Date).toISOString() != (actualValue as Date).toISOString();
       }
+      if (toString.call(actualValue) === '[object Decimal]') {
+        return !actualValue.equals(expectedValue);
+      }
       return expectedValue != actualValue;
     }
 

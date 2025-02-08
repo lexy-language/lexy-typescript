@@ -75,7 +75,7 @@ function renderPrimitiveTypeDefaultExpression(type: PrimitiveVariableDeclaration
                                               codeWriter: CodeWriter) {
   switch (type.type) {
     case TypeNames.number:
-      codeWriter.write("0");
+      codeWriter.write(`${LexyCodeConstants.environmentVariable}.Decimal(0)`);
       return;
 
     case TypeNames.boolean:

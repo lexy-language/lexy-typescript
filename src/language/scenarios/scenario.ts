@@ -177,7 +177,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     let tokenName = NodeName.parse(context);
     if (tokenName != null && tokenName.name != null) {
       context.logger.fail(context.line.tokenReference(1),
-        `Unexpected function name. Inline function should not have a name: '${tokenName.name}'`);
+        `Unexpected function name. Inline function should not have a name: '${tokenName.name}'. Remove ':' to target an existing function.`);
     }
 
     this.functionNodeValue = Function.create(`${this.name.value}Function`, reference, context.expressionFactory);

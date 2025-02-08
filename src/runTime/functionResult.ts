@@ -1,5 +1,6 @@
 import {VariablePath} from "../language/variablePath";
 import {ExecutionLogEntry} from "./executionLogEntry";
+import Decimal from "decimal.js";
 
 export type ResultsValue = Date | string | number | boolean | ResultsType;
 export type ResultsType = { [key: string]: ResultsValue };
@@ -21,9 +22,18 @@ export class FunctionResult {
     this.loggingValue = logging;
   }
 
-  public number(name: string): number {
+  public number(name: string): Decimal {
     const value = this.valueObject[name];
-    return value as number;
+    return Decimal(value as any);
+  }
+
+  public string(name: string): string {
+    const value = this.valueObject[name];
+    return value as string;
+  }
+
+  public object(name: string): any {
+    return this.valueObject[name];
   }
 
   public getValue(reference: VariablePath): any {

@@ -33,6 +33,8 @@ import {LexyCodeConstants} from "../lexyCodeConstants";
 import {CodeWriter} from "../writers/codeWriter";
 import {asElseifExpression, ElseifExpression} from "../../../language/expressions/elseifExpression";
 import {asElseExpression, ElseExpression} from "../../../language/expressions/elseExpression";
+import {PrimitiveType} from "../../../language/variableTypes/primitiveType";
+import {VariableType} from "../../../language/variableTypes/variableType";
 
 function renderExpressionLine(codeWriter: CodeWriter, expression: Expression) {
   logLineAndVariables(expression, codeWriter);
@@ -162,6 +164,8 @@ function renderLiteralExpression(expression: LiteralExpression, codeWriter: Code
     const dateValue = dateTimeLiteral?.dateTimeValue;
     if (dateValue == null) throw new Error("DateTimeLiteral.dateTimeValue expected")
     codeWriter.write(`new Date("${format(4, dateValue.getFullYear())}-${format(2, dateValue.getMonth() + 1)}-${format(2, dateValue.getDate())}T${format(2, dateValue.getHours())}:${format(2, dateValue.getMinutes())}:${format(2, dateValue.getSeconds())}")`);
+  } else if (expression.literal.tokenType == TokenType.NumberLiteralToken) {
+    codeWriter.write(`${LexyCodeConstants.environmentVariable}.Decimal(${expression.literal.value})`);
   } else {
     codeWriter.write(expression.literal.value);
   }
@@ -173,7 +177,58 @@ function renderAssignmentExpression(expression: AssignmentExpression, codeWriter
   renderExpression(expression.assignment, codeWriter);
 }
 
+function numberOperationFunctionName(operator: ExpressionOperator): {name: string, negate?: boolean} | null {
+  switch (operator) {
+    case ExpressionOperator.Addition:
+      return {name: "add"};
+    case ExpressionOperator.Subtraction:
+      return {name: "sub"};
+    case ExpressionOperator.Multiplication:
+      return {name: "mul"};
+    case ExpressionOperator.Division:
+      return {name: "div"};
+    case ExpressionOperator.Modulus:
+      return {name: "mod"};
+    case ExpressionOperator.GreaterThan:
+      return {name: "greaterThan"};
+    case ExpressionOperator.GreaterThanOrEqual:
+      return {name: "greaterThanOrEqualTo"};
+    case ExpressionOperator.LessThan:
+      return {name: "lessThan"};
+    case ExpressionOperator.LessThanOrEqual:
+      return {name: "lessThanOrEqualTo"};
+    case ExpressionOperator.Equals:
+      return {name: "eq"};
+    case ExpressionOperator.NotEqual:
+      return {name: "eq", negate: true};
+    default:
+      return null;
+  }
+}
+
+function renderNumberOperationExpression(expression: BinaryExpression, codeWriter: CodeWriter) {
+
+  const decimalFunction = numberOperationFunctionName(expression.operator);
+  if (decimalFunction == null) {
+    return false;
+  }
+
+  if (decimalFunction.negate) {
+    codeWriter.write("!");
+  }
+  renderExpression(expression.left, codeWriter);
+  codeWriter.write("." + decimalFunction.name + "(");
+  renderExpression(expression.right, codeWriter);
+  codeWriter.write(")");
+  return true;
+}
+
 function renderBinaryExpression(expression: BinaryExpression, codeWriter: CodeWriter) {
+  if (expression.variableType?.equals(PrimitiveType.number)) {
+    if (renderNumberOperationExpression(expression, codeWriter)) {
+      return;
+    }
+  }
   renderExpression(expression.left, codeWriter);
   codeWriter.write(operatorString(expression.operator));
   renderExpression(expression.right, codeWriter);
@@ -250,7 +305,7 @@ function renderElseExpression(expression: ElseExpression, codeWriter: CodeWriter
 function renderElseifExpression(expression: ElseifExpression, codeWriter: CodeWriter) {
   codeWriter.startLine("} else if (");
   renderExpression(expression.condition, codeWriter);
-  codeWriter.openInlineScope(")");
+  codeWriter.endLine(" ) {");
   renderExpressions(expression.trueExpressions, true, codeWriter);
 }
 
@@ -266,7 +321,7 @@ function renderCaseExpression(caseValue: CaseExpression, codeWriter: CodeWriter)
     codeWriter.openScope("default:");
   } else {
     codeWriter.startLine("case ");
-    renderExpression(caseValue.value, codeWriter)
+    renderRawExpression(caseValue.value, caseValue.valueType, codeWriter)
     codeWriter.openInlineScope(":");
   }
 
@@ -276,9 +331,16 @@ function renderCaseExpression(caseValue: CaseExpression, codeWriter: CodeWriter)
   codeWriter.closeScope()
 }
 
+function renderRawExpression(expression: Expression, type: VariableType | null, codeWriter: CodeWriter) {
+  renderExpression(expression, codeWriter)
+  if (type?.equals(PrimitiveType.number)) {
+    codeWriter.write(".toNumber()");
+  }
+}
+
 function renderSwitchExpression(expression: SwitchExpression, codeWriter: CodeWriter) {
   codeWriter.write("switch(");
-  renderExpression(expression.condition, codeWriter)
+  renderRawExpression(expression.condition, expression.conditionType, codeWriter)
   codeWriter.openInlineScope(")");
   for (const caseValue of expression.cases) {
     renderCaseExpression(caseValue, codeWriter)

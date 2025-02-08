@@ -32,6 +32,7 @@ export class CaseExpression extends Expression implements IParsableNode {
   public readonly isDefault: boolean;
   public readonly nodeType = NodeType.CaseExpression;
   public readonly value: Expression | null;
+  public valueType: VariableType | null;
 
    public get expressions(): Array<Expression>  {
     return this.expressionsValues.asArray();
@@ -91,6 +92,7 @@ export class CaseExpression extends Expression implements IParsableNode {
    }
 
    protected override validate(context: IValidationContext): void {
+     this.valueType = this.deriveType(context);
    }
 
    public override deriveType(context: IValidationContext): VariableType | null {

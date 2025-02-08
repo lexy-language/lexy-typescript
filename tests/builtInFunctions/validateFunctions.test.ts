@@ -1,4 +1,5 @@
 import {Validate} from "../../src/runTime/validate";
+import Decimal from "decimal.js";
 
 describe('validateFunctions', () => {
   type ValidateTestCase = [numberA: any, error: string | null];
@@ -23,9 +24,9 @@ describe('validateFunctions', () => {
   });
 
   it.each<ValidateTestCase>([
-    [5, null],
-    [55.66, null],
-    [-486.87, null],
+    [Decimal(5), null],
+    [Decimal(55.66), null],
+    [Decimal(-486.87), null],
     ["5", "'param' should have a 'number' value. Invalid type: "],
     [false, "'param' should have a 'number' value. Invalid type: "],
     [new Date(), "'param' should have a 'number' value. Invalid type: "],

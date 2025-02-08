@@ -4,6 +4,7 @@ import {ILogger} from "../infrastructure/logger";
 import {GeneratedType} from "./generatedType";
 import {LexyCodeConstants} from "./javaScript/lexyCodeConstants";
 import {VariablePathParser} from "../language/scenarios/variablePathParser";
+import Decimal from "decimal.js";
 
 export class ExecutableFunction {
   private readonly environment: any;
@@ -31,8 +32,8 @@ export class ExecutableFunction {
     for (const key in values) {
       const value = values[key];
       let field = this.getParameterSetter(parameters, key);
-      //let convertedValue = this.changeType(value, field.fieldType); // todo very variable type
-      field(value);
+      let convertedValue = this.changeType(value);
+      field(convertedValue);
     }
     return parameters;
   }
@@ -59,5 +60,18 @@ return ${LexyCodeConstants.environmentVariable}.${generatedType.name}(${LexyCode
 
     const functionReference = new Function(LexyCodeConstants.environmentVariable, "parameters", "context", code);
     return new ExecutableFunction(environment, functionReference, executionLogger);
+  }
+
+  private changeType<T>(value: any): any {
+    if (value instanceof Date) return new Date(value) as T;
+    if (typeof value === 'number') return Decimal(value);
+    if (typeof value !== 'object' || value === null) return value;
+    if (Array.isArray(value)) return value.map(item => this.changeType(item)) as unknown as T;
+    const copy = {} as { [K in keyof T]: T[K] };
+    Object.keys(value).forEach(key => {
+      if (key.startsWith("__")) return;
+      copy[key as keyof T] = this.changeType((value as { [key: string]: any })[key]);
+    });
+    return copy;
   }
 }

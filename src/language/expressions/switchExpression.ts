@@ -30,6 +30,7 @@ export class SwitchExpression extends Expression implements IParsableNode {
   public readonly isParsableNode = true;
   public readonly nodeType = NodeType.SwitchExpression;
 
+  public conditionType: VariableType | null;
   public readonly condition: Expression;
   public readonly cases: Array<CaseExpression> = [];
 
@@ -85,11 +86,11 @@ export class SwitchExpression extends Expression implements IParsableNode {
    }
 
    protected override validate(context: IValidationContext): void {
-     let type = this.condition.deriveType(context);
-     if (type == null
-       || type.variableTypeName != "PrimitiveType" && type.variableTypeName != "EnumType") {
+     this.conditionType = this.condition.deriveType(context);
+     if (this.conditionType == null
+       || this.conditionType.variableTypeName != "PrimitiveType" && this.conditionType.variableTypeName != "EnumType") {
        context.logger.fail(this.reference,
-         `'Switch' condition expression should have a primitive or enum type. Not: '${type}'.`);
+         `'Switch' condition expression should have a primitive or enum type. Not: '${this.conditionType}'.`);
        return;
      }
 
@@ -97,9 +98,9 @@ export class SwitchExpression extends Expression implements IParsableNode {
        if (caseExpression.isDefault) return;
 
        let caseType = caseExpression.deriveType(context);
-       if (caseType == null || !type?.equals(caseType))
+       if (caseType == null || !this.conditionType?.equals(caseType))
          context.logger.fail(this.reference,
-           `'case' condition expression should be of type '${type}', is of wrong type '${caseType}'.`);
+           `'case' condition expression should be of type '${this.conditionType}', is of wrong type '${caseType}'.`);
      });
    }
 
