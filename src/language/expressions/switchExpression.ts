@@ -30,7 +30,7 @@ export class SwitchExpression extends Expression implements IParsableNode {
   public readonly isParsableNode = true;
   public readonly nodeType = NodeType.SwitchExpression;
 
-  public conditionType: VariableType | null;
+  public conditionType: VariableType | null = null;
   public readonly condition: Expression;
   public readonly cases: Array<CaseExpression> = [];
 

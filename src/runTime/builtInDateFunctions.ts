@@ -147,7 +147,7 @@ export class BuiltInDateFunctions {
     // the normalized later date is also later than the normalized earlier date.
     // In our example, 1584-02-01 is earlier than 1584-12-10, so the difference
     // is partial, hence we need to subtract 1 from the difference 3 - 1 = 2.
-    const partial = BuiltInDateFunctions.compareAsc(laterDate_, earlierDate_) === -sign;
+    const partial = BuiltInDateFunctions.compareAsc(laterDate_, earlierDate_).equals(sign.negated());
 
     return sign.mul(diff.sub(+partial));
   }
@@ -170,19 +170,19 @@ export class BuiltInDateFunctions {
     const sign = BuiltInDateFunctions.compareAsc(workingLaterDate, earlierDate_);
     const difference = BuiltInDateFunctions.differenceInCalendarMonths(workingLaterDate, earlierDate_).abs();
 
-    if (difference < 1) return Decimal(0);
+    if (difference.lessThan(1)) return Decimal(0);
 
     if (workingLaterDate.getMonth() === 1 && workingLaterDate.getDate() > 27)
       workingLaterDate.setDate(30);
 
-    workingLaterDate.setMonth(workingLaterDate.getMonth() - sign * difference);
+    workingLaterDate.setMonth(workingLaterDate.getMonth() - sign.mul(difference).toNumber());
 
-    let isLastMonthNotFull = BuiltInDateFunctions.compareAsc(workingLaterDate, earlierDate_) === -sign;
+    let isLastMonthNotFull = BuiltInDateFunctions.compareAsc(workingLaterDate, earlierDate_).equals(sign.negated());
 
     if (
       BuiltInDateFunctions.isLastDayOfMonth(laterDate_) &&
-      difference === 1 &&
-      BuiltInDateFunctions.compareAsc(laterDate_, earlierDate_) === 1
+      difference.equals(1) &&
+      BuiltInDateFunctions.compareAsc(laterDate_, earlierDate_).equals(1)
     ) {
       isLastMonthNotFull = false;
     }
@@ -215,12 +215,12 @@ export class BuiltInDateFunctions {
     const sign = BuiltInDateFunctions.compareLocalAsc(laterDate_, earlierDate_);
     const difference = BuiltInDateFunctions.differenceInCalendarDays(laterDate_, earlierDate_).abs();
 
-    laterDate_.setDate(laterDate_.getDate() - sign * difference);
+    laterDate_.setDate(laterDate_.getDate() - sign.mul(difference).toNumber());
 
     // Math.abs(diff in full days - diff in calendar days) === 1 if last calendar day is not full
     // If so, result must be decreased by 1 in absolute value
     const isLastDayNotFull = Number(
-      BuiltInDateFunctions.compareLocalAsc(laterDate_, earlierDate_) === -sign,
+      BuiltInDateFunctions.compareLocalAsc(laterDate_, earlierDate_).equals(-sign),
     );
 
     return sign.mul(difference.sub(isLastDayNotFull));

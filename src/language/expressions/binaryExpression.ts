@@ -80,7 +80,7 @@ export class BinaryExpression extends Expression {
   public left: Expression;
   public right: Expression;
   public operator: ExpressionOperator;
-  public variableType: VariableType | null;
+  public variableType: VariableType | null = null;
 
   constructor(left: Expression, right: Expression, operatorValue: ExpressionOperator,
               source: ExpressionSource, reference: SourceReference) {

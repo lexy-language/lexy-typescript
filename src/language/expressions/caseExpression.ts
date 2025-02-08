@@ -32,7 +32,7 @@ export class CaseExpression extends Expression implements IParsableNode {
   public readonly isDefault: boolean;
   public readonly nodeType = NodeType.CaseExpression;
   public readonly value: Expression | null;
-  public valueType: VariableType | null;
+  public valueType: VariableType | null = null;
 
    public get expressions(): Array<Expression>  {
     return this.expressionsValues.asArray();
