@@ -7,7 +7,7 @@ import type {IChildExpression, IParentExpression} from "./IChildExpression";
 import {Expression} from "./expression";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
-import {asElseExpression, ElseExpression, instanceOfElseExpression} from "./elseExpression";
+import {instanceOfElseExpression} from "./elseExpression";
 import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../../parser/sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
@@ -18,8 +18,8 @@ import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
 import {VariableUsage} from "./variableUsage";
 import {getReadVariableUsage} from "./getReadVariableUsage";
-import {asElseifExpression, ElseifExpression, instanceOfElseifExpression} from "./elseifExpression";
-import {lastOrDefault} from "../../infrastructure/enumerableExtensions";
+import {instanceOfElseifExpression} from "./elseifExpression";
+import {lastOrDefault} from "../../infrastructure/arrayFunctions";
 
 export function instanceOfIfExpression(object: any): boolean {
   return object?.nodeType == NodeType.IfExpression;
@@ -98,12 +98,14 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
   }
 
   linkChildExpression(expression: IChildExpression): void {
-    if (instanceOfElseExpression(expression) || instanceOfElseifExpression(expression)) {
-      if (instanceOfElseExpression(lastOrDefault(this.elseExpressions))) throw new Error(`'else' already defined.`);
-      this.elseExpressionsValues.push(expression);
-      return;
+    if (!(instanceOfElseExpression(expression) || instanceOfElseifExpression(expression))) {
+      throw new Error(`Invalid node type: ${expression.nodeType}`);
     }
-    throw new Error(`Invalid node type: ${expression.nodeType}`);
+
+    let lastOrDefaultExpression = lastOrDefault(this.elseExpressions);
+    if (instanceOfElseExpression(lastOrDefaultExpression)) throw new Error(`'else' already defined.`);
+    this.elseExpressionsValues.push(expression);
+    return;
   }
 
   override usedVariables(): ReadonlyArray<VariableUsage> {

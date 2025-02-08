@@ -2,7 +2,7 @@ import {Expression} from "../../../language/expressions/expression";
 import {CodeWriter} from "../writers/codeWriter";
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {replaceAll} from "../../../infrastructure/replaceAll";
-import {unique, where} from "../../../infrastructure/enumerableExtensions";
+import {unique, where} from "../../../infrastructure/arrayFunctions";
 import {VariableAccess} from "../../../language/expressions/variableAccess";
 import {VariableUsage} from "../../../language/expressions/variableUsage";
 import {renderVariableReference} from "./renderVariableReference";

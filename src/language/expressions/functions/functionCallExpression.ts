@@ -6,7 +6,7 @@ import {OperatorType} from "../../../parser/tokens/operatorType";
 import {VariableUsage} from "../variableUsage";
 import {getReadVariableUsageNodes} from "../getReadVariableUsage";
 import {TokenType} from "../../../parser/tokens/tokenType";
-import {whereSelect} from "../../../infrastructure/enumerableExtensions";
+import {whereSelect} from "../../../infrastructure/arrayFunctions";
 
 export function instanceOfFunctionCallExpression(object: any): object is FunctionCallExpression {
   return object?.isFunctionCallExpression == true;

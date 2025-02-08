@@ -3,7 +3,7 @@ import type {INode} from "../language/node";
 import type {ILogger} from "../infrastructure/logger";
 
 import {SourceReference} from "./sourceReference";
-import {any, where} from "../infrastructure/enumerableExtensions";
+import {any, where} from "../infrastructure/arrayFunctions";
 import {LogLevel} from "../infrastructure/logger";
 import {format} from "../infrastructure/formatting";
 import {NodesLogger} from "./nodesLogger";

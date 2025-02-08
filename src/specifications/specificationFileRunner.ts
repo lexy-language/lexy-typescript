@@ -4,7 +4,7 @@ import type {ILexyCompiler} from "../compiler/lexyCompiler";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
 
 import {IScenarioRunner, ScenarioRunner} from "./scenarioRunner";
-import {firstOrDefault, sum} from "../infrastructure/enumerableExtensions";
+import {firstOrDefault, sum} from "../infrastructure/arrayFunctions";
 import {format} from "../infrastructure/formatting";
 import {Scenario} from "../language/scenarios/scenario";
 import {RootNodeList} from "../language/rootNodeList";

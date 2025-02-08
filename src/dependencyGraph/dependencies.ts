@@ -5,7 +5,7 @@ import {RootNodeList} from "../language/rootNodeList";
 import {DependencyNode} from "./dependencyNode";
 import {asRootNode} from "../language/rootNode";
 import {asHasNodeDependencies} from "../language/IHasNodeDependencies";
-import {any, firstOrDefault} from "../infrastructure/enumerableExtensions";
+import {any, firstOrDefault} from "../infrastructure/arrayFunctions";
 import {NodesWalker} from "../language/nodesWalker";
 
 export class Dependencies {

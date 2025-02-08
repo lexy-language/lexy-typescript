@@ -1,4 +1,4 @@
-import {any, firstOrDefault} from "../infrastructure/enumerableExtensions";
+import {any, firstOrDefault} from "../infrastructure/arrayFunctions";
 import {Parameters} from "../language/scenarios/parameters";
 import {FunctionParameters} from "../language/functions/functionParameters";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";

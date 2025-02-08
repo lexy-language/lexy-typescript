@@ -4,7 +4,7 @@ import {FillFunctionExpressionStatementException} from "./fillFunctionExpression
 import {ExtractFunctionExpressionStatementException} from "./extractFunctionExpressionStatementException";
 import {SimpleLexyFunctionFunctionExpressionStatementException} from "./simpleLexyFunctionFunctionExpressionStatementException";
 import {ILineExpressionException} from "./ILineExpressionException";
-import {firstOrDefault} from "../../../infrastructure/enumerableExtensions";
+import {firstOrDefault} from "../../../infrastructure/arrayFunctions";
 
 const renderStatementExceptions: Array<ILineExpressionException> = [
   new NewFunctionExpressionStatementException(),

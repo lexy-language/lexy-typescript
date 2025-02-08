@@ -7,7 +7,7 @@ import {RootNode} from "../rootNode";
 import {EnumName} from "./enumName";
 import {EnumMember} from "./enumMember";
 import {SourceReference} from "../../parser/sourceReference";
-import {any, lastOrDefault} from "../../infrastructure/enumerableExtensions";
+import {any, lastOrDefault} from "../../infrastructure/arrayFunctions";
 import {DuplicateChecker} from "../duplicateChecker";
 import {NodeType} from "../nodeType";
 

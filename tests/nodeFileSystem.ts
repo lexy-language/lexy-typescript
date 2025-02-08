@@ -1,4 +1,5 @@
 import {IFileSystem} from "../src/infrastructure/IFileSystem";
+import {any} from "../src/infrastructure/arrayFunctions"
 import path from "path";
 import fs from "fs";
 
@@ -39,9 +40,9 @@ export class NodeFileSystem implements IFileSystem {
         .map(dirent => dirent.name);
   }
 
-  getDirectoryFiles(folder: string, extension: string): Array<string> {
+  getDirectoryFiles(folder: string, filter: Array<string>): Array<string> {
     return fs.readdirSync(folder, { withFileTypes: true })
-      .filter(dirent => dirent.isFile() && dirent.name.endsWith(extension))
+      .filter(dirent => dirent.isFile() && any(filter, extension => dirent.name.endsWith(extension)))
       .map(dirent => dirent.name);
   }
 

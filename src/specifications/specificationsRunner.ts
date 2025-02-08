@@ -72,7 +72,7 @@ export class SpecificationsRunner implements ISpecificationsRunner {
   }
 
   private addFolder(context: ISpecificationRunnerContext, folder: string): void {
-    let files = this.fileSystem.getDirectoryFiles(folder, `.${LexySourceDocument.fileExtension}`);
+    let files = this.fileSystem.getDirectoryFiles(folder, [`.${LexySourceDocument.fileExtension}`, `.${LexySourceDocument.markdownExtension}`]);
 
     files
       .sort()

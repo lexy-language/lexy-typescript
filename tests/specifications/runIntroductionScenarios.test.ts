@@ -1,8 +1,8 @@
 import {createRunner} from "./createRunner";
 
-describe('RunLexySpecifications', () => {
+describe('RunIntroductionScenarios', () => {
   it('runAll', async() => {
     const runner = createRunner();
-    runner.runAll(`tests/lexy-language/Specifications`);
+    runner.runAll(`tests/lexy-language/Introduction`);
   });
 });

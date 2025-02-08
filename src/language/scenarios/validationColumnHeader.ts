@@ -1,11 +1,8 @@
 import type {IValidationContext} from "../../parser/validationContext";
 
-import {VariableDeclarationType} from "../variableTypes/variableDeclarationType";
 import {SourceReference} from "../../parser/sourceReference";
 import {INode, Node} from "../node";
-import {VariableDeclarationTypeParser} from "../variableTypes/variableDeclarationTypeParser";
 import {NodeType} from "../nodeType";
-import {VariablePath} from "../variablePath";
 import {VariablePathParser} from "./variablePathParser";
 
 export function instanceOfValidationColumnHeader(object: any) {
@@ -21,7 +18,7 @@ export class ValidationColumnHeader extends Node {
   public nodeType = NodeType.ValidationColumnHeader;
   public name: string
 
-  constructor(name: string, reference: SourceReference) {
+  public constructor(name: string, reference: SourceReference) {
     super(reference);
     this.name = name;
   }

@@ -45,12 +45,12 @@ export class ValidationTableHeader extends Node {
         return null;
       }
 
-      let name = tokens.tokenValue(index);
-      let reference = context.line.tokenReference(index++);
+      const name = tokens.tokenValue(index);
+      const reference = context.line.tokenReference(index++);
 
       if (name == null) return null;
 
-      let header = new ValidationColumnHeader(name, reference);
+      const header = ValidationColumnHeader.parse(name, reference);
       headers.push(header);
     }
 

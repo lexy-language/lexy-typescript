@@ -7,7 +7,7 @@ import {IParseLineContext} from "../../parser/ParseLineContext";
 import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
-import {firstOrDefault} from "../../infrastructure/enumerableExtensions";
+import {firstOrDefault} from "../../infrastructure/arrayFunctions";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
 

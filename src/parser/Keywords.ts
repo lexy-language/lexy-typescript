@@ -15,14 +15,6 @@ export class Keywords {
   public static readonly Case = "case";
   public static readonly Default = "default";
 
-  /*
-  public static readonly For = "for";
-  public static readonly From = "from";
-  public static readonly To = "to";
-
-  public static readonly While = "while";
-  */
-
   public static readonly Include = "Include";
 
   public static readonly Parameters = "Parameters";

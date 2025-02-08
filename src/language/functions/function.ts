@@ -7,7 +7,7 @@ import type {IValidationContext} from "../../parser/validationContext";
 import type {IRootNodeList} from "../rootNodeList";
 
 import {RootNode} from "../rootNode";
-import {asHasNodeDependencies, IHasNodeDependencies} from "../IHasNodeDependencies";
+import {IHasNodeDependencies} from "../IHasNodeDependencies";
 import {FunctionName} from "./functionName";
 import {FunctionParameters} from "./functionParameters";
 import {FunctionResults} from "./functionResults";
@@ -15,13 +15,11 @@ import {FunctionCode} from "./functionCode";
 import {SourceReference} from "../../parser/sourceReference";
 import {Keywords} from "../../parser/Keywords";
 import {KeywordToken} from "../../parser/tokens/keywordToken";
-import {contains} from "../../infrastructure/enumerableExtensions";
 import {VariableDefinition} from "../variableDefinition";
 import {asCustomVariableDeclarationType} from "../variableTypes/customVariableDeclarationType";
 import {ComplexType} from "../variableTypes/complexType";
 import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
 import {ComplexTypeSource} from "../variableTypes/complexTypeSource";
-import {NodesWalker} from "../nodesWalker";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
 

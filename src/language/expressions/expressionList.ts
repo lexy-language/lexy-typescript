@@ -9,7 +9,7 @@ import {Node} from "../node";
 import {SourceReference} from "../../parser/sourceReference";
 import {ParseExpressionResult} from "./parseExpressionResult";
 import {asChildExpression, asParentExpression} from "./IChildExpression";
-import {lastOrDefault} from "../../infrastructure/enumerableExtensions";
+import {lastOrDefault} from "../../infrastructure/arrayFunctions";
 import {NodeType} from "../nodeType";
 import {Assert} from "../../infrastructure/assert";
 

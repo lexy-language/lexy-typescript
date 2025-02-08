@@ -8,7 +8,7 @@ import {Scenario} from "../language/scenarios/scenario";
 import {RootNodeList} from "../language/rootNodeList";
 import {format} from "../infrastructure/formatting";
 import {FunctionResult} from "../runTime/functionResult";
-import {any, firstOrDefault} from "../infrastructure/enumerableExtensions";
+import {any, firstOrDefault} from "../infrastructure/arrayFunctions";
 import {ExecutableFunction} from "../compiler/executableFunction";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {Assert} from "../infrastructure/assert";
@@ -270,8 +270,8 @@ export class ScenarioRunner implements IScenarioRunner {
 
     let errorNotFound = false;
     let remainingMessages = [...actualErrors];
-    for (const rootMessage of expectErrors) {
-      let failedMessage = firstOrDefault(remainingMessages, message => message.includes(rootMessage));
+    for (const expectError of expectErrors) {
+      let failedMessage = firstOrDefault(remainingMessages, message => message.includes(expectError));
       if (failedMessage != null) {
         remainingMessages = remainingMessages.filter(item => item !== failedMessage);
       } else {

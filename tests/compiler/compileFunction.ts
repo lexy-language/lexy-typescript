@@ -1,5 +1,5 @@
 import {parseNodes} from "../parseFunctions";
-import {firstOrDefault} from "../../src/infrastructure/enumerableExtensions";
+import {firstOrDefault} from "../../src/infrastructure/arrayFunctions";
 import {asFunction, instanceOfFunction} from "../../src/language/functions/function";
 import {LexyCompiler} from "../../src/compiler/lexyCompiler";
 import {ExecutableFunction} from "../../src/compiler/executableFunction";

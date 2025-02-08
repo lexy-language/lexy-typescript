@@ -5,7 +5,7 @@ import {TypeWithMembers} from "./variableTypes/typeWithMembers";
 import {asFunction, Function, instanceOfFunction} from "./functions/function";
 import {asTable, instanceOfTable, Table} from "./tables/table";
 import {asEnumDefinition, EnumDefinition, instanceOfEnumDefinition} from "./enums/enumDefinition";
-import {any, firstOrDefault, where, contains} from "../infrastructure/enumerableExtensions";
+import {any, firstOrDefault, where, contains} from "../infrastructure/arrayFunctions";
 import {asTypeDefinition, instanceOfTypeDefinition, TypeDefinition} from "./types/typeDefinition";
 import {asScenario, instanceOfScenario, Scenario} from "./scenarios/scenario";
 import {TableType} from "./variableTypes/tableType";

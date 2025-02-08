@@ -19,7 +19,7 @@ import {Scenario} from "./scenarios/scenario";
 import {Table} from "./tables/table";
 import {TypeDefinition} from "./types/typeDefinition";
 import {DuplicateChecker} from "./duplicateChecker";
-import {where} from "../infrastructure/enumerableExtensions";
+import {where} from "../infrastructure/arrayFunctions";
 import {NodeType} from "./nodeType";
 
 export class SourceCodeNode extends RootNode {

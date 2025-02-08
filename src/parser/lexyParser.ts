@@ -51,6 +51,7 @@ export class LexyParser implements ILexyParser {
   public parse(code: string[], fullFileName: string, options: ParseOptions | null): ParserResult {
     const context = new ParserContext(this.baseLogger, this.fileSystem, this.expressionFactory, options);
     context.addFileIncluded(fullFileName);
+    context.setFileLineFilter(fullFileName);
 
     this.parseDocument(context, code, fullFileName);
     context.logger.logNodes(context.nodes.asArray());
@@ -103,7 +104,7 @@ export class LexyParser implements ILexyParser {
 
   private processLine(context: IParserContext): boolean {
     let line = this.sourceCode.nextLine();
-    if (context.options.lineFilter != undefined && !context.options.lineFilter.useLine(line.content)) {
+    if (!context.lineFilter.useLine(line.content)) {
       context.logger.log(line.lineStartReference(), `Skip line by filter: '${line.content}'`);
       return false;
     }

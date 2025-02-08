@@ -5,7 +5,7 @@ import type {IRootNodeList} from "../rootNodeList";
 import {TypeWithMembers} from "./typeWithMembers";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {VariableType} from "./variableType";
-import {any, firstOrDefault} from "../../infrastructure/enumerableExtensions";
+import {any, firstOrDefault} from "../../infrastructure/arrayFunctions";
 import {VariableTypeName} from "./variableTypeName";
 
 export function instanceOfEnumType(object: any): object is EnumType {

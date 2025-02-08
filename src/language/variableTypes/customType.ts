@@ -5,7 +5,7 @@ import type {ITypeDefinition} from "../types/typeDefinition";
 
 import {TypeWithMembers} from "./typeWithMembers";
 import {VariableType} from "./variableType";
-import {firstOrDefault} from "../../infrastructure/enumerableExtensions";
+import {firstOrDefault} from "../../infrastructure/arrayFunctions";
 import {VariableTypeName} from "./variableTypeName";
 
 export function instanceOfCustomType(object: any): object is CustomType {

@@ -13,7 +13,7 @@ import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
 import {PrimitiveType} from "../variableTypes/primitiveType";
-import {any} from "../../infrastructure/enumerableExtensions";
+import {any} from "../../infrastructure/arrayFunctions";
 
 class OperatorEntry {
   public operatorType: OperatorType;
