@@ -29,6 +29,7 @@ jobs:
       run: |
         yarn update-submodules
         yarn install
+        tsc
         yarn coverage
 
     - run: npm i coverage-badges-cli -g
