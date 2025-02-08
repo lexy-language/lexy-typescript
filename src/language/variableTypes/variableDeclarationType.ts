@@ -7,13 +7,15 @@ import {Node} from "../node"
 export abstract class VariableDeclarationType extends Node {
 
   private variableTypeValue: VariableType | null = null;
+  private typeName: string;
 
   public get variableType(): VariableType | null {
     return this.variableTypeValue;
   }
 
-  protected constructor(reference: SourceReference) {
+  protected constructor(typeName: string, reference: SourceReference) {
     super(reference);
+    this.typeName = typeName;
   }
 
   protected setVariableType(value: VariableType | null) {

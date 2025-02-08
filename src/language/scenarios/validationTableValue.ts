@@ -6,6 +6,8 @@ import {NodeType} from "../nodeType";
 import {SourceReference} from "../../parser/sourceReference";
 import {asLiteralExpression} from "../expressions/literalExpression";
 import {ValidationTableHeader} from "./validationTableHeader";
+import {asMemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {asMemberAccessExpression} from "../expressions/memberAccessExpression";
 
 export class ValidationTableValue extends Node {
 
@@ -30,7 +32,12 @@ export class ValidationTableValue extends Node {
   protected override validate(context: IValidationContext): void {
   }
 
-  public getValue(): object | null {
+  public getValue(): any | null {
+    const enumValue = asMemberAccessExpression(this.expression);
+    if (enumValue != null) {
+      return enumValue.toString();
+    }
+
     const literal = asLiteralExpression(this.expression);
     const value = literal?.literal.typedValue;
     return value == undefined ? null : value;

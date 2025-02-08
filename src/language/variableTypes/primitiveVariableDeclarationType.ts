@@ -21,7 +21,7 @@ export class PrimitiveVariableDeclarationType extends VariableDeclarationType {
   public type: string
 
   constructor(type: string, reference: SourceReference) {
-    super(reference);
+    super(type, reference);
     this.type = type;
   }
 

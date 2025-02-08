@@ -27,7 +27,7 @@ export class CustomVariableDeclarationType extends VariableDeclarationType imple
   public type: string;
 
   constructor(type: string, reference: SourceReference) {
-    super(reference);
+    super(type, reference);
     this.type = type;
   }
 
@@ -53,8 +53,7 @@ export class CustomVariableDeclarationType extends VariableDeclarationType imple
     }
   }
 
-  public override createVariableType(context: IValidationContext):
-    VariableType | null {
+  public override createVariableType(context: IValidationContext): VariableType | null {
     if (!this.type.includes(".")) {
       return context.rootNodes.getType(this.type);
     }

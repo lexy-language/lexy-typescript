@@ -4,7 +4,7 @@ import {createRunner} from "./createRunner";
 describe('runSingleSpecification', () => {
   it('specificFile',  async() => {
     const runner = createRunner();
-    runner.run(`tests/lexy-language/Specifications/Function/Switch.lexy`);
+    runner.run(`tests/lexy-language/Specifications/Scenario/ValidationTableWithEnum.lexy`);
     //runner.run(`tests/lexy-language/Specifications/Language/ArithmeticOperators.lexy`);
     //runner.run(`tests/lexy-language/src/specifications/Isolate.lexy`);
 

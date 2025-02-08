@@ -19,7 +19,7 @@ export class ImplicitVariableDeclaration extends VariableDeclarationType {
   public nodeType = NodeType.ImplicitVariableDeclaration;
 
   constructor(reference: SourceReference) {
-    super(reference);
+    super("var", reference);
   }
 
   protected override createVariableType(context: IValidationContext): VariableType {

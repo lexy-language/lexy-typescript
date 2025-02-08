@@ -205,6 +205,20 @@ export class ScenarioRunner implements IScenarioRunner {
     }
   }
 
+  private getDependenciesErrors() {
+    const node = this.functionNode
+      ?? this.scenario.functionNode
+      ?? this.scenario.enum
+      ?? this.scenario.table;
+    if (node == null) {
+      this.fail(`Scenario has no function, enum or table.`, []);
+      return null;
+    }
+
+    const dependencies = DependencyGraphFactory.nodeAndDependencies(this.rootNodeList, node);
+    return this.parserLogger.errorNodesMessages(dependencies)
+  }
+
   private validateScenarioErrors(): boolean {
     const failedMessages = this.parserLogger.errorNodeMessages(this.scenario);
     if (failedMessages.length == 0) return true;
@@ -214,24 +228,21 @@ export class ScenarioRunner implements IScenarioRunner {
 
     if (skipValidationWhenExecutionErrorsAreExpected) return true;
 
+    const failedDependenciesMessages = this.getDependenciesErrors();
+
+    const allErrors = failedDependenciesMessages !== null
+      ? [...failedMessages, ...failedDependenciesMessages]
+      : failedMessages;
     const expectErrors = this.scenario.expectErrors;
-    return this.validateExpectedErrors("Parsing Scenario", failedMessages, expectErrors?.messages);
+    return this.validateExpectedErrors("Parsing Scenario", allErrors, expectErrors?.messages);
   }
 
   private validateErrors(): boolean {
     if (this.scenario.expectRootErrors?.hasValues) return this.validateRootErrors();
 
-    const node = this.functionNode
-      ?? this.scenario.functionNode
-      ?? this.scenario.enum
-      ?? this.scenario.table;
-    if (node == null) {
-      this.fail(`Scenario has no function, enum or table.`, []);
-      return false;
-    }
+    const failedMessages = this.getDependenciesErrors();
+    if (failedMessages == null) return false;
 
-    const dependencies = DependencyGraphFactory.nodeAndDependencies(this.rootNodeList, node);
-    const failedMessages = this.parserLogger.errorNodesMessages(dependencies);
     const expectErrors = this.scenario.expectErrors;
     return this.validateExpectedErrors("Parsing", failedMessages, expectErrors?.messages);
   }
