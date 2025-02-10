@@ -3,6 +3,7 @@ import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
 import type {IRootNode} from "../rootNode";
+import type {IRootNodeList} from "../rootNodeList";
 
 import {RootNode} from "../rootNode";
 import {TypeName} from "./typeName";
@@ -10,6 +11,8 @@ import {VariableDefinition} from "../variableDefinition";
 import {SourceReference} from "../../parser/sourceReference";
 import {VariableSource} from "../variableSource";
 import {NodeType} from "../nodeType";
+import {asHasNodeDependencies, IHasNodeDependencies} from "../IHasNodeDependencies";
+import {selectMany} from "../../infrastructure/arrayFunctions";
 
 export function instanceOfTypeDefinition(object: any) {
   return object?.nodeType == NodeType.TypeDefinition;
@@ -23,10 +26,12 @@ export interface ITypeDefinition extends IRootNode {
  get variables(): ReadonlyArray<VariableDefinition>;
 }
 
-export class TypeDefinition extends RootNode {
+export class TypeDefinition extends RootNode implements IHasNodeDependencies, ITypeDefinition {
 
   private readonly variablesValue: Array<VariableDefinition> = [];
+
   public readonly nodeType = NodeType.TypeDefinition;
+  public readonly hasNodeDependencies = true;
 
   public name: TypeName;
 
@@ -51,6 +56,14 @@ export class TypeDefinition extends RootNode {
     let variableDefinition = VariableDefinition.parse(VariableSource.Parameters, context);
     if (variableDefinition != null) this.variablesValue.push(variableDefinition);
     return this;
+  }
+
+  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
+    const dependencies = selectMany(this.variablesValue, variable => {
+      const hasDependencies = asHasNodeDependencies(variable.type);
+      return hasDependencies != null ? hasDependencies.getDependencies(rootNodeList) : [];
+    });
+    return dependencies;
   }
 
   public override getChildren(): Array<INode> {

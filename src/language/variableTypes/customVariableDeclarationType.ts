@@ -27,7 +27,7 @@ export class CustomVariableDeclarationType extends VariableDeclarationType imple
   public type: string;
 
   constructor(type: string, reference: SourceReference) {
-    super(type, reference);
+    super(reference);
     this.type = type;
   }
 
@@ -36,14 +36,15 @@ export class CustomVariableDeclarationType extends VariableDeclarationType imple
   }
 
   public getDependencies(rootNodeList: IRootNodeList): ReadonlyArray<IRootNode> {
-    switch (this.variableType?.variableTypeName) {
+    const type = this.getVariableType(rootNodeList);
+    switch (type?.variableTypeName) {
       case VariableTypeName.CustomType: {
-        const customType = asCustomType(this.variableType);
+        const customType = asCustomType(type);
         if (customType == null) throw new Error("this.variableType is not CustomType");
         return [customType.typeDefinition];
       }
       case VariableTypeName.ComplexType: {
-        const complexType = asComplexType(this.variableType);
+        const complexType = asComplexType(type);
         if (complexType == null) throw new Error("this.variableType is not ComplexType");
         return [complexType.node];
       }
@@ -53,24 +54,26 @@ export class CustomVariableDeclarationType extends VariableDeclarationType imple
     }
   }
 
-  public override createVariableType(context: IValidationContext): VariableType | null {
+  public override validateVariableType(context: IValidationContext): VariableType | null {
+    const type = this.getVariableType(context.rootNodes);
+    if (type == null) {
+      context.logger.fail(this.reference, `Invalid type: '${this.type}'`);
+    }
+    return type;
+  }
+
+  private getVariableType(rootNodes: IRootNodeList): VariableType | null {
     if (!this.type.includes(".")) {
-      return context.rootNodes.getType(this.type);
+      return rootNodes.getType(this.type);
     }
 
     const parts = this.type.split(".");
-    if (parts.length > 2) {
-      context.logger.fail(this.reference, `Invalid type: '${this.type}'`);
-      return null;
-    }
+    if (parts.length > 2) return null;
 
-    const parent = context.rootNodes.getType(parts[0]);
-    if (parent == null) {
-      context.logger.fail(this.reference, `Invalid type: '${this.type}'`);
-      return null;
-    }
+    const parent = rootNodes.getType(parts[0]);
+    if (parent == null) return null;
 
-    return parent.memberType(parts[1], context);
+    return parent.memberType(parts[1], rootNodes);
   }
 
   public override getChildren(): Array<INode> {

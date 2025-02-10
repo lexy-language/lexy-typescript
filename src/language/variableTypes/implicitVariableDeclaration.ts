@@ -19,10 +19,10 @@ export class ImplicitVariableDeclaration extends VariableDeclarationType {
   public nodeType = NodeType.ImplicitVariableDeclaration;
 
   constructor(reference: SourceReference) {
-    super("var", reference);
+    super(reference);
   }
 
-  protected override createVariableType(context: IValidationContext): VariableType {
+  protected override validateVariableType(context: IValidationContext): VariableType {
     if (this.variableType == null) {
       throw new Error(`Not supported. Nodes should be Validated first.`)
     }

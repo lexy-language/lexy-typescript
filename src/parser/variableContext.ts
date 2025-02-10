@@ -74,14 +74,13 @@ export class VariableContext implements IVariableContext {
 
     type CreateHandler = (path: VariablePath, validationContext: IValidationContext) => VariableReference | null;
 
-    function executeWithPriority(firstPriorityHandler: CreateHandler, secondPriorityHandler: CreateHandler, logger: IParserLogger) {
+    function executeWithPriority(firstPriorityHandler: CreateHandler, secondPriorityHandler: CreateHandler) {
       const value1 = firstPriorityHandler(path, validationContext);
       if (value1 != null) return value1;
 
       const value2 = secondPriorityHandler(path, validationContext);
       if (value2 != null) return value2;
 
-      logger.fail(reference, `Unknown variable name: '${path.fullPath()}'`);
       return null;
     }
 
@@ -90,8 +89,8 @@ export class VariableContext implements IVariableContext {
     const fromVariables = this.createVariableReferenceFromRegisteredVariables.bind(this);
 
     return containsMemberAccess
-      ? executeWithPriority(fromTypeSystem, fromVariables, this.logger)
-      : executeWithPriority(fromVariables, fromTypeSystem, this.logger);
+      ? executeWithPriority(fromTypeSystem, fromVariables)
+      : executeWithPriority(fromVariables, fromTypeSystem);
   }
 
   private createVariableReferenceFromRegisteredVariables(path: VariablePath, validationContext: IValidationContext) {
@@ -116,7 +115,7 @@ export class VariableContext implements IVariableContext {
     }
 
     const member = path.lastPart();
-    let memberType = rootVariableType.memberType(member, validationContext);
+    let memberType = rootVariableType.memberType(member, validationContext.rootNodes);
     if (memberType == null) return null;
 
     return new VariableReference(path, rootVariableType, memberType, VariableSource.Type);
@@ -149,7 +148,7 @@ export class VariableContext implements IVariableContext {
   private containChild(parentType: VariableType | null, path: VariablePath, context: IValidationContext): boolean {
     let typeWithMembers = (parentType as any).typeWithMember == true ? (parentType as any) as ITypeWithMembers : null;
 
-    let memberVariableType = typeWithMembers != null ? typeWithMembers.memberType(path.parentIdentifier, context) : null;
+    let memberVariableType = typeWithMembers != null ? typeWithMembers.memberType(path.parentIdentifier, context.rootNodes) : null;
     if (memberVariableType == null) return false;
 
     return !path.hasChildIdentifiers
@@ -162,7 +161,7 @@ export class VariableContext implements IVariableContext {
     let typeWithMembers = asTypeWithMembers(parentType);
     if (typeWithMembers == null) return null;
 
-    let memberVariableType = typeWithMembers.memberType(path.parentIdentifier, context);
+    let memberVariableType = typeWithMembers.memberType(path.parentIdentifier, context.rootNodes);
     if (memberVariableType == null) return null;
 
     return !path.hasChildIdentifiers

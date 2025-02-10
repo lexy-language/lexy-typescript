@@ -24,26 +24,23 @@ describe('FactoryTests', () => {
 
   it('simpleEnum', async () => {
     const dependencies = buildDependencyGraph(enumDefinition);
-    expect(dependencies.nodes.length).toBe(1);
-    expect(dependencies.nodes[0].name).toBe(`SimpleEnum`);
-    expect(dependencies.nodes[0].type).toBe("EnumDefinition");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes.length).toBe(1);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleEnum`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
   it('simpleTable', async () => {
     const dependencies = buildDependencyGraph(table);
-    expect(dependencies.nodes.length).toBe(1);
-    expect(dependencies.nodes[0].name).toBe(`SimpleTable`);
-    expect(dependencies.nodes[0].type).toBe("Table");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes.length).toBe(1);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleTable`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
   it('simpleFunction', async () => {
     const dependencies = buildDependencyGraph(functionCode);
-    expect(dependencies.nodes.length).toBe(1);
-    expect(dependencies.nodes[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[0].type).toBe("Function");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes.length).toBe(1);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleFunction`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
   it('functionNewFunctionParameters', async () => {
@@ -53,15 +50,12 @@ Function: Caller
     var parameters = new(SimpleFunction.Parameters)
 `);
 
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[0].type).toBe("Function");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
-    expect(dependencies.nodes[1].name).toBe(`Caller`);
-    expect(dependencies.nodes[1].type).toBe("Function");
-    expect(dependencies.nodes[1].dependencies.length).toBe(1);
-    expect(dependencies.nodes[1].dependencies[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[1].dependencies[0].type).toBe("Function");
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleFunction`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Caller`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes[1].dependencies[0]).toBe(`SimpleFunction`);
   });
 
   it('functionNewFunctionResults', async () => {
@@ -71,15 +65,12 @@ Function: Caller
     var parameters = new(SimpleFunction.Results)
 `);
 
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[0].type).toBe("Function");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
-    expect(dependencies.nodes[1].name).toBe(`Caller`);
-    expect(dependencies.nodes[1].type).toBe("Function");
-    expect(dependencies.nodes[1].dependencies.length).toBe(1);
-    expect(dependencies.nodes[1].dependencies[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[1].dependencies[0].type).toBe("Function");
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleFunction`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Caller`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes[1].dependencies[0]).toBe(`SimpleFunction`);
   });
 
   it('functionFillFunctionParameters', async () => {
@@ -91,15 +82,12 @@ Function: Caller
     var parameters = fill(SimpleFunction.Parameters)
 `);
 
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[0].type).toBe("Function");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
-    expect(dependencies.nodes[1].name).toBe(`Caller`);
-    expect(dependencies.nodes[1].type).toBe("Function");
-    expect(dependencies.nodes[1].dependencies.length).toBe(1);
-    expect(dependencies.nodes[1].dependencies[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[1].dependencies[0].type).toBe("Function");
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleFunction`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Caller`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes[1].dependencies[0]).toBe(`SimpleFunction`);
   });
 
   it('functionFillFunctionResults', async () => {
@@ -111,15 +99,12 @@ Function: Caller
     var parameters = fill(SimpleFunction.Results)
 `);
 
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[0].type).toBe("Function");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
-    expect(dependencies.nodes[1].name).toBe(`Caller`);
-    expect(dependencies.nodes[1].type).toBe("Function");
-    expect(dependencies.nodes[1].dependencies.length).toBe(1);
-    expect(dependencies.nodes[1].dependencies[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[1].dependencies[0].type).toBe("Function");
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleFunction`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Caller`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes[1].dependencies[0]).toBe(`SimpleFunction`);
   });
 
   it('tableLookup', async () => {
@@ -129,15 +114,12 @@ Function: Caller
     var result = LOOKUP(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)
 `);
 
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`SimpleTable`);
-    expect(dependencies.nodes[0].type).toBe("Table");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
-    expect(dependencies.nodes[1].name).toBe(`Caller`);
-    expect(dependencies.nodes[1].type).toBe("Function");
-    expect(dependencies.nodes[1].dependencies.length).toBe(1);
-    expect(dependencies.nodes[1].dependencies[0].name).toBe(`SimpleTable`);
-    expect(dependencies.nodes[1].dependencies[0].type).toBe("Table");
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleTable`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Caller`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes[1].dependencies[0]).toBe(`SimpleTable`);
   });
 
   it('SimpleScenario', async () => {
@@ -150,13 +132,12 @@ Scenario: Simple
   Parameters
     Value = 2
 `);
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`SimpleFunction`);
-    expect(dependencies.nodes[0].type).toBe("Function");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
-    expect(dependencies.nodes[1].name).toBe(`Simple`);
-    expect(dependencies.nodes[1].type).toBe("Scenario");
-    expect(dependencies.nodes[1].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`SimpleFunction`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Simple`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes[1].dependencies[0]).toBe("SimpleFunction");
   });
 
   it('simpleType', async () => {
@@ -165,10 +146,9 @@ Type: Simple
   number Value1
   string Value2
 `);
-    expect(dependencies.nodes.length).toBe(1);
-    expect(dependencies.nodes[0].name).toBe(`Simple`);
-    expect(dependencies.nodes[0].type).toBe("TypeDefinition");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes.length).toBe(1);
+    expect(dependencies.dependencyNodes[0].name).toBe(`Simple`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
   it('complexType', async () => {
@@ -182,13 +162,11 @@ Type: Parent
   string Value2
   Inner Value3
 `);
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`Inner`);
-    expect(dependencies.nodes[0].type).toBe("TypeDefinition");
-    expect(dependencies.nodes[0].dependencies.length).toBe(0);
-    expect(dependencies.nodes[1].name).toBe(`Parent`);
-    expect(dependencies.nodes[1].type).toBe("TypeDefinition");
-    expect(dependencies.nodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`Inner`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Parent`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
   });
 
   it('circularType', async () => {
@@ -204,13 +182,11 @@ Type: Parent
   Inner Value3
 `, false);
 
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`Inner`);
-    expect(dependencies.nodes[0].type).toBe("TypeDefinition");
-    expect(dependencies.nodes[0].dependencies.length).toBe(1);
-    expect(dependencies.nodes[1].name).toBe(`Parent`);
-    expect(dependencies.nodes[1].type).toBe("TypeDefinition");
-    expect(dependencies.nodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`Inner`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Parent`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
     expect(dependencies.circularReferences.length).toBe(2);
     expect(dependencies.circularReferences[0].nodeName).toBe(`Inner`);
     expect(dependencies.circularReferences[1].nodeName).toBe(`Parent`);
@@ -227,13 +203,11 @@ Function: Parent
     Inner()
 `, false);
 
-    expect(dependencies.nodes.length).toBe(2);
-    expect(dependencies.nodes[0].name).toBe(`Inner`);
-    expect(dependencies.nodes[0].type).toBe("Function");
-    expect(dependencies.nodes[0].dependencies.length).toBe(1);
-    expect(dependencies.nodes[1].name).toBe(`Parent`);
-    expect(dependencies.nodes[1].type).toBe("Function");
-    expect(dependencies.nodes[1].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes.length).toBe(2);
+    expect(dependencies.dependencyNodes[0].name).toBe(`Inner`);
+    expect(dependencies.dependencyNodes[0].dependencies.length).toBe(1);
+    expect(dependencies.dependencyNodes[1].name).toBe(`Parent`);
+    expect(dependencies.dependencyNodes[1].dependencies.length).toBe(1);
     expect(dependencies.circularReferences.length).toBe(2);
     expect(dependencies.circularReferences[0].nodeName).toBe(`Inner`);
     expect(dependencies.circularReferences[1].nodeName).toBe(`Parent`);

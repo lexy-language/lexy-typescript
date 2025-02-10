@@ -1,11 +1,11 @@
 import type {ITypeWithMembers} from "./ITypeWithMembers";
-import type {IValidationContext} from "../../parser/validationContext";
 import type {IRootNode} from "../rootNode";
 
 import {VariableType} from "./variableType";
 import {ComplexTypeMember} from "./complexTypeMember";
 import {ComplexTypeSource} from "./complexTypeSource";
 import {VariableTypeName} from "./variableTypeName";
+import {IRootNodeList} from "../rootNodeList";
 
 export function instanceOfComplexType(object: any): object is ComplexType {
   return object?.variableTypeName == VariableTypeName.ComplexType;
@@ -32,7 +32,7 @@ export class ComplexType extends VariableType implements ITypeWithMembers {
     this.members = members;
   }
 
-  public memberType(name: string, context: IValidationContext): VariableType | null {
+  public memberType(name: string, rootNodes: IRootNodeList): VariableType | null {
     for (let index = 0; index < this.members.length; index++) {
       const member = this.members[index];
       if (member.name == name) {

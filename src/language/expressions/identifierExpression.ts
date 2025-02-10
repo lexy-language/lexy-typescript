@@ -70,6 +70,9 @@ export class IdentifierExpression extends Expression implements IHasVariableRefe
   public createVariableReference(context: IValidationContext) {
     const path = VariablePathParser.parseString(this.identifier);
     this.variableValue = context.variableContext.createVariableReference(this.reference, path, context);
+    if (this.variableValue == null) {
+      context.logger.fail(this.reference, `Invalid identifier: '${path.fullPath()}'`);
+    }
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {

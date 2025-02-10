@@ -75,7 +75,7 @@ export class ParserContext implements IParserContext {
   private newMarkdownLineFilter() {
     let inCodeBlock = false;
     const useLine = (line: string) => {
-      if (line === '```') {
+      if (line.trim() === '```') {
         inCodeBlock = !inCodeBlock;
         return false;
       }

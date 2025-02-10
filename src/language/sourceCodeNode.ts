@@ -26,12 +26,13 @@ export class SourceCodeNode extends RootNode {
 
   private readonly includes: Array<Include> = [];
   private readonly expressionFactory: IExpressionFactory;
+  private sortedNodes: Array<IRootNode>;
 
   public readonly nodeType = NodeType.SourceCodeNode;
   public readonly nodeName = "SourceCodeNode";
 
   public readonly comments: Comments;
-  public readonly rootNodes: RootNodeList = new RootNodeList();
+  public rootNodes: RootNodeList = new RootNodeList();
 
   constructor(expressionFactory: IExpressionFactory) {
     super(new SourceReference(new SourceFile(`SourceCodeNode`), 1, 1));
@@ -92,27 +93,7 @@ export class SourceCodeNode extends RootNode {
   }
 
   public override getChildren(): Array<INode> {
-    return this.rootNodes.asArray().sort(this.sortNode);
-  }
-
-  private sortNode(left: IRootNode, right: IRootNode) {
-    return SourceCodeNode.nodeImportance(left) < SourceCodeNode.nodeImportance(right) ? -1 : 1;
-  }
-
-  private static nodeImportance(rootNode: IRootNode): number {
-    switch (rootNode.nodeType) {
-      case NodeType.EnumDefinition:
-        return 0;
-      case NodeType.Table:
-      case NodeType.TypeDefinition:
-        return 1;
-      case NodeType.Function:
-        return 2;
-      case NodeType.Scenario:
-        return 3;
-      default:
-        return 0;
-    }
+    return this.sortedNodes ? this.sortedNodes : this.rootNodes.asArray();
   }
 
   protected override validate(context: IValidationContext): void {
@@ -126,5 +107,13 @@ export class SourceCodeNode extends RootNode {
 
   public getDueIncludes(): ReadonlyArray<Include> {
     return where(this.includes, include => !include.isProcessed);
+  }
+
+  public sortByDependency(sortedNodes: Array<IRootNode>) {
+    this.sortedNodes = this.withoutScenarioInlineNode(sortedNodes);
+  }
+
+  private withoutScenarioInlineNode(sortedNodes: Array<IRootNode>) {
+    return sortedNodes.filter(where => this.rootNodes.getNode(where.nodeName) != null);
   }
 }

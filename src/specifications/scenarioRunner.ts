@@ -249,7 +249,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
   private validateRootErrors(): boolean {
     const failedMessages = this.parserLogger.errorMessages();
-    return this.validateExpectedErrors("Root", failedMessages, this.scenario.expectRootErrors?.messages, true);
+    return this.validateExpectedErrors("Root", failedMessages, this.scenario.expectRootErrors?.messages);
   }
 
   private validateExecutionErrors(error: any): boolean {
@@ -258,8 +258,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
   private validateExpectedErrors(title: string,
                                  actualErrors: ReadonlyArray<string>,
-                                 expectErrors: ReadonlyArray<string> | undefined,
-                                 strictAllMessages: boolean = false) {
+                                 expectErrors: ReadonlyArray<string> | undefined) {
 
     if (actualErrors.length > 0 && expectErrors == undefined) {
       this.fail(`${title} errors: ${actualErrors.length}`, StringArrayBuilder
@@ -279,26 +278,38 @@ export class ScenarioRunner implements IScenarioRunner {
       return false;
     }
 
-    let errorNotFound = false;
     let remainingMessages = [...actualErrors];
+    let notFound = [];
     for (const expectError of expectErrors) {
       let failedMessage = firstOrDefault(remainingMessages, message => message.includes(expectError));
       if (failedMessage != null) {
         remainingMessages = remainingMessages.filter(item => item !== failedMessage);
       } else {
-        errorNotFound = true;
+        notFound.push(expectError);
       }
     }
 
-    if ((strictAllMessages && any(remainingMessages)) || errorNotFound) {
+    if (any(remainingMessages) || notFound.length > 0) {
       this.fail(`Wrong ${title} error(s) occurred.`, StringArrayBuilder
-        .new("Expected:").list(expectErrors)
-        .add("Actual:").list(actualErrors).array());
+        .new("Expected:").list(this.markAsFound(expectErrors, notFound))
+        .add("Actual:").list(this.markAsFound(actualErrors, remainingMessages)).array());
       return false;
     }
 
     this.context.success(this.scenario, null, null);
     return false;
+  }
+
+  private markAsFound(expectErrors: ReadonlyArray<string>, remainingMessages: ReadonlyArray<string>): ReadonlyArray<string> {
+    const result = [];
+    for (const expectError of expectErrors) {
+      if (remainingMessages.indexOf(expectError) >= 0) {
+        result.push(`(not found) ${expectError}`);
+      } else {
+        result.push(`(found)     ${expectError}`);
+      }
+    }
+    return result;
   }
 
   private validateExecutionLogging(result: FunctionResult) {

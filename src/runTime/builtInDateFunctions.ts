@@ -6,6 +6,15 @@ export class BuiltInDateFunctions {
   private static readonly millisecondsInHour = 3600000;
   private static readonly millisecondsInMinute = 60000;
 
+  public static format(value: Date): string {
+    return value.getFullYear()
+      + "-" + ("0" + (value.getMonth() + 1)).slice(-2)
+      + "-" + ("0" + value.getDate()).slice(-2)
+      + " " + ("0" + value.getHours()).slice(-2)
+      + ":" + ("0" + value.getMinutes()).slice(-2)
+      + ":" + ("0" + value.getSeconds()).slice(-2)
+  }
+
   public static now(): Date {
     return new Date();
   }

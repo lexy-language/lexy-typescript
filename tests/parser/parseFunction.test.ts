@@ -3,24 +3,16 @@ import {parseNodes} from "../parseFunctions";
 describe('ParseFunctionTests', () => {
   it('testDuplicatedFunctionName', async () => {
     const code = `Function: ValidateTableKeyword
-# Validate table keywords
-  Include
-    table ValidateTableKeyword
-  Parameters
   Results
     number Result
   Code
-    Result = ValidateTableKeyword.length
+    Result = 2
 
 Function: ValidateTableKeyword
-# Validate table keywords
-  Include
-    table ValidateTableKeyword
-  Parameters
   Results
     number Result
   Code
-    Result = ValidateTableKeyword.length`;
+    Result = 1`;
 
     const {logger} = parseNodes(code);
     expect(logger.hasErrorMessage(`Duplicated node name: 'ValidateTableKeyword'`))

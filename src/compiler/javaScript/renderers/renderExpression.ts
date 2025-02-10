@@ -224,14 +224,28 @@ function renderNumberOperationExpression(expression: BinaryExpression, codeWrite
 }
 
 function renderBinaryExpression(expression: BinaryExpression, codeWriter: CodeWriter) {
-  if (expression.variableType?.equals(PrimitiveType.number)) {
+  if (expression.leftVariableType?.equals(PrimitiveType.number) && expression.rightVariableType?.equals(PrimitiveType.number)) {
     if (renderNumberOperationExpression(expression, codeWriter)) {
       return;
     }
   }
   renderExpression(expression.left, codeWriter);
+  if (expression.leftVariableType?.equals(PrimitiveType.date)) {
+    codeWriter.write(".getTime()");
+  }
+
   codeWriter.write(operatorString(expression.operator));
-  renderExpression(expression.right, codeWriter);
+
+  if (expression.leftVariableType?.equals(PrimitiveType.string) &&  expression.rightVariableType?.equals(PrimitiveType.date)) {
+    codeWriter.write(`${LexyCodeConstants.environmentVariable}.builtInDateFunctions.format(`);
+    renderExpression(expression.right, codeWriter);
+    codeWriter.write(`)`);
+  } else {
+    renderExpression(expression.right, codeWriter);
+    if (expression.rightVariableType?.equals(PrimitiveType.date)) {
+      codeWriter.write(".getTime()");
+    }
+  }
 }
 
 function operatorString(operator: ExpressionOperator) {

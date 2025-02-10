@@ -27,6 +27,8 @@ export interface IRootNodeList {
   getScenarios(): Array<Scenario>;
 
   getEnum(name: string): EnumDefinition | null;
+
+  getType(name: string): TypeWithMembers | null;
 }
 
 export class RootNodeList implements IRootNodeList {

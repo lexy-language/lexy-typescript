@@ -57,8 +57,8 @@ describe('ParseScenarioTests', () => {
 
     expect(errors[0]).toBe(`tests.lexy(1, 1): ERROR - Scenario has no function, enum, table or expect errors.`);
     expect(errors[1]).toBe(`tests.lexy(2, 3): ERROR - Invalid token 'Functtion'. Keyword expected.`);
-    expect(errors[2]).toBe(`tests.lexy(4, 5): ERROR - Unknown variable name: 'value'`);
-    expect(errors[3]).toBe(`tests.lexy(6, 5): ERROR - Unknown variable name: 'Result'`);
+    expect(errors[2]).toBe(`tests.lexy(4, 5): ERROR - Invalid identifier: 'value'`);
+    expect(errors[3]).toBe(`tests.lexy(6, 5): ERROR - Invalid identifier: 'Result'`);
   });
 
   it('testInvalidNumberValueScenario', async () => {

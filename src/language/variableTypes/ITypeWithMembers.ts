@@ -1,6 +1,6 @@
-import {VariableType} from "./variableType";
+import type {IRootNodeList} from "../rootNodeList";
 
-import type {IValidationContext} from "../../parser/validationContext";
+import {VariableType} from "./variableType";
 
 export function instanceOfTypeWithMembers(object: any): object is ITypeWithMembers {
    return object?.typeWithMember == true;
@@ -12,5 +12,5 @@ export function asTypeWithMembers(object: any): ITypeWithMembers | null {
 
 export interface ITypeWithMembers {
    typeWithMember: boolean;
-   memberType(name: string , context: IValidationContext): VariableType | null;
+   memberType(name: string , rootNodes: IRootNodeList): VariableType | null;
 }

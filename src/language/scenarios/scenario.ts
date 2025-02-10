@@ -285,6 +285,12 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
   public getDependencies(rootNodeList: IRootNodeList): ReadonlyArray<IRootNode> {
     const result: Array<IRootNode> = [];
     if (this.functionNode != null) result.push(this.functionNode);
+    if (this.functionName?.hasValue) {
+      let functionNode = rootNodeList.getFunction(this.functionName.value);
+      if (functionNode != null) {
+        result.push(functionNode);
+      }
+    }
     if (this.enum != null) result.push(this.enum);
     if (this.tableValue != null) result.push(this.tableValue);
     return result;

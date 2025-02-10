@@ -17,6 +17,7 @@ import {validateTypeAndDefault} from "./variableTypes/validationContextExtension
 import {VariableDeclarationTypeParser} from "./variableTypes/variableDeclarationTypeParser";
 import {NodeType} from "./nodeType";
 import {TokenType} from "../parser/tokens/tokenType";
+import {asHasNodeDependencies} from "./IHasNodeDependencies";
 
 export function instanceOfVariableDefinition(object: any): object is VariableDefinition {
   return object?.nodeType == NodeType.VariableDefinition;
@@ -50,9 +51,9 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     this.source = source;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    const dependencies = this.variableType?.getDependencies(rootNodeList);
-    return !!dependencies ? dependencies : [];
+  public getDependencies(rootNodeList: IRootNodeList): ReadonlyArray<IRootNode> {
+    const hasDependencies = asHasNodeDependencies(this.type);
+    return hasDependencies ? hasDependencies.getDependencies(rootNodeList) : [];
   }
 
   public static parse(source: VariableSource, context: IParseLineContext): VariableDefinition | null {

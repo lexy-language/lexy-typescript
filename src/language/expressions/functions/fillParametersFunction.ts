@@ -58,7 +58,7 @@ export class FillParametersFunction extends FunctionCallExpression implements IH
   }
 
   public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    const rootNode = rootNodeList.getNode(Assert.notNull(this.type, "type").name);
+    const rootNode = this.typeLiteral ? rootNodeList.getNode(this.typeLiteral.toString()) : null;
     return rootNode != null ? [rootNode] : [];
   }
 
@@ -75,7 +75,7 @@ export class FillParametersFunction extends FunctionCallExpression implements IH
     const complexType = asComplexType(valueType);
     if (complexType == null) {
       context.logger.fail(this.reference,
-        `Invalid argument 1 'Value' should be of type 'ComplexTypeReference' but is '${valueType}'. ${this.functionHelp}`);
+        `Invalid argument 1 'Value' should be of type 'ComplexType' but is '${valueType}'. ${this.functionHelp}`);
       return;
     }
 

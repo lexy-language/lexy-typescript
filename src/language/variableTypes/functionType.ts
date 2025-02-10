@@ -5,6 +5,7 @@ import {VariableType} from "./variableType";
 import {Function} from "../functions/function";
 import {VariableTypeName} from "./variableTypeName";
 import {ComplexType} from "./complexType";
+import {IRootNodeList} from "../rootNodeList";
 
 export function instanceOfFunctionType(object: any): object is FunctionType {
   return object?.variableTypeName == VariableTypeName.EnumType;
@@ -35,19 +36,19 @@ export class FunctionType extends TypeWithMembers {
     return this.type;
   }
 
-  public override memberType(name: string, context: IValidationContext): VariableType | null {
-    if (name == Function.parameterName) return this.functionParametersType(context);
-    if (name == Function.resultsName) return this.functionResultsType(context);
+  public override memberType(name: string, rootNodes: IRootNodeList): VariableType | null {
+    if (name == Function.parameterName) return this.functionParametersType(rootNodes);
+    if (name == Function.resultsName) return this.functionResultsType(rootNodes);
     return null;
   }
 
-  private functionParametersType(context: IValidationContext): ComplexType | null {
-    const resultsType = context.rootNodes.getFunction(this.type)?.getParametersType();
+  private functionParametersType(rootNodes: IRootNodeList): ComplexType | null {
+    const resultsType = rootNodes.getFunction(this.type)?.getParametersType();
     return !!resultsType ? resultsType : null;
   }
 
-  private functionResultsType(context: IValidationContext): ComplexType | null {
-    const resultsType = context.rootNodes.getFunction(this.type)?.getResultsType();
+  private functionResultsType(rootNodes: IRootNodeList): ComplexType | null {
+    const resultsType = rootNodes.getFunction(this.type)?.getResultsType();
     return !!resultsType ? resultsType : null;
   }
 }

@@ -1,39 +1,26 @@
-import {INode} from "../language/node";
 import {IRootNode} from "../language/rootNode";
 
 export class DependencyNode {
-  private readonly dependenciesValue: Array<DependencyNode> = [];
-  private readonly parentNode: DependencyNode | null;
+  private readonly dependenciesValue: ReadonlyArray<string> = [];
   private readonly nodeValue: IRootNode;
 
   public name: string
-  public type: string
 
-  public get dependencies(): ReadonlyArray<DependencyNode> {
-    return [...this.dependenciesValue];
+  public get dependencies(): ReadonlyArray<string> {
+    return this.dependenciesValue;
   }
 
   public get node(): IRootNode {
     return this.nodeValue;
   }
 
-  constructor(name: string, type: string, node: IRootNode, parentNode: DependencyNode | null) {
+  constructor(name: string, node: IRootNode, dependencies: ReadonlyArray<string>) {
     this.nodeValue = node;
     this.name = name;
-    this.type = type;
-    this.parentNode = parentNode;
+    this.dependenciesValue = dependencies;
   }
 
-  public addDependency(dependency: DependencyNode): void {
-    this.dependenciesValue.push(dependency);
-  }
-
-  protected equals(other: DependencyNode): boolean {
-    return this.name == other.name && this.type == other.type;
-  }
-
-  public existsInLineage(name: string, type: string): boolean {
-    if (this.name == name && this.type == type) return true;
-    return this.parentNode != null && this.parentNode.existsInLineage(name, type);
+  hasDependency(parent: DependencyNode) {
+    return this.dependenciesValue.indexOf(parent.name) >= 0;
   }
 }

@@ -79,6 +79,6 @@ export class NewFunction extends FunctionCallExpression implements IHasNodeDepen
 
   public override deriveType(context: IValidationContext): VariableType | null {
     let nodeType = context.rootNodes.getType(this.typeLiteral.parent);
-    return nodeType?.memberType(this.typeLiteral.member, context) as ComplexType;
+    return nodeType?.memberType(this.typeLiteral.member, context.rootNodes) as ComplexType;
   }
 }

@@ -21,7 +21,7 @@ export class PrimitiveVariableDeclarationType extends VariableDeclarationType {
   public type: string
 
   constructor(type: string, reference: SourceReference) {
-    super(type, reference);
+    super(reference);
     this.type = type;
   }
 
@@ -33,7 +33,7 @@ export class PrimitiveVariableDeclarationType extends VariableDeclarationType {
     return this.type;
   }
 
-  protected override createVariableType(context: IValidationContext): VariableType {
+  protected override validateVariableType(context: IValidationContext): VariableType {
     return PrimitiveType.parse(this.type);
   }
 

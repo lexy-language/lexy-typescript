@@ -7,6 +7,8 @@ import {EnumDefinition} from "../enums/enumDefinition";
 import {VariableType} from "./variableType";
 import {any, firstOrDefault} from "../../infrastructure/arrayFunctions";
 import {VariableTypeName} from "./variableTypeName";
+import {SourceReference} from "../../parser/sourceReference";
+import {SourceFile} from "../../parser/sourceFile";
 
 export function instanceOfEnumType(object: any): object is EnumType {
   return object?.variableTypeName == VariableTypeName.EnumType;
@@ -37,7 +39,7 @@ export class EnumType extends TypeWithMembers {
     return this.type;
   }
 
-  public override memberType(name: string, context: IValidationContext): VariableType | null {
+  public override memberType(name: string, rootNodes: IRootNodeList): VariableType | null {
     return any(this.enum.members, member => member.name == name) ? this : null;
   }
 
@@ -48,5 +50,9 @@ export class EnumType extends TypeWithMembers {
 
   public firstMemberName() {
     return firstOrDefault(this.enum.members)?.name;
+  }
+
+  static Generic() {
+    return new EnumType("generic", new EnumDefinition("generic", new SourceReference(new SourceFile("generic"), 1, 1)));
   }
 }

@@ -16,6 +16,7 @@ import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory"
 import {SourceCodeDocument} from "./sourceCodeDocument";
 import {ParserContext} from "./parserContext";
 import {ParseOptions} from "./parseOptions";
+import {Dependencies} from "../dependencyGraph/dependencies";
 
 export interface ILexyParser {
   parseFile(fileName: string, options: ParseOptions | null): ParserResult;
@@ -56,8 +57,11 @@ export class LexyParser implements ILexyParser {
     this.parseDocument(context, code, fullFileName);
     context.logger.logNodes(context.nodes.asArray());
 
-    this.validateNodesTree(context);
-    this.detectCircularDependencies(context);
+    const dependencyGraph = this.sortByDependencyAndCheckCircularDependencies(context);
+    if (dependencyGraph != null) {
+      context.rootNode.sortByDependency(dependencyGraph.sortedNodes);
+      this.validateNodesTree(context);
+    }
 
     if (context.options.suppressException != true) {
       context.logger.assertNoErrors();
@@ -153,15 +157,16 @@ export class LexyParser implements ILexyParser {
     context.rootNode.validateTree(validationContext);
   }
 
-  private detectCircularDependencies(context: IParserContext): void {
+  private sortByDependencyAndCheckCircularDependencies(context: IParserContext): Dependencies | null {
     let dependencies = DependencyGraphFactory.create(context.nodes);
-    if (!dependencies.hasCircularReferences) return;
+    if (!dependencies.hasCircularReferences) return dependencies;
 
     for (const circularReference of dependencies.circularReferences) {
       context.logger.setCurrentNode(circularReference);
       context.logger.fail(circularReference.reference,
         `Circular reference detected in: '${circularReference.nodeName}'`);
     }
+    return null;
   }
 
   private reset(context: IParserContext): void {

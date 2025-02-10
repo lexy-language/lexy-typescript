@@ -24,14 +24,13 @@ function validateCustomVariableType(context: IValidationContext,
     (type.variableTypeName != VariableTypeName.EnumType
     && type.variableTypeName != VariableTypeName.CustomType
     && type.variableTypeName != VariableTypeName.ComplexType)) {
-    context.logger.fail(reference, `Unknown type: '${customVariableDeclarationType.type}'`);
+    //logged by CustomVariableDeclarationType
     return;
   }
 
   if (defaultValueExpression == null) {
     return;
   }
-
 
   if (!(instanceOfEnumType(type))) {
     context.logger.fail(reference,

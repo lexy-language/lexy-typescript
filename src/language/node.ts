@@ -16,30 +16,31 @@ export interface INode {
 export abstract class Node implements INode {
 
   private readonly referenceValue: SourceReference;
-  
+
   public get reference(): SourceReference {
     return this.referenceValue;
   }
 
   protected constructor(reference: SourceReference) {
-     this.referenceValue = reference ;
-   }
+    this.referenceValue = reference;
+  }
 
-   public validateTree(context: IValidationContext): void {
+  public validateTree(context: IValidationContext): void {
 
-     let children = this.getChildren();
-     children.forEach(child => this.validateNodeTree(context, child));
+    let children = this.getChildren();
+    children.forEach(child => this.validateNodeTree(context, child));
 
-     this.validate(context);
-   }
+    this.validate(context);
+  }
 
   public abstract nodeType: NodeType;
+
   public abstract getChildren(): Array<INode>;
 
-   protected validateNodeTree(context: IValidationContext, child: INode | null): void {
-     if (child == null) throw new Error(`(${this.nodeType}) Child is null`);
-     child.validateTree(context);
-   }
+  protected validateNodeTree(context: IValidationContext, child: INode | null): void {
+    if (child == null) throw new Error(`(${this.nodeType}) Child is null`);
+    child.validateTree(context);
+  }
 
-   protected abstract validate(context: IValidationContext): void;
+  protected abstract validate(context: IValidationContext): void;
 }

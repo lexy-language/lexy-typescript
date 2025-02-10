@@ -82,6 +82,9 @@ export class MemberAccessExpression extends Expression
 
   private createVariableReference(context: IValidationContext) {
     this.variableValue = context.variableContext.createVariableReference(this.reference, this.variablePath, context);
+    if (this.variableValue == null) {
+      context.logger.fail(this.reference, `Invalid identifier: '${this.variablePath.fullPath()}'`);
+    }
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {

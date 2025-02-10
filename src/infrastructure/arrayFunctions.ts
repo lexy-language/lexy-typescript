@@ -110,3 +110,12 @@ export function unique<TItem>(array: ReadonlyArray<TItem>, identifierProvider: (
   }
   return results;
 }
+
+export function selectMany<TItem, TResult>(array: ReadonlyArray<TItem>, select: (value: TItem) => ReadonlyArray<TResult>): Array<TResult> {
+  const results: Array<TResult> = [];
+  for (const item of array) {
+    const values = select(item);
+    values.forEach(value => results.push(value));
+  }
+  return results;
+}

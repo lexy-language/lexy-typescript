@@ -37,6 +37,7 @@ export class EnumWriter implements IRootTokenWriter {
 
     codeWriter.openScope(`if (typeof value !== 'string' && !(value instanceof String))`);
     codeWriter.writeLine(`validationErrors.push(\`'\${name}' should have a '${enumDefinition.name.value}' value. Invalid type: '\${toString.call(value)}\`);`);
+    codeWriter.writeLine(`return;`);
     codeWriter.closeScope();
 
 

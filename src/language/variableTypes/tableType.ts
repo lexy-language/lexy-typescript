@@ -7,6 +7,7 @@ import {PrimitiveType} from "./primitiveType";
 import {VariableTypeName} from "./variableTypeName";
 import {ComplexType} from "./complexType";
 import {ComplexTypeSource} from "./complexTypeSource";
+import {IRootNodeList} from "../rootNodeList";
 
 export function instanceOfTableType(object: any): object is TableType {
   return object?.variableTypeName == VariableTypeName.TableType;
@@ -36,16 +37,16 @@ export class TableType extends TypeWithMembers {
     return this.tableName;
   }
 
-  public override memberType(name: string, context: IValidationContext): VariableType | null {
+  public override memberType(name: string, rootNodes: IRootNodeList): VariableType | null {
 
     if (name == `Count`) return PrimitiveType.number;
-    if (name == Table.rowName) return this.tableRowType(context);
+    if (name == Table.rowName) return this.tableRowType(rootNodes);
     if (this.table.header?.getColumn(name) != null) return new ComplexType(name, this.table, ComplexTypeSource.TableColumn, []);
     return null;
   }
 
-  private tableRowType(context: IValidationContext): ComplexType | null {
-    let complexType = context.rootNodes.getTable(this.tableName)?.getRowType();
+  private tableRowType(rootNodes: IRootNodeList): ComplexType | null {
+    let complexType = rootNodes.getTable(this.tableName)?.getRowType();
     return !!complexType ? complexType : null;
   }
 }

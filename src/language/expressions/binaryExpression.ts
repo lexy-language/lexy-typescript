@@ -14,6 +14,13 @@ import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
 import {PrimitiveType} from "../variableTypes/primitiveType";
 import {any} from "../../infrastructure/arrayFunctions";
+import {EnumType, instanceOfEnumType} from "../variableTypes/enumType";
+
+type OperatorCombination = {
+  leftType: VariableType,
+  rightType: VariableType
+  operator: ExpressionOperator,
+}
 
 class OperatorEntry {
   public operatorType: OperatorType;
@@ -56,6 +63,50 @@ export class BinaryExpression extends Expression {
     ExpressionOperator.NotEqual
   ];
 
+  private static AllowedOperationCombinations: Array<OperatorCombination> = [
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.Equals},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Equals},
+    { leftType: PrimitiveType.boolean, rightType: PrimitiveType.boolean, operator: ExpressionOperator.Equals},
+    { leftType: PrimitiveType.date, rightType: PrimitiveType.date, operator: ExpressionOperator.Equals},
+    { leftType: EnumType.Generic(), rightType: EnumType.Generic(), operator: ExpressionOperator.Equals},
+
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.NotEqual},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.NotEqual},
+    { leftType: PrimitiveType.boolean, rightType: PrimitiveType.boolean, operator: ExpressionOperator.NotEqual},
+    { leftType: PrimitiveType.date, rightType: PrimitiveType.date, operator: ExpressionOperator.NotEqual},
+    { leftType: EnumType.Generic(), rightType: EnumType.Generic(), operator: ExpressionOperator.NotEqual},
+
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.Addition},
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.number, operator: ExpressionOperator.Addition},
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.boolean, operator: ExpressionOperator.Addition},
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.date, operator: ExpressionOperator.Addition},
+    { leftType: PrimitiveType.string, rightType: EnumType.Generic(), operator: ExpressionOperator.Addition},
+
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Addition},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Subtraction},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Multiplication},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Division},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Modulus},
+
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.GreaterThan},
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.GreaterThanOrEqual},
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.LessThan},
+    { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.LessThanOrEqual},
+
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.GreaterThan},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.GreaterThanOrEqual},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.LessThan},
+    { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.LessThanOrEqual},
+
+    { leftType: PrimitiveType.date, rightType: PrimitiveType.date, operator: ExpressionOperator.GreaterThan},
+    { leftType: PrimitiveType.date, rightType: PrimitiveType.date, operator: ExpressionOperator.GreaterThanOrEqual},
+    { leftType: PrimitiveType.date, rightType: PrimitiveType.date, operator: ExpressionOperator.LessThan},
+    { leftType: PrimitiveType.date, rightType: PrimitiveType.date, operator: ExpressionOperator.LessThanOrEqual},
+
+    { leftType: PrimitiveType.boolean, rightType: PrimitiveType.boolean, operator: ExpressionOperator.And},
+    { leftType: PrimitiveType.boolean, rightType: PrimitiveType.boolean, operator: ExpressionOperator.Or},
+  ];
+
   private static readonly SupportedOperatorsByPriority: Array<OperatorEntry> = [
     new OperatorEntry(OperatorType.Multiplication, ExpressionOperator.Multiplication),
     new OperatorEntry(OperatorType.Division, ExpressionOperator.Division),
@@ -80,7 +131,8 @@ export class BinaryExpression extends Expression {
   public left: Expression;
   public right: Expression;
   public operator: ExpressionOperator;
-  public variableType: VariableType | null = null;
+  public leftVariableType: VariableType | null = null;
+  public rightVariableType: VariableType | null = null;
 
   constructor(left: Expression, right: Expression, operatorValue: ExpressionOperator,
               source: ExpressionSource, reference: SourceReference) {
@@ -193,15 +245,40 @@ export class BinaryExpression extends Expression {
   }
 
   protected override validate(context: IValidationContext): void {
-    let left = this.left.deriveType(context);
-    let right = this.right.deriveType(context);
-
-    if (!left?.equals(right)) {
+    this.leftVariableType = this.left.deriveType(context);
+    this.rightVariableType = this.right.deriveType(context);
+    if (this.leftVariableType == null || this.rightVariableType == null) {
       context.logger.fail(this.reference,
-        `Invalid expression type. Left expression: '${left}'. Right expression '${right}.`);
-    } else {
-      this.variableType = left;
+        `Invalid operator '${this.operator}'. Can't derive type.`);
+      return;
     }
+
+    if (!this.isAllowedOperation(this.leftVariableType, this.rightVariableType)) {
+      context.logger.fail(this.reference,
+        `Invalid operator '${this.operator}'. Left type: '${this.leftVariableType}' and right type '${this.rightVariableType}' not supported.`);
+    }
+  }
+
+  private isAllowedOperation(left: VariableType | null, right: VariableType | null) {
+    return any(BinaryExpression.AllowedOperationCombinations, allowed => {
+      if (allowed.operator != this.operator) return false;
+
+      let leftEnum = instanceOfEnumType(left);
+      let rightEnum = instanceOfEnumType(right);
+      let allowedLeftEnum = instanceOfEnumType(allowed.leftType);
+      let allowedRightEnum = instanceOfEnumType(allowed.rightType);
+
+      if (allowedLeftEnum && allowedRightEnum) {
+        //if left and right is enum, the enum should be of the same type
+        return leftEnum && rightEnum && left != null && left.equals(right);
+      } else if (allowedLeftEnum) {
+        return leftEnum && allowed.rightType.equals(right);
+      } else if (allowedRightEnum) {
+        return allowed.leftType.equals(left) && rightEnum;
+      } else {
+        return allowed.leftType.equals(left) && allowed.rightType.equals(right);
+      }
+    });
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
