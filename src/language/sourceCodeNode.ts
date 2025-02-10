@@ -26,7 +26,7 @@ export class SourceCodeNode extends RootNode {
 
   private readonly includes: Array<Include> = [];
   private readonly expressionFactory: IExpressionFactory;
-  private sortedNodes: Array<IRootNode>;
+  private sortedNodes: Array<IRootNode> | null = null;
 
   public readonly nodeType = NodeType.SourceCodeNode;
   public readonly nodeName = "SourceCodeNode";

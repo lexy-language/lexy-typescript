@@ -136,7 +136,7 @@ export class Dependencies {
 
   private flattenNodes(result: Array<IRootNode>, dependencies: ReadonlyArray<string>): void {
     for (const dependency of dependencies) {
-      const dependencyNode = this.dependencyMap.get(dependency);
+      const dependencyNode = Assert.notNull(this.dependencyMap.get(dependency), "dependencyNode");
       if (result.indexOf(dependencyNode.node) >= 0) continue;
       result.push(dependencyNode.node);
       this.flattenNodes(result, dependencyNode.dependencies);
