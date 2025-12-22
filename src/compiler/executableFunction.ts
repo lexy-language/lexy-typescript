@@ -5,6 +5,7 @@ import {GeneratedType} from "./generatedType";
 import {LexyCodeConstants} from "./javaScript/lexyCodeConstants";
 import {VariablePathParser} from "../language/scenarios/variablePathParser";
 import Decimal from "decimal.js";
+import {deepCopy} from "../infrastructure/deepCopy";
 
 export class ExecutableFunction {
   private readonly environment: any;
@@ -18,10 +19,10 @@ export class ExecutableFunction {
   }
 
   public run(values: { [key: string]: any } | null = null): FunctionResult {
-    let parameters = this.getParameters(values);
+    const parameters = this.getParameters(values);
     const context = new ExecutionContext(this.logger);
-    let results = this.functionReference(this.environment, parameters, context);
-    return new FunctionResult(results, context.entries);
+    const results = this.functionReference(this.environment, parameters, context);
+    return new FunctionResult(deepCopy(results), context.entries);
   }
 
   private getParameters(values: { [p: string]: any } | null) {

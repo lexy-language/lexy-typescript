@@ -9,7 +9,7 @@ describe('CompileFunctionTests', () => {
   Code
     Result = 777`);
      const result = script.run();
-     expect(result.number(`Result`)).toEqual(Decimal(777));
+     expect(result.number(`Result`)).toEqual(777);
    });
 
   it('testParameterDefaultReturn', async () => {
@@ -21,7 +21,7 @@ describe('CompileFunctionTests', () => {
   Code
     Result = Input`);
      let result = script.run();
-     expect(result.number(`Result`)).toEqual(Decimal(5));
+     expect(result.number(`Result`)).toEqual(5);
    });
 
   it('testAssignmentReturn', async () => {
@@ -36,7 +36,7 @@ describe('CompileFunctionTests', () => {
      let result = script.run({
        Input: 777
      });
-     expect(result.number(`Result`)).toEqual(Decimal(777));
+     expect(result.number(`Result`)).toEqual(777);
    });
 
   it('testMemberAccessAssignment', async () => {
@@ -55,7 +55,7 @@ Function: ValidateTableKeywordFunction
     Result = ValidateTableKeyword.Count`);
 
      let result = script.run();
-     expect(result.number(`Result`)).toEqual(Decimal(2));
+     expect(result.number(`Result`)).toEqual(2);
    });
 
   it('variableDeclarationInCode', async () => {
@@ -70,7 +70,7 @@ Function: ValidateTableKeywordFunction
     Result = temp`);
 
      let result = script.run();
-     expect(result.number(`Result`)).toEqual(Decimal(5));
+     expect(result.number(`Result`)).toEqual(5);
    });
 
   it('variableDeclarationWithDefaultInCode', async () => {
@@ -82,7 +82,7 @@ Function: ValidateTableKeywordFunction
     Result = temp
 `);
      let result = script.run();
-     expect(result.number(`Result`)).toEqual(Decimal(5));
+     expect(result.number(`Result`)).toEqual(5);
    });
 
   it('variableDeclarationWithDefaultEnumInCode', async () => {
@@ -116,7 +116,7 @@ Function: TestCustomType
 `);
     let result = script.run();
     expect(result.object(`Result`)).toEqual({
-      First: Decimal(777),
+      First: 777,
       Second: "123"
     });
   });
@@ -140,7 +140,7 @@ Function: TestCustomType
     let result = script.run();
     expect(result.object(`Result`)).toEqual({
       Inner: {
-        First: Decimal(777),
+        First: 777,
         Second: "123"
       }
     });

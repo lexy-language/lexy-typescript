@@ -22,9 +22,9 @@ export class FunctionResult {
     this.loggingValue = logging;
   }
 
-  public number(name: string): Decimal {
+  public number(name: string): number {
     const value = this.valueObject[name];
-    return Decimal(value as any);
+    return value as number;
   }
 
   public string(name: string): string {

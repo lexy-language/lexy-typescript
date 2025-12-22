@@ -49,4 +49,4 @@ To update the submodule to the latest version: `cd tests/lexy-language/ && git p
 
 ## Floating point precision
 
-To avoid floating-point manipulation problems `decimal.js` is used to handle number operations.
+To avoid floating-point manipulation problems `decimal.js` is used internally to handle number operations.
