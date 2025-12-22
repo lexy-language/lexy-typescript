@@ -4,7 +4,7 @@ export class Validate {
   public static number(name: string, value: any, optional: boolean, validationErrors: Array<string>) {
     if (this.isMissing(name, value, 'number', optional, validationErrors)) return;
 
-    if (toString.call(value) !== '[object Decimal]' && !(value instanceof  Decimal)) {
+    if (toString.call(value) !== '[object Decimal]' && !(value instanceof Decimal)) {
       validationErrors.push(`'${name}' should have a 'number' value. Invalid type: ${toString.call(value)}. Use decimal.js.`)
     } else if (value.isNaN() || !value.isFinite()) {
       validationErrors.push(`'${name}' should have a 'number' value. Invalid number value: '${value}'`)
