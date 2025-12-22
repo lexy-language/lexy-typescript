@@ -43,13 +43,13 @@ export class ExecutionLogEntry {
   public deepCopy<T>(obj: T): T {
     if (obj === null) return null as T;
     if (obj instanceof Date) return new Date(obj) as T;
-    if (toString.call(obj) === '[object Decimal]') return obj.toNumber() as T;
+    if (toString.call(obj) === '[object Decimal]') return (obj as any).toNumber() as T;
     if (typeof obj !== 'object') return obj;
     if (Array.isArray(obj)) return obj.map(item => this.deepCopy(item)) as unknown as T;
     return this.copyObject(obj);
   }
 
-  private copyObject<T>(obj: T) {
+  private copyObject<T extends  {}>(obj: T ): T {
     const copy = {} as { [K in keyof T]: T[K] };
     Object.keys(obj).forEach(key => {
       if (key.startsWith("__")) return;
