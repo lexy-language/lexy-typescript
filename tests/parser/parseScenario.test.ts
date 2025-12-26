@@ -158,7 +158,7 @@ describe('ParseScenarioTests', () => {
     number Result
    Code
     Result = 123A
-  ExpectErrors 
+  expectErrors 
     "Invalid token at 18: Invalid number token character: A"`;
 
     let {scenario, logger} = parseScenario(code);

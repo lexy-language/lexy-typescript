@@ -17,15 +17,15 @@ describe('KeywordTests', () => {
   });
 
   it('TestExpectErrorKeywordWithQuotedLiteral', async () => {
-    tokenize("  ExpectErrors \"Invalid token 'Paraeters'\"")
+    tokenize("  expectErrors \"Invalid token 'Paraeters'\"")
       .count(2)
-      .keyword(0, "ExpectErrors")
+      .keyword(0, "expectErrors")
       .quotedString(1, "Invalid token 'Paraeters'")
       .assert();
   });
 
   it('TestExpectErrorKeywordWithQuotedAndInvalidChar', async () => {
-    let result = tokenizeExpectError("  ExpectError \"Invalid token 'Paraeters'\".");
+    let result = tokenizeExpectError("  expectError \"Invalid token 'Paraeters'\".");
     expect(result.errorMessage).toBe("Invalid character at 41 '.'");
   });
 

@@ -19,12 +19,13 @@ export class Keywords {
   public static readonly Results = "results";
   public static readonly ValidationTable = "validationTable";
 
-  public static readonly ExecutionLogging = "ExecutionLogging";
-  public static readonly ExecutionLog = "Log";
   public static readonly Code = "Code";
-  public static readonly ExpectErrors = "ExpectErrors";
-  public static readonly ExpectComponentErrors = "ExpectComponentErrors";
-  public static readonly ExpectExecutionErrors = "ExpectExecutionErrors";
+
+  public static readonly ExpectErrors = "expectErrors";
+  public static readonly ExpectComponentErrors = "expectComponentErrors";
+  public static readonly ExpectExecutionErrors = "expectExecutionErrors";
+  public static readonly ExecutionLogging = "executionLogging";
+  public static readonly ExecutionLog = "log";
 
   public static readonly ImplicitVariableDeclaration = "var";
 
