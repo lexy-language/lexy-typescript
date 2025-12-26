@@ -5,14 +5,12 @@ describe('ParseFunctionTests', () => {
     const code = `function ValidateTableKeyword
   results
     number Result
-  Code
-    Result = 2
+  Result = 2
 
 function ValidateTableKeyword
   results
     number Result
-  Code
-    Result = 1`;
+  Result = 1`;
 
     const {logger} = parseNodes(code);
     expect(logger.hasErrorMessage(`Duplicated node name: 'ValidateTableKeyword'`))

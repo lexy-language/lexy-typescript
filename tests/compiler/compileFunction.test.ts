@@ -6,8 +6,7 @@ describe('CompileFunctionTests', () => {
      let script = compileFunction(`function TestSimpleReturn
   results
     number Result
-  Code
-    Result = 777`);
+  Result = 777`);
      const result = script.run();
      expect(result.number(`Result`)).toEqual(777);
    });
@@ -18,8 +17,7 @@ describe('CompileFunctionTests', () => {
     number Input = 5
   results
     number Result
-  Code
-    Result = Input`);
+  Result = Input`);
      let result = script.run();
      expect(result.number(`Result`)).toEqual(5);
    });
@@ -31,8 +29,7 @@ describe('CompileFunctionTests', () => {
 
   results
     number Result
-  Code
-    Result = Input`);
+  Result = Input`);
      let result = script.run({
        Input: 777
      });
@@ -51,8 +48,7 @@ function ValidateTableKeywordFunction
   parameters
   results
     number Result
-  Code
-    Result = ValidateTableKeyword.Count`);
+  Result = ValidateTableKeyword.Count`);
 
      let result = script.run();
      expect(result.number(`Result`)).toEqual(2);
@@ -64,10 +60,9 @@ function ValidateTableKeywordFunction
     number Value = 5 
   results
     number Result
-  Code
-    number temp = 5
-    temp = Value 
-    Result = temp`);
+  number temp = 5
+  temp = Value 
+  Result = temp`);
 
      let result = script.run();
      expect(result.number(`Result`)).toEqual(5);
@@ -77,10 +72,9 @@ function ValidateTableKeywordFunction
      let script = compileFunction(`function TestSimpleReturn
   results
     number Result
-  Code
-    number temp = 5
-    Result = temp
-`);
+  number temp = 5
+  Result = temp`);
+
      let result = script.run();
      expect(result.number(`Result`)).toEqual(5);
    });
@@ -94,9 +88,8 @@ enum SimpleEnum
 function TestEnum
   results
     SimpleEnum Result
-  Code
-    Result = SimpleEnum.Second
-`);
+  Result = SimpleEnum.Second`);
+
     let result = script.run();
     expect(result.string(`Result`)).toEqual("SimpleEnum.Second");
   });
@@ -110,10 +103,9 @@ type SimpleComplex
 function TestCustomType
   results
     SimpleComplex Result
-  Code
-    Result.First = 777
-    Result.Second = "123"
-`);
+  Result.First = 777
+  Result.Second = "123"`);
+
     let result = script.run();
     expect(result.object(`Result`)).toEqual({
       First: 777,
@@ -133,10 +125,9 @@ type SimpleComplex
 function TestCustomType
   results
     SimpleComplex Result
-  Code
-    Result.Inner.First = 777
-    Result.Inner.Second = "123"
-`);
+  Result.Inner.First = 777
+  Result.Inner.Second = "123"`);
+
     let result = script.run();
     expect(result.object(`Result`)).toEqual({
       Inner: {

@@ -38,7 +38,7 @@ function renderLogVariablesParameters(variables: Array<VariableUsage>, codeWrite
 
 export function logLineAndVariables(expression: Expression, codeWriter: CodeWriter) {
   const variables = getReadVariables(expression);
-  const codeLine = replaceAll(expression.source.line.content.substring(4), "\"", "'");
+  const codeLine = replaceAll(expression.source.line.content.substring(2), "\"", "'");
   codeWriter.startLine(`const __logLine${expression.source.line.index} = ${LexyCodeConstants.contextVariable}.log("${codeLine}", ${expression.source.line.index}, {`);
   renderLogVariablesParameters(variables, codeWriter);
   codeWriter.endLine('});')

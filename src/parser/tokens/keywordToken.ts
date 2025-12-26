@@ -12,7 +12,7 @@ export function asKeywordToken(object: any): KeywordToken | null {
 
 export class KeywordToken extends Token {
 
-  public tokenIsLiteral: boolean = true;
+  public tokenIsLiteral: boolean = false;
   public tokenType = TokenType.KeywordToken;
 
   public value: string

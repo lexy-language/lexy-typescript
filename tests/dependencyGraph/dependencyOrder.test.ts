@@ -9,8 +9,7 @@ describe('DependencyOrder', () => {
     EnumExample EnumValue
   results
     number Result
-  Code
-    Result = LOOKUP(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
+  Result = LOOKUP(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
 
 table TableExample
   | EnumExample Example | number Value |
@@ -36,9 +35,8 @@ enum EnumExample
       TypeExample Example
     results
       number Result
-    Code
-      FunctionWithFunctionDependency()
-      FunctionWithFunctionTypeDependency()
+    FunctionWithFunctionDependency()
+    FunctionWithFunctionTypeDependency()
   parameters
     Example.EnumValue = EnumExample.Single
     Example.Nested.EnumValue = EnumExample.Married
@@ -50,37 +48,33 @@ function FunctionWithFunctionDependency
     TypeExample Example
   results
     number Result
-  Code
-    FunctionWithTypeDependency()
-    FunctionWithTableDependency()
-    FunctionWithEnumDependency()
+  FunctionWithTypeDependency()
+  FunctionWithTableDependency()
+  FunctionWithEnumDependency()
 
 function FunctionWithFunctionTypeDependency
   parameters
     TypeExample Example
   results
     number Result
-  Code
-    var functionParametersFill = fill(FunctionWithTypeDependency.Parameters)
-    var functionParametersNew = new(FunctionWithTypeDependency.Parameters)
-    var tableParameters = new(TableExample.Row)
-    Result = 777
+  var functionParametersFill = fill(FunctionWithTypeDependency.Parameters)
+  var functionParametersNew = new(FunctionWithTypeDependency.Parameters)
+  var tableParameters = new(TableExample.Row)
+  Result = 777
 
 function FunctionWithTypeDependency
   parameters
     TypeExample Example
   results
     number Result
-  Code
-    Result = Example.Nested.Result
+  Result = Example.Nested.Result
 
 function FunctionWithTableDependency
   parameters
     TypeExample Example
   results
     number Result
-  Code
-    Result = LOOKUP(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
+  Result = LOOKUP(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
 
 function FunctionWithEnumDependency
   parameters
@@ -88,8 +82,7 @@ function FunctionWithEnumDependency
     TypeExample Example
   results
     number Result
-  Code
-    Result = 666
+  Result = 666
 
 type NestedType
   EnumExample EnumValue

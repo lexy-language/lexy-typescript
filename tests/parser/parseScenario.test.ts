@@ -86,9 +86,8 @@ describe('ParseScenarioTests', () => {
     results
       number Result1
       number Result2
-    Code
-      Result1 = Value1
-      Result2 = Value2
+    Result1 = Value1
+    Result2 = Value2
   parameters
     Value1 = 987
     Value2 = 654
@@ -184,15 +183,14 @@ describe('ParseScenarioTests', () => {
   it('scenarioWithInlineFunctionShouldLogErrorOnFunction', async () => {
     const code = `scenario TestScenario
   function
-    Unknown`;
+    scenario`;
 
     let {scenario, logger} = parseScenario(code);
-
 
     expect(logger.nodeHasErrors(scenario.functionNode)).toBe(true);
 
     const errors = logger.errorNodeMessages(scenario.functionNode);
     expect(errors.length).toBe(1);
-    expect(errors[0]).toBe(`tests.lexy(2, 3): ERROR - Invalid token 'Unknown'.`);
+    expect(errors[0]).toContain(`Invalid expression: KeywordToken('scenario')`);
   });
 });

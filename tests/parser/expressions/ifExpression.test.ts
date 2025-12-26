@@ -10,11 +10,10 @@ describe('IfExpressionTests', () => {
     boolean Evil
   results
     number Number
-  Code
-    number temp = 777
-    if Evil
-      temp = 666
-    Number = temp`;
+  number temp = 777
+  if Evil
+    temp = 666
+  Number = temp`;
 
     const {nodes, logger} = parseNodes(code);
 

@@ -10,8 +10,7 @@ describe('LexyParserTests', () => {
     const code = `function TestSimpleReturn
   results
     number Result
-  Code
-    Result = 777`;
+  Result = 777`;
 
     const {functionNode} = parseFunction(code);
 
@@ -27,10 +26,9 @@ describe('LexyParserTests', () => {
 
   it('testFunctionKeywords', async () => {
     const code = `function ValidateFunctionKeywords
-// Validate function keywords
+  // Validate function keywords
   parameters
-  results
-  Code`;
+  results`;
 
     const {logger} = parseFunction(code);
     expect(logger.hasErrors()).toBe(false);

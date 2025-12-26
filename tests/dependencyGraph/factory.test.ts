@@ -18,8 +18,7 @@ describe('FactoryTests', () => {
     number Value
   results
     number Result
-  Code
-    Result = Value
+  Result = Value
 `;
 
   it('simpleEnum', async () => {
@@ -46,8 +45,7 @@ describe('FactoryTests', () => {
   it('functionNewFunctionParameters', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
 function Caller
-  Code
-    var params = new(SimpleFunction.Parameters)
+  var params = new(SimpleFunction.Parameters)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -61,8 +59,7 @@ function Caller
   it('functionNewFunctionResults', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
 function Caller
-  Code
-    var params = new(SimpleFunction.Results)
+  var params = new(SimpleFunction.Results)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -78,8 +75,7 @@ function Caller
 function Caller
   parameters
     number Value
-  Code
-    var params = fill(SimpleFunction.Parameters)
+  var params = fill(SimpleFunction.Parameters)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -95,8 +91,7 @@ function Caller
 function Caller
   parameters
     number Result
-  Code
-    var params = fill(SimpleFunction.Results)
+  var params = fill(SimpleFunction.Results)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -110,8 +105,7 @@ function Caller
   it('tableLookup', async () => {
     const dependencies = buildDependencyGraph(table + `
 function Caller
-  Code
-    var result = LOOKUP(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)
+  var result = LOOKUP(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -194,12 +188,10 @@ type Parent
   it('circularFunctionCall', async () => {
     const dependencies = buildDependencyGraph(`
 function Inner
-  Code
-    Parent()
+  Parent()
 
 function Parent
-  Code
-    Inner()
+  Inner()
 `, false);
 
     expect(dependencies.dependencyNodes.length).toBe(2);

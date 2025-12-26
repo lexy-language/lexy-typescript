@@ -34,9 +34,10 @@ export function asFunction(object: any): Function | null {
 export class Function extends ComponentNode implements IHasNodeDependencies {
 
   private readonly factory: IExpressionFactory;
-  private parametersValue: FunctionParameters | null = null;
-  private resultsValue: FunctionResults | null = null;
-  private codeValue: FunctionCode | null = null;
+
+  private parametersValue: FunctionParameters;
+  private resultsValue: FunctionResults;
+  private codeValue: FunctionCode;
 
   public static readonly parameterName = `Parameters`;
   public static readonly resultsName = `Results`;
@@ -46,15 +47,15 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
 
   public readonly name: FunctionName;
 
-  public get parameters(): FunctionParameters | null {
+  public get parameters(): FunctionParameters {
     return this.parametersValue;
   };
 
-  public get results(): FunctionResults | null {
+  public get results(): FunctionResults {
     return this.resultsValue;
   };
 
-  public get code(): FunctionCode | null {
+  public get code(): FunctionCode {
     return this.codeValue;
   };
 
@@ -65,17 +66,16 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
   constructor(name: string, reference: SourceReference, factory: IExpressionFactory) {
     super(reference);
     this.factory = factory;
+    this.parametersValue = new FunctionParameters(reference);
+    this.resultsValue = new FunctionResults(reference);
+    this.codeValue = new FunctionCode(reference, this.factory);
     this.name = FunctionName.parseName(name, reference);
   }
 
   public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
     let result = new Array<IComponentNode>();
-    if (this.parameters != null) {
-      Function.addEnumTypes(componentNodeList, this.parameters.variables, result);
-    }
-    if (this.results != null) {
-      Function.addEnumTypes(componentNodeList, this.results.variables, result);
-    }
+    Function.addEnumTypes(componentNodeList, this.parameters.variables, result);
+    Function.addEnumTypes(componentNodeList, this.results.variables, result);
     return result;
   }
 
@@ -85,33 +85,19 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
 
   public override parse(context: IParseLineContext): IParsableNode {
     let line = context.line;
-    let name = line.tokens.tokenValue(0);
-    if (!line.tokens.isTokenType<KeywordToken>(0, TokenType.KeywordToken)) return this.invalidToken(name, context);
+    if (!line.tokens.isTokenType<KeywordToken>(0, TokenType.KeywordToken)) {
+      return this.codeValue.parse(context);
+    }
 
+    let name = line.tokens.tokenValue(0);
     switch (name) {
       case Keywords.Parameters:
-        if (this.parametersValue == null) {
-          this.parametersValue = new FunctionParameters(line.lineStartReference());
-        }
         return this.parametersValue;
       case Keywords.Results:
-        if (this.resultsValue == null) {
-          this.resultsValue = new FunctionResults(line.lineStartReference());
-        }
         return this.resultsValue;
-      case Keywords.Code:
-        if (this.codeValue == null) {
-          this.codeValue = new FunctionCode(line.lineStartReference(), this.factory);
-        }
-        return this.codeValue;
       default:
-        return this.invalidToken(name, context)
+        return this.codeValue.parse(context);
     }
-  }
-
-  private invalidToken(name: string | null, parserContext: IParseLineContext): IParsableNode {
-    parserContext.logger.fail(this.reference, `Invalid token '${name}'.`);
-    return this;
   }
 
   private static addEnumTypes(componentNodeList: IComponentNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
@@ -122,7 +108,9 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
       if (enumVariableType == null) continue;
 
       let dependency = componentNodeList.getEnum(enumVariableType.type);
-      if (dependency != null) result.push(dependency);
+      if (dependency != null) {
+        result.push(dependency);
+      }
     }
   }
 

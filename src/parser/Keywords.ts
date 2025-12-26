@@ -19,8 +19,6 @@ export class Keywords {
   public static readonly Results = "results";
   public static readonly ValidationTable = "validationTable";
 
-  public static readonly Code = "Code";
-
   public static readonly ExpectErrors = "expectErrors";
   public static readonly ExpectComponentErrors = "expectComponentErrors";
   public static readonly ExpectExecutionErrors = "expectExecutionErrors";
@@ -45,7 +43,6 @@ export class Keywords {
     Keywords.Include,
     Keywords.Parameters,
     Keywords.Results,
-    Keywords.Code,
     Keywords.ExecutionLogging,
     Keywords.ExecutionLog,
     Keywords.ExpectErrors,
