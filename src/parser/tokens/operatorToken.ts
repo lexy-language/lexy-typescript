@@ -55,7 +55,7 @@ export class OperatorToken extends ParsableToken implements IOperatorToken {
     new OperatorCombinations(TokenValues.Addition, null, OperatorType.Addition),
     new OperatorCombinations(TokenValues.Subtraction, null, OperatorType.Subtraction),
     new OperatorCombinations(TokenValues.Multiplication, null, OperatorType.Multiplication),
-    new OperatorCombinations(TokenValues.Division, null, OperatorType.Division),
+    new OperatorCombinations(TokenValues.DivisionOrComment, null, OperatorType.Division),
     new OperatorCombinations(TokenValues.Modulus, null, OperatorType.Modulus),
     new OperatorCombinations(TokenValues.OpenParentheses, null, OperatorType.OpenParentheses),
     new OperatorCombinations(TokenValues.CloseParentheses, null, OperatorType.CloseParentheses),

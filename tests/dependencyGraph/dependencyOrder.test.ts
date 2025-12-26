@@ -30,7 +30,7 @@ Enum: EnumExample
 
   it('complexDependencyGraph', async () => {
     const dependencies = buildDependencyGraph(
-      `Scenario: ValidateBuiltOrder
+      `scenario ValidateBuiltOrder
   function
     Parameters
       TypeExample Example

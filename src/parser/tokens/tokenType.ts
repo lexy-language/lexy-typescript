@@ -1,6 +1,7 @@
 export enum TokenType {
   BooleanLiteral = 'BooleanLiteral',
   BuildLiteralToken = 'BuildLiteralToken',
+  BuildCommentOrDivisionToken = 'BuildCommentOrDivisionToken',
   CommentToken = 'CommentToken',
   DateTimeLiteral = 'DateTimeLiteral',
   KeywordToken = 'KeywordToken',

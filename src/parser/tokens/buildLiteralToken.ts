@@ -68,8 +68,9 @@ export class BuildLiteralToken extends ParsableToken {
       return newParseTokenInProgressResult();
     }
 
-    if (value == TokenValues.Quote && this.value == TokenValues.DateTimeStarter)
+    if (value == TokenValues.Quote && this.value == TokenValues.DateTimeStarter) {
       return newParseTokenInProgressResult(new DateTimeLiteral(this.firstCharacter));
+    }
 
     return newParseTokenInvalidResult(`Unexpected character: '${String.fromCharCode(value)}'`);
   }
@@ -84,10 +85,15 @@ export class BuildLiteralToken extends ParsableToken {
 
   private sealLiteral(): Token {
     let value = this.value;
-    if (Keywords.contains(value)) return new KeywordToken(value, this.firstCharacter);
-    if (BooleanLiteral.isValid(value)) return BooleanLiteral.parse(value, this.firstCharacter);
-
-    if (this.hasMemberAccessor) return new MemberAccessLiteral(value, this.firstCharacter);
+    if (Keywords.contains(value)) {
+      return new KeywordToken(value, this.firstCharacter);
+    }
+    if (BooleanLiteral.isValid(value)) {
+      return BooleanLiteral.parse(value, this.firstCharacter);
+    }
+    if (this.hasMemberAccessor) {
+      return new MemberAccessLiteral(value, this.firstCharacter);
+    }
 
     return new StringLiteralToken(value, this.firstCharacter);
   }

@@ -21,13 +21,13 @@ export class StringLiteralToken extends Token implements ILiteralToken {
   public tokenIsLiteral: boolean = true;
   public tokenType = TokenType.StringLiteralToken;
 
+  public get typedValue() {
+    return this.value;
+  }
+
   constructor(value: string, character: TokenCharacter) {
     super(character);
     this.value = value;
-  }
-
-  public get typedValue() {
-    return this.value;
   }
 
   public deriveType(context: IValidationContext): VariableType | null {

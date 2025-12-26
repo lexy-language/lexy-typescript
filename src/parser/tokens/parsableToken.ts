@@ -25,6 +25,10 @@ export abstract class ParsableToken extends Token {
     this.valueBuilder.push(String.fromCharCode(value));
   }
 
+  protected appendString(value: string): void {
+    this.valueBuilder.push(value);
+  }
+
   public abstract parse(character: TokenCharacter): ParseTokenResult;
 
   public abstract finalize(): ParseTokenResult;

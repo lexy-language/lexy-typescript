@@ -13,16 +13,17 @@ import {NumberLiteralToken} from "./numberLiteralToken";
 import {BuildLiteralToken} from "./buildLiteralToken";
 import {WhitespaceToken} from "./whitespaceToken";
 import {Character, isLetter, isDigit, isWhitespace} from "./character";
+import {BuildCommentOrDivisionToken} from "./buildCommentOrDivisionToken";
+import {where} from "../../infrastructure/arrayFunctions";
 
 const KnownTokens: Array<{value: number, factory: ((character: TokenCharacter) => ParsableToken)}> = [
-  {value: TokenValues.CommentChar, factory: value => new CommentToken(value)},
   {value: TokenValues.Quote, factory: value => new QuotedLiteralToken(value)},
 
   {value: TokenValues.Assignment, factory: value => new OperatorToken(value)},
   {value: TokenValues.Addition, factory: value => new OperatorToken(value)},
   {value: TokenValues.Subtraction, factory: value => new OperatorToken(value)},
   {value: TokenValues.Multiplication, factory: value => new OperatorToken(value)},
-  {value: TokenValues.Division, factory: value => new OperatorToken(value)},
+  {value: TokenValues.DivisionOrComment, factory: value => new BuildCommentOrDivisionToken(value)},
   {value: TokenValues.Modulus, factory: value => new OperatorToken(value)},
   {value: TokenValues.ArgumentSeparator, factory: value => new OperatorToken(value)},
 
@@ -54,37 +55,6 @@ export interface ITokenizer {
 }
 
 export class Tokenizer implements ITokenizer {
-
-  private static discardWhitespace(tokens: Array<Token>): TokenList {
-    const newTokens = new Array<Token>();
-
-    for (let token of tokens) {
-      if (token instanceof CommentToken) break;
-      if (!(token instanceof WhitespaceToken)) {
-        newTokens.push(token);
-      }
-    }
-
-    return new TokenList(newTokens);
-  }
-
-  public startToken(character: TokenCharacter, index: number, line: Line): ParsableTokenResult {
-    let value = character.value;
-
-    for (let knownToken of KnownTokens) {
-      if (knownToken.value == value) {
-        return newParsableTokenSuccess(knownToken.factory(character));
-      }
-    }
-
-    for (let validator of TokensValidators) {
-      if (validator.isValid(value)) {
-        return newParsableTokenSuccess(validator.factory(character));
-      }
-    }
-
-    return newParsableTokenFailed(line.lineReference(index), `Invalid character at ${index} '${String.fromCharCode(value)}'`);
-  }
 
   public tokenize(line: Line): TokenizeResult {
     let tokens = new Array<Token>();
@@ -144,6 +114,33 @@ export class Tokenizer implements ITokenizer {
       tokens.push(result.newToken ?? current);
     }
 
-    return newTokenizeSuccess(Tokenizer.discardWhitespace(tokens));
+    return newTokenizeSuccess(Tokenizer.discardWhitespaceAndComments(tokens));
+  }
+
+  private startToken(character: TokenCharacter, index: number, line: Line): ParsableTokenResult {
+    let value = character.value;
+
+    for (let knownToken of KnownTokens) {
+      if (knownToken.value == value) {
+        return newParsableTokenSuccess(knownToken.factory(character));
+      }
+    }
+
+    for (let validator of TokensValidators) {
+      if (validator.isValid(value)) {
+        return newParsableTokenSuccess(validator.factory(character));
+      }
+    }
+
+    return newParsableTokenFailed(line.lineReference(index), `Invalid character at ${index} '${String.fromCharCode(value)}'`);
+  }
+
+  private static discardWhitespaceAndComments(tokens: Array<Token>): TokenList {
+
+    function notWhitespaceOrComment(token: Token): boolean {
+      return !(token instanceof CommentToken) && !(token instanceof WhitespaceToken);
+    }
+
+    return new TokenList(where(tokens, notWhitespaceOrComment));
   }
 }

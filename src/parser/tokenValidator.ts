@@ -51,13 +51,17 @@ export class TokenValidator {
 
   public keyword(index: number, keyword: string | null = null): TokenValidator {
     this.type(index, TokenType.KeywordToken);
-    if (keyword != null) this.value(index, keyword);
+    if (keyword != null) {
+      this.value(index, keyword)
+    }
     return this;
   }
 
   public stringLiteral(index: number, value: string | null = null): TokenValidator {
     this.type(index, TokenType.StringLiteralToken);
-    if (value != null) this.value(index, value);
+    if (value != null) {
+      this.value(index, value);
+    }
     return this;
   }
 

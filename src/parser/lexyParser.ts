@@ -185,6 +185,9 @@ export class LexyParser implements ILexyParser {
   }
 
   private parseLine(context: IParserContext, currentNode: IParsableNode | null, nodesPerIndent: ParsableNodeIndex, indent: number): IParsableNode {
+    if (currentNode == null) {
+      throw new Error(`Current node can't be null. Line: ${this.sourceCode.currentLine}`)
+    }
     let parseLineContext = new ParseLineContext(this.sourceCode.currentLine, context.logger, this.expressionFactory);
     let node = currentNode != null ? currentNode?.parse(parseLineContext) : null;
     if (node == null) {

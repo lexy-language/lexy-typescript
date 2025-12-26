@@ -8,7 +8,7 @@ import {format} from "../../src/infrastructure/formatting";
 
 describe('ParseScenarioTests', () => {
   it('testValidScenarioKeyword', async () => {
-    const code = `Scenario: TestScenario`;
+    const code = `scenario TestScenario`;
 
     let {scenario} = parseScenario(code);
 
@@ -16,7 +16,7 @@ describe('ParseScenarioTests', () => {
   });
 
   it('testValidScenario', async () => {
-    const code = `Scenario: TestScenario
+    const code = `scenario TestScenario
   function TestScenarioFunction
   Parameters
     value = 123
@@ -40,7 +40,7 @@ describe('ParseScenarioTests', () => {
   });
 
   it('testInvalidScenario', async () => {
-    const code = `Scenario: TestScenario
+    const code = `scenario TestScenario
   Functtion TestScenarioFunction
   Parameters
     value = 123
@@ -62,7 +62,7 @@ describe('ParseScenarioTests', () => {
   });
 
   it('testInvalidNumberValueScenario', async () => {
-    const code = `Scenario: TestScenario
+    const code = `scenario TestScenario
   function
     Results
       number Result
@@ -78,7 +78,7 @@ describe('ParseScenarioTests', () => {
   });
 
   it('testScenarioWithInlineFunction', async () => {
-    const code = `Scenario: ValidNumberIntAsParameter
+    const code = `scenario ValidNumberIntAsParameter
   function
     Parameters
       number Value1 = 123
@@ -139,8 +139,8 @@ describe('ParseScenarioTests', () => {
   });
 
   it('testScenarioWithEmptyParametersAndResults', async () => {
-    const code = `Scenario: ValidateScenarioKeywords
-# Validate Scenario keywords
+    const code = `scenario ValidateScenarioKeywords
+// Validate Scenario keywords
   function ValidateFunctionKeywords
   Parameters
   Results`;
@@ -152,7 +152,7 @@ describe('ParseScenarioTests', () => {
   });
 
   it('testValidScenarioWithInvalidInlineFunction', async () => {
-    const code = `Scenario: InvalidNumberEndsWithLetter
+    const code = `scenario InvalidNumberEndsWithLetter
   function
    Results
     number Result
@@ -172,7 +172,7 @@ describe('ParseScenarioTests', () => {
   });
 
   it('ScenarioWithInlineFunctionShouldHaveAFunctionNameAfterKeywords', async () => {
-    const code = `Scenario: TestScenario
+    const code = `scenario TestScenario
   function ThisShouldBeAllowed`;
 
     let {scenario, logger} = parseScenario(code);
@@ -182,7 +182,7 @@ describe('ParseScenarioTests', () => {
   });
 
   it('scenarioWithInlineFunctionShouldLogErrorOnFunction', async () => {
-    const code = `Scenario: TestScenario
+    const code = `scenario TestScenario
   function
     Unknown`;
 

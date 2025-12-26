@@ -124,8 +124,7 @@ function Caller
 
   it('SimpleScenario', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
-
-Scenario: Simple
+scenario Simple
   function SimpleFunction
   Results
     Result = 2

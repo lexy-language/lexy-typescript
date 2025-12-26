@@ -16,8 +16,9 @@ export class CommentToken extends ParsableToken {
   public tokenIsLiteral: boolean = false;
   public tokenType = TokenType.CommentToken;
 
-  constructor(character: TokenCharacter) {
-    super(character);
+  constructor(firstCharacter: TokenCharacter, value: string) {
+    super(firstCharacter);
+    this.appendString(value);
   }
 
   public parse(character: TokenCharacter): ParseTokenResult {

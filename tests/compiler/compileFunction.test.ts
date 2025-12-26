@@ -41,13 +41,13 @@ describe('CompileFunctionTests', () => {
 
   it('testMemberAccessAssignment', async () => {
      let script = compileFunction(`Table: ValidateTableKeyword
-# Validate table keywords
+// Validate table keywords
   | number Value | number Result |
   | 0 | 0 |
   | 1 | 1 |
 
 function ValidateTableKeywordFunction
-# Validate table keywords
+// Validate table keywords
   Parameters
   Results
     number Result

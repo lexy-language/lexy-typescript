@@ -28,13 +28,13 @@ describe('executionLogging', () => {
 
   it('tableVariablesShouldNotStoreFullTableInLogging', async () => {
     let script = compileFunction(`Table: SimpleTable
-# Validate table keywords
+// Validate table keywords
   | number Search | number Value |
   | 0 | 0 |
   | 1 | 1 |
 
 function ValidateTableKeywordFunction
-# Validate table keywords
+// Validate table keywords
   Parameters
   Results
     number Result
@@ -46,13 +46,13 @@ function ValidateTableKeywordFunction
 
   it('tableVariablesShouldNotStoreFullTableInLoggingRow', async () => {
     let script = compileFunction(`Table: SimpleTable
-# Validate table keywords
+// Validate table keywords
   | number Search | number Value | string Extra |
   | 0 | 0 | "ext" |
   | 1 | 1 | "ra"  | 
 
 function ValidateTableKeywordFunction
-# Validate table keywords
+// Validate table keywords
   Parameters
   Results
     SimpleTable.Row Result

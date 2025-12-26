@@ -27,7 +27,7 @@ describe('LexyParserTests', () => {
 
   it('testFunctionKeywords', async () => {
     const code = `function ValidateFunctionKeywords
-# Validate function keywords
+// Validate function keywords
   Parameters
   Results
   Code`;

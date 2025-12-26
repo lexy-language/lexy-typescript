@@ -49,7 +49,7 @@ export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
 
     if (value == TokenValues.Quote) {
       this.quoteClosed = true;
-      return newParseTokenFinishedResult(true, this);
+      return newParseTokenFinishedResult(true);
     }
 
     this.appendValue(value);
@@ -59,7 +59,7 @@ export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
   public finalize(): ParseTokenResult {
     if (!this.quoteClosed) return newParseTokenInvalidResult("Closing quote expected.");
 
-    return newParseTokenFinishedResult(true, this);
+    return newParseTokenFinishedResult(true);
   }
 
   public toString() {
