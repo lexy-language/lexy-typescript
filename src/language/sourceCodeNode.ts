@@ -1,4 +1,4 @@
-import type {IRootNode} from "./rootNode";
+import type {IComponentNode} from "./componentNode";
 import type {IParseLineContext} from "../parser/ParseLineContext";
 import type {IParsableNode} from "./parsableNode";
 import type {INode} from "./node";
@@ -6,10 +6,10 @@ import type {IValidationContext} from "../parser/validationContext";
 import type {IExpressionFactory} from "./expressions/expressionFactory";
 
 import {Function} from "./functions/function";
-import {RootNode} from "./rootNode";
+import {ComponentNode} from "./componentNode";
 import {Comments} from "./comments";
 import {Include} from "./include";
-import {RootNodeList} from "./rootNodeList";
+import {ComponentNodeList} from "./componentNodeList";
 import {SourceReference} from "../parser/sourceReference";
 import {SourceFile} from "../parser/sourceFile";
 import {NodeName} from "../parser/nodeName";
@@ -22,17 +22,17 @@ import {DuplicateChecker} from "./duplicateChecker";
 import {where} from "../infrastructure/arrayFunctions";
 import {NodeType} from "./nodeType";
 
-export class SourceCodeNode extends RootNode {
+export class SourceCodeNode extends ComponentNode {
 
   private readonly includes: Array<Include> = [];
   private readonly expressionFactory: IExpressionFactory;
-  private sortedNodes: Array<IRootNode> | null = null;
+  private sortedNodes: Array<IComponentNode> | null = null;
 
   public readonly nodeType = NodeType.SourceCodeNode;
   public readonly nodeName = "SourceCodeNode";
 
   public readonly comments: Comments;
-  public rootNodes: RootNodeList = new RootNodeList();
+  public componentNodes: ComponentNodeList = new ComponentNodeList();
 
   constructor(expressionFactory: IExpressionFactory) {
     super(new SourceReference(new SourceFile(`SourceCodeNode`), 1, 1));
@@ -45,15 +45,15 @@ export class SourceCodeNode extends RootNode {
 
     if (line.tokens.isComment()) return this.comments;
 
-    let rootNode = this.parseRootNode(context);
-    if (rootNode == null) return this;
+    let componentNode = this.parseComponentNode(context);
+    if (componentNode == null) return this;
 
-    this.rootNodes.add(rootNode);
+    this.componentNodes.add(componentNode);
 
-    return rootNode;
+    return componentNode;
   }
 
-  private parseRootNode(context: IParseLineContext): IRootNode | null {
+  private parseComponentNode(context: IParseLineContext): IComponentNode | null {
     if (Include.isValid(context.line)) {
       let include = Include.parse(context);
       if (include != null) {
@@ -87,13 +87,13 @@ export class SourceCodeNode extends RootNode {
     }
   }
 
-  private invalidNode(tokenName: NodeName, context: IParseLineContext, reference: SourceReference): IRootNode | null {
+  private invalidNode(tokenName: NodeName, context: IParseLineContext, reference: SourceReference): IComponentNode | null {
     context.logger.fail(reference, `Unknown keyword: ${tokenName.keyword}`);
     return null;
   }
 
   public override getChildren(): Array<INode> {
-    return this.sortedNodes ? this.sortedNodes : this.rootNodes.asArray();
+    return this.sortedNodes ? this.sortedNodes : this.componentNodes.asArray();
   }
 
   protected override validate(context: IValidationContext): void {
@@ -102,18 +102,18 @@ export class SourceCodeNode extends RootNode {
       node => node.reference,
       node => node.nodeName,
       node => `Duplicated node name: '${node.nodeName}'`,
-      this.rootNodes.asArray());
+      this.componentNodes.asArray());
   }
 
   public getDueIncludes(): ReadonlyArray<Include> {
     return where(this.includes, include => !include.isProcessed);
   }
 
-  public sortByDependency(sortedNodes: Array<IRootNode>) {
+  public sortByDependency(sortedNodes: Array<IComponentNode>) {
     this.sortedNodes = this.withoutScenarioInlineNode(sortedNodes);
   }
 
-  private withoutScenarioInlineNode(sortedNodes: Array<IRootNode>) {
-    return sortedNodes.filter(where => this.rootNodes.getNode(where.nodeName) != null);
+  private withoutScenarioInlineNode(sortedNodes: Array<IComponentNode>) {
+    return sortedNodes.filter(where => this.componentNodes.getNode(where.nodeName) != null);
   }
 }

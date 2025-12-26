@@ -1,5 +1,5 @@
-import type {IRootTokenWriter} from "../../IRootTokenWriter";
-import type {IRootNode} from "../../../language/rootNode";
+import type {IComponentTokenWriter} from "../../IComponentTokenWriter";
+import type {IComponentNode} from "../../../language/componentNode";
 import {GeneratedType, GeneratedTypeKind} from "../../generatedType";
 import {asTypeDefinition} from "../../../language/types/typeDefinition";
 import {typeClassName} from "../classNames";
@@ -8,9 +8,9 @@ import {CodeWriter} from "./codeWriter";
 import {Assert} from "../../../infrastructure/assert";
 import {renderExpression} from "../renderers/renderExpression";
 
-export class TypeWriter implements IRootTokenWriter {
+export class TypeWriter implements IComponentTokenWriter {
 
-  public createCode(node: IRootNode): GeneratedType {
+  public createCode(node: IComponentNode): GeneratedType {
     const typeDefinition = Assert.notNull(asTypeDefinition(node), "typeDefinition");
     const className = typeClassName(typeDefinition.name.value);
     const codeWriter = new CodeWriter(renderExpression);

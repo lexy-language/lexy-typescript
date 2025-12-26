@@ -1,8 +1,8 @@
-import {IRootNode} from "../language/rootNode";
+import {IComponentNode} from "../language/componentNode";
 
 export class DependencyNode {
   private readonly dependenciesValue: ReadonlyArray<string> = [];
-  private readonly nodeValue: IRootNode;
+  private readonly nodeValue: IComponentNode;
 
   public name: string
 
@@ -10,11 +10,11 @@ export class DependencyNode {
     return this.dependenciesValue;
   }
 
-  public get node(): IRootNode {
+  public get node(): IComponentNode {
     return this.nodeValue;
   }
 
-  constructor(name: string, node: IRootNode, dependencies: ReadonlyArray<string>) {
+  constructor(name: string, node: IComponentNode, dependencies: ReadonlyArray<string>) {
     this.nodeValue = node;
     this.name = name;
     this.dependenciesValue = dependencies;

@@ -1,11 +1,11 @@
 import type {ITypeWithMembers} from "./ITypeWithMembers";
-import type {IRootNode} from "../rootNode";
+import type {IComponentNode} from "../componentNode";
 
 import {VariableType} from "./variableType";
 import {ComplexTypeMember} from "./complexTypeMember";
 import {ComplexTypeSource} from "./complexTypeSource";
 import {VariableTypeName} from "./variableTypeName";
-import {IRootNodeList} from "../rootNodeList";
+import {IComponentNodeList} from "../componentNodeList";
 
 export function instanceOfComplexType(object: any): object is ComplexType {
   return object?.variableTypeName == VariableTypeName.ComplexType;
@@ -20,11 +20,11 @@ export class ComplexType extends VariableType implements ITypeWithMembers {
   public variableTypeName = VariableTypeName.ComplexType;
   public typeWithMember = true;
   public name: string;
-  public node: IRootNode;
+  public node: IComponentNode;
   public source: ComplexTypeSource;
   public members: Array<ComplexTypeMember>
 
-  constructor(name: string, node: IRootNode, source: ComplexTypeSource, members: Array<ComplexTypeMember>) {
+  constructor(name: string, node: IComponentNode, source: ComplexTypeSource, members: Array<ComplexTypeMember>) {
     super();
     this.name = name;
     this.node = node;
@@ -32,7 +32,7 @@ export class ComplexType extends VariableType implements ITypeWithMembers {
     this.members = members;
   }
 
-  public memberType(name: string, rootNodes: IRootNodeList): VariableType | null {
+  public memberType(name: string, componentNodes: IComponentNodeList): VariableType | null {
     for (let index = 0; index < this.members.length; index++) {
       const member = this.members[index];
       if (member.name == name) {

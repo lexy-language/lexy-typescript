@@ -2,8 +2,8 @@ import type {INode} from "./node";
 import type {IHasNodeDependencies} from "./IHasNodeDependencies";
 import type {IValidationContext} from "../parser/validationContext";
 import type {IParseLineContext} from "../parser/ParseLineContext";
-import type {IRootNode} from "./rootNode";
-import type {IRootNodeList} from "./rootNodeList";
+import type {IComponentNode} from "./componentNode";
+import type {IComponentNodeList} from "./componentNodeList";
 
 import {VariableType} from "./variableTypes/variableType";
 import {VariableDeclarationType} from "./variableTypes/variableDeclarationType";
@@ -51,9 +51,9 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     this.source = source;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): ReadonlyArray<IRootNode> {
+  public getDependencies(componentNodeList: IComponentNodeList): ReadonlyArray<IComponentNode> {
     const hasDependencies = asHasNodeDependencies(this.type);
-    return hasDependencies ? hasDependencies.getDependencies(rootNodeList) : [];
+    return hasDependencies ? hasDependencies.getDependencies(componentNodeList) : [];
   }
 
   public static parse(source: VariableSource, context: IParseLineContext): VariableDefinition | null {

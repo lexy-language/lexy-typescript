@@ -1,5 +1,5 @@
-import type {IRootNode} from "../../../language/rootNode";
-import type {IRootTokenWriter} from "../../IRootTokenWriter";
+import type {IComponentNode} from "../../../language/componentNode";
+import type {IComponentTokenWriter} from "../../IComponentTokenWriter";
 import {GeneratedType, GeneratedTypeKind} from "../../generatedType";
 import {enumClassName} from "../classNames";
 import {CodeWriter} from "./codeWriter";
@@ -7,11 +7,11 @@ import {asEnumDefinition, EnumDefinition} from "../../../language/enums/enumDefi
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {renderExpression} from "../renderers/renderExpression";
 
-export class EnumWriter implements IRootTokenWriter {
+export class EnumWriter implements IComponentTokenWriter {
 
-  public createCode(node: IRootNode): GeneratedType {
+  public createCode(node: IComponentNode): GeneratedType {
     const enumDefinition = asEnumDefinition(node);
-    if (enumDefinition == null) throw new Error(`Root token not enumDefinition`);
+    if (enumDefinition == null) throw new Error(`Component token not enumDefinition`);
 
     const enumName = enumClassName(enumDefinition.name.value);
 

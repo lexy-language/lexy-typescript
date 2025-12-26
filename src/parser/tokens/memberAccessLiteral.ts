@@ -51,10 +51,10 @@ export class MemberAccessLiteral extends Token implements ILiteralToken {
 
     if (this.parts.length != 2) return null;
 
-    let rootType = context.rootNodes.getType(this.parent);
-    if (!instanceOfTypeWithMembers(rootType)) return null;
-    const typeWithMembers = rootType as ITypeWithMembers;
-    return typeWithMembers.memberType(this.member, context.rootNodes);
+    let componentType = context.componentNodes.getType(this.parent);
+    if (!instanceOfTypeWithMembers(componentType)) return null;
+    const typeWithMembers = componentType as ITypeWithMembers;
+    return typeWithMembers.memberType(this.member, context.componentNodes);
   }
 
   public toString() {

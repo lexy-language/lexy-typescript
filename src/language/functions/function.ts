@@ -1,12 +1,12 @@
-import type {IRootNode} from "../rootNode";
+import type {IComponentNode} from "../componentNode";
 import type {INode} from "../node";
 import type {IExpressionFactory} from "../expressions/expressionFactory";
 import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {IValidationContext} from "../../parser/validationContext";
-import type {IRootNodeList} from "../rootNodeList";
+import type {IComponentNodeList} from "../componentNodeList";
 
-import {RootNode} from "../rootNode";
+import {ComponentNode} from "../componentNode";
 import {IHasNodeDependencies} from "../IHasNodeDependencies";
 import {FunctionName} from "./functionName";
 import {FunctionParameters} from "./functionParameters";
@@ -31,7 +31,7 @@ export function asFunction(object: any): Function | null {
   return instanceOfFunction(object) ? object as Function : null;
 }
 
-export class Function extends RootNode implements IHasNodeDependencies {
+export class Function extends ComponentNode implements IHasNodeDependencies {
 
   private readonly factory: IExpressionFactory;
   private parametersValue: FunctionParameters | null = null;
@@ -68,13 +68,13 @@ export class Function extends RootNode implements IHasNodeDependencies {
     this.name = FunctionName.parseName(name, reference);
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    let result = new Array<IRootNode>();
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+    let result = new Array<IComponentNode>();
     if (this.parameters != null) {
-      Function.addEnumTypes(rootNodeList, this.parameters.variables, result);
+      Function.addEnumTypes(componentNodeList, this.parameters.variables, result);
     }
     if (this.results != null) {
-      Function.addEnumTypes(rootNodeList, this.results.variables, result);
+      Function.addEnumTypes(componentNodeList, this.results.variables, result);
     }
     return result;
   }
@@ -114,14 +114,14 @@ export class Function extends RootNode implements IHasNodeDependencies {
     return this;
   }
 
-  private static addEnumTypes(rootNodeList: IRootNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
-                              result: Array<IRootNode>) {
+  private static addEnumTypes(componentNodeList: IComponentNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
+                              result: Array<IComponentNode>) {
     for (const parameter of variableDefinitions) {
 
       const enumVariableType = asCustomVariableDeclarationType(parameter.type);
       if (enumVariableType == null) continue;
 
-      let dependency = rootNodeList.getEnum(enumVariableType.type);
+      let dependency = componentNodeList.getEnum(enumVariableType.type);
       if (dependency != null) result.push(dependency);
     }
   }

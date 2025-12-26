@@ -4,7 +4,7 @@ import type {ITreeValidationVisitor} from "./ITreeValidationVisitor";
 
 import {VariableContext} from "./variableContext";
 import {Stack} from "../infrastructure/stack";
-import {RootNodeList} from "../language/rootNodeList";
+import {ComponentNodeList} from "../language/componentNodeList";
 import {Expression} from "../language/expressions/expression";
 import {VariableType} from "../language/variableTypes/variableType";
 import {SourceReference} from "./sourceReference";
@@ -12,7 +12,7 @@ import {Assert} from "../infrastructure/assert";
 
 export interface IValidationContext {
   logger: IParserLogger;
-  rootNodes: RootNodeList;
+  componentNodes: ComponentNodeList;
 
   variableContext: IVariableContext;
   visitor: ITreeValidationVisitor;
@@ -29,7 +29,7 @@ export class ValidationContext implements IValidationContext {
   private visitorValue: ITreeValidationVisitor;
 
   public logger: IParserLogger;
-  public rootNodes: RootNodeList;
+  public componentNodes: ComponentNodeList;
 
   public get variableContext(): IVariableContext {
     if (this.variableContextValue == null) throw new Error(`FunctionCodeContext not set.`);
@@ -40,9 +40,9 @@ export class ValidationContext implements IValidationContext {
     return this.visitorValue;
   }
 
-  constructor(logger: IParserLogger, rootNodes: RootNodeList, visitor: ITreeValidationVisitor) {
+  constructor(logger: IParserLogger, componentNodes: ComponentNodeList, visitor: ITreeValidationVisitor) {
     this.logger = Assert.notNull(logger, "logger");
-    this.rootNodes = Assert.notNull(rootNodes, "rootNodes");
+    this.componentNodes = Assert.notNull(componentNodes, "componentNodes");
     this.visitorValue = Assert.notNull(visitor, "");
   }
 
@@ -50,7 +50,7 @@ export class ValidationContext implements IValidationContext {
 
     this.storeCurrentVariableContext();
 
-    this.variableContextValue = new VariableContext(this.rootNodes, this.logger, this.variableContextValue);
+    this.variableContextValue = new VariableContext(this.componentNodes, this.logger, this.variableContextValue);
 
     return {
       [Symbol.dispose]: () => this.revertToPreviousVariableContext()

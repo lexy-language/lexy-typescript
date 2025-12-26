@@ -1,14 +1,14 @@
 import type {ITreeValidationVisitor} from "./ITreeValidationVisitor";
-import type {IRootNode} from "../language/rootNode";
+import type {IComponentNode} from "../language/componentNode";
 import type {INode} from "../language/node";
 import type {IParserLogger} from "./parserLogger";
 import {Stack} from "../infrastructure/stack";
 import {Assert} from "../infrastructure/assert";
-import {asRootNode, instanceOfRootNode} from "../language/rootNode";
+import {asComponentNode, instanceOfComponentNode} from "../language/componentNode";
 
 export class TrackLoggingCurrentNodeVisitor implements ITreeValidationVisitor {
 
-  private nodeStack: Stack<IRootNode> = new Stack<IRootNode>()
+  private nodeStack: Stack<IComponentNode> = new Stack<IComponentNode>()
   private logger: IParserLogger;
 
   constructor(logger: IParserLogger) {
@@ -17,22 +17,22 @@ export class TrackLoggingCurrentNodeVisitor implements ITreeValidationVisitor {
 
   public enter(node: INode) {
 
-    const rootNode = asRootNode(node)
-    if (rootNode == null) return;
+    const componentNode = asComponentNode(node)
+    if (componentNode == null) return;
 
-    this.addCurrentNodeToStack(rootNode);
-    this.logger.setCurrentNode(rootNode);
+    this.addCurrentNodeToStack(componentNode);
+    this.logger.setCurrentNode(componentNode);
   }
 
   public leave(node: INode) {
-    if (!instanceOfRootNode(node)) return;
+    if (!instanceOfComponentNode(node)) return;
 
     this.removeCurrentNodeFromStack();
     this.revertToPreviousNode();
   }
 
-  private addCurrentNodeToStack(rootNode: IRootNode) {
-    this.nodeStack.push(rootNode);
+  private addCurrentNodeToStack(componentNode: IComponentNode) {
+    this.nodeStack.push(componentNode);
   }
 
   private removeCurrentNodeFromStack() {

@@ -1,5 +1,5 @@
-import type {IRootTokenWriter} from "../../IRootTokenWriter";
-import type {IRootNode} from "../../../language/rootNode";
+import type {IComponentTokenWriter} from "../../IComponentTokenWriter";
+import type {IComponentNode} from "../../../language/componentNode";
 
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {GeneratedType, GeneratedTypeKind} from "../../generatedType";
@@ -9,11 +9,11 @@ import {renderExpression, renderExpressions} from "../renderers/renderExpression
 import {createVariableClass} from "../renderers/renderVariableClass";
 import {CodeWriter} from "./codeWriter";
 
-export class FunctionWriter implements IRootTokenWriter {
+export class FunctionWriter implements IComponentTokenWriter {
 
-  public createCode(node: IRootNode): GeneratedType {
+  public createCode(node: IComponentNode): GeneratedType {
     const functionNode = asFunction(node);
-    if (functionNode == null) throw new Error(`Root token not Function`);
+    if (functionNode == null) throw new Error(`Component token not Function`);
 
     const codeWriter = new CodeWriter(renderExpression)
 

@@ -5,7 +5,7 @@ import {VariableReference} from "../../../language/variableReference";
 
 export function translateParentVariableClassName(reference: VariableReference, codeWriter: CodeWriter) {
   const parentIdentifier = reference.path.parentIdentifier;
-  switch (reference.rootType?.variableTypeName) {
+  switch (reference.componentType?.variableTypeName) {
     case VariableTypeName.CustomType:
       return codeWriter.identifierFromEnvironment(typeClassName(parentIdentifier));
     case VariableTypeName.EnumType:

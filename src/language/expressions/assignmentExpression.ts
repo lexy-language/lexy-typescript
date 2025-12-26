@@ -94,7 +94,7 @@ export class AssignmentExpression extends Expression {
     if (hasVariableReference == null || hasVariableReference.variable == null) return getReadVariableUsage(this.assignment);
 
     const assignmentVariable = hasVariableReference.variable;
-    const writeVariableUsage = new VariableUsage(assignmentVariable.path, assignmentVariable.rootType, assignmentVariable.variableType, assignmentVariable.source, VariableAccess.Write);
+    const writeVariableUsage = new VariableUsage(assignmentVariable.path, assignmentVariable.componentType, assignmentVariable.variableType, assignmentVariable.source, VariableAccess.Write);
     return [writeVariableUsage, ...getReadVariableUsage(this.assignment)];
   }
 }

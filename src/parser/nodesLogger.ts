@@ -1,4 +1,4 @@
-import type {IRootNode} from "../language/rootNode";
+import type {IComponentNode} from "../language/componentNode";
 import type {INode} from "../language/node";
 import {NodeType} from "../language/nodeType";
 
@@ -18,9 +18,9 @@ export class NodesLogger {
      if (node == null) {
        throw new Error("node.getChildren should never return null.")
      } else {
-       const rootNode = this.asRootNode(node)
-       if (rootNode != null) {
-         this.builder.push(`${rootNode.nodeType}: ${rootNode.nodeName}`);
+       const componentNode = this.asComponentNode(node)
+       if (componentNode != null) {
+         this.builder.push(`${componentNode.nodeType}: ${componentNode.nodeName}`);
        } else {
          this.builder.push(node.nodeType);
        }
@@ -38,11 +38,11 @@ export class NodesLogger {
      return this.builder.join('');
    }
 
-  private instanceOfRootNode(object: any): object is IRootNode {
-    return object?.isRootNode == true;
+  private instanceOfComponentNode(object: any): object is IComponentNode {
+    return object?.isComponentNode == true;
   }
 
-  private asRootNode(object: any): IRootNode | null {
-    return this.instanceOfRootNode(object) ? object as IRootNode : null;
+  private asComponentNode(object: any): IComponentNode | null {
+    return this.instanceOfComponentNode(object) ? object as IComponentNode : null;
   }
 }

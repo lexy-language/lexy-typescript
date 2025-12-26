@@ -1,6 +1,6 @@
-import type {IRootNode} from "../language/rootNode";
+import type {IComponentNode} from "../language/componentNode";
 import {GeneratedType} from "./generatedType";
 
-export interface IRootTokenWriter {
-   createCode(generateNode: IRootNode): GeneratedType;
+export interface IComponentTokenWriter {
+   createCode(generateNode: IComponentNode): GeneratedType;
 }

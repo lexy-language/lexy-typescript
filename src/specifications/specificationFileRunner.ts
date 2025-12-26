@@ -7,7 +7,7 @@ import {IScenarioRunner, ScenarioRunner} from "./scenarioRunner";
 import {firstOrDefault, sum} from "../infrastructure/arrayFunctions";
 import {format} from "../infrastructure/formatting";
 import {Scenario} from "../language/scenarios/scenario";
-import {RootNodeList} from "../language/rootNodeList";
+import {ComponentNodeList} from "../language/componentNodeList";
 import {ParserResult} from "../parser/parserResult";
 
 export interface ISpecificationFileRunner {
@@ -48,16 +48,16 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     }
     this.result = result
     result
-      .rootNodes
+      .componentNodes
       .getScenarios()
       .forEach(scenario =>
-        this.scenarioRunnersValue.push(this.getScenarioRunner(scenario, result.rootNodes, result.logger)));
+        this.scenarioRunnersValue.push(this.getScenarioRunner(scenario, result.componentNodes, result.logger)));
   }
 
   public run(): void {
     if (this.result == null) throw new Error("Runner not initialized")
 
-    this.validateHasScenarioCheckingRootErrors(this.result.logger);
+    this.validateHasScenarioCheckingComponentErrors(this.result.logger);
 
     if (this.scenarioRunners.length == 0) return;
 
@@ -66,9 +66,9 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     this.scenarioRunners.forEach(runner => runner.run());
   }
 
-  private getScenarioRunner(scenario: Scenario, rootNodeList: RootNodeList, parserLogger: IParserLogger) {
+  private getScenarioRunner(scenario: Scenario, componentNodeList: ComponentNodeList, parserLogger: IParserLogger) {
     try {
-      return new ScenarioRunner(this.fileName, this.compiler, rootNodeList, scenario, this.runnerContext, parserLogger);
+      return new ScenarioRunner(this.fileName, this.compiler, componentNodeList, scenario, this.runnerContext, parserLogger);
     } catch (error: any) {
       throw new Error("Error occurred while create runner for: " + this.fileName + "\n" + error.stack);
     }
@@ -78,16 +78,16 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     return sum(this.scenarioRunners, runner => runner.countScenarios());
   }
 
-  private validateHasScenarioCheckingRootErrors(logger: IParserLogger): void {
-    if (!logger.hasRootErrors()) return;
+  private validateHasScenarioCheckingComponentErrors(logger: IParserLogger): void {
+    if (!logger.hasComponentErrors()) return;
 
-    let rootScenarioRunner =
-      firstOrDefault(this.scenarioRunners, runner => runner.scenario.expectRootErrors?.hasValues == true);
+    let componentScenarioRunner =
+      firstOrDefault(this.scenarioRunners, runner => runner.scenario.expectComponentErrors?.hasValues == true);
 
-    if (rootScenarioRunner == null) {
-      const rootErrors = format(logger.errorRootMessages(), 2);
+    if (componentScenarioRunner == null) {
+      const componentErrors = format(logger.errorComponentMessages(), 2);
       throw new Error(
-        `${this.fileName} has root errors but no scenario that verifies expected root errors. Errors: ${rootErrors}`);
+        `${this.fileName} has component errors but no scenario that verifies expected component errors. Errors: ${componentErrors}`);
     }
   }
 }

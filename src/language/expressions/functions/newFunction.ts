@@ -1,8 +1,8 @@
-import type {IRootNode} from "../../rootNode";
+import type {IComponentNode} from "../../componentNode";
 import type {INode} from "../../node";
 import type {IValidationContext} from "../../../parser/validationContext";
 import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
-import type {IRootNodeList} from "../../rootNodeList";
+import type {IComponentNodeList} from "../../componentNodeList";
 
 import {Expression} from "../expression";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
@@ -52,9 +52,9 @@ export class NewFunction extends FunctionCallExpression implements IHasNodeDepen
     this.typeLiteral = memberAccessExpression.memberAccessLiteral;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    let rootNode = this.typeValue ? rootNodeList.getNode(this.typeValue.name) : null;
-    return rootNode != null ? [rootNode] : [];
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+    let componentNode = this.typeValue ? componentNodeList.getNode(this.typeValue.name) : null;
+    return componentNode != null ? [componentNode] : [];
   }
 
   public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
@@ -78,7 +78,7 @@ export class NewFunction extends FunctionCallExpression implements IHasNodeDepen
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
-    let nodeType = context.rootNodes.getType(this.typeLiteral.parent);
-    return nodeType?.memberType(this.typeLiteral.member, context.rootNodes) as ComplexType;
+    let nodeType = context.componentNodes.getType(this.typeLiteral.parent);
+    return nodeType?.memberType(this.typeLiteral.member, context.componentNodes) as ComplexType;
   }
 }

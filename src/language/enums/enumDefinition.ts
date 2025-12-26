@@ -3,7 +3,7 @@ import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
 
-import {RootNode} from "../rootNode";
+import {ComponentNode} from "../componentNode";
 import {EnumName} from "./enumName";
 import {EnumMember} from "./enumMember";
 import {SourceReference} from "../../parser/sourceReference";
@@ -19,7 +19,7 @@ export function asEnumDefinition(object: any): EnumDefinition | null {
   return instanceOfEnumDefinition(object) ? object as EnumDefinition : null;
 }
 
-export class EnumDefinition extends RootNode {
+export class EnumDefinition extends ComponentNode {
 
   public name: EnumName;
 

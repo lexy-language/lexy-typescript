@@ -1,4 +1,4 @@
-import type {IRootNode} from "../language/rootNode";
+import type {IComponentNode} from "../language/componentNode";
 import type {INode} from "../language/node";
 import type {ILogger} from "../infrastructure/logger";
 
@@ -9,13 +9,13 @@ import {format} from "../infrastructure/formatting";
 import {NodesLogger} from "./nodesLogger";
 
 export class LogEntry {
-  public node: IRootNode | null;
+  public node: IComponentNode | null;
   public reference: SourceReference;
   public sortIndex: string;
   public isError: boolean;
   public message: string;
 
-  constructor(reference: SourceReference, node: IRootNode | null, isError: boolean, message: string) {
+  constructor(reference: SourceReference, node: IComponentNode | null, isError: boolean, message: string) {
     this.reference = reference;
     this.node = node;
     this.isError = isError;
@@ -40,19 +40,19 @@ export interface IParserLogger {
   logNodes(nodes: Array<INode>): void;
 
   hasErrors(): boolean;
-  hasRootErrors(): boolean;
+  hasComponentErrors(): boolean;
   hasErrorMessage(expectedError: string): boolean;
 
   formatMessages(): string;
-  nodeHasErrors(node: IRootNode): boolean;
+  nodeHasErrors(node: IComponentNode): boolean;
   errorMessages(): string[];
-  errorRootMessages(): string[];
-  errorNodeMessages(node: IRootNode): string[];
-  errorNodesMessages(node: Array<IRootNode>): string[];
+  errorComponentMessages(): string[];
+  errorNodeMessages(node: IComponentNode): string[];
+  errorNodesMessages(node: Array<IComponentNode>): string[];
 
   assertNoErrors(): void;
 
-  setCurrentNode(node: IRootNode): void;
+  setCurrentNode(node: IComponentNode): void;
   resetCurrentNode(): void;
 }
 
@@ -61,7 +61,7 @@ export class ParserLogger implements IParserLogger {
   private readonly logEntries: Array<LogEntry> = [];
   private readonly logger: ILogger;
 
-  private currentNode: IRootNode | null = null;
+  private currentNode: IComponentNode | null = null;
   private failedMessages: number = 0;
 
   public get entries(): Array<LogEntry> {
@@ -76,7 +76,7 @@ export class ParserLogger implements IParserLogger {
     return this.failedMessages > 0;
   }
 
-  public hasRootErrors(): boolean {
+  public hasComponentErrors(): boolean {
     return any(this.logEntries, entry => entry.isError && entry.node == null);
   }
 
@@ -114,7 +114,7 @@ export class ParserLogger implements IParserLogger {
     return `${format(this.logEntries, 0)}\n`;
   }
 
-  public setCurrentNode(node: IRootNode): void {
+  public setCurrentNode(node: IComponentNode): void {
     this.currentNode = node;
   }
 
@@ -122,23 +122,23 @@ export class ParserLogger implements IParserLogger {
     this.currentNode = null;
   }
 
-  public nodeHasErrors(node: IRootNode): boolean {
+  public nodeHasErrors(node: IComponentNode): boolean {
     return any(this.logEntries, message => message.isError && message.node === node);
   }
 
-  public errorNodeMessages(node: IRootNode): string[] {
+  public errorNodeMessages(node: IComponentNode): string[] {
     return where(this.logEntries, entry => entry.isError && entry.node === node)
       .sort(this.sortEntry)
       .map(entry => entry.message);
   }
 
-  public errorNodesMessages(nodes: Array<IRootNode>): string[] {
+  public errorNodesMessages(nodes: Array<IComponentNode>): string[] {
     return where(this.logEntries, entry => entry.isError && entry.node != null && nodes.indexOf(entry.node) >= 0)
       .sort(this.sortEntry)
       .map(entry => entry.message);
   }
 
-  public errorRootMessages(): string[] {
+  public errorComponentMessages(): string[] {
     return where(this.logEntries, entry => entry.isError && entry.node === null)
       .sort(this.sortEntry)
       .map(entry => entry.message);

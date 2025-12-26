@@ -1,6 +1,6 @@
-import type {IRootNode} from "../rootNode";
+import type {IComponentNode} from "../componentNode";
 import type {IValidationContext} from "../../parser/validationContext";
-import type {IRootNodeList} from "../rootNodeList";
+import type {IComponentNodeList} from "../componentNodeList";
 
 import {TypeWithMembers} from "./typeWithMembers";
 import {EnumDefinition} from "../enums/enumDefinition";
@@ -39,12 +39,12 @@ export class EnumType extends TypeWithMembers {
     return this.type;
   }
 
-  public override memberType(name: string, rootNodes: IRootNodeList): VariableType | null {
+  public override memberType(name: string, componentNodes: IComponentNodeList): VariableType | null {
     return any(this.enum.members, member => member.name == name) ? this : null;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    const enumDefinition = rootNodeList.getEnum(this.type);
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+    const enumDefinition = componentNodeList.getEnum(this.type);
     return enumDefinition != null ? [enumDefinition] : [];
   }
 

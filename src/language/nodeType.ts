@@ -55,7 +55,7 @@ export enum NodeType {
   ScenarioName = "ScenarioName",
   ScenarioParameters = "ScenarioParameters",
   ScenarioResults = "ScenarioResults",
-  ScenarioExpectRootErrors = "ScenarioExpectRootErrors",
+  ScenarioExpectComponentErrors = "ScenarioExpectComponentErrors",
   ScenarioExpectExecutionErrors = "ScenarioExpectExecutionErrors",
   ScenarioExpectErrors = "ScenarioExpectErrors",
   SecondFunction = "SecondFunction",

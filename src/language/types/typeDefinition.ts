@@ -2,10 +2,10 @@ import type {IValidationContext} from "../../parser/validationContext";
 import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
-import type {IRootNode} from "../rootNode";
-import type {IRootNodeList} from "../rootNodeList";
+import type {IComponentNode} from "../componentNode";
+import type {IComponentNodeList} from "../componentNodeList";
 
-import {RootNode} from "../rootNode";
+import {ComponentNode} from "../componentNode";
 import {TypeName} from "./typeName";
 import {VariableDefinition} from "../variableDefinition";
 import {SourceReference} from "../../parser/sourceReference";
@@ -22,11 +22,11 @@ export function asTypeDefinition(object: any): TypeDefinition | null {
   return instanceOfTypeDefinition(object) ? object as TypeDefinition : null;
 }
 
-export interface ITypeDefinition extends IRootNode {
+export interface ITypeDefinition extends IComponentNode {
  get variables(): ReadonlyArray<VariableDefinition>;
 }
 
-export class TypeDefinition extends RootNode implements IHasNodeDependencies, ITypeDefinition {
+export class TypeDefinition extends ComponentNode implements IHasNodeDependencies, ITypeDefinition {
 
   private readonly variablesValue: Array<VariableDefinition> = [];
 
@@ -58,10 +58,10 @@ export class TypeDefinition extends RootNode implements IHasNodeDependencies, IT
     return this;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
     const dependencies = selectMany(this.variablesValue, variable => {
       const hasDependencies = asHasNodeDependencies(variable.type);
-      return hasDependencies != null ? hasDependencies.getDependencies(rootNodeList) : [];
+      return hasDependencies != null ? hasDependencies.getDependencies(componentNodeList) : [];
     });
     return dependencies;
   }

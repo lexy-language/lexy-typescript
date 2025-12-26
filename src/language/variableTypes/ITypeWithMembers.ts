@@ -1,4 +1,4 @@
-import type {IRootNodeList} from "../rootNodeList";
+import type {IComponentNodeList} from "../componentNodeList";
 
 import {VariableType} from "./variableType";
 
@@ -12,5 +12,5 @@ export function asTypeWithMembers(object: any): ITypeWithMembers | null {
 
 export interface ITypeWithMembers {
    typeWithMember: boolean;
-   memberType(name: string , rootNodes: IRootNodeList): VariableType | null;
+   memberType(name: string , componentNodes: IComponentNodeList): VariableType | null;
 }

@@ -1,4 +1,4 @@
-import type {IRootNode} from "./rootNode";
+import type {IComponentNode} from "./componentNode";
 import type {INode} from "./node";
 
 import {TypeWithMembers} from "./variableTypes/typeWithMembers";
@@ -13,8 +13,8 @@ import {FunctionType} from "./variableTypes/functionType";
 import {EnumType} from "./variableTypes/enumType";
 import {CustomType} from "./variableTypes/customType";
 
-export interface IRootNodeList {
-  getNode(name: string | null): IRootNode | null;
+export interface IComponentNodeList {
+  getNode(name: string | null): IComponentNode | null;
 
   contains(name: string): boolean;
 
@@ -31,11 +31,11 @@ export interface IRootNodeList {
   getType(name: string): TypeWithMembers | null;
 }
 
-export class RootNodeList implements IRootNodeList {
+export class ComponentNodeList implements IComponentNodeList {
 
-  private readonly values: Array<IRootNode>;
+  private readonly values: Array<IComponentNode>;
 
-  constructor(values: Array<IRootNode> | null = null) {
+  constructor(values: Array<IComponentNode> | null = null) {
     this.values = values != null ? values : [];
   }
 
@@ -47,15 +47,15 @@ export class RootNodeList implements IRootNodeList {
     return [...this.values];
   }
 
-  public add(rootNode: IRootNode): void {
-    this.values.push(rootNode);
+  public add(componentNode: IComponentNode): void {
+    this.values.push(componentNode);
   }
 
   public containsEnum(enumName: string): boolean {
     return any(this.values, definition => instanceOfEnumDefinition(definition) && definition.nodeName == enumName);
   }
 
-  public getNode(name: string | null): IRootNode | null {
+  public getNode(name: string | null): IComponentNode | null {
     if (name == null) return null;
     return firstOrDefault(this.values, definition => definition.nodeName == name);
   }
@@ -90,7 +90,7 @@ export class RootNodeList implements IRootNodeList {
         value => instanceOfEnumDefinition(value) && value?.nodeName == name));
   }
 
-  public addIfNew(node: IRootNode): void {
+  public addIfNew(node: IComponentNode): void {
     if (!contains(this.values, node)) this.values.push(node);
   }
 

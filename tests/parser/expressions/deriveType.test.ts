@@ -5,7 +5,7 @@ import {SourceFile} from "../../../src/parser/sourceFile";
 import {IValidationContext, ValidationContext} from "../../../src/parser/validationContext";
 import {VariableSource} from "../../../src/language/variableSource";
 import {parseExpression} from "../expressionParser/parseExpression";
-import {RootNodeList} from "../../../src/language/rootNodeList";
+import {ComponentNodeList} from "../../../src/language/componentNodeList";
 import {ParserLogger} from "../../../src/parser/parserLogger";
 import {LoggingConfiguration} from "../../loggingConfiguration";
 import {TrackLoggingCurrentNodeVisitor} from "../../../src/parser/TrackLoggingCurrentNodeVisitor";
@@ -115,10 +115,10 @@ describe('DeriveTypeTests', () => {
   function deriveType(expressionValue: string,
                       validationContextHandler: ((context: IValidationContext) => void) | null = null): VariableType | null {
 
-    const rootNodeList = new RootNodeList();
+    const componentNodeList = new ComponentNodeList();
     const logger = new ParserLogger(LoggingConfiguration.getParserLogger());
     const visitor = new TrackLoggingCurrentNodeVisitor(logger);
-    const validationContext = new ValidationContext(logger, rootNodeList, visitor);
+    const validationContext = new ValidationContext(logger, componentNodeList, visitor);
 
     const scope = validationContext.createVariableScope();
     try {

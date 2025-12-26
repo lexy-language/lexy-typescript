@@ -1,11 +1,11 @@
 import type {ILexyCompiler} from "../compiler/lexyCompiler";
 import type {IParserLogger} from "../parser/parserLogger";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
-import type {IRootNode} from "../language/rootNode";
+import type {IComponentNode} from "../language/componentNode";
 
 import {Function} from "../language/functions/function";
 import {Scenario} from "../language/scenarios/scenario";
-import {RootNodeList} from "../language/rootNodeList";
+import {ComponentNodeList} from "../language/componentNodeList";
 import {format} from "../infrastructure/formatting";
 import {FunctionResult} from "../runTime/functionResult";
 import {any, firstOrDefault} from "../infrastructure/arrayFunctions";
@@ -38,7 +38,7 @@ export class ScenarioRunner implements IScenarioRunner {
   private readonly compiler: ILexyCompiler;
   private readonly fileName: string;
   private readonly parserLogger: IParserLogger;
-  private readonly rootNodeList: RootNodeList;
+  private readonly componentNodeList: ComponentNodeList;
 
   private functionNode: Function | null = null;
 
@@ -50,12 +50,12 @@ export class ScenarioRunner implements IScenarioRunner {
 
   public readonly scenario: Scenario
 
-  constructor(fileName: string, compiler: ILexyCompiler, rootNodeList: RootNodeList, scenario: Scenario,
+  constructor(fileName: string, compiler: ILexyCompiler, componentNodeList: ComponentNodeList, scenario: Scenario,
               context: ISpecificationRunnerContext, parserLogger: IParserLogger) {
     this.fileName = fileName;
     this.compiler = compiler;
     this.context = context;
-    this.rootNodeList = rootNodeList;
+    this.componentNodeList = componentNodeList;
     this.parserLogger = parserLogger;
 
     this.scenario = scenario;
@@ -66,12 +66,12 @@ export class ScenarioRunner implements IScenarioRunner {
   }
 
   public run(): void {
-    this.functionNode = this.getFunctionNode(this.scenario, this.rootNodeList);
+    this.functionNode = this.getFunctionNode(this.scenario, this.componentNodeList);
     if (!this.validateScenarioErrors()) return;
     if (!this.validateErrors()) return;
 
     const functionNode = Assert.notNull(this.functionNode, "functionNode");
-    const nodes = DependencyGraphFactory.nodeAndDependencies(this.rootNodeList, functionNode);
+    const nodes = DependencyGraphFactory.nodeAndDependencies(this.componentNodeList, functionNode);
     const compilerResult = this.compile(nodes);
     const executable = compilerResult.getFunction(functionNode);
     if (this.scenario.validationTable != null) {
@@ -105,12 +105,12 @@ export class ScenarioRunner implements IScenarioRunner {
     }
   }
 
-  private getFunctionNode(scenario: Scenario, rootNodeList: RootNodeList): Function | null {
+  private getFunctionNode(scenario: Scenario, componentNodeList: ComponentNodeList): Function | null {
     if (scenario.functionNode != null) {
       return scenario.functionNode;
     }
     if (scenario.functionName?.hasValue) {
-      const functionNode = rootNodeList.getFunction(scenario.functionName.value);
+      const functionNode = componentNodeList.getFunction(scenario.functionName.value);
       if (functionNode == null) {
         this.fail(`Unknown function: ` + scenario.functionName, this.parserLogger.errorNodeMessages(this.scenario));
       }
@@ -130,7 +130,7 @@ export class ScenarioRunner implements IScenarioRunner {
     }
   }
 
-  private compile(nodes: Array<IRootNode>) {
+  private compile(nodes: Array<IComponentNode>) {
     try {
       return this.compiler.compile(nodes);
     } catch (error: any) {
@@ -215,7 +215,7 @@ export class ScenarioRunner implements IScenarioRunner {
       return null;
     }
 
-    const dependencies = DependencyGraphFactory.nodeAndDependencies(this.rootNodeList, node);
+    const dependencies = DependencyGraphFactory.nodeAndDependencies(this.componentNodeList, node);
     return this.parserLogger.errorNodesMessages(dependencies)
   }
 
@@ -238,7 +238,7 @@ export class ScenarioRunner implements IScenarioRunner {
   }
 
   private validateErrors(): boolean {
-    if (this.scenario.expectRootErrors?.hasValues) return this.validateRootErrors();
+    if (this.scenario.expectComponentErrors?.hasValues) return this.validateComponentErrors();
 
     const failedMessages = this.getDependenciesErrors();
     if (failedMessages == null) return false;
@@ -247,9 +247,9 @@ export class ScenarioRunner implements IScenarioRunner {
     return this.validateExpectedErrors("Parsing", failedMessages, expectErrors?.messages);
   }
 
-  private validateRootErrors(): boolean {
+  private validateComponentErrors(): boolean {
     const failedMessages = this.parserLogger.errorMessages();
-    return this.validateExpectedErrors("Root", failedMessages, this.scenario.expectRootErrors?.messages);
+    return this.validateExpectedErrors("Component", failedMessages, this.scenario.expectComponentErrors?.messages);
   }
 
   private validateExecutionErrors(error: any): boolean {

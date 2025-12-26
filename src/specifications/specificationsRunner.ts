@@ -90,7 +90,7 @@ export class SpecificationsRunner implements ISpecificationsRunner {
   }
 
   private getAbsoluteFolder(folder: string): string {
-    let absoluteFolder = this.fileSystem.isPathRooted(folder)
+    let absoluteFolder = this.fileSystem.isPathComponented(folder)
       ? folder
       : this.fileSystem.getFullPath(folder);
     if (!this.fileSystem.directoryExists(absoluteFolder)) {

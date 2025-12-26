@@ -3,7 +3,7 @@ import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
 
-import {RootNode} from "../rootNode";
+import {ComponentNode} from "../componentNode";
 import {TableName} from "./tableName";
 import {TableHeader} from "./tableHeader";
 import {TableRow} from "./tableRow";
@@ -21,7 +21,7 @@ export function asTable(object: any): Table | null {
   return instanceOfTable(object) ? object as Table : null;
 }
 
-export class Table extends RootNode {
+export class Table extends ComponentNode {
 
   private invalidHeader: boolean = false;
 

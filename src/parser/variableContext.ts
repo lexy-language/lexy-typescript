@@ -9,7 +9,7 @@ import {VariableEntry} from "./variableEntry";
 import {VariablePath} from "../language/variablePath";
 import {VariableSource} from "../language/variableSource";
 import {VariableReference} from "../language/variableReference";
-import {RootNodeList} from "../language/rootNodeList";
+import {ComponentNodeList} from "../language/componentNodeList";
 
 export interface IVariableContext {
   addVariable(variableName: string, type: VariableType, source: VariableSource): void;
@@ -32,13 +32,13 @@ export interface IVariableContext {
 
 export class VariableContext implements IVariableContext {
   private readonly logger: IParserLogger;
-  private readonly rootNodes: RootNodeList;
+  private readonly componentNodes: ComponentNodeList;
   private readonly parentContext: IVariableContext | null;
   private readonly variables: { [id: string]: VariableEntry; } = {};
 
-  constructor(rootNodes: RootNodeList, logger: IParserLogger, parentContext: IVariableContext | null) {
+  constructor(componentNodes: ComponentNodeList, logger: IParserLogger, parentContext: IVariableContext | null) {
     this.logger = logger;
-    this.rootNodes = rootNodes;
+    this.componentNodes = componentNodes;
     this.parentContext = parentContext;
   }
 
@@ -107,18 +107,18 @@ export class VariableContext implements IVariableContext {
 
     if (path.parts > 2) return null;
 
-    const rootVariableType = this.rootNodes.getType(path.parentIdentifier);
-    if (rootVariableType == null) return null;
+    const componentVariableType = this.componentNodes.getType(path.parentIdentifier);
+    if (componentVariableType == null) return null;
 
     if (path.parts == 1) {
-      return new VariableReference(path, rootVariableType, rootVariableType, VariableSource.Type);
+      return new VariableReference(path, componentVariableType, componentVariableType, VariableSource.Type);
     }
 
     const member = path.lastPart();
-    let memberType = rootVariableType.memberType(member, validationContext.rootNodes);
+    let memberType = componentVariableType.memberType(member, validationContext.componentNodes);
     if (memberType == null) return null;
 
-    return new VariableReference(path, rootVariableType, memberType, VariableSource.Type);
+    return new VariableReference(path, componentVariableType, memberType, VariableSource.Type);
   }
 
 
@@ -148,7 +148,7 @@ export class VariableContext implements IVariableContext {
   private containChild(parentType: VariableType | null, path: VariablePath, context: IValidationContext): boolean {
     let typeWithMembers = (parentType as any).typeWithMember == true ? (parentType as any) as ITypeWithMembers : null;
 
-    let memberVariableType = typeWithMembers != null ? typeWithMembers.memberType(path.parentIdentifier, context.rootNodes) : null;
+    let memberVariableType = typeWithMembers != null ? typeWithMembers.memberType(path.parentIdentifier, context.componentNodes) : null;
     if (memberVariableType == null) return false;
 
     return !path.hasChildIdentifiers
@@ -161,7 +161,7 @@ export class VariableContext implements IVariableContext {
     let typeWithMembers = asTypeWithMembers(parentType);
     if (typeWithMembers == null) return null;
 
-    let memberVariableType = typeWithMembers.memberType(path.parentIdentifier, context.rootNodes);
+    let memberVariableType = typeWithMembers.memberType(path.parentIdentifier, context.componentNodes);
     if (memberVariableType == null) return null;
 
     return !path.hasChildIdentifiers

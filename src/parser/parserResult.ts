@@ -1,12 +1,12 @@
-import {RootNodeList} from "../language/rootNodeList";
+import {ComponentNodeList} from "../language/componentNodeList";
 import {IParserLogger} from "./parserLogger";
 
 export class ParserResult {
-  public readonly rootNodes: RootNodeList;
+  public readonly componentNodes: ComponentNodeList;
   public readonly logger: IParserLogger;
 
-   constructor(rootNodes: RootNodeList, logger: IParserLogger) {
-     this.rootNodes = rootNodes;
+   constructor(componentNodes: ComponentNodeList, logger: IParserLogger) {
+     this.componentNodes = componentNodes;
      this.logger = logger;
    }
 }

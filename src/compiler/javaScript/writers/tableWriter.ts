@@ -1,5 +1,5 @@
-import type {IRootNode} from "../../../language/rootNode";
-import type {IRootTokenWriter} from "../../IRootTokenWriter";
+import type {IComponentNode} from "../../../language/componentNode";
+import type {IComponentTokenWriter} from "../../IComponentTokenWriter";
 
 import {GeneratedType, GeneratedTypeKind} from "../../generatedType";
 import {asTable, Table} from "../../../language/tables/table";
@@ -10,11 +10,11 @@ import {LexyCodeConstants} from "../lexyCodeConstants";
 import {renderExpression, renderValueExpression} from "../renderers/renderExpression";
 import {Assert} from "../../../infrastructure/assert";
 
-export class TableWriter implements IRootTokenWriter {
+export class TableWriter implements IComponentTokenWriter {
 
-  public createCode(node: IRootNode): GeneratedType {
+  public createCode(node: IComponentNode): GeneratedType {
     const table = asTable(node);
-    if (table == null) throw new Error(`Root token not Table`);
+    if (table == null) throw new Error(`Component token not Table`);
 
     const className = tableClassName(table.name.value);
 

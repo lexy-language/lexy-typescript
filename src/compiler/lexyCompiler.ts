@@ -1,12 +1,12 @@
 import type {ILogger} from "../infrastructure/logger";
 
-import {IRootNode} from "../language/rootNode";
+import {IComponentNode} from "../language/componentNode";
 import {CompilerResult} from "./compilerResult";
 import {CompilationEnvironment, ICompilationEnvironment} from "./javaScript/compilationEnvironment";
 import {JavaScriptCode} from "./javaScript/javaScriptCode";
 
 export interface ILexyCompiler {
-  compile(nodes: Array<IRootNode>): CompilerResult;
+  compile(nodes: Array<IComponentNode>): CompilerResult;
 }
 
 export class LexyCompiler implements ILexyCompiler {
@@ -18,7 +18,7 @@ export class LexyCompiler implements ILexyCompiler {
      this.executionLogger = executionLogger;
    }
 
-   public compile(nodes: Array<IRootNode>): CompilerResult {
+   public compile(nodes: Array<IComponentNode>): CompilerResult {
      let environment = new CompilationEnvironment(this.compilationLogger, this.executionLogger);
      try {
        this.generateCode(nodes, environment);
@@ -30,11 +30,11 @@ export class LexyCompiler implements ILexyCompiler {
      }
    }
 
-   private generateCode(generateNodes: Array<IRootNode>, environment: ICompilationEnvironment): void {
+   private generateCode(generateNodes: Array<IComponentNode>, environment: ICompilationEnvironment): void {
      generateNodes.map(node => this.generateType(node, environment));
    }
 
-   private generateType(node: IRootNode, environment: ICompilationEnvironment): void {
+   private generateType(node: IComponentNode, environment: ICompilationEnvironment): void {
      let writer = JavaScriptCode.getWriter(node);
      if (writer == null) return;
      let generatedType = writer.writer.createCode(writer.node);

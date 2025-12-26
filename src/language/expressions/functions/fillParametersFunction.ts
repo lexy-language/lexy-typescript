@@ -1,8 +1,8 @@
-import type {IRootNode} from "../../rootNode";
+import type {IComponentNode} from "../../componentNode";
 import type {INode} from "../../node";
 import type {IValidationContext} from "../../../parser/validationContext";
 import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
-import type {IRootNodeList} from "../../rootNodeList";
+import type {IComponentNodeList} from "../../componentNodeList";
 
 import {Mapping, mapToUsedVariable} from "./mapping";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
@@ -57,9 +57,9 @@ export class FillParametersFunction extends FunctionCallExpression implements IH
     this.typeLiteral = memberAccessExpression?.memberAccessLiteral;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    const rootNode = this.typeLiteral ? rootNodeList.getNode(this.typeLiteral.toString()) : null;
-    return rootNode != null ? [rootNode] : [];
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+    const componentNode = this.typeLiteral ? componentNodeList.getNode(this.typeLiteral.toString()) : null;
+    return componentNode != null ? [componentNode] : [];
   }
 
   public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
@@ -108,7 +108,7 @@ export class FillParametersFunction extends FunctionCallExpression implements IH
   public override deriveType(context: IValidationContext): VariableType | null {
 
     if (this.typeLiteral == undefined) return null;
-    let functionValue = context.rootNodes.getFunction(this.typeLiteral.parent);
+    let functionValue = context.componentNodes.getFunction(this.typeLiteral.parent);
     if (functionValue == null) return null;
 
     if (this.typeLiteral.member == Function.parameterName) {

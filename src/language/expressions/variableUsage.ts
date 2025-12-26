@@ -14,11 +14,11 @@ export class VariableUsage extends VariableReference {
   }
 
   static read(reference: VariableReference) {
-    return new VariableUsage(reference.path, reference.rootType, reference.variableType, reference.source, VariableAccess.Read);
+    return new VariableUsage(reference.path, reference.componentType, reference.variableType, reference.source, VariableAccess.Read);
   }
 
   static write(reference: VariableReference) {
-    return new VariableUsage(reference.path, reference.rootType, reference.variableType, reference.source, VariableAccess.Write);
+    return new VariableUsage(reference.path, reference.componentType, reference.variableType, reference.source, VariableAccess.Write);
   }
 }
 

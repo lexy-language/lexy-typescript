@@ -1,16 +1,16 @@
-import {IRootNode} from "../language/rootNode";
+import {IComponentNode} from "../language/componentNode";
 import {SourceReference} from "../parser/sourceReference";
 import {ExecutionLogEntry} from "../runTime/executionLogEntry";
 
 export class SpecificationsLogEntry {
-  public readonly node: IRootNode | null;
+  public readonly node: IComponentNode | null;
   public readonly reference: SourceReference | null;
   public readonly isError: boolean;
   public readonly message: string;
   public readonly errors: Array<string> | null;
   public readonly executionLogging: ReadonlyArray<ExecutionLogEntry> | null;
 
-  constructor(reference: SourceReference | null, node: IRootNode | null, isError: boolean, message: string,
+  constructor(reference: SourceReference | null, node: IComponentNode | null, isError: boolean, message: string,
               errors: Array<string> | null = null, executionLogging: ReadonlyArray<ExecutionLogEntry> | null = null) {
     this.reference = reference;
     this.node = node;

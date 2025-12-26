@@ -1,16 +1,16 @@
-import {RootNodeList} from "../language/rootNodeList";
+import {ComponentNodeList} from "../language/componentNodeList";
 import {Dependencies} from "./dependencies";
-import {IRootNode} from "../language/rootNode";
+import {IComponentNode} from "../language/componentNode";
 
 export class DependencyGraphFactory {
-  public static create(rootNodes: RootNodeList): Dependencies {
-    let dependencies = new Dependencies(rootNodes);
+  public static create(componentNodes: ComponentNodeList): Dependencies {
+    let dependencies = new Dependencies(componentNodes);
     dependencies.build();
     return dependencies;
   }
 
-  static nodeAndDependencies(rootNodes: RootNodeList, node: IRootNode): Array<IRootNode> {
-    let dependencies = new Dependencies(rootNodes);
+  static nodeAndDependencies(componentNodes: ComponentNodeList, node: IComponentNode): Array<IComponentNode> {
+    let dependencies = new Dependencies(componentNodes);
     dependencies.build();
     return dependencies.nodeAndDependencies(node);
   }

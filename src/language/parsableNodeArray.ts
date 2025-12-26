@@ -4,8 +4,8 @@ export class ParsableNodeArray {
 
    private values:Array<IParsableNode | null> = new Array<IParsableNode | null>(8);
 
-   constructor(rootNode: IParsableNode) {
-     this.values[0] = rootNode;
+   constructor(componentNode: IParsableNode) {
+     this.values[0] = componentNode;
    }
 
    public get(indent: number): IParsableNode | null {

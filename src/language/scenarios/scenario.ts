@@ -3,15 +3,15 @@ import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
-import type {IRootNodeList} from "../rootNodeList";
+import type {IComponentNodeList} from "../componentNodeList";
 
 import {Function} from "../functions/function";
-import {IRootNode, RootNode} from "../rootNode";
+import {IComponentNode, ComponentNode} from "../componentNode";
 import {ScenarioName} from "./scenarioName";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {Table} from "../tables/table";
 import {ExpectErrors} from "./expectErrors";
-import {ExpectRootErrors} from "./expectRootErrors";
+import {ExpectComponentErrors} from "./expectComponentErrors";
 import {Results} from "./results";
 import {Parameters} from "./parameters";
 import {functionName} from "./functionName";
@@ -35,7 +35,7 @@ export function asScenario(object: any): Scenario | null {
   return instanceOfScenario(object) ? object as Scenario : null;
 }
 
-export class Scenario extends RootNode implements IHasNodeDependencies {
+export class Scenario extends ComponentNode implements IHasNodeDependencies {
 
   private functionNodeValue: Function | null = null;
   private enumValue: EnumDefinition | null = null;
@@ -48,7 +48,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
   private executionLoggingValue: ExecutionLogging | null = null;
 
   private expectErrorsValue: ExpectErrors | null = null;
-  private expectRootErrorsValue: ExpectRootErrors | null = null;
+  private expectComponentErrorsValue: ExpectComponentErrors | null = null;
   private expectExecutionErrorsValue: ExpectExecutionErrors | null = null;
 
   public readonly nodeType = NodeType.Scenario;
@@ -91,8 +91,8 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     return this.expectErrorsValue;
   }
 
-  public get expectRootErrors(): ExpectRootErrors | null {
-    return this.expectRootErrorsValue;
+  public get expectComponentErrors(): ExpectComponentErrors | null {
+    return this.expectComponentErrorsValue;
   }
 
   public get expectExecutionErrors(): ExpectExecutionErrors | null {
@@ -133,29 +133,29 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
         if (this.functionNameValue == null) {
           this.functionNameValue = functionName.parse(context, reference)
         }
-        return this.resetRootNode(context, this);
+        return this.resetComponentNode(context, this);
       case Keywords.Parameters:
-        return this.resetRootNode(context, this.parametersValue, () => this.parametersValue = new Parameters(reference));
+        return this.resetComponentNode(context, this.parametersValue, () => this.parametersValue = new Parameters(reference));
       case Keywords.Results:
-        return this.resetRootNode(context, this.resultsValue, () => this.resultsValue = new Results(reference));
+        return this.resetComponentNode(context, this.resultsValue, () => this.resultsValue = new Results(reference));
       case Keywords.ValidationTable:
-        return this.resetRootNode(context, this.validationTableValue, () => this.validationTableValue = new ValidationTable(`${this.name.value}Table`, reference));
+        return this.resetComponentNode(context, this.validationTableValue, () => this.validationTableValue = new ValidationTable(`${this.name.value}Table`, reference));
 
       case Keywords.ExecutionLogging:
-        return this.resetRootNode(context, this.executionLogging, () => this.executionLoggingValue = new ExecutionLogging(reference));
+        return this.resetComponentNode(context, this.executionLogging, () => this.executionLoggingValue = new ExecutionLogging(reference));
 
       case Keywords.ExpectErrors:
-        return this.resetRootNode(context, this.expectErrorsValue, () => this.expectErrorsValue = new ExpectErrors(reference));
-      case Keywords.ExpectRootErrors:
-        return this.resetRootNode(context, this.expectRootErrorsValue, () => this.expectRootErrorsValue = new ExpectRootErrors(reference));
+        return this.resetComponentNode(context, this.expectErrorsValue, () => this.expectErrorsValue = new ExpectErrors(reference));
+      case Keywords.ExpectComponentErrors:
+        return this.resetComponentNode(context, this.expectComponentErrorsValue, () => this.expectComponentErrorsValue = new ExpectComponentErrors(reference));
       case Keywords.ExpectExecutionErrors:
-        return this.resetRootNode(context, this.expectExecutionErrorsValue, () => this.expectExecutionErrorsValue = new ExpectExecutionErrors(reference));
+        return this.resetComponentNode(context, this.expectExecutionErrorsValue, () => this.expectExecutionErrorsValue = new ExpectExecutionErrors(reference));
       default:
         return this.invalidToken(context, name, reference);
     }
   }
 
-  private resetRootNode(parserContext: IParseLineContext, node: IParsableNode | null, initializer: (() => IParsableNode) | null = null): IParsableNode {
+  private resetComponentNode(parserContext: IParseLineContext, node: IParsableNode | null, initializer: (() => IParsableNode) | null = null): IParsableNode {
     if (node == null) {
       if (initializer != null) {
         node = initializer();
@@ -229,7 +229,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     if (this.results != null) result.push(this.results);
     if (this.validationTable != null) result.push(this.validationTable);
     if (this.expectErrors != null) result.push(this.expectErrors);
-    if (this.expectRootErrors != null) result.push(this.expectRootErrors);
+    if (this.expectComponentErrors != null) result.push(this.expectComponentErrors);
     return result;
   }
 
@@ -252,7 +252,7 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
   }
 
   private addFunctionParametersAndResultsForValidation(context: IValidationContext): void {
-    let functionNode = this.functionNode ?? (this.functionName?.hasValue ? context.rootNodes.getFunction(this.functionName.value) : null);
+    let functionNode = this.functionNode ?? (this.functionName?.hasValue ? context.componentNodes.getFunction(this.functionName.value) : null);
     if (functionNode == null) return;
 
     Scenario.addVariablesForValidation(context, functionNode.parameters?.variables, VariableSource.Parameters);
@@ -276,16 +276,16 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
       && this.functionNode == null
       && this.enum == null
       && this.table == null
-      && (this.expectRootErrors == null || !this.expectRootErrors?.hasValues)) {
+      && (this.expectComponentErrors == null || !this.expectComponentErrors?.hasValues)) {
       context.logger.fail(this.reference, `Scenario has no function, enum, table or expect errors.`);
     }
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): ReadonlyArray<IRootNode> {
-    const result: Array<IRootNode> = [];
+  public getDependencies(componentNodeList: IComponentNodeList): ReadonlyArray<IComponentNode> {
+    const result: Array<IComponentNode> = [];
     if (this.functionNode != null) result.push(this.functionNode);
     if (this.functionName?.hasValue) {
-      let functionNode = rootNodeList.getFunction(this.functionName.value);
+      let functionNode = componentNodeList.getFunction(this.functionName.value);
       if (functionNode != null) {
         result.push(functionNode);
       }

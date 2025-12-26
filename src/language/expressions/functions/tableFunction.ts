@@ -2,8 +2,8 @@ import {FunctionCallExpression} from "./functionCallExpression";
 import {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import {Table} from "../../tables/table";
 import {ExpressionSource} from "../expressionSource";
-import {IRootNodeList} from "../../rootNodeList";
-import {IRootNode} from "../../rootNode";
+import {IComponentNodeList} from "../../componentNodeList";
+import {IComponentNode} from "../../componentNode";
 import {IValidationContext} from "../../../parser/validationContext";
 import {MemberAccessLiteral} from "../../../parser/tokens/memberAccessLiteral";
 import {ColumnHeader} from "../../tables/columnHeader";
@@ -28,13 +28,13 @@ export abstract class TableFunction extends FunctionCallExpression implements IH
     this.tableName = tableName;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    let table = rootNodeList.getTable(this.tableName);
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+    let table = componentNodeList.getTable(this.tableName);
     return table != null ? [table] : [];
   }
 
   protected override validate(context: IValidationContext): void {
-    this.tableNameValue = context.rootNodes.getTable(this.tableName);
+    this.tableNameValue = context.componentNodes.getTable(this.tableName);
     if (this.tableNameValue == null) {
       context.logger.fail(this.reference,
         `Invalid argument. Table name '${this.tableName}' not found. ${this.functionHelp}`);

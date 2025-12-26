@@ -1,8 +1,8 @@
-import type {IRootNode} from "../../rootNode";
+import type {IComponentNode} from "../../componentNode";
 import type {INode} from "../../node";
 import type {IValidationContext} from "../../../parser/validationContext";
 import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
-import type {IRootNodeList} from "../../rootNodeList";
+import type {IComponentNodeList} from "../../componentNodeList";
 
 import {Expression} from "../expression";
 import {Mapping, mapToUsedVariable} from "./mapping";
@@ -63,8 +63,8 @@ export class LexyFunction extends FunctionCallExpression implements IHasNodeDepe
     this.argumentValues = argumentValues;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    let functionNode = rootNodeList.getFunction(this.functionName);
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+    let functionNode = componentNodeList.getFunction(this.functionName);
     return functionNode != null ? [functionNode] : [];
   }
 
@@ -73,7 +73,7 @@ export class LexyFunction extends FunctionCallExpression implements IHasNodeDepe
   }
 
   protected override validate(context: IValidationContext): void {
-    let functionNode = context.rootNodes.getFunction(this.functionName);
+    let functionNode = context.componentNodes.getFunction(this.functionName);
     if (functionNode == null) {
       context.logger.fail(this.reference, `Invalid function name: '${this.functionName}'`);
       return;
@@ -107,7 +107,7 @@ export class LexyFunction extends FunctionCallExpression implements IHasNodeDepe
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
-    const functionNode = context.rootNodes.getFunction(this.functionName);
+    const functionNode = context.componentNodes.getFunction(this.functionName);
     if (functionNode == null) return null;
     return functionNode.getResultsType();
   }

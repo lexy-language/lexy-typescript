@@ -55,7 +55,7 @@ function validateCustomVariableType(context: IValidationContext,
       `Invalid default value '${defaultValueExpression}'. Invalid enum type. (type: '${customVariableDeclarationType.type}')`);
   }
 
-  const enumDeclaration = context.rootNodes.getEnum(variablePath.parentIdentifier);
+  const enumDeclaration = context.componentNodes.getEnum(variablePath.parentIdentifier);
   if (enumDeclaration == null || !enumDeclaration.containsMember(variablePath.path[1])) {
     context.logger.fail(reference,
       `Invalid default value '${defaultValueExpression}'. Invalid member. (type: '${customVariableDeclarationType.type}')`);

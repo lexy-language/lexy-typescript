@@ -1,7 +1,7 @@
-import type {IRootNode} from "../language/rootNode";
+import type {IComponentNode} from "../language/componentNode";
 import type {INode} from "../language/node";
 
-import {RootNodeList} from "../language/rootNodeList";
+import {ComponentNodeList} from "../language/componentNodeList";
 import {DependencyNode} from "./dependencyNode";
 import {asHasNodeDependencies} from "../language/IHasNodeDependencies";
 import {firstOrDefault} from "../infrastructure/arrayFunctions";
@@ -9,16 +9,16 @@ import {Assert} from "../infrastructure/assert";
 import {NodesWalker} from "../language/nodesWalker";
 
 export class Dependencies {
-  private readonly rootNodes: RootNodeList;
-  private readonly circularReferencesValue: Array<IRootNode> = [];
+  private readonly componentNodes: ComponentNodeList;
+  private readonly circularReferencesValue: Array<IComponentNode> = [];
   private readonly dependencyMap: Map<string, DependencyNode> = new Map();
-  private readonly nodesMap: Map<string, IRootNode> = new Map();
+  private readonly nodesMap: Map<string, IComponentNode> = new Map();
   private readonly nodeOccurrences: Map<string, number> = new Map();
   private readonly dependencyNodesValue: Array<DependencyNode> = []
-  private readonly nodesToProcess: Array<IRootNode>;
-  private sortedNodesValue: Array<IRootNode> = [];
+  private readonly nodesToProcess: Array<IComponentNode>;
+  private sortedNodesValue: Array<IComponentNode> = [];
 
-  public get sortedNodes(): Array<IRootNode>  {
+  public get sortedNodes(): Array<IComponentNode>  {
     return this.sortedNodesValue;
   }
 
@@ -34,9 +34,9 @@ export class Dependencies {
     return [...this.circularReferencesValue];
   }
 
-  constructor(rootNodes: RootNodeList) {
-    this.rootNodes = rootNodes;
-    this.nodesToProcess = this.rootNodes.asArray();
+  constructor(componentNodes: ComponentNodeList) {
+    this.componentNodes = componentNodes;
+    this.nodesToProcess = this.componentNodes.asArray();
   }
 
   public build(): void {
@@ -45,7 +45,7 @@ export class Dependencies {
     this.sortedNodesValue = this.topologicalSort();
   }
 
-  public nodeAndDependencies(node: IRootNode): Array<IRootNode> {
+  public nodeAndDependencies(node: IComponentNode): Array<IComponentNode> {
     const dependencyNode = this.dependencyMap.get(node.nodeName);
     if (dependencyNode == null) return [];
     return [node, ...this.flatten(dependencyNode.dependencies)];
@@ -53,7 +53,7 @@ export class Dependencies {
 
   private processNodes(): void {
     while (this.nodesToProcess.length > 0) {
-      const node = this.nodesToProcess.shift() as IRootNode;
+      const node = this.nodesToProcess.shift() as IComponentNode;
       const dependencyNode = this.processNode(node);
       this.dependencyNodesValue.push(dependencyNode);
       this.dependencyMap.set(node.nodeName, dependencyNode);
@@ -61,13 +61,13 @@ export class Dependencies {
     }
   }
 
-  private processNode(rootNode: IRootNode): DependencyNode {
-    this.increaseOccurrence(rootNode);
-    return this.newDependencyNode(rootNode);
+  private processNode(componentNode: IComponentNode): DependencyNode {
+    this.increaseOccurrence(componentNode);
+    return this.newDependencyNode(componentNode);
   }
 
-  private increaseOccurrence(rootNode: IRootNode) {
-    let key = rootNode.nodeName;
+  private increaseOccurrence(componentNode: IComponentNode) {
+    let key = componentNode.nodeName;
     const existingOccurrences = this.nodeOccurrences.get(key);
     if (existingOccurrences != undefined) {
       this.nodeOccurrences.set(key, existingOccurrences + 1);
@@ -76,9 +76,9 @@ export class Dependencies {
     }
   }
 
-  private newDependencyNode(rootNode: IRootNode): DependencyNode {
-    const dependencies = this.getDependencies(rootNode);
-    return new DependencyNode(rootNode.nodeName, rootNode, dependencies);
+  private newDependencyNode(componentNode: IComponentNode): DependencyNode {
+    const dependencies = this.getDependencies(componentNode);
+    return new DependencyNode(componentNode.nodeName, componentNode, dependencies);
   }
 
   private getDependencies(node: INode): ReadonlyArray<string> {
@@ -88,7 +88,7 @@ export class Dependencies {
   }
 
   private processDependencies(childNode: INode, resultDependencies: Array<string>) {
-    let nodeDependencies = asHasNodeDependencies(childNode)?.getDependencies(this.rootNodes);
+    let nodeDependencies = asHasNodeDependencies(childNode)?.getDependencies(this.componentNodes);
     if (nodeDependencies == null) return;
 
     for (const dependency of nodeDependencies) {
@@ -96,7 +96,7 @@ export class Dependencies {
     }
   }
 
-  private validateDependency(resultDependencies: Array<string>, dependency: IRootNode): void {
+  private validateDependency(resultDependencies: Array<string>, dependency: IComponentNode): void {
     if (resultDependencies.indexOf(dependency.nodeName) >= 0) return;
 
     if (this.nodesToProcess.indexOf(dependency) < 0 && !this.nodesMap.has(dependency.nodeName)) {
@@ -128,13 +128,13 @@ export class Dependencies {
     return false;
   }
 
-  private flatten(dependencies: ReadonlyArray<string>): Array<IRootNode> {
-    const result: Array<IRootNode> = [];
+  private flatten(dependencies: ReadonlyArray<string>): Array<IComponentNode> {
+    const result: Array<IComponentNode> = [];
     this.flattenNodes(result, dependencies);
     return this.sortedNodes.filter(where => result.indexOf(where) >= 0);
   }
 
-  private flattenNodes(result: Array<IRootNode>, dependencies: ReadonlyArray<string>): void {
+  private flattenNodes(result: Array<IComponentNode>, dependencies: ReadonlyArray<string>): void {
     for (const dependency of dependencies) {
       const dependencyNode = Assert.notNull(this.dependencyMap.get(dependency), "dependencyNode");
       if (result.indexOf(dependencyNode.node) >= 0) continue;
@@ -143,11 +143,11 @@ export class Dependencies {
     }
   }
 
-  private topologicalSort(): Array<IRootNode> {
+  private topologicalSort(): Array<IComponentNode> {
 
-    if (this.hasCircularReferences) return this.rootNodes.asArray()
+    if (this.hasCircularReferences) return this.componentNodes.asArray()
 
-    const result: Array<IRootNode> = []
+    const result: Array<IComponentNode> = []
     const processing: Array<string> = [];
     this.nodeOccurrences.forEach((occurrences, node) => {
       if (occurrences == 1) {

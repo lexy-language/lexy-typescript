@@ -1,6 +1,6 @@
-import type {IRootNode} from "../rootNode";
+import type {IComponentNode} from "../componentNode";
 import type {IValidationContext} from "../../parser/validationContext";
-import type {IRootNodeList} from "../rootNodeList";
+import type {IComponentNodeList} from "../componentNodeList";
 import type {ITypeDefinition} from "../types/typeDefinition";
 
 import {TypeWithMembers} from "./typeWithMembers";
@@ -36,13 +36,13 @@ export class CustomType extends TypeWithMembers {
     return this.type;
   }
 
-  public override memberType(name: string, rootNodes: IRootNodeList): VariableType | null {
+  public override memberType(name: string, componentNodes: IComponentNodeList): VariableType | null {
     const definition = firstOrDefault(this.typeDefinition.variables, variable => variable.name == name);
     const variableType = definition?.type.variableType;
     return variableType ? variableType : null;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
     return [this.typeDefinition];
   }
 }

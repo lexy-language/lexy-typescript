@@ -1,10 +1,10 @@
-import type {IRootNode} from "../rootNode";
+import type {IComponentNode} from "../componentNode";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
 import type {IHasVariableReference} from "./IHasVariableReference";
-import type {IRootNodeList} from "../rootNodeList";
+import type {IComponentNodeList} from "../componentNodeList";
 
 import {Expression} from "./expression";
 import {VariablePath} from "../variablePath";
@@ -48,9 +48,9 @@ export class MemberAccessExpression extends Expression
     this.variablePath = variablePath;
   }
 
-  public getDependencies(rootNodeList: IRootNodeList): Array<IRootNode> {
-    let rootNode = rootNodeList.getNode(this.memberAccessLiteral.parent);
-    return rootNode != null ? [rootNode] : [];
+  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+    let componentNode = componentNodeList.getNode(this.memberAccessLiteral.parent);
+    return componentNode != null ? [componentNode] : [];
   }
 
   public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
