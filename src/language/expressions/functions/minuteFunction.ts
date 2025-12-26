@@ -6,7 +6,7 @@ import {ExpressionSource} from "../expressionSource";
 import {FunctionCallExpression} from "./functionCallExpression";
 
 export class MinuteFunction extends SingleArgumentFunction {
-   public static readonly functionName: string = `MINUTE`;
+   public static readonly functionName: string = `minute`;
 
    public readonly nodeType = NodeType.MinuteFunction;
 

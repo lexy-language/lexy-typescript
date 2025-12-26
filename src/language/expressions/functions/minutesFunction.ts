@@ -5,7 +5,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 import {ExpressionSource} from "../expressionSource";
 
 export class MinutesFunction extends EndStartDateFunction {
-  public static readonly functionName: string = `MINUTES`;
+  public static readonly functionName: string = `minutes`;
 
   public readonly nodeType = NodeType.MinutesFunction;
 

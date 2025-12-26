@@ -20,11 +20,11 @@ const argumentTable = 0;
 const argumentLookupValue = 1;
 const argumentSearchValueColumn = 2;
 const argumentResultColumn = 3;
-const functionHelp = `Arguments: LOOKUP(Table, lookUpValue, Table.searchValueColumn, Table.resultColumn)`;
+const functionHelp = `Arguments: lookUp(Table, lookUpValue, Table.searchValueColumn, Table.resultColumn)`;
 
 export class LookupFunction extends TableFunction {
 
-  public static readonly functionName: string = `LOOKUP`;
+  public static readonly functionName: string = `lookUp`;
 
   private resultColumnTypeValue: VariableType | null = null;
   private searchValueColumnTypeValue: VariableType | null = null;

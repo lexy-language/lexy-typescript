@@ -6,7 +6,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 
 export class DaysFunction extends EndStartDateFunction {
 
-   public static readonly functionName: string = `DAYS`;
+   public static readonly functionName: string = `days`;
 
    public readonly nodeType = NodeType.DaysFunction;
 

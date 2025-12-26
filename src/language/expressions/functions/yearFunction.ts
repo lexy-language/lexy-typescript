@@ -7,7 +7,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 
 export class YearFunction extends SingleArgumentFunction {
 
-   public static readonly functionName: string = `YEAR`;
+   public static readonly functionName: string = `year`;
    public readonly nodeType = NodeType.YearFunction;
 
    protected override get functionHelp(): string {

@@ -19,11 +19,11 @@ const argumentsNumber = 3;
 const argumentTable = 0;
 const argumentLookupValue = 1;
 const argumentSearchValueColumn = 2;
-const functionHelp = " Arguments: LOOKUPROW(Table, lookUpValue, Table.searchValueColumn)";
+const functionHelp = " Arguments: lookUpRow(Table, lookUpValue, Table.searchValueColumn)";
 
 export class LookupRowFunction extends TableFunction {
 
-  public static readonly functionName: string = `LOOKUPROW`;
+  public static readonly functionName: string = `lookUpRow`;
   public readonly nodeType = NodeType.LookupRowFunction;
 
   private searchValueColumnTypeValue: VariableType | null = null;

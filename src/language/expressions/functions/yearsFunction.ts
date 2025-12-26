@@ -6,7 +6,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 
 export class YearsFunction extends EndStartDateFunction {
 
-  public static readonly functionName: string = `YEARS`;
+  public static readonly functionName: string = `years`;
 
   public readonly nodeType = NodeType.YearsFunction;
 

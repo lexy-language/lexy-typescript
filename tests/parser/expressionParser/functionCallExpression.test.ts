@@ -25,18 +25,18 @@ import {
 
 describe('FunctionCallExpressionTests', () => {
   it('functionCallExpression', async () => {
-    let expression = parseExpression(`INT(y)`);
+    let expression = parseExpression(`int(y)`);
     validateOfType<FunctionCallExpression>(asFunctionCallExpression, expression, functionCallExpression => {
-      expect(functionCallExpression.functionName).toBe(`INT`);
+      expect(functionCallExpression.functionName).toBe(`int`);
       validateOfType<IntFunction>(asIntFunction, functionCallExpression, functionExpression =>
         validateVariableExpression(functionExpression.valueExpression, `y`));
     });
   });
 
   it('nestedParenthesizedExpression', async () => {
-    let expression = parseExpression(`INT(5 * (3 + A))`);
+    let expression = parseExpression(`int(5 * (3 + A))`);
     validateOfType<FunctionCallExpression>(asFunctionCallExpression, expression, functionCall => {
-      expect(functionCall.functionName).toBe(`INT`);
+      expect(functionCall.functionName).toBe(`int`);
       validateOfType<IntFunction>(asIntFunction, functionCall, functionExpression =>
         validateOfType<BinaryExpression>(asBinaryExpression, functionExpression.valueExpression, multiplication =>
           validateOfType<ParenthesizedExpression>(asParenthesizedExpression, multiplication.right, inner =>
@@ -46,9 +46,9 @@ describe('FunctionCallExpressionTests', () => {
   });
 
   it('nestedParenthesizedMultipleArguments', async () => {
-    let expression = parseExpression(`ROUND(POWER(98.6,3.2),3)`);
+    let expression = parseExpression(`round(power(98.6,3.2),3)`);
     validateOfType<RoundFunction>(asRoundFunction, expression, round => {
-      expect(round.functionName).toBe(`ROUND`);
+      expect(round.functionName).toBe(`round`);
       validateOfType<PowerFunction>(asPowerFunction, round.numberExpression, power => {
         validateNumericLiteralExpression(power.numberExpression, 98.6);
         validateNumericLiteralExpression(power.powerExpression, 3.2);

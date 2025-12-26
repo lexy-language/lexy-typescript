@@ -15,7 +15,7 @@ export function asIntFunction(object: any): IntFunction | null {
 
 export class IntFunction extends SingleArgumentFunction {
 
-  public static readonly functionName: string = `INT`;
+  public static readonly functionName: string = `int`;
   public readonly nodeType = NodeType.IntFunction;
 
   protected override get functionHelp(): string {

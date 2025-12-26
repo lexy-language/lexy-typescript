@@ -105,7 +105,7 @@ function Caller
   it('tableLookup', async () => {
     const dependencies = buildDependencyGraph(table + `
 function Caller
-  var result = LOOKUP(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)
+  var result = lookUp(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);

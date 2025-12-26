@@ -16,7 +16,7 @@ export function asAbsFunction(object: any): AbsFunction | null {
 export class AbsFunction extends SingleArgumentFunction {
 
    public readonly nodeType = NodeType.AbsFunction;
-   public static readonly functionName: string = `ABS`;
+   public static readonly functionName: string = `abs`;
 
    protected override get functionHelp(): string {
       return `${AbsFunction.functionName} expects 1 argument (Value)`;

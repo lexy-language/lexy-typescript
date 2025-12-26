@@ -6,7 +6,7 @@ import {ExpressionSource} from "../expressionSource";
 import {FunctionCallExpression} from "./functionCallExpression";
 
 export class SecondFunction extends SingleArgumentFunction {
-   public static readonly functionName: string = `SECOND`;
+   public static readonly functionName: string = `second`;
 
    protected override get functionHelp(): string {
       return `'${SecondFunction.functionName} expects 1 argument (Date)`;

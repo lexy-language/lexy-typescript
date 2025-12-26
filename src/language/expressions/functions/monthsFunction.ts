@@ -6,7 +6,7 @@ import {ExpressionSource} from "../expressionSource";
 
 export class MonthsFunction extends EndStartDateFunction {
 
-  public static readonly functionName: string = `MONTHS`;
+  public static readonly functionName: string = `months`;
   public readonly nodeType = NodeType.MonthsFunction;
 
   constructor(endDateExpression: Expression, startDateExpression: Expression, source: ExpressionSource) {

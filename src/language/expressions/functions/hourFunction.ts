@@ -10,7 +10,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 export class HourFunction extends SingleArgumentFunction {
 
    public readonly nodeType = NodeType.HourFunction;
-   public static readonly functionName: string = `HOUR`;
+   public static readonly functionName: string = `hour`;
 
    protected override get functionHelp() {
       return `${HourFunction.functionName} expects 1 argument (Date)`;

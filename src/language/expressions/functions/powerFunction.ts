@@ -18,7 +18,7 @@ export function asPowerFunction(object: any): PowerFunction | null {
 
 export class PowerFunction extends FunctionCallExpression {
 
-  public static readonly functionName: string = `POWER`;
+  public static readonly functionName: string = `power`;
 
   private get functionHelp() {
     return `${PowerFunction.functionName} expects 2 arguments (Number, Power).`;

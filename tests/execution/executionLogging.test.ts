@@ -38,7 +38,7 @@ function ValidateTableKeywordFunction
   parameters
   results
     number Result
-  Result = LOOKUP(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)`);
+  Result = lookUp(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)`);
 
     expectNoTableValuesProperty(script);
   });
@@ -55,7 +55,7 @@ function ValidateTableKeywordFunction
   parameters
   results
     SimpleTable.Row Result
-  Result = LOOKUPROW(SimpleTable, 2, SimpleTable.Search)`);
+  Result = lookUpRow(SimpleTable, 2, SimpleTable.Search)`);
 
     expectNoTableValuesProperty(script);
   });

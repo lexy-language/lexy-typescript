@@ -8,7 +8,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 
 export class MonthFunction extends SingleArgumentFunction {
 
-   public static readonly functionName: string = `MONTH`;
+   public static readonly functionName: string = `month`;
 
    public readonly nodeType = NodeType.MonthFunction;
 

@@ -6,7 +6,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 
 export class NowFunction extends NoArgumentFunction {
 
-  public static readonly functionName: string = `NOW`;
+  public static readonly functionName: string = `now`;
 
   public readonly nodeType = NodeType.NowFunction;
 

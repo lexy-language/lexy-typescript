@@ -8,7 +8,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 export class DayFunction extends SingleArgumentFunction {
 
   public readonly nodeType = NodeType.DayFunction;
-  public static readonly functionName: string = `DAY`;
+  public static readonly functionName: string = `day`;
 
   protected override get functionHelp(): string {
     return `${DayFunction.functionName} expects 1 argument (Date)`;

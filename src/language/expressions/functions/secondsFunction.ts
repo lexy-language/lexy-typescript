@@ -6,7 +6,7 @@ import {FunctionCallExpression} from "./functionCallExpression";
 
 export class SecondsFunction extends EndStartDateFunction {
 
-  public static readonly functionName: string = `SECONDS`;
+  public static readonly functionName: string = `seconds`;
   public readonly nodeType = NodeType.SecondsFunction;
 
   constructor(endDateExpression: Expression, startDateExpression: Expression, source: ExpressionSource) {

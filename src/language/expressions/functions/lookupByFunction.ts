@@ -22,11 +22,11 @@ const argumentLookupValue = 2;
 const argumentDiscriminatorValueColumn = 3;
 const argumentSearchValueColumn = 4;
 const argumentResultColumn = 5;
-const functionHelp = `Arguments: LOOKUPBY(Table, discriminatorValue, lookUpValue, Table.DiscriminatorColumn, Table.SearchValueColumn, Table.ResultColumn)`;
+const functionHelp = `Arguments: lookUpBy(Table, discriminatorValue, lookUpValue, Table.DiscriminatorColumn, Table.SearchValueColumn, Table.ResultColumn)`;
 
 export class LookupByFunction extends TableFunction {
 
-  public static readonly functionName: string = `LOOKUPBY`;
+  public static readonly functionName: string = `lookUpBy`;
 
   private resultColumnTypeValue: VariableType | null = null;
   private discriminatorValueColumnTypeValue: VariableType | null = null;

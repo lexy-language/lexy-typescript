@@ -17,7 +17,7 @@ export function asRoundFunction(object: any): RoundFunction | null {
 }
 
 export class RoundFunction extends FunctionCallExpression {
-   public static readonly functionName: string = `ROUND`;
+   public static readonly functionName: string = `round`;
 
    private get functionHelp() {
      return `'${RoundFunction.name}' expects 2 arguments (Number, Digits).`;

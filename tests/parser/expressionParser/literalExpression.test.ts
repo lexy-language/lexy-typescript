@@ -49,11 +49,11 @@ describe('LiteralExpressionTests', () => {
   });
 
   it('functionCallWithNegativeNumber', async () => {
-    let expression = parseExpression(`Result = ABS(-2)`);
+    let expression = parseExpression(`Result = abs(-2)`);
     validateOfType<AssignmentExpression>(asAssignmentExpression, expression, assignment => {
       validateIdentifierExpression(assignment.variable, `Result`);
       validateOfType<AbsFunction>(asAbsFunction, assignment.assignment, functionCall => {
-        expect(functionCall.functionName).toBe(`ABS`);
+        expect(functionCall.functionName).toBe(`abs`);
         validateNumericLiteralExpression(functionCall.valueExpression, -2);
       });
     });

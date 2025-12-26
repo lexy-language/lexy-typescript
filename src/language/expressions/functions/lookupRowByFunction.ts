@@ -21,11 +21,11 @@ const argumentDiscriminatorValue = 1;
 const argumentLookupValue = 2;
 const argumentDiscriminatorValueColumn = 3;
 const argumentSearchValueColumn = 4;
-const functionHelp = " Arguments: LOOKUPROWBY(Table, discriminator, lookUpValue, Table.discriminatorValueColumn, Table.searchValueColumn)";
+const functionHelp = " Arguments: lookUpRowBy(Table, discriminator, lookUpValue, Table.discriminatorValueColumn, Table.searchValueColumn)";
 
 export class LookupRowByFunction extends TableFunction {
 
-  public static readonly functionName: string = `LOOKUPROWBY`;
+  public static readonly functionName: string = `lookUpRowBy`;
 
   private discriminatorValueColumnTypeValue: VariableType | null = null;
   private searchValueColumnTypeValue: VariableType | null = null;
