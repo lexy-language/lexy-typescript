@@ -1,6 +1,6 @@
 import type {INode} from "../language/node";
 
 export interface ITreeValidationVisitor {
-  enter(node: INode);
-  leave(node: INode);
+  enter(node: INode): void;
+  leave(node: INode): void;
 }

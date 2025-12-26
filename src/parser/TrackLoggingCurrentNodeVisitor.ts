@@ -15,7 +15,7 @@ export class TrackLoggingCurrentNodeVisitor implements ITreeValidationVisitor {
     this.logger = Assert.notNull(logger, "logger");
   }
 
-  public enter(node: INode) {
+  public enter(node: INode): void {
 
     const componentNode = asComponentNode(node)
     if (componentNode == null) return;
@@ -24,7 +24,7 @@ export class TrackLoggingCurrentNodeVisitor implements ITreeValidationVisitor {
     this.logger.setCurrentNode(componentNode);
   }
 
-  public leave(node: INode) {
+  public leave(node: INode): void {
     if (!instanceOfComponentNode(node)) return;
 
     this.removeCurrentNodeFromStack();

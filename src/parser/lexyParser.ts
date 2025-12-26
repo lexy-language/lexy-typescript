@@ -107,12 +107,14 @@ export class LexyParser implements ILexyParser {
     this.loadIncludedFiles(context, fullFileName);
   }
 
-  private getIndent(context: IParserContext, line: Line) {
+  private getIndent(context: IParserContext, line: Line): {success: boolean, value: number} {
 
-    if (line.isEmpty()) return {success: false};
+    if (line.isEmpty()) return {success: false, value: 0};
 
     let indent = line.indent(context.logger);
-    return indent == null ? {success: false} : {success: true, value: indent};
+    return indent == null
+      ? {success: false, value: 0 }
+      : {success: true, value: indent as number};
   }
 
   private tokenizeLine(context: IParserContext): boolean {

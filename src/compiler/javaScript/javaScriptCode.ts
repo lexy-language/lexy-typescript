@@ -1,5 +1,5 @@
-import {IComponentNode} from "../../language/componentNode";
-import {IComponentTokenWriter} from "../IComponentTokenWriter";
+import type {IComponentNode} from "../../language/componentNode";
+import type {IComponentTokenWriter} from "../IComponentTokenWriter";
 import {FunctionWriter} from "./writers/functionWriter";
 import {NodeType} from "../../language/nodeType";
 import {TypeWriter} from "./writers/typeWriter";
