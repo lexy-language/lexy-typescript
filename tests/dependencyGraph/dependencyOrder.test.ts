@@ -5,14 +5,14 @@ describe('DependencyOrder', () => {
   it('functionWithEnumAndTableDependency', async () => {
     const dependencies = buildDependencyGraph(
 `function FunctionWithEnumDependency
-  Parameters
+  parameters
     EnumExample EnumValue
-  Results
+  results
     number Result
   Code
     Result = LOOKUP(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
 
-Table: TableExample
+table TableExample
   | EnumExample Example | number Value |
   | EnumExample.Single  | 123          |
 
@@ -32,23 +32,23 @@ enum EnumExample
     const dependencies = buildDependencyGraph(
       `scenario ValidateBuiltOrder
   function
-    Parameters
+    parameters
       TypeExample Example
-    Results
+    results
       number Result
     Code
       FunctionWithFunctionDependency()
       FunctionWithFunctionTypeDependency()
-  Parameters
+  parameters
     Example.EnumValue = EnumExample.Single
     Example.Nested.EnumValue = EnumExample.Married
-  Results
+  results
     Result = 777
 
 function FunctionWithFunctionDependency
-  Parameters
+  parameters
     TypeExample Example
-  Results
+  results
     number Result
   Code
     FunctionWithTypeDependency()
@@ -56,9 +56,9 @@ function FunctionWithFunctionDependency
     FunctionWithEnumDependency()
 
 function FunctionWithFunctionTypeDependency
-  Parameters
+  parameters
     TypeExample Example
-  Results
+  results
     number Result
   Code
     var functionParametersFill = fill(FunctionWithTypeDependency.Parameters)
@@ -67,39 +67,39 @@ function FunctionWithFunctionTypeDependency
     Result = 777
 
 function FunctionWithTypeDependency
-  Parameters
+  parameters
     TypeExample Example
-  Results
+  results
     number Result
   Code
     Result = Example.Nested.Result
 
 function FunctionWithTableDependency
-  Parameters
+  parameters
     TypeExample Example
-  Results
+  results
     number Result
   Code
     Result = LOOKUP(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
 
 function FunctionWithEnumDependency
-  Parameters
+  parameters
     EnumExample EnumValue
     TypeExample Example
-  Results
+  results
     number Result
   Code
     Result = 666
 
-Type: NestedType
+type NestedType
   EnumExample EnumValue
   number Result = 888
 
-Type: TypeExample
+type TypeExample
   EnumExample EnumValue
   NestedType Nested
 
-Table: TableExample
+table TableExample
   | EnumExample Example | number Value |
   | EnumExample.Single  | 123          |
 

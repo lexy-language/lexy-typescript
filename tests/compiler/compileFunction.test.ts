@@ -4,7 +4,7 @@ import Decimal from "decimal.js";
 describe('CompileFunctionTests', () => {
   it('testSimpleReturn', async () => {
      let script = compileFunction(`function TestSimpleReturn
-  Results
+  results
     number Result
   Code
     Result = 777`);
@@ -14,9 +14,9 @@ describe('CompileFunctionTests', () => {
 
   it('testParameterDefaultReturn', async () => {
      let script = compileFunction(`function TestSimpleReturn
-  Parameters
+  parameters
     number Input = 5
-  Results
+  results
     number Result
   Code
     Result = Input`);
@@ -26,10 +26,10 @@ describe('CompileFunctionTests', () => {
 
   it('testAssignmentReturn', async () => {
      let script = compileFunction(`function TestSimpleReturn
-  Parameters
+  parameters
     number Input = 5
 
-  Results
+  results
     number Result
   Code
     Result = Input`);
@@ -40,7 +40,7 @@ describe('CompileFunctionTests', () => {
    });
 
   it('testMemberAccessAssignment', async () => {
-     let script = compileFunction(`Table: ValidateTableKeyword
+     let script = compileFunction(`table ValidateTableKeyword
 // Validate table keywords
   | number Value | number Result |
   | 0 | 0 |
@@ -48,8 +48,8 @@ describe('CompileFunctionTests', () => {
 
 function ValidateTableKeywordFunction
 // Validate table keywords
-  Parameters
-  Results
+  parameters
+  results
     number Result
   Code
     Result = ValidateTableKeyword.Count`);
@@ -60,9 +60,9 @@ function ValidateTableKeywordFunction
 
   it('variableDeclarationInCode', async () => {
      let script = compileFunction(`function TestSimpleReturn
-  Parameters
+  parameters
     number Value = 5 
-  Results
+  results
     number Result
   Code
     number temp = 5
@@ -75,7 +75,7 @@ function ValidateTableKeywordFunction
 
   it('variableDeclarationWithDefaultInCode', async () => {
      let script = compileFunction(`function TestSimpleReturn
-  Results
+  results
     number Result
   Code
     number temp = 5
@@ -92,7 +92,7 @@ enum SimpleEnum
   Second
     
 function TestEnum
-  Results
+  results
     SimpleEnum Result
   Code
     Result = SimpleEnum.Second
@@ -103,12 +103,12 @@ function TestEnum
 
   it('customType', async () => {
     let script = compileFunction(`
-Type: SimpleComplex
+type SimpleComplex
   number First
   string Second
     
 function TestCustomType
-  Results
+  results
     SimpleComplex Result
   Code
     Result.First = 777
@@ -123,15 +123,15 @@ function TestCustomType
 
   it('CustomTypeNestedProperties', async () => {
     let script = compileFunction(`
-Type: InnerComplex
+type InnerComplex
   number First
   string Second
     
-Type: SimpleComplex
+type SimpleComplex
   InnerComplex Inner
     
 function TestCustomType
-  Results
+  results
     SimpleComplex Result
   Code
     Result.Inner.First = 777

@@ -6,7 +6,7 @@ describe('FactoryTests', () => {
   Second
 `;
 
-  const table = `Table: SimpleTable
+  const table = `table SimpleTable
   | number Search | string Value |
   | 0 | "0" |
   | 1 | "1" |
@@ -14,9 +14,9 @@ describe('FactoryTests', () => {
 `;
 
   const functionCode = `function SimpleFunction
-  Parameters
+  parameters
     number Value
-  Results
+  results
     number Result
   Code
     Result = Value
@@ -47,7 +47,7 @@ describe('FactoryTests', () => {
     const dependencies = buildDependencyGraph(functionCode + `
 function Caller
   Code
-    var parameters = new(SimpleFunction.Parameters)
+    var params = new(SimpleFunction.Parameters)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -62,7 +62,7 @@ function Caller
     const dependencies = buildDependencyGraph(functionCode + `
 function Caller
   Code
-    var parameters = new(SimpleFunction.Results)
+    var params = new(SimpleFunction.Results)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -76,10 +76,10 @@ function Caller
   it('functionFillFunctionParameters', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
 function Caller
-  Parameters
+  parameters
     number Value
   Code
-    var parameters = fill(SimpleFunction.Parameters)
+    var params = fill(SimpleFunction.Parameters)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -93,10 +93,10 @@ function Caller
   it('functionFillFunctionResults', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
 function Caller
-  Parameters
+  parameters
     number Result
   Code
-    var parameters = fill(SimpleFunction.Results)
+    var params = fill(SimpleFunction.Results)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -126,9 +126,9 @@ function Caller
     const dependencies = buildDependencyGraph(functionCode + `
 scenario Simple
   function SimpleFunction
-  Results
+  results
     Result = 2
-  Parameters
+  parameters
     Value = 2
 `);
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -141,7 +141,7 @@ scenario Simple
 
   it('simpleType', async () => {
     const dependencies = buildDependencyGraph(`
-Type: Simple
+type Simple
   number Value1
   string Value2
 `);
@@ -152,11 +152,11 @@ Type: Simple
 
   it('complexType', async () => {
     const dependencies = buildDependencyGraph(`
-Type: Inner
+type Inner
   number Value1
   string Value2
 
-Type: Parent
+type Parent
   number Value1
   string Value2
   Inner Value3
@@ -170,12 +170,12 @@ Type: Parent
 
   it('circularType', async () => {
     const dependencies = buildDependencyGraph(`
-Type: Inner
+type Inner
   number Value1
   string Value2
   Parent Value3
 
-Type: Parent
+type Parent
   number Value1
   string Value2
   Inner Value3

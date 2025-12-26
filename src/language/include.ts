@@ -31,7 +31,7 @@ export class Include {
     let lineTokens = line.tokens;
     if (lineTokens.length != 2 || !lineTokens.isQuotedString(1)) {
       context.logger.fail(line.lineStartReference(),
-        "Invalid syntax. Expected: 'Include \`FileName\`");
+        "Invalid syntax. Expected: 'include \`FileName\`");
       return null;
     }
 

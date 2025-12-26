@@ -58,10 +58,10 @@ describe('FunctionCallExpressionTests', () => {
   });
 
   it('callExtract', async () => {
-    let expression = parseExpression(`extract(results)`);
+    let expression = parseExpression(`extract(result)`);
     validateOfType<ExtractResultsFunction>(asExtractResultsFunction, expression, round => {
       expect(round.functionName).toBe(`extract`);
-      validateIdentifierExpression(round.valueExpression, `results`);
+      validateIdentifierExpression(round.valueExpression, `result`);
     });
   });
 

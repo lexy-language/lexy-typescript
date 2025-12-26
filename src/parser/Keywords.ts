@@ -1,8 +1,8 @@
 export class Keywords {
   public static readonly Function = "function";
   public static readonly EnumKeyword = "enum";
-  public static readonly TableKeyword = "Table:";
-  public static readonly TypeKeyword = "Type:";
+  public static readonly TableKeyword = "table";
+  public static readonly TypeKeyword = "type";
   public static readonly ScenarioKeyword = "scenario";
 
   public static readonly If = "if";
@@ -13,11 +13,12 @@ export class Keywords {
   public static readonly Case = "case";
   public static readonly Default = "default";
 
-  public static readonly Include = "Include";
+  public static readonly Include = "include";
 
-  public static readonly Parameters = "Parameters";
-  public static readonly Results = "Results";
-  public static readonly ValidationTable = "ValidationTable";
+  public static readonly Parameters = "parameters";
+  public static readonly Results = "results";
+  public static readonly ValidationTable = "validationTable";
+
   public static readonly ExecutionLogging = "ExecutionLogging";
   public static readonly ExecutionLog = "Log";
   public static readonly Code = "Code";

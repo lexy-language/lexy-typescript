@@ -27,7 +27,7 @@ describe('executionLogging', () => {
   }
 
   it('tableVariablesShouldNotStoreFullTableInLogging', async () => {
-    let script = compileFunction(`Table: SimpleTable
+    let script = compileFunction(`table SimpleTable
 // Validate table keywords
   | number Search | number Value |
   | 0 | 0 |
@@ -35,8 +35,8 @@ describe('executionLogging', () => {
 
 function ValidateTableKeywordFunction
 // Validate table keywords
-  Parameters
-  Results
+  parameters
+  results
     number Result
   Code
     Result = LOOKUP(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)`);
@@ -45,7 +45,7 @@ function ValidateTableKeywordFunction
   });
 
   it('tableVariablesShouldNotStoreFullTableInLoggingRow', async () => {
-    let script = compileFunction(`Table: SimpleTable
+    let script = compileFunction(`table SimpleTable
 // Validate table keywords
   | number Search | number Value | string Extra |
   | 0 | 0 | "ext" |
@@ -53,8 +53,8 @@ function ValidateTableKeywordFunction
 
 function ValidateTableKeywordFunction
 // Validate table keywords
-  Parameters
-  Results
+  parameters
+  results
     SimpleTable.Row Result
   Code
     Result = LOOKUPROW(SimpleTable, 2, SimpleTable.Search)`);

@@ -11,8 +11,8 @@ describe('KeywordTests', () => {
   });
 
   it('TestResultKeyword', async () => {
-    tokenize("  Results").count(1)
-      .keyword(0, "Results")
+    tokenize("  results").count(1)
+      .keyword(0, "results")
       .assert();
   });
 

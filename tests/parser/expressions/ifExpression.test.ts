@@ -6,9 +6,9 @@ import {asAssignmentExpression, AssignmentExpression} from "../../../src/languag
 describe('IfExpressionTests', () => {
   it('checkIfStatement', async () => {
     const code = `function If
-  Parameters
+  parameters
     boolean Evil
-  Results
+  results
     number Number
   Code
     number temp = 777

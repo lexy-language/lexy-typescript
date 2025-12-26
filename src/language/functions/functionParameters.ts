@@ -24,7 +24,9 @@ export class FunctionParameters extends ParsableNode {
 
   public override parse(context: IParseLineContext): IParsableNode {
     let variableDefinition = VariableDefinition.parse(VariableSource.Parameters, context);
-    if (variableDefinition != null) this.variablesValue.push(variableDefinition);
+    if (variableDefinition != null) {
+      this.variablesValue.push(variableDefinition);
+    }
     return this;
   }
 

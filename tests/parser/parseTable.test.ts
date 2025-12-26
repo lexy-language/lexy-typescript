@@ -10,7 +10,7 @@ import {
 
 describe('ParseTablesTests', () => {
   it('testInAndStringColumns', async () => {
-    const code = `Table: TestTable
+    const code = `table TestTable
   | number value | string Result |
   | 7 | "Test quoted" |
   | 8 | "Test" |`;
@@ -31,7 +31,7 @@ describe('ParseTablesTests', () => {
   });
 
   it('testDateTimeAndBoolean', async () => {
-    const code = `Table: TestTable
+    const code = `table TestTable
   | date value | boolean Result |
   | d"2024-12-18T17:07:45" | false |
   | d"2024-12-18T17:08:12" | true |`;
