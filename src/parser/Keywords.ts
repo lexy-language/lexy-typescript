@@ -1,6 +1,6 @@
 export class Keywords {
   public static readonly Function = "function";
-  public static readonly EnumKeyword = "Enum:";
+  public static readonly EnumKeyword = "enum";
   public static readonly TableKeyword = "Table:";
   public static readonly TypeKeyword = "Type:";
   public static readonly ScenarioKeyword = "scenario";

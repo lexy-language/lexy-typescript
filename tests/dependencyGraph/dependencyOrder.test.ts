@@ -16,7 +16,7 @@ Table: TableExample
   | EnumExample Example | number Value |
   | EnumExample.Single  | 123          |
 
-Enum: EnumExample
+enum EnumExample
   Single
   Married
   CivilPartnership`, true);
@@ -103,7 +103,7 @@ Table: TableExample
   | EnumExample Example | number Value |
   | EnumExample.Single  | 123          |
 
-Enum: EnumExample
+enum EnumExample
   Single
   Married
   CivilPartnership`, true);

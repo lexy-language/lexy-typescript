@@ -87,7 +87,7 @@ function ValidateTableKeywordFunction
 
   it('variableDeclarationWithDefaultEnumInCode', async () => {
     let script = compileFunction(`
-Enum: SimpleEnum
+enum SimpleEnum
   First
   Second
     

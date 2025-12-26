@@ -1,7 +1,7 @@
 import buildDependencyGraph from "./buildDependencyGraph";
 
 describe('FactoryTests', () => {
-  const enumDefinition = `Enum: SimpleEnum
+  const enumDefinition = `enum SimpleEnum
   First
   Second
 `;

@@ -2,7 +2,7 @@ import {parseEnum} from "../parseFunctions";
 
 describe('ParseEnumTests', () => {
   it('simpleEnum', async () => {
-    const code = `Enum: Enum1
+    const code = `enum Enum1
   First
   Second`;
 
@@ -19,7 +19,7 @@ describe('ParseEnumTests', () => {
   });
 
   it('enumWithValues', async () => {
-    const code = `Enum: Enum2
+    const code = `enum Enum2
   First = 5
   Second = 6`;
 
