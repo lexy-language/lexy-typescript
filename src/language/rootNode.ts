@@ -26,20 +26,4 @@ export abstract class RootNode extends ParsableNode implements IRootNode {
    protected constructor(reference: SourceReference){
       super(reference)
    }
-
-   protected override validateNodeTree(context: IValidationContext, child: INode | null): void {
-      if (child == null) throw new Error(`(${this.nodeType}) Child is null`);
-
-      const rootNode = asRootNode(child);
-      if (rootNode != null) {
-         context.logger.setCurrentNode(rootNode);
-      }
-
-      child.validateTree(context);
-
-      const thisAsRootNode = asRootNode(this);
-      if (thisAsRootNode != null) {
-         context.logger.setCurrentNode(thisAsRootNode);
-      }
-   }
 }

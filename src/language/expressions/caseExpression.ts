@@ -63,8 +63,9 @@ export class CaseExpression extends Expression implements IParsableNode {
 
      if (tokens.isKeyword(0, Keywords.Default)) return CaseExpression.parseDefaultCase(source, tokens, factory);
 
-     if (tokens.length == 1)
+     if (tokens.length == 1) {
        return newParseExpressionFailed("CaseExpression", `Invalid 'case'. No parameters found.`);
+     }
 
      let value = tokens.tokensFrom(1);
      let valueExpression = factory.parse(value, source.line);

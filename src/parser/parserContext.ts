@@ -1,4 +1,5 @@
 import type {IParserLogger} from "./parserLogger";
+import {ParserLogger} from "./parserLogger";
 import type {IExpressionFactory} from "../language/expressions/expressionFactory";
 import type {IFileSystem} from "../infrastructure/IFileSystem";
 import type {ILogger} from "../infrastructure/logger";
@@ -6,7 +7,6 @@ import type {ILogger} from "../infrastructure/logger";
 import {SourceCodeNode} from "../language/sourceCodeNode";
 import {RootNodeList} from "../language/rootNodeList";
 import {contains} from "../infrastructure/arrayFunctions";
-import {ParserLogger} from "./parserLogger";
 import {ParseOptions} from "./parseOptions";
 
 export interface ILineFilter {
@@ -19,7 +19,6 @@ export interface IParserContext {
   fileSystem: IFileSystem;
   nodes: RootNodeList;
   rootNode: SourceCodeNode;
-  options: ParseOptions;
   lineFilter: ILineFilter;
 
   addFileIncluded(fileName: string): void;

@@ -26,18 +26,24 @@ export abstract class Node implements INode {
   }
 
   public validateTree(context: IValidationContext): void {
+    context.visitor.enter(this);
 
-    let children = this.getChildren();
-    children.forEach(child => this.validateNodeTree(context, child));
-
+    this.validateChildren(context);
     this.validate(context);
+
+    context.visitor.leave(this);
+  }
+
+  private validateChildren(context: IValidationContext) {
+    let children = this.getChildren();
+    children.forEach(child => this.validateChild(context, child));
   }
 
   public abstract nodeType: NodeType;
 
   public abstract getChildren(): Array<INode>;
 
-  protected validateNodeTree(context: IValidationContext, child: INode | null): void {
+  protected validateChild(context: IValidationContext, child: INode | null): void {
     if (child == null) throw new Error(`(${this.nodeType}) Child is null`);
     child.validateTree(context);
   }

@@ -8,6 +8,7 @@ import {parseExpression} from "../expressionParser/parseExpression";
 import {RootNodeList} from "../../../src/language/rootNodeList";
 import {ParserLogger} from "../../../src/parser/parserLogger";
 import {LoggingConfiguration} from "../../loggingConfiguration";
+import {TrackLoggingCurrentNodeVisitor} from "../../../src/parser/TrackLoggingCurrentNodeVisitor";
 
 describe('DeriveTypeTests', () => {
   it('numberLiteral', async () => {
@@ -116,7 +117,8 @@ describe('DeriveTypeTests', () => {
 
     const rootNodeList = new RootNodeList();
     const logger = new ParserLogger(LoggingConfiguration.getParserLogger());
-    const validationContext = new ValidationContext(logger, rootNodeList);
+    const visitor = new TrackLoggingCurrentNodeVisitor(logger);
+    const validationContext = new ValidationContext(logger, rootNodeList, visitor);
 
     const scope = validationContext.createVariableScope();
     try {

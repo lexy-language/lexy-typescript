@@ -223,8 +223,8 @@ export class ScenarioRunner implements IScenarioRunner {
     const failedMessages = this.parserLogger.errorNodeMessages(this.scenario);
     if (failedMessages.length == 0) return true;
 
-    const skipValidationWhenExecutionErrorsAreExpected = failedMessages.length > 0 &&
-      this.scenario.expectExecutionErrors != null;
+    const skipValidationWhenExecutionErrorsAreExpected = failedMessages.length > 0
+      && this.scenario.expectExecutionErrors != null;
 
     if (skipValidationWhenExecutionErrorsAreExpected) return true;
 

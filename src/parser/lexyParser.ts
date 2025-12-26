@@ -17,6 +17,7 @@ import {SourceCodeDocument} from "./sourceCodeDocument";
 import {ParserContext} from "./parserContext";
 import {ParseOptions} from "./parseOptions";
 import {Dependencies} from "../dependencyGraph/dependencies";
+import {TrackLoggingCurrentNodeVisitor} from "./TrackLoggingCurrentNodeVisitor";
 
 export interface ILexyParser {
   parseFile(fileName: string, options: ParseOptions | null): ParserResult;
@@ -153,7 +154,8 @@ export class LexyParser implements ILexyParser {
   }
 
   private validateNodesTree(context: IParserContext): void {
-    let validationContext = new ValidationContext(context.logger, context.nodes);
+    let visitor = new TrackLoggingCurrentNodeVisitor(context.logger);
+    let validationContext = new ValidationContext(context.logger, context.nodes, visitor);
     context.rootNode.validateTree(validationContext);
   }
 

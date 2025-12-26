@@ -186,4 +186,19 @@ describe('ParseScenarioTests', () => {
       `tests.lexy(2, 13): ERROR - Unexpected function name. ` +
       `Inline function should not have a name: 'ThisShouldNotBeAllowed'. Remove ':' to target an existing function.`);
   });
+
+  it('scenarioWithInlineFunctionShouldLogErrorOnFunction', async () => {
+    const code = `Scenario: TestScenario
+  Function:
+    Unknown`;
+
+    let {scenario, logger} = parseScenario(code);
+
+
+    expect(logger.nodeHasErrors(scenario.functionNode)).toBe(true);
+
+    const errors = logger.errorNodeMessages(scenario.functionNode);
+    expect(errors.length).toBe(1);
+    expect(errors[0]).toBe(`tests.lexy(2, 3): ERROR - Invalid token 'Unknown'.`);
+  });
 });

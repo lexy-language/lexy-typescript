@@ -233,20 +233,19 @@ export class Scenario extends RootNode implements IHasNodeDependencies {
     return result;
   }
 
-  protected override validateNodeTree(context: IValidationContext, child: INode): void {
-    if (child !== this.functionNode) {
+  protected override validateChild(context: IValidationContext, child: INode): void {
+    if (child == this.functionNode) {
+      super.validateChild(context, child);
+    } else {
       this.validateWithFunctionVariables(context, child);
-      return;
     }
-
-    super.validateNodeTree(context, child);
   }
 
   private validateWithFunctionVariables(context: IValidationContext, child: INode): void {
     const scope = context.createVariableScope();
     try {
       this.addFunctionParametersAndResultsForValidation(context);
-      super.validateNodeTree(context, child);
+      super.validateChild(context, child);
     } finally {
       scope[Symbol.dispose]();
     }
