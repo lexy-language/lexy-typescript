@@ -7,7 +7,7 @@ import {
 
 describe('LexyParserTests', () => {
   it('testSimpleReturn', async () => {
-    const code = `Function: TestSimpleReturn
+    const code = `function TestSimpleReturn
   Results
     number Result
   Code
@@ -26,7 +26,7 @@ describe('LexyParserTests', () => {
   });
 
   it('testFunctionKeywords', async () => {
-    const code = `Function: ValidateFunctionKeywords
+    const code = `function ValidateFunctionKeywords
 # Validate function keywords
   Parameters
   Results

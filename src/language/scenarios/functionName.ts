@@ -28,7 +28,7 @@ export class functionName extends Node {
   public static parse(context: IParseLineContext, reference: SourceReference): functionName | null {
     const name = context.line.tokens.tokenValue(1);
     if (!name) {
-      context.logger.fail(reference, "No function functionName found. Use 'Function:' for inline functions.")
+      context.logger.fail(reference, "No function functionName found.")
       return null;
     }
     return new functionName(name, reference);

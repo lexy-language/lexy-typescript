@@ -24,7 +24,9 @@ export class LogEntry {
   }
 
   public toString(): string {
-    return this.message;
+    return Node != null
+      ? `(${this.node?.nodeName}) ${this.message}`
+      : this.message;
   }
 }
 

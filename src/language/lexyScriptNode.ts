@@ -22,20 +22,20 @@ import {DuplicateChecker} from "./duplicateChecker";
 import {where} from "../infrastructure/arrayFunctions";
 import {NodeType} from "./nodeType";
 
-export class SourceCodeNode extends ComponentNode {
+export class LexyScriptNode extends ComponentNode {
 
   private readonly includes: Array<Include> = [];
   private readonly expressionFactory: IExpressionFactory;
   private sortedNodes: Array<IComponentNode> | null = null;
 
-  public readonly nodeType = NodeType.SourceCodeNode;
-  public readonly nodeName = "SourceCodeNode";
+  public readonly nodeType = NodeType.LexyScriptNode;
+  public readonly nodeName = "LexyScriptNode";
 
   public readonly comments: Comments;
   public componentNodes: ComponentNodeList = new ComponentNodeList();
 
   constructor(expressionFactory: IExpressionFactory) {
-    super(new SourceReference(new SourceFile(`SourceCodeNode`), 1, 1));
+    super(new SourceReference(new SourceFile(`LexyScriptNode`), 1, 1));
     this.comments = new Comments(this.reference);
     this.expressionFactory = expressionFactory;
   }
@@ -72,7 +72,7 @@ export class SourceCodeNode extends ComponentNode {
     }
 
     switch (tokenName.keyword) {
-      case Keywords.FunctionKeyword:
+      case Keywords.Function:
         return Function.create(tokenName.name, reference, this.expressionFactory);
       case Keywords.EnumKeyword:
         return EnumDefinition.parse(tokenName.name, reference);

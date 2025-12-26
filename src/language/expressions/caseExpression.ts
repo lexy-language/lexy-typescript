@@ -79,8 +79,9 @@ export class CaseExpression extends Expression implements IParsableNode {
    }
 
    private static parseDefaultCase(source: ExpressionSource, tokens: TokenList, factory: IExpressionFactory): ParseExpressionResult {
-     if (tokens.length != 1)
+     if (tokens.length != 1) {
        return newParseExpressionFailed("CaseExpression", `Invalid 'default' case. No parameters expected.`);
+     }
 
      let reference = source.createReference();
      let expression = new CaseExpression(null, true, source, reference, factory);
@@ -89,7 +90,7 @@ export class CaseExpression extends Expression implements IParsableNode {
 
    public static isValid(tokens: TokenList): boolean {
      return tokens.isKeyword(0, Keywords.Case)
-        || tokens.isKeyword(0, Keywords.Default);
+         || tokens.isKeyword(0, Keywords.Default);
    }
 
    protected override validate(context: IValidationContext): void {

@@ -46,7 +46,7 @@ export class NodeFileSystem implements IFileSystem {
       .map(dirent => dirent.name);
   }
 
-  isPathComponented(folder: string): boolean {
+  isPathRooted(folder: string): boolean {
     return path.isAbsolute(folder);
   }
 

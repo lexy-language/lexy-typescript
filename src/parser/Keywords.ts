@@ -1,11 +1,10 @@
 export class Keywords {
-  public static readonly FunctionKeyword = "Function:";
   public static readonly EnumKeyword = "Enum:";
   public static readonly TableKeyword = "Table:";
   public static readonly TypeKeyword = "Type:";
   public static readonly ScenarioKeyword = "Scenario:";
 
-  public static readonly Function = "Function";
+  public static readonly Function = "function";
 
   public static readonly If = "if";
   public static readonly Else = "else";
@@ -30,12 +29,11 @@ export class Keywords {
   public static readonly ImplicitVariableDeclaration = "var";
 
   private static readonly values = [
-    Keywords.FunctionKeyword,
+    Keywords.Function,
     Keywords.EnumKeyword,
     Keywords.TableKeyword ,
     Keywords.TypeKeyword,
     Keywords.ScenarioKeyword,
-    Keywords.Function,
     Keywords.ValidationTable,
     Keywords.If,
     Keywords.Else,

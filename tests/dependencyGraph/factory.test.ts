@@ -13,7 +13,7 @@ describe('FactoryTests', () => {
   | 2 | "2" |
 `;
 
-  const functionCode = `Function: SimpleFunction
+  const functionCode = `function SimpleFunction
   Parameters
     number Value
   Results
@@ -45,7 +45,7 @@ describe('FactoryTests', () => {
 
   it('functionNewFunctionParameters', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
-Function: Caller
+function Caller
   Code
     var parameters = new(SimpleFunction.Parameters)
 `);
@@ -60,7 +60,7 @@ Function: Caller
 
   it('functionNewFunctionResults', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
-Function: Caller
+function Caller
   Code
     var parameters = new(SimpleFunction.Results)
 `);
@@ -75,7 +75,7 @@ Function: Caller
 
   it('functionFillFunctionParameters', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
-Function: Caller
+function Caller
   Parameters
     number Value
   Code
@@ -92,7 +92,7 @@ Function: Caller
 
   it('functionFillFunctionResults', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
-Function: Caller
+function Caller
   Parameters
     number Result
   Code
@@ -109,7 +109,7 @@ Function: Caller
 
   it('tableLookup', async () => {
     const dependencies = buildDependencyGraph(table + `
-Function: Caller
+function Caller
   Code
     var result = LOOKUP(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)
 `);
@@ -126,7 +126,7 @@ Function: Caller
     const dependencies = buildDependencyGraph(functionCode + `
 
 Scenario: Simple
-  Function SimpleFunction
+  function SimpleFunction
   Results
     Result = 2
   Parameters
@@ -194,11 +194,11 @@ Type: Parent
 
   it('circularFunctionCall', async () => {
     const dependencies = buildDependencyGraph(`
-Function: Inner
+function Inner
   Code
     Parent()
 
-Function: Parent
+function Parent
   Code
     Inner()
 `, false);

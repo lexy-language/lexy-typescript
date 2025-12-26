@@ -33,7 +33,7 @@ export class Line {
 
     let index = 0;
 
-    for (; index < this.content.length; index++) {
+    while (index < this.content.length) {
       let value = this.content[index];
       if (value == ' ') {
         spaces++;
@@ -42,6 +42,7 @@ export class Line {
       } else {
         break;
       }
+      index++;
     }
 
     if (spaces > 0 && tabs > 0) {

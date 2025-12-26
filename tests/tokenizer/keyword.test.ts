@@ -3,9 +3,9 @@ import {OperatorType} from "../../src/parser/tokens/operatorType";
 
 describe('KeywordTests', () => {
   it('TestFunctionKeyword', async () => {
-    tokenize("Function: TestSimpleReturn")
+    tokenize("function TestSimpleReturn")
       .count(2)
-      .keyword(0, "Function:")
+      .keyword(0, "function")
       .stringLiteral(1, "TestSimpleReturn")
       .assert();
   });

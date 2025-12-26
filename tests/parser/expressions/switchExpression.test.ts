@@ -4,7 +4,7 @@ import {asSwitchExpression, SwitchExpression} from "../../../src/language/expres
 
 describe('SwitchExpressionTests', () => {
   it('checkSwitchStatement', async () => {
-    const code = `Function: NumberSwitch
+    const code = `function NumberSwitch
   Parameters
     number Evil
   Results

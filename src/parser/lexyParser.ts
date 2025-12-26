@@ -8,7 +8,7 @@ import type {IFileSystem} from "../infrastructure/IFileSystem";
 import type {ILogger} from "../infrastructure/logger";
 
 import {ParserResult} from "./parserResult";
-import {ParsableNodeArray} from "../language/parsableNodeArray";
+import {ParsableNodeIndex} from "../language/parsableNodeIndex";
 import {ParseLineContext} from "./ParseLineContext";
 import {Include} from "../language/include";
 import {ValidationContext} from "./validationContext";
@@ -18,6 +18,7 @@ import {ParserContext} from "./parserContext";
 import {ParseOptions} from "./parseOptions";
 import {Dependencies} from "../dependencyGraph/dependencies";
 import {TrackLoggingCurrentNodeVisitor} from "./TrackLoggingCurrentNodeVisitor";
+import {Line} from "./line";
 
 export interface ILexyParser {
   parseFile(fileName: string, options: ParseOptions | null): ParserResult;
@@ -40,7 +41,7 @@ export class LexyParser implements ILexyParser {
   }
 
   public parseFile(fileName: string, options: ParseOptions | null): ParserResult {
-    const fullFileName = this.fileSystem.isPathComponented(fileName)
+    const fullFileName = this.fileSystem.isPathRooted(fileName)
       ? fileName
       : this.fileSystem.getFullPath(fileName);
 
@@ -60,7 +61,7 @@ export class LexyParser implements ILexyParser {
 
     const dependencyGraph = this.sortByDependencyAndCheckCircularDependencies(context);
     if (dependencyGraph != null) {
-      context.componentNode.sortByDependency(dependencyGraph.sortedNodes);
+      context.rootNode.sortByDependency(dependencyGraph.sortedNodes);
       this.validateNodesTree(context);
     }
 
@@ -75,31 +76,30 @@ export class LexyParser implements ILexyParser {
     this.sourceCode.setCode(code, this.fileSystem.getFileName(fullFileName));
 
     let currentIndent = 0;
-    let nodePerIndent = new ParsableNodeArray(context.componentNode);
+    let nodesPerIndent = new ParsableNodeIndex(context.rootNode);
 
     while (this.sourceCode.hasMoreLines()) {
-      if (!this.processLine(context)) {
+      if (!this.tokenizeLine(context)) {
         currentIndent = this.sourceCode.currentLine?.indent(context.logger) ?? currentIndent;
         continue;
       }
 
-      let line = this.sourceCode.currentLine;
-      if (line.isEmpty()) continue;
-
-      let indent = line.indent(context.logger);
-      if (indent == null) continue;
+      const line = this.sourceCode.currentLine;
+      const indentResult = this.getIndent(context, line);
+      if (!indentResult.success) continue;
+      const indent = indentResult.value;
 
       if (indent > currentIndent) {
         context.logger.fail(line.lineStartReference(), `Invalid indent: ${indent}`);
         continue;
       }
 
-      let node = nodePerIndent.get(indent);
-      node = this.parseLine(context, node);
+      let node = nodesPerIndent.getCurrentOrDescend(indent);
+      node = this.parseLine(context, node, nodesPerIndent, indent);
 
       currentIndent = indent + 1;
 
-      nodePerIndent.set(currentIndent, node);
+      nodesPerIndent.set(currentIndent, node);
     }
 
     this.reset(context);
@@ -107,7 +107,15 @@ export class LexyParser implements ILexyParser {
     this.loadIncludedFiles(context, fullFileName);
   }
 
-  private processLine(context: IParserContext): boolean {
+  private getIndent(context: IParserContext, line: Line) {
+
+    if (line.isEmpty()) return {success: false};
+
+    let indent = line.indent(context.logger);
+    return indent == null ? {success: false} : {success: true, value: indent};
+  }
+
+  private tokenizeLine(context: IParserContext): boolean {
     let line = this.sourceCode.nextLine();
     if (!context.lineFilter.useLine(line.content)) {
       context.logger.log(line.lineStartReference(), `Skip line by filter: '${line.content}'`);
@@ -132,7 +140,7 @@ export class LexyParser implements ILexyParser {
   }
 
   private loadIncludedFiles(context: IParserContext, parentFullFileName: string): void {
-    let includes = context.componentNode.getDueIncludes();
+    let includes = context.rootNode.getDueIncludes();
     for (const include of includes) {
       this.includeFiles(context, parentFullFileName, include)
     }
@@ -156,7 +164,7 @@ export class LexyParser implements ILexyParser {
   private validateNodesTree(context: IParserContext): void {
     let visitor = new TrackLoggingCurrentNodeVisitor(context.logger);
     let validationContext = new ValidationContext(context.logger, context.nodes, visitor);
-    context.componentNode.validateTree(validationContext);
+    context.rootNode.validateTree(validationContext);
   }
 
   private sortByDependencyAndCheckCircularDependencies(context: IParserContext): Dependencies | null {
@@ -176,7 +184,7 @@ export class LexyParser implements ILexyParser {
     context.logger.resetCurrentNode();
   }
 
-  private parseLine(context: IParserContext, currentNode: IParsableNode | null): IParsableNode {
+  private parseLine(context: IParserContext, currentNode: IParsableNode | null, nodesPerIndent: ParsableNodeIndex, indent: number): IParsableNode {
     let parseLineContext = new ParseLineContext(this.sourceCode.currentLine, context.logger, this.expressionFactory);
     let node = currentNode != null ? currentNode?.parse(parseLineContext) : null;
     if (node == null) {
@@ -186,6 +194,9 @@ export class LexyParser implements ILexyParser {
     const componentNode = this.asComponentNode(node)
     if (componentNode != null) {
       context.logger.setCurrentNode(componentNode);
+    } else {
+      const parentComponentNode = nodesPerIndent.getParentComponent(indent);
+      context.logger.setCurrentNode(parentComponentNode);
     }
 
     return node;

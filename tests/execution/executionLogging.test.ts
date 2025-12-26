@@ -33,7 +33,7 @@ describe('executionLogging', () => {
   | 0 | 0 |
   | 1 | 1 |
 
-Function: ValidateTableKeywordFunction
+function ValidateTableKeywordFunction
 # Validate table keywords
   Parameters
   Results
@@ -51,7 +51,7 @@ Function: ValidateTableKeywordFunction
   | 0 | 0 | "ext" |
   | 1 | 1 | "ra"  | 
 
-Function: ValidateTableKeywordFunction
+function ValidateTableKeywordFunction
 # Validate table keywords
   Parameters
   Results

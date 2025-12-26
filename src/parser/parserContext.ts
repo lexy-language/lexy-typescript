@@ -4,7 +4,7 @@ import type {IExpressionFactory} from "../language/expressions/expressionFactory
 import type {IFileSystem} from "../infrastructure/IFileSystem";
 import type {ILogger} from "../infrastructure/logger";
 
-import {SourceCodeNode} from "../language/sourceCodeNode";
+import {LexyScriptNode} from "../language/lexyScriptNode";
 import {ComponentNodeList} from "../language/componentNodeList";
 import {contains} from "../infrastructure/arrayFunctions";
 import {ParseOptions} from "./parseOptions";
@@ -18,7 +18,7 @@ export interface IParserContext {
 
   fileSystem: IFileSystem;
   nodes: ComponentNodeList;
-  componentNode: SourceCodeNode;
+  rootNode: LexyScriptNode;
   lineFilter: ILineFilter;
 
   addFileIncluded(fileName: string): void;
@@ -33,14 +33,14 @@ export class ParserContext implements IParserContext {
   private lineFilterValue: ILineFilter;
 
   public get nodes(): ComponentNodeList {
-    return this.componentNode.componentNodes;
+    return this.rootNode.componentNodes;
   }
 
   public get lineFilter() {
     return this.lineFilterValue;
   }
 
-  public readonly componentNode: SourceCodeNode;
+  public readonly rootNode: LexyScriptNode;
   public readonly logger: IParserLogger;
   public readonly fileSystem: IFileSystem;
   public readonly options: ParseOptions;
@@ -49,7 +49,7 @@ export class ParserContext implements IParserContext {
     this.options = options ?? {};
     this.logger = new ParserLogger(logger);
     this.fileSystem = fileSystem;
-    this.componentNode = new SourceCodeNode(expressionFactory);
+    this.rootNode = new LexyScriptNode(expressionFactory);
     this.lineFilterValue = this.defaultLexyLineFilter;
   }
 

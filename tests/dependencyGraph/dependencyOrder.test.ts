@@ -4,7 +4,7 @@ describe('DependencyOrder', () => {
 
   it('functionWithEnumAndTableDependency', async () => {
     const dependencies = buildDependencyGraph(
-`Function: FunctionWithEnumDependency
+`function FunctionWithEnumDependency
   Parameters
     EnumExample EnumValue
   Results
@@ -31,7 +31,7 @@ Enum: EnumExample
   it('complexDependencyGraph', async () => {
     const dependencies = buildDependencyGraph(
       `Scenario: ValidateBuiltOrder
-  Function:
+  function
     Parameters
       TypeExample Example
     Results
@@ -45,7 +45,7 @@ Enum: EnumExample
   Results
     Result = 777
 
-Function: FunctionWithFunctionDependency
+function FunctionWithFunctionDependency
   Parameters
     TypeExample Example
   Results
@@ -55,7 +55,7 @@ Function: FunctionWithFunctionDependency
     FunctionWithTableDependency()
     FunctionWithEnumDependency()
 
-Function: FunctionWithFunctionTypeDependency
+function FunctionWithFunctionTypeDependency
   Parameters
     TypeExample Example
   Results
@@ -66,7 +66,7 @@ Function: FunctionWithFunctionTypeDependency
     var tableParameters = new(TableExample.Row)
     Result = 777
 
-Function: FunctionWithTypeDependency
+function FunctionWithTypeDependency
   Parameters
     TypeExample Example
   Results
@@ -74,7 +74,7 @@ Function: FunctionWithTypeDependency
   Code
     Result = Example.Nested.Result
 
-Function: FunctionWithTableDependency
+function FunctionWithTableDependency
   Parameters
     TypeExample Example
   Results
@@ -82,7 +82,7 @@ Function: FunctionWithTableDependency
   Code
     Result = LOOKUP(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
 
-Function: FunctionWithEnumDependency
+function FunctionWithEnumDependency
   Parameters
     EnumExample EnumValue
     TypeExample Example

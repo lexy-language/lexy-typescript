@@ -17,7 +17,7 @@ describe('ParseScenarioTests', () => {
 
   it('testValidScenario', async () => {
     const code = `Scenario: TestScenario
-  Function TestScenarioFunction
+  function TestScenarioFunction
   Parameters
     value = 123
   Results
@@ -63,7 +63,7 @@ describe('ParseScenarioTests', () => {
 
   it('testInvalidNumberValueScenario', async () => {
     const code = `Scenario: TestScenario
-  Function:
+  function
     Results
       number Result
   Parameters
@@ -79,7 +79,7 @@ describe('ParseScenarioTests', () => {
 
   it('testScenarioWithInlineFunction', async () => {
     const code = `Scenario: ValidNumberIntAsParameter
-  Function:
+  function
     Parameters
       number Value1 = 123
       number Value2 = 456
@@ -141,7 +141,7 @@ describe('ParseScenarioTests', () => {
   it('testScenarioWithEmptyParametersAndResults', async () => {
     const code = `Scenario: ValidateScenarioKeywords
 # Validate Scenario keywords
-  Function ValidateFunctionKeywords
+  function ValidateFunctionKeywords
   Parameters
   Results`;
     let {scenario} = parseScenario(code);
@@ -153,7 +153,7 @@ describe('ParseScenarioTests', () => {
 
   it('testValidScenarioWithInvalidInlineFunction', async () => {
     const code = `Scenario: InvalidNumberEndsWithLetter
-  Function:
+  function
    Results
     number Result
    Code
@@ -171,25 +171,19 @@ describe('ParseScenarioTests', () => {
     expect(scenario.expectErrors).not.toBeNull();
   });
 
-  it('scenarioWithInlineFunctionShouldNotHaveAfunctionNameAfterKeywords', async () => {
+  it('ScenarioWithInlineFunctionShouldHaveAFunctionNameAfterKeywords', async () => {
     const code = `Scenario: TestScenario
-  Function: ThisShouldNotBeAllowed`;
+  function ThisShouldBeAllowed`;
 
     let {scenario, logger} = parseScenario(code);
 
-    let errors = logger.errorNodeMessages(scenario);
-
-    expect(logger.nodeHasErrors(scenario)).toBe(true);
-
-    expect(errors.length).toBe(1);
-    expect(errors[0]).toBe(
-      `tests.lexy(2, 13): ERROR - Unexpected function name. ` +
-      `Inline function should not have a name: 'ThisShouldNotBeAllowed'. Remove ':' to target an existing function.`);
+    expect(logger.hasErrors()).toBe(false);
+    expect(logger.nodeHasErrors(scenario)).toBe(false);
   });
 
   it('scenarioWithInlineFunctionShouldLogErrorOnFunction', async () => {
     const code = `Scenario: TestScenario
-  Function:
+  function
     Unknown`;
 
     let {scenario, logger} = parseScenario(code);

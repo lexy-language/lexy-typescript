@@ -122,50 +122,32 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     }
 
     switch (name) {
-      case Keywords.FunctionKeyword:
+      case Keywords.Function:
         return this.parseFunction(context, reference);
       case Keywords.EnumKeyword:
         return this.parseEnum(context, reference);
       case Keywords.TableKeyword:
         return this.parseTable(context, reference);
 
-      case Keywords.Function:
-        if (this.functionNameValue == null) {
-          this.functionNameValue = functionName.parse(context, reference)
-        }
-        return this.resetComponentNode(context, this);
       case Keywords.Parameters:
-        return this.resetComponentNode(context, this.parametersValue, () => this.parametersValue = new Parameters(reference));
+        return this.parametersValue = new Parameters(reference);
       case Keywords.Results:
-        return this.resetComponentNode(context, this.resultsValue, () => this.resultsValue = new Results(reference));
+        return this.resultsValue = new Results(reference);
       case Keywords.ValidationTable:
-        return this.resetComponentNode(context, this.validationTableValue, () => this.validationTableValue = new ValidationTable(`${this.name.value}Table`, reference));
+        return this.validationTableValue = new ValidationTable(`${this.name.value}Table`, reference);
 
       case Keywords.ExecutionLogging:
-        return this.resetComponentNode(context, this.executionLogging, () => this.executionLoggingValue = new ExecutionLogging(reference));
+        return this.executionLoggingValue = new ExecutionLogging(reference);
 
       case Keywords.ExpectErrors:
-        return this.resetComponentNode(context, this.expectErrorsValue, () => this.expectErrorsValue = new ExpectErrors(reference));
+        return this.expectErrorsValue = new ExpectErrors(reference);
       case Keywords.ExpectComponentErrors:
-        return this.resetComponentNode(context, this.expectComponentErrorsValue, () => this.expectComponentErrorsValue = new ExpectComponentErrors(reference));
+        return this.expectComponentErrorsValue = new ExpectComponentErrors(reference);
       case Keywords.ExpectExecutionErrors:
-        return this.resetComponentNode(context, this.expectExecutionErrorsValue, () => this.expectExecutionErrorsValue = new ExpectExecutionErrors(reference));
+        return this.expectExecutionErrorsValue = new ExpectExecutionErrors(reference);
       default:
         return this.invalidToken(context, name, reference);
     }
-  }
-
-  private resetComponentNode(parserContext: IParseLineContext, node: IParsableNode | null, initializer: (() => IParsableNode) | null = null): IParsableNode {
-    if (node == null) {
-      if (initializer != null) {
-        node = initializer();
-      } else {
-        throw new Error("IParsableNode expected.")
-      }
-    }
-
-    parserContext.logger.setCurrentNode(this);
-    return node;
   }
 
   private parseFunction(context: IParseLineContext, reference: SourceReference): IParsableNode {
@@ -176,13 +158,17 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
 
     let tokenName = NodeName.parse(context);
     if (tokenName != null && tokenName.name != null) {
-      context.logger.fail(context.line.tokenReference(1),
-        `Unexpected function name. Inline function should not have a name: '${tokenName.name}'. Remove ':' to target an existing function.`);
+      return this.parseFunctionName(context, reference);
     }
 
     this.functionNodeValue = Function.create(`${this.name.value}Function`, reference, context.expressionFactory);
     context.logger.setCurrentNode(this.functionNodeValue);
     return this.functionNodeValue;
+  }
+
+  private parseFunctionName(context: IParseLineContext, reference: SourceReference) {
+    this.functionNameValue = functionName.parse(context, reference)
+    return this;
   }
 
   private parseEnum(context: IParseLineContext, reference: SourceReference): IParsableNode {

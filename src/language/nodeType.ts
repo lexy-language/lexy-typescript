@@ -60,7 +60,7 @@ export enum NodeType {
   ScenarioExpectErrors = "ScenarioExpectErrors",
   SecondFunction = "SecondFunction",
   SecondsFunction = "SecondsFunction",
-  SourceCodeNode = "SourceCodeNode",
+  LexyScriptNode = "LexyScriptNode",
   SwitchExpression = "SwitchExpression",
   Table = "Table",
   TableHeader = "TableHeader",

@@ -3,7 +3,7 @@ import Decimal from "decimal.js";
 
 describe('CompileFunctionTests', () => {
   it('testSimpleReturn', async () => {
-     let script = compileFunction(`Function: TestSimpleReturn
+     let script = compileFunction(`function TestSimpleReturn
   Results
     number Result
   Code
@@ -13,7 +13,7 @@ describe('CompileFunctionTests', () => {
    });
 
   it('testParameterDefaultReturn', async () => {
-     let script = compileFunction(`Function: TestSimpleReturn
+     let script = compileFunction(`function TestSimpleReturn
   Parameters
     number Input = 5
   Results
@@ -25,7 +25,7 @@ describe('CompileFunctionTests', () => {
    });
 
   it('testAssignmentReturn', async () => {
-     let script = compileFunction(`Function: TestSimpleReturn
+     let script = compileFunction(`function TestSimpleReturn
   Parameters
     number Input = 5
 
@@ -46,7 +46,7 @@ describe('CompileFunctionTests', () => {
   | 0 | 0 |
   | 1 | 1 |
 
-Function: ValidateTableKeywordFunction
+function ValidateTableKeywordFunction
 # Validate table keywords
   Parameters
   Results
@@ -59,7 +59,7 @@ Function: ValidateTableKeywordFunction
    });
 
   it('variableDeclarationInCode', async () => {
-     let script = compileFunction(`Function: TestSimpleReturn
+     let script = compileFunction(`function TestSimpleReturn
   Parameters
     number Value = 5 
   Results
@@ -74,7 +74,7 @@ Function: ValidateTableKeywordFunction
    });
 
   it('variableDeclarationWithDefaultInCode', async () => {
-     let script = compileFunction(`Function: TestSimpleReturn
+     let script = compileFunction(`function TestSimpleReturn
   Results
     number Result
   Code
@@ -91,7 +91,7 @@ Enum: SimpleEnum
   First
   Second
     
-Function: TestEnum
+function TestEnum
   Results
     SimpleEnum Result
   Code
@@ -107,7 +107,7 @@ Type: SimpleComplex
   number First
   string Second
     
-Function: TestCustomType
+function TestCustomType
   Results
     SimpleComplex Result
   Code
@@ -130,7 +130,7 @@ Type: InnerComplex
 Type: SimpleComplex
   InnerComplex Inner
     
-Function: TestCustomType
+function TestCustomType
   Results
     SimpleComplex Result
   Code

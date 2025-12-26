@@ -5,7 +5,7 @@ import {asAssignmentExpression, AssignmentExpression} from "../../../src/languag
 
 describe('IfExpressionTests', () => {
   it('checkIfStatement', async () => {
-    const code = `Function: If
+    const code = `function If
   Parameters
     boolean Evil
   Results

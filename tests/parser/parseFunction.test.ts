@@ -2,13 +2,13 @@ import {parseNodes} from "../parseFunctions";
 
 describe('ParseFunctionTests', () => {
   it('testDuplicatedFunctionName', async () => {
-    const code = `Function: ValidateTableKeyword
+    const code = `function ValidateTableKeyword
   Results
     number Result
   Code
     Result = 2
 
-Function: ValidateTableKeyword
+function ValidateTableKeyword
   Results
     number Result
   Code
