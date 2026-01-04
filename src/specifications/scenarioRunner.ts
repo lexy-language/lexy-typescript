@@ -196,7 +196,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
   private static validateRowValueResult(path: IdentifierPath, value: ValidationTableValue, result: FunctionResult, validationResult: Array<string>) {
 
-    let actual = result.getValue(path);
+    let actual = result.getValue(path, validationResult);
     let expectedValue = value.getValue();
 
     if (actual == null || expectedValue == null || !ScenarioRunner.compare(actual, expectedValue)) {

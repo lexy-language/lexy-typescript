@@ -6,6 +6,7 @@ import {Assert} from "../infrastructure/assert";
 
 export interface ILibrary {
   name: string;
+  runTime: LibraryRuntime;
   getFunction(identifier: string): IInstanceFunction;
 }
 

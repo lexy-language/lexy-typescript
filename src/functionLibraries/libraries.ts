@@ -7,7 +7,7 @@ import {ILibrary, Library} from "./library";
 
 export interface ILibraries {
   getLibrary(identifier: IdentifierPath): ILibrary | null;
-  runtimes(): ReadonlyArray<ILibrary>;
+  runtimes(): ReadonlyArray<LibraryRuntime>;
 }
 
 export class Libraries implements ILibraries {
@@ -34,8 +34,8 @@ export class Libraries implements ILibraries {
     return this.libraryObjects[identifier.fullPath()] ?? null;
   }
 
-  public runtimes(): ReadonlyArray<ILibrary> {
-    const result = new Array<ILibrary>();
+  public runtimes(): ReadonlyArray<LibraryRuntime> {
+    const result = new Array<LibraryRuntime>();
     for (const key in this.libraryObjects) {
       const libraryObject = this.libraryObjects[key];
       result.push(libraryObject.runTime);

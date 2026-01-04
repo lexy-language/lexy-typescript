@@ -129,7 +129,7 @@ export function renderExpression(expression: Expression, codeWriter: CodeWriter)
 
   const functionCallExpression = asFunctionCallExpression(expression);
   if (functionCallExpression != null) {
-    return render(asFunctionCallExpression, renderFunctionCall, codeWriter);
+    return render(asFunctionCallExpression, renderFunctionCall);
   }
 
   throw new Error(`Invalid expression type: ${expression.nodeType}`);
