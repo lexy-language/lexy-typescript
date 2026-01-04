@@ -1,7 +1,7 @@
 import type {IComponentNode} from "../language/componentNode";
 import type {INode} from "../language/node";
+import type {IComponentNodeList} from "../language/componentNodeList";
 
-import {ComponentNodeList} from "../language/componentNodeList";
 import {DependencyNode} from "./dependencyNode";
 import {asHasNodeDependencies} from "../language/IHasNodeDependencies";
 import {firstOrDefault} from "../infrastructure/arrayFunctions";
@@ -9,7 +9,7 @@ import {Assert} from "../infrastructure/assert";
 import {NodesWalker} from "../language/nodesWalker";
 
 export class Dependencies {
-  private readonly componentNodes: ComponentNodeList;
+  private readonly componentNodes: IComponentNodeList;
   private readonly circularReferencesValue: Array<IComponentNode> = [];
   private readonly dependencyMap: Map<string, DependencyNode> = new Map();
   private readonly nodesMap: Map<string, IComponentNode> = new Map();
@@ -34,7 +34,7 @@ export class Dependencies {
     return [...this.circularReferencesValue];
   }
 
-  constructor(componentNodes: ComponentNodeList) {
+  constructor(componentNodes: IComponentNodeList) {
     this.componentNodes = componentNodes;
     this.nodesToProcess = this.componentNodes.asArray();
   }

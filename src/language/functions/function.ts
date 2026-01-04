@@ -1,12 +1,11 @@
 import type {IComponentNode} from "../componentNode";
+import {ComponentNode} from "../componentNode";
 import type {INode} from "../node";
 import type {IExpressionFactory} from "../expressions/expressionFactory";
 import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IComponentNodeList} from "../componentNodeList";
-
-import {ComponentNode} from "../componentNode";
 import {IHasNodeDependencies} from "../IHasNodeDependencies";
 import {FunctionName} from "./functionName";
 import {FunctionParameters} from "./functionParameters";
@@ -16,12 +15,19 @@ import {SourceReference} from "../../parser/sourceReference";
 import {Keywords} from "../../parser/Keywords";
 import {KeywordToken} from "../../parser/tokens/keywordToken";
 import {VariableDefinition} from "../variableDefinition";
-import {asCustomVariableDeclarationType} from "../variableTypes/customVariableDeclarationType";
-import {ComplexType} from "../variableTypes/complexType";
-import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
-import {ComplexTypeSource} from "../variableTypes/complexTypeSource";
+import {asComplexVariableTypeDeclaration} from "../variableTypes/declarations/complexVariableTypeDeclaration";
+import {GeneratedType} from "../variableTypes/generatedType";
+import {GeneratedTypeMember} from "../variableTypes/generatedTypeMember";
+import {GeneratedTypeSource} from "../variableTypes/generatedTypeSource";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {Expression} from "../expressions/expression";
+import {
+  newValidateFunctionArgumentsFailed,
+  newValidateFunctionArgumentsSuccess,
+  newValidateFunctionArgumentsSuccessAutoMap,
+  ValidateFunctionArgumentsResult
+} from "./validateFunctionArgumentRsult";
 
 export function instanceOfFunction(object: any) {
   return object?.nodeType == NodeType.Function;
@@ -72,10 +78,10 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
     this.name = FunctionName.parseName(name, reference);
   }
 
-  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+  public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
     let result = new Array<IComponentNode>();
-    Function.addEnumTypes(componentNodeList, this.parameters.variables, result);
-    Function.addEnumTypes(componentNodeList, this.results.variables, result);
+    Function.addEnumTypes(componentNodes, this.parameters.variables, result);
+    Function.addEnumTypes(componentNodes, this.results.variables, result);
     return result;
   }
 
@@ -85,7 +91,7 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
 
   public override parse(context: IParseLineContext): IParsableNode {
     let line = context.line;
-    if (!line.tokens.isTokenType<KeywordToken>(0, TokenType.KeywordToken)) {
+    if (!line.tokens.isTokenType(0, TokenType.KeywordToken)) {
       return this.codeValue.parse(context);
     }
 
@@ -100,14 +106,14 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
     }
   }
 
-  private static addEnumTypes(componentNodeList: IComponentNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
+  private static addEnumTypes(componentNodes: IComponentNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
                               result: Array<IComponentNode>) {
     for (const parameter of variableDefinitions) {
 
-      const enumVariableType = asCustomVariableDeclarationType(parameter.type);
+      const enumVariableType = asComplexVariableTypeDeclaration(parameter.type);
       if (enumVariableType == null) continue;
 
-      let dependency = componentNodeList.getEnum(enumVariableType.type);
+      let dependency = componentNodes.getEnum(enumVariableType.type);
       if (dependency != null) {
         result.push(dependency);
       }
@@ -134,19 +140,53 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
   protected override validate(context: IValidationContext): void {
   }
 
-  public getParametersType(): ComplexType {
-    return this.complexType(this.parameters?.variables, ComplexTypeSource.FunctionParameters);
+  public getParametersType(): GeneratedType {
+    return this.generatedType(this.parameters?.variables, GeneratedTypeSource.FunctionParameters);
   }
 
-  public getResultsType(): ComplexType {
-    return this.complexType(this.results?.variables, ComplexTypeSource.FunctionResults);
+  public getResultsType(): GeneratedType {
+    return this.generatedType(this.results?.variables, GeneratedTypeSource.FunctionResults);
   }
 
-  private complexType(variableDefinitions: ReadonlyArray<VariableDefinition> | undefined, source: ComplexTypeSource) {
+  private generatedType(variableDefinitions: ReadonlyArray<VariableDefinition> | undefined, source: GeneratedTypeSource) {
     let members = variableDefinitions
-      ? variableDefinitions.map(parameter => new ComplexTypeMember(parameter.name, parameter.type.variableType))
+      ? variableDefinitions.map(parameter => new GeneratedTypeMember(parameter.name, parameter.type.variableType))
       : [];
 
-    return new ComplexType(this.name.value, this, source, members);
+    return new GeneratedType(this.name.value, this, source, members);
+  }
+
+  public validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>): ValidateFunctionArgumentsResult {
+    return args.length == 0
+      ? this.validateNoArgumentCall()
+      : this.validateWithArguments(context, args);
+  }
+
+  private validateNoArgumentCall(): ValidateFunctionArgumentsResult {
+    return newValidateFunctionArgumentsSuccessAutoMap(this.getParametersType(), this.getResultsType());
+  }
+
+  private validateWithArguments(context: IValidationContext, args: ReadonlyArray<Expression>): ValidateFunctionArgumentsResult {
+
+    if (args.length != 1) {
+      context.logger.fail(this.reference, `Invalid number of function arguments: '${this.name}'. `);
+      return newValidateFunctionArgumentsFailed();
+    }
+
+    let argumentType = args[0].deriveType(context);
+    let resultsType = this.getResultsType();
+    let parametersType = this.getParametersType();
+
+    if (argumentType == null || !argumentType.equals(parametersType)) {
+      context.logger.fail(this.reference, `Invalid function argument: '${this.name}'. ` +
+        "Argument should be of type function parameters. Use new(Function) of fill(Function) to create an variable of the function result type.");
+
+      return newValidateFunctionArgumentsFailed();
+    }
+
+    return newValidateFunctionArgumentsSuccess(resultsType);
   }
 }
+
+
+

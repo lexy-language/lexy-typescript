@@ -116,7 +116,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     let line = context.line;
     let name = line.tokens.tokenValue(0);
     let reference = line.lineStartReference();
-    if (!line.tokens.isTokenType<KeywordToken>(0, TokenType.KeywordToken)) {
+    if (!line.tokens.isTokenType(0, TokenType.KeywordToken)) {
       context.logger.fail(reference, `Invalid token '${name}'. Keyword expected.`);
       return this;
     }
@@ -267,11 +267,11 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     }
   }
 
-  public getDependencies(componentNodeList: IComponentNodeList): ReadonlyArray<IComponentNode> {
+  public getDependencies(componentNodes: IComponentNodeList): ReadonlyArray<IComponentNode> {
     const result: Array<IComponentNode> = [];
     if (this.functionNode != null) result.push(this.functionNode);
     if (this.functionName?.hasValue) {
-      let functionNode = componentNodeList.getFunction(this.functionName.value);
+      let functionNode = componentNodes.getFunction(this.functionName.value);
       if (functionNode != null) {
         result.push(functionNode);
       }

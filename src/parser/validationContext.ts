@@ -9,13 +9,16 @@ import {Expression} from "../language/expressions/expression";
 import {VariableType} from "../language/variableTypes/variableType";
 import {SourceReference} from "./sourceReference";
 import {Assert} from "../infrastructure/assert";
+import {ILibraries} from "../functionLibraries/libraries";
 
 export interface IValidationContext {
+
   logger: IParserLogger;
   componentNodes: ComponentNodeList;
 
   variableContext: IVariableContext;
   visitor: ITreeValidationVisitor;
+  libraries: ILibraries;
 
   createVariableScope(): { [Symbol.dispose]: () => void };
 
@@ -28,6 +31,7 @@ export class ValidationContext implements IValidationContext {
   private variableContextValue: IVariableContext | null = null;
   private visitorValue: ITreeValidationVisitor;
 
+  public libraries: ILibraries;
   public logger: IParserLogger;
   public componentNodes: ComponentNodeList;
 
@@ -40,10 +44,11 @@ export class ValidationContext implements IValidationContext {
     return this.visitorValue;
   }
 
-  constructor(logger: IParserLogger, componentNodes: ComponentNodeList, visitor: ITreeValidationVisitor) {
+  constructor(logger: IParserLogger, componentNodes: ComponentNodeList, visitor: ITreeValidationVisitor, libraries: ILibraries) {
     this.logger = Assert.notNull(logger, "logger");
     this.componentNodes = Assert.notNull(componentNodes, "componentNodes");
     this.visitorValue = Assert.notNull(visitor, "");
+    this.libraries = libraries
   }
 
   public createVariableScope(): { [Symbol.dispose]: () => void } {

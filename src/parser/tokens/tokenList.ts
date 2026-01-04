@@ -49,7 +49,7 @@ export class TokenList {
     return new TokenList(range);
   }
 
-  public isTokenType<T>(index: number, type: TokenType): boolean {
+  public isTokenType(index: number, type: TokenType): boolean {
     return index >= 0 && index <= this.values.length - 1 && this.values[index].tokenType == type;
   }
 

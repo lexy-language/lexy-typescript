@@ -19,31 +19,28 @@ import {
   VariableDeclarationExpression
 } from "../../../language/expressions/variableDeclarationExpression";
 import {renderTypeDefaultExpression} from "./renderVariableClass";
-import {
-  asFunctionCallExpression,
-  FunctionCallExpression
-} from "../../../language/expressions/functions/functionCallExpression";
-import {renderFunctionCall} from "../builtInFunctions/createFunctionCall";
-import {matchesLineExpressionException} from "../lineExpressionExceptions/matchesLineExpressionException";
+import {asFunctionCallExpression} from "../../../language/expressions/functions/functionCallExpression";
+import {renderFunctionCall} from "../functionCalls/renderFunctionCall";
 import {TokenType} from "../../../parser/tokens/tokenType";
-import {asDateTimeLiteral} from "../../../parser/tokens/dateTimeLiteral";
+import {asDateTimeLiteral} from "../../../parser/tokens/dateTimeLiteralToken";
 import {logAssignmentVariables, logLineAndVariables} from "./rendeLogCalls";
 import {renderVariableReference} from "./renderVariableReference";
 import {LexyCodeConstants} from "../lexyCodeConstants";
-import {CodeWriter} from "../writers/codeWriter";
+import {CodeWriter} from "../codeWriter";
 import {asElseifExpression, ElseifExpression} from "../../../language/expressions/elseifExpression";
 import {asElseExpression, ElseExpression} from "../../../language/expressions/elseExpression";
 import {PrimitiveType} from "../../../language/variableTypes/primitiveType";
 import {VariableType} from "../../../language/variableTypes/variableType";
+import {renderExpressionStatement} from "../expressionStatements/renderExpressionStatement";
 
 function renderExpressionLine(codeWriter: CodeWriter, expression: Expression) {
   logLineAndVariables(expression, codeWriter);
   const line = codeWriter.currentLine;
   codeWriter.startLine()
 
-  const exception = matchesLineExpressionException(expression);
-  if (exception != null) {
-    exception.render(expression, codeWriter);
+  const renderer = renderExpressionStatement(expression);
+  if (renderer != null) {
+    renderer.render(expression, codeWriter);
   } else {
     renderExpression(expression, codeWriter);
     if (line == codeWriter.currentLine) {
@@ -132,7 +129,7 @@ export function renderExpression(expression: Expression, codeWriter: CodeWriter)
 
   const functionCallExpression = asFunctionCallExpression(expression);
   if (functionCallExpression != null) {
-    return render(asFunctionCallExpression, renderFunctionCallExpression);
+    return render(asFunctionCallExpression, renderFunctionCall, codeWriter);
   }
 
   throw new Error(`Invalid expression type: ${expression.nodeType}`);
@@ -159,10 +156,10 @@ function renderLiteralExpression(expression: LiteralExpression, codeWriter: Code
 
   if (expression.literal.tokenType == TokenType.QuotedLiteralToken) {
     codeWriter.write(`"${expression.literal.value}"`);
-  } else if (expression.literal.tokenType == TokenType.DateTimeLiteral) {
-    const dateTimeLiteral = asDateTimeLiteral(expression.literal);
-    const dateValue = dateTimeLiteral?.dateTimeValue;
-    if (dateValue == null) throw new Error("DateTimeLiteral.dateTimeValue expected")
+  } else if (expression.literal.tokenType == TokenType.DateTimeLiteralToken) {
+    const dateTimeLiteralToken = asDateTimeLiteral(expression.literal);
+    const dateValue = dateTimeLiteralToken?.dateTimeValue;
+    if (dateValue == null) throw new Error("DateTimeLiteralToken.dateTimeValue expected")
     codeWriter.write(`new Date("${format(4, dateValue.getFullYear())}-${format(2, dateValue.getMonth() + 1)}-${format(2, dateValue.getDate())}T${format(2, dateValue.getHours())}:${format(2, dateValue.getMinutes())}:${format(2, dateValue.getSeconds())}")`);
   } else if (expression.literal.tokenType == TokenType.NumberLiteralToken) {
     codeWriter.write(`${LexyCodeConstants.environmentVariable}.Decimal(${expression.literal.value})`);
@@ -237,7 +234,7 @@ function renderBinaryExpression(expression: BinaryExpression, codeWriter: CodeWr
   codeWriter.write(operatorString(expression.operator));
 
   if (expression.leftVariableType?.equals(PrimitiveType.string) &&  expression.rightVariableType?.equals(PrimitiveType.date)) {
-    codeWriter.write(`${LexyCodeConstants.environmentVariable}.builtInDateFunctions.format(`);
+    codeWriter.write(`${LexyCodeConstants.environmentVariable}.libraries.Date.functions.Format(`);
     renderExpression(expression.right, codeWriter);
     codeWriter.write(`)`);
   } else {
@@ -369,9 +366,4 @@ function renderVariableDeclarationExpression(expression: VariableDeclarationExpr
   } else {
     renderTypeDefaultExpression(expression.type, codeWriter);
   }
-}
-
-
-function renderFunctionCallExpression(expression: FunctionCallExpression, codeWriter: CodeWriter) {
-  renderFunctionCall(expression, codeWriter);
 }

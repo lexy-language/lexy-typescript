@@ -7,6 +7,7 @@ import {any, where} from "../infrastructure/arrayFunctions";
 import {LogLevel} from "../infrastructure/logger";
 import {format} from "../infrastructure/formatting";
 import {NodesLogger} from "./nodesLogger";
+import {instanceOfLexyScriptNode} from "../language/lexyScriptNode";
 
 export class LogEntry {
   public node: IComponentNode | null;
@@ -79,7 +80,7 @@ export class ParserLogger implements IParserLogger {
   }
 
   public hasComponentErrors(): boolean {
-    return any(this.logEntries, entry => entry.isError && entry.node == null);
+    return any(this.logEntries, this.isComponentError);
   }
 
   public logInfo(message: string): void {
@@ -141,9 +142,13 @@ export class ParserLogger implements IParserLogger {
   }
 
   public errorComponentMessages(): string[] {
-    return where(this.logEntries, entry => entry.isError && entry.node === null)
+    return where(this.logEntries, this.isComponentError)
       .sort(this.sortEntry)
       .map(entry => entry.message);
+  }
+
+  private isComponentError(entry: LogEntry) {
+    return entry.isError && (entry.node == null || instanceOfLexyScriptNode(entry.node));
   }
 
   public errorMessages(): string[] {

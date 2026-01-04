@@ -12,8 +12,8 @@ import {NodeType} from "../nodeType";
 import {IHasVariableReference} from "./IHasVariableReference";
 import {VariableReference} from "../variableReference";
 import {VariableUsage} from "./variableUsage";
-import {VariablePathParser} from "../scenarios/variablePathParser";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {IdentifierPath} from "../identifierPath";
 
 export function instanceOfIdentifierExpression(object: any): boolean {
   return object?.nodeType == NodeType.IdentifierExpression;
@@ -56,7 +56,7 @@ export class IdentifierExpression extends Expression implements IHasVariableRefe
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length == 1
-      && tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken);
+      && tokens.isTokenType(0, TokenType.StringLiteralToken);
   }
 
   public override getChildren(): Array<INode> {
@@ -68,7 +68,7 @@ export class IdentifierExpression extends Expression implements IHasVariableRefe
   }
 
   public createVariableReference(context: IValidationContext) {
-    const path = VariablePathParser.parseString(this.identifier);
+    const path = IdentifierPath.parseString(this.identifier);
     this.variableValue = context.variableContext.createVariableReference(this.reference, path, context);
     if (this.variableValue == null) {
       context.logger.fail(this.reference, `Invalid identifier: '${path.fullPath()}'`);

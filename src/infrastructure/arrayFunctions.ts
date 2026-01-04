@@ -119,3 +119,14 @@ export function selectMany<TItem, TResult>(array: ReadonlyArray<TItem>, select: 
   }
   return results;
 }
+
+export function addRange<TItem, TResult>(destination: Array<TResult>, source: ReadonlyArray<TItem>, selectMany: (value: TItem) => ReadonlyArray<TResult>): void {
+  for (const item of source) {
+    const values = selectMany(item);
+    values.forEach(value => destination.push(value));
+  }
+}
+
+export function take<TItem>(array: ReadonlyArray<TItem>, amount: number) {
+  return array.slice(0, amount);
+}

@@ -11,7 +11,7 @@ import {asScenario, instanceOfScenario, Scenario} from "./scenarios/scenario";
 import {TableType} from "./variableTypes/tableType";
 import {FunctionType} from "./variableTypes/functionType";
 import {EnumType} from "./variableTypes/enumType";
-import {CustomType} from "./variableTypes/customType";
+import {DeclaredType} from "./variableTypes/declaredType";
 
 export interface IComponentNodeList {
   getNode(name: string | null): IComponentNode | null;
@@ -22,13 +22,15 @@ export interface IComponentNodeList {
 
   getTable(name: string): Table | null;
 
-  getCustomType(name: string): TypeDefinition | null;
+  getDeclaredType(name: string): TypeDefinition | null;
 
   getScenarios(): Array<Scenario>;
 
   getEnum(name: string): EnumDefinition | null;
 
   getType(name: string): TypeWithMembers | null;
+
+  asArray(): Array<IComponentNode>;
 }
 
 export class ComponentNodeList implements IComponentNodeList {
@@ -74,7 +76,7 @@ export class ComponentNodeList implements IComponentNodeList {
       firstOrDefault(this.values, table => instanceOfTable(table) && table.nodeName == name));
   }
 
-  public getCustomType(name: string): TypeDefinition | null {
+  public getDeclaredType(name: string): TypeDefinition | null {
     return asTypeDefinition(
       firstOrDefault(this.values, type => instanceOfTypeDefinition(type) && type.nodeName == name));
   }
@@ -111,7 +113,7 @@ export class ComponentNodeList implements IComponentNodeList {
     if (enumDefinition != null) return new EnumType(name, enumDefinition);
 
     let typeDefinition = asTypeDefinition(node);
-    if (typeDefinition != null) return new CustomType(name, typeDefinition);
+    if (typeDefinition != null) return new DeclaredType(name, typeDefinition);
 
     return null;
   }

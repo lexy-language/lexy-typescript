@@ -1,11 +1,12 @@
+import type {ILogger} from "../infrastructure/logger";
+
 import {ExecutionContext} from "../runTime/executionContext";
 import {FunctionResult} from "../runTime/functionResult";
-import {ILogger} from "../infrastructure/logger";
 import {GeneratedType} from "./generatedType";
 import {LexyCodeConstants} from "./javaScript/lexyCodeConstants";
-import {VariablePathParser} from "../language/scenarios/variablePathParser";
 import Decimal from "decimal.js";
 import {deepCopy} from "../infrastructure/deepCopy";
+import {IdentifierPath} from "../language/identifierPath";
 
 export class ExecutableFunction {
   private readonly environment: any;
@@ -40,14 +41,14 @@ export class ExecutableFunction {
   }
 
   private getParameterSetter(parameters: any, key: string): ((value: any) => void) {
-    let currentReference = VariablePathParser.parseString(key);
+    let currentReference = IdentifierPath.parseString(key);
     let currentValue = parameters;
     while (currentReference.hasChildIdentifiers) {
-      currentValue = parameters[currentReference.parentIdentifier];
+      currentValue = parameters[currentReference.rootIdentifier];
       currentReference = currentReference.childrenReference();
     }
 
-    return (value: any) => currentValue[currentReference.parentIdentifier] = value;
+    return (value: any) => currentValue[currentReference.rootIdentifier] = value;
   }
 
   static create(environment: any, generatedType: GeneratedType, compilationLogger: ILogger, executionLogger: ILogger) {

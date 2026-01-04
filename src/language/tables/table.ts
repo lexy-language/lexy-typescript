@@ -8,10 +8,10 @@ import {TableName} from "./tableName";
 import {TableHeader} from "./tableHeader";
 import {TableRow} from "./tableRow";
 import {SourceReference} from "../../parser/sourceReference";
-import {ComplexType} from "../variableTypes/complexType";
-import {ComplexTypeMember} from "../variableTypes/complexTypeMember";
+import {GeneratedType} from "../variableTypes/generatedType";
+import {GeneratedTypeMember} from "../variableTypes/generatedTypeMember";
 import {NodeType} from "../nodeType";
-import {ComplexTypeSource} from "../variableTypes/complexTypeSource";
+import {GeneratedTypeSource} from "../variableTypes/generatedTypeSource";
 
 export function instanceOfTable(object: any) {
   return object?.nodeType == NodeType.Table;
@@ -28,6 +28,7 @@ export class Table extends ComponentNode {
   private rowsValue: Array<TableRow> = [];
   private headerValue: TableHeader | null = null;
 
+  public static readonly countName: string = `Count`;
   public static readonly rowName: string = `Row`;
 
   public readonly nodeType = NodeType.Table;
@@ -91,13 +92,13 @@ export class Table extends ComponentNode {
     }
   }
 
-  public getRowType(): ComplexType {
+  public getRowType(): GeneratedType {
     if (this.header == null) throw new Error("Header not set.");
     const members = this.header.columns.map(column => {
       const type = column.type.variableType;
-      return new ComplexTypeMember(column.name, type)
+      return new GeneratedTypeMember(column.name, type)
     });
 
-    return new ComplexType(this.name.value, this, ComplexTypeSource.TableRow, members);
+    return new GeneratedType(this.name.value, this, GeneratedTypeSource.TableRow, members);
   }
 }

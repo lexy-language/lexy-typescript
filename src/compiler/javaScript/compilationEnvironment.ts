@@ -1,12 +1,11 @@
 import type {ILogger} from "../../infrastructure/logger";
+import type {ILibraries} from "../../functionLibraries/libraries";
 
 import {GeneratedType, GeneratedTypeKind} from "../generatedType";
 import {CompilerResult} from "../compilerResult";
 import {ExecutableFunction} from "../executableFunction";
 import {LexyCodeConstants} from "./lexyCodeConstants";
-import {BuiltInDateFunctions} from "../../runTime/builtInDateFunctions";
-import {BuiltInNumberFunctions} from "../../runTime/builtInNumberFunctions";
-import {BuiltInTableFunctions} from "../../runTime/builtInTableFunctions";
+import {TableLibrary} from "../../runTime/libraries/tableLibrary";
 import {SystemFunctions} from "../../runTime/systemFunctions";
 import {Validate} from "../../runTime/validate";
 import Decimal from "decimal.js";
@@ -28,16 +27,19 @@ export class CompilationEnvironment implements ICompilationEnvironment {
 
   public readonly codeEnvironment: any;
 
-  constructor(compilationLogger: ILogger, executionLogger: ILogger) {
+  constructor(compilationLogger: ILogger, executionLogger: ILogger, libraries: ILibraries) {
     this.compilationLogger = compilationLogger;
     this.executionLogger = executionLogger;
     this.codeEnvironment = {
-      builtInDateFunctions: BuiltInDateFunctions,
-      builtInNumberFunctions: BuiltInNumberFunctions,
-      builtInTableFunctions: BuiltInTableFunctions,
+      tableLibrary: TableLibrary,
+      libraries: {},
       systemFunctions: SystemFunctions,
       validate: Validate,
       Decimal: Decimal
+    }
+
+    for (const library of libraries.runtimes()) {
+      this.codeEnvironment.libraries[library.name] = library;
     }
   }
 

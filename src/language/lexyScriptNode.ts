@@ -22,6 +22,14 @@ import {DuplicateChecker} from "./duplicateChecker";
 import {where} from "../infrastructure/arrayFunctions";
 import {NodeType} from "./nodeType";
 
+export function instanceOfLexyScriptNode(object: any) {
+  return object?.nodeType == NodeType.LexyScriptNode;
+}
+
+export function asLexyScriptNode(object: any): Table | null {
+  return instanceOfLexyScriptNode(object) ? object as Table : null;
+}
+
 export class LexyScriptNode extends ComponentNode {
 
   private readonly includes: Array<Include> = [];

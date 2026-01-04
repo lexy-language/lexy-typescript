@@ -3,7 +3,7 @@ import type {IValidationContext} from "../../parser/validationContext";
 import {SourceReference} from "../../parser/sourceReference";
 import {INode, Node} from "../node";
 import {NodeType} from "../nodeType";
-import {VariablePathParser} from "./variablePathParser";
+import {IdentifierPath} from "../identifierPath";
 
 export function instanceOfValidationColumnHeader(object: any) {
   return object?.nodeType == NodeType.ValidationColumnHeader;
@@ -32,8 +32,8 @@ export class ValidationColumnHeader extends Node {
   }
 
   protected override validate(context: IValidationContext): void {
-    const variablePath = VariablePathParser.parseString(this.name);
-    const variable = context.variableContext.getVariableTypeByPath(variablePath, context);
+    const identifierPath = IdentifierPath.parseString(this.name);
+    const variable = context.variableContext.getVariableTypeByPath(identifierPath, context);
     if (variable == null) {
       context.logger.fail(this.reference, `Unknown variable: '${this.name}'`);
     }

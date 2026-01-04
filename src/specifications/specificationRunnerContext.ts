@@ -4,7 +4,7 @@ import type {ILogger} from "../infrastructure/logger";
 
 import {Scenario} from "../language/scenarios/scenario";
 import {format} from "../infrastructure/formatting";
-import {BuiltInDateFunctions} from "../runTime/builtInDateFunctions";
+import {milliseconds} from "../runTime/libraries/dateLibrary";
 import {ExecutionLogEntry} from "../runTime/executionLogEntry";
 import {SpecificationsLogEntry} from "./specificationsLogEntry";
 
@@ -75,7 +75,7 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
 
   public logTimeSpent(): void {
 
-    const difference = BuiltInDateFunctions.milliseconds(new Date(), this.startTimestamp);
+    const difference = milliseconds(new Date(), this.startTimestamp);
     const message = `Time: ${difference} milliseconds`;
 
     const entry = new SpecificationsLogEntry(null, null, false, message);

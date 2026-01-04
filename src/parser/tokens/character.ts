@@ -41,9 +41,4 @@ export function isValidIdentifier(value: string | null): boolean {
   return true;
 }
 
-export function isNullOrEmpty(value: string | null) {
-  return value == null || value == '';
-}
-
-
 export type Character = number;

@@ -42,7 +42,7 @@ describe('FactoryTests', () => {
     expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
-  it('functionNewFunctionParameters', async () => {
+  it('functionNewFunctionExpressionParameters', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
 function Caller
   var params = new(SimpleFunction.Parameters)
@@ -56,7 +56,7 @@ function Caller
     expect(dependencies.dependencyNodes[1].dependencies[0]).toBe(`SimpleFunction`);
   });
 
-  it('functionNewFunctionResults', async () => {
+  it('functionNewFunctionExpressionResults', async () => {
     const dependencies = buildDependencyGraph(functionCode + `
 function Caller
   var params = new(SimpleFunction.Results)
@@ -105,7 +105,7 @@ function Caller
   it('tableLookup', async () => {
     const dependencies = buildDependencyGraph(table + `
 function Caller
-  var result = lookUp(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)
+  var result = SimpleTable.LookUp(2, SimpleTable.Search, SimpleTable.Value)
 `);
 
     expect(dependencies.dependencyNodes.length).toBe(2);
@@ -144,7 +144,7 @@ type Simple
     expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
-  it('complexType', async () => {
+  it('generatedType', async () => {
     const dependencies = buildDependencyGraph(`
 type Inner
   number Value1

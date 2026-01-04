@@ -1,5 +1,5 @@
 import {Expression} from "../../../language/expressions/expression";
-import {CodeWriter} from "../writers/codeWriter";
+import {CodeWriter} from "../codeWriter";
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {replaceAll} from "../../../infrastructure/replaceAll";
 import {unique, where} from "../../../infrastructure/arrayFunctions";

@@ -3,12 +3,12 @@ import {asIdentifierExpression, IdentifierExpression} from "../../../src/languag
 import {asLiteralExpression, LiteralExpression} from "../../../src/language/expressions/literalExpression";
 import {asNumberLiteralToken, NumberLiteralToken} from "../../../src/parser/tokens/numberLiteralToken";
 import {asQuotedLiteralToken, QuotedLiteralToken} from "../../../src/parser/tokens/quotedLiteralToken";
-import {asDateTimeLiteral, DateTimeLiteral} from "../../../src/parser/tokens/dateTimeLiteral";
+import {asDateTimeLiteral, DateTimeLiteralToken} from "../../../src/parser/tokens/dateTimeLiteralToken";
 import {
   asMemberAccessExpression,
   MemberAccessExpression
 } from "../../../src/language/expressions/memberAccessExpression";
-import {asBooleanLiteral, BooleanLiteral} from "../../../src/parser/tokens/booleanLiteral";
+import {asBooleanLiteral, BooleanLiteralToken} from "../../../src/parser/tokens/booleanLiteralToken";
 import {validateOfType} from "../../validateOfType";
 
 export function validateVariableExpression(expression: Expression, name: string): void {
@@ -32,16 +32,16 @@ export function validateQuotedLiteralExpression(expression: Expression | null, v
 
 export function validateBooleanLiteralExpression(expression: Expression | null, value: boolean): void {
   validateOfType<LiteralExpression>(asLiteralExpression, expression, literal => {
-    validateOfType<BooleanLiteral>(asBooleanLiteral, literal.literal, number =>
+    validateOfType<BooleanLiteralToken>(asBooleanLiteral, literal.literal, number =>
       expect(number.booleanValue).toBe(value));
   });
 }
 
 
 export function validateDateTimeLiteralExpression(expression: Expression | null, value: string): void {
-  let valueDate = DateTimeLiteral.parseValue(value);
+  let valueDate = DateTimeLiteralToken.parseValue(value);
   validateOfType<LiteralExpression>(asLiteralExpression, expression, literal =>
-    validateOfType<DateTimeLiteral>(asDateTimeLiteral, literal.literal, number =>
+    validateOfType<DateTimeLiteralToken>(asDateTimeLiteral, literal.literal, number =>
       expect(number.dateTimeValue?.toISOString()).toBe(valueDate.toISOString())));
 }
 
@@ -52,5 +52,5 @@ export function validateIdentifierExpression(expression: Expression, value: stri
 
 export function validateMemberAccessExpression(expression: Expression | null, value: string): void {
   validateOfType<MemberAccessExpression>(asMemberAccessExpression, expression,
-    literal => expect(literal.variablePath.toString()).toBe(value));
+    literal => expect(literal.identifierPath.toString()).toBe(value));
 }

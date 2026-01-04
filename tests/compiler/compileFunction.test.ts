@@ -94,13 +94,13 @@ function TestEnum
     expect(result.string(`Result`)).toEqual("SimpleEnum.Second");
   });
 
-  it('customType', async () => {
+  it('declaredType', async () => {
     let script = compileFunction(`
 type SimpleComplex
   number First
   string Second
     
-function TestCustomType
+function TestDeclaredType
   results
     SimpleComplex Result
   Result.First = 777
@@ -113,7 +113,7 @@ function TestCustomType
     });
   });
 
-  it('CustomTypeNestedProperties', async () => {
+  it('DeclaredTypeNestedProperties', async () => {
     let script = compileFunction(`
 type InnerComplex
   number First
@@ -122,7 +122,7 @@ type InnerComplex
 type SimpleComplex
   InnerComplex Inner
     
-function TestCustomType
+function TestDeclaredType
   results
     SimpleComplex Result
   Result.Inner.First = 777

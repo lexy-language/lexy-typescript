@@ -2,10 +2,10 @@ import type {ILexyCompiler} from "../compiler/lexyCompiler";
 import type {IParserLogger} from "../parser/parserLogger";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
 import type {IComponentNode} from "../language/componentNode";
+import type {IComponentNodeList} from "../language/componentNodeList";
 
 import {Function} from "../language/functions/function";
 import {Scenario} from "../language/scenarios/scenario";
-import {ComponentNodeList} from "../language/componentNodeList";
 import {format} from "../infrastructure/formatting";
 import {FunctionResult} from "../runTime/functionResult";
 import {any, firstOrDefault} from "../infrastructure/arrayFunctions";
@@ -16,8 +16,7 @@ import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory"
 import validateExecutionLogging from "./validateExecutionLogging";
 import StringArrayBuilder from "../infrastructure/stringArrayBuilder";
 import {getScenarioParameterValues, getTableRowValues} from "./getValues";
-import {VariablePathParser} from "../language/scenarios/variablePathParser";
-import {VariablePath} from "../language/variablePath";
+import {IdentifierPath} from "../language/identifierPath";
 import {ValidationTableRow} from "../language/scenarios/validationTableRow";
 import {ValidationTableValue} from "../language/scenarios/validationTableValue";
 
@@ -34,11 +33,12 @@ export interface IScenarioRunner {
 
 export class ScenarioRunner implements IScenarioRunner {
 
+  private readonly fileName: string;
+
   private readonly context: ISpecificationRunnerContext;
   private readonly compiler: ILexyCompiler;
-  private readonly fileName: string;
   private readonly parserLogger: IParserLogger;
-  private readonly componentNodeList: ComponentNodeList;
+  private readonly componentNodes: IComponentNodeList;
 
   private functionNode: Function | null = null;
 
@@ -50,12 +50,12 @@ export class ScenarioRunner implements IScenarioRunner {
 
   public readonly scenario: Scenario
 
-  constructor(fileName: string, compiler: ILexyCompiler, componentNodeList: ComponentNodeList, scenario: Scenario,
+  constructor(fileName: string, compiler: ILexyCompiler, componentNodes: IComponentNodeList, scenario: Scenario,
               context: ISpecificationRunnerContext, parserLogger: IParserLogger) {
     this.fileName = fileName;
     this.compiler = compiler;
     this.context = context;
-    this.componentNodeList = componentNodeList;
+    this.componentNodes = componentNodes;
     this.parserLogger = parserLogger;
 
     this.scenario = scenario;
@@ -66,12 +66,12 @@ export class ScenarioRunner implements IScenarioRunner {
   }
 
   public run(): void {
-    this.functionNode = this.getFunctionNode(this.scenario, this.componentNodeList);
+    this.functionNode = this.getFunctionNode(this.scenario, this.componentNodes);
     if (!this.validateScenarioErrors()) return;
     if (!this.validateErrors()) return;
 
     const functionNode = Assert.notNull(this.functionNode, "functionNode");
-    const nodes = DependencyGraphFactory.nodeAndDependencies(this.componentNodeList, functionNode);
+    const nodes = DependencyGraphFactory.nodeAndDependencies(this.componentNodes, functionNode);
     const compilerResult = this.compile(nodes);
     const executable = compilerResult.getFunction(functionNode);
     if (this.scenario.validationTable != null) {
@@ -105,12 +105,12 @@ export class ScenarioRunner implements IScenarioRunner {
     }
   }
 
-  private getFunctionNode(scenario: Scenario, componentNodeList: ComponentNodeList): Function | null {
+  private getFunctionNode(scenario: Scenario, componentNodes: IComponentNodeList): Function | null {
     if (scenario.functionNode != null) {
       return scenario.functionNode;
     }
     if (scenario.functionName?.hasValue) {
-      const functionNode = componentNodeList.getFunction(scenario.functionName.value);
+      const functionNode = componentNodes.getFunction(scenario.functionName.value);
       if (functionNode == null) {
         this.fail(`Unknown function: ` + scenario.functionName, this.parserLogger.errorNodeMessages(this.scenario));
       }
@@ -167,7 +167,7 @@ export class ScenarioRunner implements IScenarioRunner {
   private static validateResult(expected: AssignmentDefinition, result: FunctionResult, validationResult: Array<string>) {
     const assignmentDefinition = Assert.notNull(asAssignmentDefinition(expected), "assignmentDefinition");
     if (assignmentDefinition.variableType == null) throw new Error("expected.variableType is null")
-    const actual = result.getValue(assignmentDefinition.variable);
+    const actual = result.getValue(assignmentDefinition.variable, validationResult);
     const expectedValue = assignmentDefinition.constantValue.value;
 
     if (actual == null || expectedValue == null || !ScenarioRunner.compare(actual, expectedValue)) {
@@ -181,7 +181,7 @@ export class ScenarioRunner implements IScenarioRunner {
       const column = this.scenario.validationTable?.header?.getColumnByIndex(index);
       if (column == null) continue;
 
-      const variable = VariablePathParser.parseString(column.name);
+      const variable = IdentifierPath.parseString(column.name);
       if (!this.isResult(variable)) continue;
 
       const expected = tableRow.values[index];
@@ -189,12 +189,12 @@ export class ScenarioRunner implements IScenarioRunner {
     }
   }
 
-  private isResult(path: VariablePath) {
+  private isResult(path: IdentifierPath) {
     if (this.functionNode?.results == null) return
-    return any(this.functionNode.results.variables, result => result.name == path.parentIdentifier);
+    return any(this.functionNode.results.variables, result => result.name == path.rootIdentifier);
   }
 
-  private static validateRowValueResult(path: VariablePath, value: ValidationTableValue, result: FunctionResult, validationResult: Array<string>) {
+  private static validateRowValueResult(path: IdentifierPath, value: ValidationTableValue, result: FunctionResult, validationResult: Array<string>) {
 
     let actual = result.getValue(path);
     let expectedValue = value.getValue();
@@ -215,7 +215,7 @@ export class ScenarioRunner implements IScenarioRunner {
       return null;
     }
 
-    const dependencies = DependencyGraphFactory.nodeAndDependencies(this.componentNodeList, node);
+    const dependencies = DependencyGraphFactory.nodeAndDependencies(this.componentNodes, node);
     return this.parserLogger.errorNodesMessages(dependencies)
   }
 
@@ -316,6 +316,7 @@ export class ScenarioRunner implements IScenarioRunner {
     if (this.scenario.executionLogging == null) return true;
     const errors = validateExecutionLogging(result.logging, this.scenario.executionLogging.entries);
     if (errors != null) {
+      errors.forEach(error => this.parserLogger.fail(this.scenario.reference, error));
       this.fail("Invalid Execution Logging", errors);
       return false;
     }

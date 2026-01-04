@@ -9,6 +9,7 @@ import {ComponentNodeList} from "../../../src/language/componentNodeList";
 import {ParserLogger} from "../../../src/parser/parserLogger";
 import {LoggingConfiguration} from "../../loggingConfiguration";
 import {TrackLoggingCurrentNodeVisitor} from "../../../src/parser/TrackLoggingCurrentNodeVisitor";
+import {Libraries} from "../../../src/functionLibraries/libraries";
 
 describe('DeriveTypeTests', () => {
   it('numberLiteral', async () => {
@@ -21,7 +22,7 @@ describe('DeriveTypeTests', () => {
     expect(type).toBe(PrimitiveType.string);
   });
 
-  it('booleanLiteral', async () => {
+  it('booleanLiteralToken', async () => {
     const type = deriveType(`true`);
     expect(type).toBe(PrimitiveType.boolean);
   });
@@ -31,7 +32,7 @@ describe('DeriveTypeTests', () => {
     expect(type).toBe(PrimitiveType.boolean);
   });
 
-  it('dateTimeLiteral', async () => {
+  it('dateTimeLiteralToken', async () => {
     const type = deriveType(`d"2024-12-24T10:05:00"`);
     expect(type).toBe(PrimitiveType.date);
   });
@@ -115,10 +116,10 @@ describe('DeriveTypeTests', () => {
   function deriveType(expressionValue: string,
                       validationContextHandler: ((context: IValidationContext) => void) | null = null): VariableType | null {
 
-    const componentNodeList = new ComponentNodeList();
+    const componentNodes = new ComponentNodeList();
     const logger = new ParserLogger(LoggingConfiguration.getParserLogger());
     const visitor = new TrackLoggingCurrentNodeVisitor(logger);
-    const validationContext = new ValidationContext(logger, componentNodeList, visitor);
+    const validationContext = new ValidationContext(logger, componentNodes, visitor, new Libraries([]));
 
     const scope = validationContext.createVariableScope();
     try {

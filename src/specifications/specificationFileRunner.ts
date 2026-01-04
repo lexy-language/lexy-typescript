@@ -63,12 +63,20 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
 
     this.runnerContext.logGlobal(`Filename: ${this.fileName}`);
 
-    this.scenarioRunners.forEach(runner => runner.run());
+    this.scenarioRunners.forEach(runner => this.runScenario(runner));
   }
 
-  private getScenarioRunner(scenario: Scenario, componentNodeList: ComponentNodeList, parserLogger: IParserLogger) {
+  private runScenario(runner: IScenarioRunner) {
     try {
-      return new ScenarioRunner(this.fileName, this.compiler, componentNodeList, scenario, this.runnerContext, parserLogger);
+      runner.run()
+    } catch (error) {
+      throw new Error(`Error occurred while running: ${this.fileName}\n${error}`)
+    }
+  }
+
+  private getScenarioRunner(scenario: Scenario, componentNodes: ComponentNodeList, parserLogger: IParserLogger) {
+    try {
+      return new ScenarioRunner(this.fileName, this.compiler, componentNodes, scenario, this.runnerContext, parserLogger);
     } catch (error: any) {
       throw new Error("Error occurred while create runner for: " + this.fileName + "\n" + error.stack);
     }

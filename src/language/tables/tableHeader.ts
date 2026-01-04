@@ -6,10 +6,11 @@ import {SourceReference} from "../../parser/sourceReference";
 import {IParseLineContext} from "../../parser/ParseLineContext";
 import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
-import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
 import {firstOrDefault} from "../../infrastructure/arrayFunctions";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {IdentifierPath} from "../identifierPath";
 
 export class TableHeader extends Node {
 
@@ -72,11 +73,9 @@ export class TableHeader extends Node {
   protected override validate(context: IValidationContext): void {
   }
 
-  public get(memberAccess: MemberAccessLiteral): ColumnHeader | null {
-    let parts = memberAccess.parts;
-    if (parts.length < 2) return null;
-    let name = parts[1];
-
+  public get(identifierPath: IdentifierPath): ColumnHeader | null {
+    if (identifierPath.parts < 2) return null;
+    let name = identifierPath.path[1];
     return this.getColumn(name);
   }
 

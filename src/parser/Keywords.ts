@@ -25,7 +25,7 @@ export class Keywords {
   public static readonly ExecutionLogging = "executionLogging";
   public static readonly ExecutionLog = "log";
 
-  public static readonly ImplicitVariableDeclaration = "var";
+  public static readonly ImplicitVariableTypeDeclaration = "var";
 
   private static readonly values = [
     Keywords.Function,
@@ -48,7 +48,7 @@ export class Keywords {
     Keywords.ExpectErrors,
     Keywords.ExpectComponentErrors,
     Keywords.ExpectExecutionErrors,
-    Keywords.ImplicitVariableDeclaration
+    Keywords.ImplicitVariableTypeDeclaration
   ];
 
   public static contains(keyword: string): boolean {

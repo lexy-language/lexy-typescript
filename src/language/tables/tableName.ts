@@ -11,4 +11,8 @@ export class TableName {
   public parseName(parameter: string): void {
     this.valueValue = parameter;
   }
+
+  public toString() {
+    return this.valueValue;
+  }
 }

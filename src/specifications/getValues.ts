@@ -4,8 +4,7 @@ import {FunctionParameters} from "../language/functions/functionParameters";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {Assert} from "../infrastructure/assert";
 import {Function} from "../language/functions/function";
-import {VariablePathParser} from "../language/scenarios/variablePathParser";
-import {VariablePath} from "../language/variablePath";
+import {IdentifierPath} from "../language/identifierPath";
 import {ValidationTableHeader} from "../language/scenarios/validationTableHeader";
 import {ValidationTableRow} from "../language/scenarios/validationTableRow";
 import {ValidationTableValue} from "../language/scenarios/validationTableValue";
@@ -38,10 +37,10 @@ function setParameter(functionNode: Function,
                       result: ValueObject) {
 
   const assignmentDefinition = Assert.notNull(asAssignmentDefinition(parameter), "assignmentDefinition");
-  let type = firstOrDefault(functionParameters.variables, variable => variable.name == assignmentDefinition.variable.parentIdentifier);
+  let type = firstOrDefault(functionParameters.variables, variable => variable.name == assignmentDefinition.variable.rootIdentifier);
 
   if (type == null) {
-    throw new Error(`Function '${functionNode?.name?.value}' parameter '${assignmentDefinition.variable.parentIdentifier}' not found.`);
+    throw new Error(`Function '${functionNode?.name?.value}' parameter '${assignmentDefinition.variable.rootIdentifier}' not found.`);
   }
 
   if (assignmentDefinition.variableType == null) throw new Error("parameter.variableType is null")
@@ -79,24 +78,24 @@ function setRowParameter(functionNode: Function,
                          value: ValidationTableValue,
                          result: ValueObject) {
 
-  const variableReference = VariablePathParser.parseString(column.name);
+  const variableReference = IdentifierPath.parseString(column.name);
   if (!isParameter(functionNode, variableReference)) return;
   setValueObjectProperty(result, variableReference, value.getValue());
 }
 
-function setValueObjectProperty(result: any, variableReference: VariablePath, value: object | null) : void {
+function setValueObjectProperty(result: any, variableReference: IdentifierPath, value: object | null) : void {
   let valueObject = result;
   while (variableReference.hasChildIdentifiers) {
-    if (!valueObject[variableReference.parentIdentifier]) {
-      valueObject[variableReference.parentIdentifier] = {};
+    if (!valueObject[variableReference.rootIdentifier]) {
+      valueObject[variableReference.rootIdentifier] = {};
     }
-    valueObject = valueObject[variableReference.parentIdentifier];
+    valueObject = valueObject[variableReference.rootIdentifier];
     variableReference = variableReference.childrenReference();
   }
-  valueObject[variableReference.parentIdentifier] = value;
+  valueObject[variableReference.rootIdentifier] = value;
 }
 
-function isParameter(functionNode: Function, path: VariablePath) {
+function isParameter(functionNode: Function, path: IdentifierPath) {
   if (functionNode?.parameters == null) return false;
-  return any(functionNode.parameters.variables, parameter => parameter.name == path.parentIdentifier);
+  return any(functionNode.parameters.variables, parameter => parameter.name == path.rootIdentifier);
 }

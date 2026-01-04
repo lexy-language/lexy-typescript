@@ -1,5 +1,4 @@
 import type {IComponentNode} from "../componentNode";
-import type {IValidationContext} from "../../parser/validationContext";
 import type {IComponentNodeList} from "../componentNodeList";
 
 import {TypeWithMembers} from "./typeWithMembers";
@@ -43,8 +42,8 @@ export class EnumType extends TypeWithMembers {
     return any(this.enum.members, member => member.name == name) ? this : null;
   }
 
-  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
-    const enumDefinition = componentNodeList.getEnum(this.type);
+  public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
+    const enumDefinition = componentNodes.getEnum(this.type);
     return enumDefinition != null ? [enumDefinition] : [];
   }
 

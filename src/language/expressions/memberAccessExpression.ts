@@ -7,11 +7,11 @@ import type {IHasVariableReference} from "./IHasVariableReference";
 import type {IComponentNodeList} from "../componentNodeList";
 
 import {Expression} from "./expression";
-import {VariablePath} from "../variablePath";
+import {IdentifierPath} from "../identifierPath";
 import {VariableType} from "../variableTypes/variableType";
 import {SourceReference} from "../../parser/sourceReference";
 import {ExpressionSource} from "./expressionSource";
-import {asMemberAccessLiteral, MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {asMemberAccessLiteralToken, MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {NodeType} from "../nodeType";
@@ -35,21 +35,21 @@ export class MemberAccessExpression extends Expression
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.MemberAccessExpression;
 
-  public readonly memberAccessLiteral: MemberAccessLiteral;
-  public readonly variablePath: VariablePath;
+  public readonly memberAccessLiteral: MemberAccessLiteralToken;
+  public readonly identifierPath: IdentifierPath;
 
   public get variable(): VariableReference | null {
     return this.variableValue;
   }
 
-  constructor(variablePath: VariablePath, literal: MemberAccessLiteral, source: ExpressionSource, reference: SourceReference) {
+  constructor(identifierPath: IdentifierPath, literal: MemberAccessLiteralToken, source: ExpressionSource, reference: SourceReference) {
     super(source, reference);
     this.memberAccessLiteral = literal;
-    this.variablePath = variablePath;
+    this.identifierPath = identifierPath;
   }
 
-  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
-    let componentNode = componentNodeList.getNode(this.memberAccessLiteral.parent);
+  public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
+    let componentNode = componentNodes.getNode(this.memberAccessLiteral.parent);
     return componentNode != null ? [componentNode] : [];
   }
 
@@ -57,10 +57,10 @@ export class MemberAccessExpression extends Expression
     let tokens = source.tokens;
     if (!MemberAccessExpression.isValid(tokens)) return newParseExpressionFailed("MemberAccessExpression", `Invalid expression.`);
 
-    let literal = tokens.token<MemberAccessLiteral>(0, asMemberAccessLiteral);
+    let literal = tokens.token<MemberAccessLiteralToken>(0, asMemberAccessLiteralToken);
     if (!literal) return newParseExpressionFailed("MemberAccessExpression", `Invalid expression.`);
 
-    let variable = new VariablePath(literal.parts);
+    let variable = new IdentifierPath(literal.parts);
     let reference = source.createReference();
 
     let accessExpression = new MemberAccessExpression(variable, literal, source, reference);
@@ -69,7 +69,7 @@ export class MemberAccessExpression extends Expression
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length == 1
-      && tokens.isTokenType<MemberAccessLiteral>(0, TokenType.MemberAccessLiteral);
+      && tokens.isTokenType(0, TokenType.MemberAccessLiteralToken);
   }
 
   public override getChildren(): Array<INode> {
@@ -81,9 +81,9 @@ export class MemberAccessExpression extends Expression
   }
 
   private createVariableReference(context: IValidationContext) {
-    this.variableValue = context.variableContext.createVariableReference(this.reference, this.variablePath, context);
+    this.variableValue = context.variableContext.createVariableReference(this.reference, this.identifierPath, context);
     if (this.variableValue == null) {
-      context.logger.fail(this.reference, `Invalid identifier: '${this.variablePath.fullPath()}'`);
+      context.logger.fail(this.reference, `Invalid identifier: '${this.identifierPath.fullPath()}'`);
     }
   }
 

@@ -8,12 +8,16 @@ import {LexyScriptNode} from "../language/lexyScriptNode";
 import {ComponentNodeList} from "../language/componentNodeList";
 import {contains} from "../infrastructure/arrayFunctions";
 import {ParseOptions} from "./parseOptions";
+import {ILibraries} from "../functionLibraries/libraries";
+import {Assert} from "../infrastructure/assert";
 
 export interface ILineFilter {
   useLine(content: string): boolean;
 }
 
 export interface IParserContext {
+
+  libraries: ILibraries;
   logger: IParserLogger;
 
   fileSystem: IFileSystem;
@@ -40,14 +44,16 @@ export class ParserContext implements IParserContext {
     return this.lineFilterValue;
   }
 
+  public readonly libraries: ILibraries;
   public readonly rootNode: LexyScriptNode;
   public readonly logger: IParserLogger;
   public readonly fileSystem: IFileSystem;
   public readonly options: ParseOptions;
 
-  constructor(logger: ILogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory, options: ParseOptions | null) {
+  constructor(logger: ILogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory, libraries: ILibraries, options: ParseOptions | null) {
     this.options = options ?? {};
     this.logger = new ParserLogger(logger);
+    this.libraries = Assert.notNull(libraries, "libraries")
     this.fileSystem = fileSystem;
     this.rootNode = new LexyScriptNode(expressionFactory);
     this.lineFilterValue = this.defaultLexyLineFilter;

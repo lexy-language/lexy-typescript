@@ -1,5 +1,5 @@
 import {VariableReference} from "../../../language/variableReference";
-import {CodeWriter} from "../writers/codeWriter";
+import {CodeWriter} from "../codeWriter";
 import {translateParentVariableClassName} from "./translateParentVariableClassName";
 import {VariableSource} from "../../../language/variableSource";
 import {LexyCodeConstants} from "../lexyCodeConstants";
@@ -7,8 +7,8 @@ import {LexyCodeConstants} from "../lexyCodeConstants";
 export function renderVariableReference(variableReference: VariableReference, codeWriter: CodeWriter) {
   if (variableReference == null) throw new Error(`Invalid VariableReference: ${variableReference}`);
 
-  const parentIdentifier = translateParentVariableClassName(variableReference, codeWriter);
-  const parent = fromSource(variableReference.source, parentIdentifier);
+  const rootIdentifier = translateParentVariableClassName(variableReference, codeWriter);
+  const parent = fromSource(variableReference.source, rootIdentifier);
 
   codeWriter.write(parent)
 
@@ -16,7 +16,7 @@ export function renderVariableReference(variableReference: VariableReference, co
   while (childReference.hasChildIdentifiers) {
     childReference = childReference.childrenReference();
     codeWriter.write(".")
-    codeWriter.write(childReference.parentIdentifier)
+    codeWriter.write(childReference.rootIdentifier)
   }
 }
 

@@ -1,11 +1,11 @@
-import {VariableDeclarationType} from "../../src/language/variableTypes/variableDeclarationType";
+import {VariableTypeDeclaration} from "../../src/language/variableTypes/declarations/variableTypeDeclaration";
 import {
-  asPrimitiveVariableDeclarationType,
-} from "../../src/language/variableTypes/primitiveVariableDeclarationType";
+  asPrimitiveVariableTypeDeclaration,
+} from "../../src/language/variableTypes/declarations/primitiveVariableTypeDeclaration";
 
-export function shouldBePrimitiveType(type: VariableDeclarationType | null | undefined, name: string): void {
+export function shouldBePrimitiveType(type: VariableTypeDeclaration | null | undefined, name: string): void {
 
-  const primitiveVariableDeclarationType = asPrimitiveVariableDeclarationType(type);
-  expect(primitiveVariableDeclarationType).not.toBeNull();
-  expect(primitiveVariableDeclarationType?.type).toBe(name);
+  const primitiveVariableTypeDeclaration = asPrimitiveVariableTypeDeclaration(type);
+  expect(primitiveVariableTypeDeclaration).not.toBeNull();
+  expect(primitiveVariableTypeDeclaration?.type).toBe(name);
 }

@@ -58,10 +58,10 @@ export class TypeDefinition extends ComponentNode implements IHasNodeDependencie
     return this;
   }
 
-  public getDependencies(componentNodeList: IComponentNodeList): Array<IComponentNode> {
+  public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
     const dependencies = selectMany(this.variablesValue, variable => {
       const hasDependencies = asHasNodeDependencies(variable.type);
-      return hasDependencies != null ? hasDependencies.getDependencies(componentNodeList) : [];
+      return hasDependencies != null ? hasDependencies.getDependencies(componentNodes) : [];
     });
     return dependencies;
   }

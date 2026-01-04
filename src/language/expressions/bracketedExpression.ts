@@ -58,7 +58,7 @@ export class BracketedExpression extends Expression {
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length > 1
-      && tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken)
+      && tokens.isTokenType(0, TokenType.StringLiteralToken)
       && tokens.isOperatorToken(1, OperatorType.OpenBrackets);
   }
 

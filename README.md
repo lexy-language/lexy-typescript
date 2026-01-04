@@ -15,16 +15,22 @@ Check [lexy-language](https://github.com/lexy-language/lexy-language) for more i
 ## Known improvements
 
 - [ ] Code: get rid of all warnings, make the source maps work
-- [ ] Packaging: publish npm package (use it on **lexy-editor**) from GitHub Actions
+- [ ] Packaging: publish npm package (use it on **lexy-editor**) from GitHub Actions (split compiler from runtime?)
 - [ ] Readme: Use /coverage/badges.svg from publish gh-page (once repo is public)
 - [ ] Code: verify new, extract, and fill functions work with custom types and table row types
 
 # Implementations notes
 
+## Compiler implementation
+
+The typescript compiler is a port from the [dotnet compiler](https://github.com/lexy-language/lexy-dotnet/).
+
+Every change to the compiler should be discussed first and implemented in all other compilers.
+
 ## Run locally
 
-Ensure node.js (v16 or above) is installed.
-Tested with node.js v16.20.2.
+Ensure node.js (v18 or above) is installed.
+Tested with node.js v18.20.8.
 
 Compile
 `tsc`

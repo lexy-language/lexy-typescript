@@ -9,7 +9,7 @@ import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResu
 import {TokenList} from "../../parser/tokens/tokenList";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
-import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
 import {VariableUsage} from "./variableUsage";
@@ -57,8 +57,8 @@ export class AssignmentExpression extends Expression {
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length >= 3
-      && (tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken)
-        || tokens.isTokenType<MemberAccessLiteral>(0, TokenType.MemberAccessLiteral))
+      && (tokens.isTokenType(0, TokenType.StringLiteralToken)
+        || tokens.isTokenType(0, TokenType.MemberAccessLiteralToken))
       && tokens.isOperatorToken(1, OperatorType.Assignment);
   }
 

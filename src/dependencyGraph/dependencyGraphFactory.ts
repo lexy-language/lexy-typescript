@@ -1,15 +1,15 @@
-import {ComponentNodeList} from "../language/componentNodeList";
+import type {IComponentNode} from "../language/componentNode";
+import type {IComponentNodeList} from "../language/componentNodeList";
 import {Dependencies} from "./dependencies";
-import {IComponentNode} from "../language/componentNode";
 
 export class DependencyGraphFactory {
-  public static create(componentNodes: ComponentNodeList): Dependencies {
+  public static create(componentNodes: IComponentNodeList): Dependencies {
     let dependencies = new Dependencies(componentNodes);
     dependencies.build();
     return dependencies;
   }
 
-  static nodeAndDependencies(componentNodes: ComponentNodeList, node: IComponentNode): Array<IComponentNode> {
+  static nodeAndDependencies(componentNodes: IComponentNodeList, node: IComponentNode): Array<IComponentNode> {
     let dependencies = new Dependencies(componentNodes);
     dependencies.build();
     return dependencies.nodeAndDependencies(node);

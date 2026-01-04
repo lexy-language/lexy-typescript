@@ -26,29 +26,29 @@ export class ExpressionFactory implements IExpressionFactory {
 
    private static factories: {
       criteria: (tokens: TokenList) => boolean,
-      factory: ((source: ExpressionSource, factory: IExpressionFactory) => ParseExpressionResult) }[] = [
-         { criteria: IfExpression.isValid, factory: IfExpression.parse },
-         { criteria: ElseExpression.isValid, factory: ElseExpression.parse },
-         { criteria: ElseifExpression.isValid, factory: ElseifExpression.parse },
-         { criteria: SwitchExpression.isValid, factory: SwitchExpression.parse },
-         { criteria: CaseExpression.isValid, factory: CaseExpression.parse },
-         { criteria: VariableDeclarationExpression.isValid, factory: VariableDeclarationExpression.parse },
-         { criteria: AssignmentExpression.isValid, factory: AssignmentExpression.parse },
-         { criteria: ParenthesizedExpression.isValid, factory: ParenthesizedExpression.parse },
-         { criteria: BracketedExpression.isValid, factory: BracketedExpression.parse },
-         { criteria: IdentifierExpression.isValid, factory: IdentifierExpression.parse },
-         { criteria: MemberAccessExpression.isValid, factory: MemberAccessExpression.parse },
-         { criteria: LiteralExpression.isValid, factory: LiteralExpression.parse },
-         { criteria: BinaryExpression.isValid, factory: BinaryExpression.parse },
-         { criteria: FunctionCallExpression.isValid, factory: FunctionCallExpressionParser.parse }
+      parse: ((source: ExpressionSource, factory: IExpressionFactory) => ParseExpressionResult) }[] = [
+         { criteria: IfExpression.isValid, parse: IfExpression.parse },
+         { criteria: ElseExpression.isValid, parse: ElseExpression.parse },
+         { criteria: ElseifExpression.isValid, parse: ElseifExpression.parse },
+         { criteria: SwitchExpression.isValid, parse: SwitchExpression.parse },
+         { criteria: CaseExpression.isValid, parse: CaseExpression.parse },
+         { criteria: VariableDeclarationExpression.isValid, parse: VariableDeclarationExpression.parse },
+         { criteria: AssignmentExpression.isValid, parse: AssignmentExpression.parse },
+         { criteria: ParenthesizedExpression.isValid, parse: ParenthesizedExpression.parse },
+         { criteria: BracketedExpression.isValid, parse: BracketedExpression.parse },
+         { criteria: IdentifierExpression.isValid, parse: IdentifierExpression.parse },
+         { criteria: MemberAccessExpression.isValid, parse: MemberAccessExpression.parse },
+         { criteria: LiteralExpression.isValid, parse: LiteralExpression.parse },
+         { criteria: BinaryExpression.isValid, parse: BinaryExpression.parse },
+         { criteria: FunctionCallExpression.isValid, parse: FunctionCallExpressionParser.parse }
        ];
 
    public parse(tokens: TokenList, currentLine: Line): ParseExpressionResult {
+     let source = new ExpressionSource(currentLine, tokens);
      for (let index = 0 ; index < ExpressionFactory.factories.length ; index++) {
        const factory = ExpressionFactory.factories[index];
        if (factory.criteria(tokens)) {
-         let source = new ExpressionSource(currentLine, tokens);
-         return factory.factory(source, this);
+         return factory.parse(source, this);
        }
      }
 

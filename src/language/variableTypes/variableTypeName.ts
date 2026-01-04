@@ -1,6 +1,6 @@
 export enum VariableTypeName {
-  ComplexType = "ComplexType",
-  CustomType = "CustomType",
+  GeneratedType = "GeneratedType",
+  DeclaredType = "DeclaredType",
   EnumType = "EnumType",
   FunctionType = "FunctionType",
   PrimitiveType = "PrimitiveType",

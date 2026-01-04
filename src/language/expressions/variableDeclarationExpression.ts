@@ -5,23 +5,23 @@ import type {IExpressionFactory} from "./expressionFactory";
 import {Expression} from "./expression";
 import {SourceReference} from "../../parser/sourceReference";
 import {ExpressionSource} from "./expressionSource";
-import {VariableDeclarationType} from "../variableTypes/variableDeclarationType";
+import {VariableTypeDeclaration} from "../variableTypes/declarations/variableTypeDeclaration";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {VariableType} from "../variableTypes/variableType";
-import {ImplicitVariableDeclaration} from "../variableTypes/implicitVariableDeclaration";
+import {ImplicitVariableTypeDeclaration} from "../variableTypes/declarations/implicitVariableTypeDeclaration";
 import {VariableSource} from "../variableSource";
-import {VariableDeclarationTypeParser} from "../variableTypes/variableDeclarationTypeParser";
 import {NodeType} from "../nodeType";
-import {MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
 import {VariableUsage} from "./variableUsage";
 import {VariableAccess} from "./variableAccess";
 import {getReadVariableUsage} from "./getReadVariableUsage";
-import {VariablePathParser} from "../scenarios/variablePathParser";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {VariableTypeDeclarationParser} from "../variableTypes/declarations/variableTypeDeclarationParser";
+import {IdentifierPath} from "../identifierPath";
 
 export function instanceOfVariableDeclarationExpression(object: any): object is VariableDeclarationExpression {
   return object?.nodeType == NodeType.VariableDeclarationExpression;
@@ -37,11 +37,11 @@ export class VariableDeclarationExpression extends Expression {
 
   public readonly nodeType = NodeType.VariableDeclarationExpression;
 
-  public type: VariableDeclarationType;
+  public type: VariableTypeDeclaration;
   public name: string;
   public assignment: Expression | null;
 
-  constructor(variableType: VariableDeclarationType, variableName: string, assignment: Expression | null, source: ExpressionSource, reference: SourceReference) {
+  constructor(variableType: VariableTypeDeclaration, variableName: string, assignment: Expression | null, source: ExpressionSource, reference: SourceReference) {
     super(source, reference)
     this.type = variableType;
     this.name = variableName;
@@ -59,7 +59,7 @@ export class VariableDeclarationExpression extends Expression {
       return newParseExpressionFailed("VariableDeclarationExpression", `Invalid type name.`);
     }
 
-    let type = VariableDeclarationTypeParser.parse(typeName, source.createReference());
+    let type = VariableTypeDeclarationParser.parse(typeName, source.createReference());
     let name = tokens.tokenValue(1);
     if (name == null) {
       return newParseExpressionFailed("VariableDeclarationExpression", `Invalid name.`);
@@ -80,21 +80,21 @@ export class VariableDeclarationExpression extends Expression {
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length == 2
-      && tokens.isKeyword(0, Keywords.ImplicitVariableDeclaration)
-      && tokens.isTokenType<StringLiteralToken>(1, TokenType.StringLiteralToken)
+      && tokens.isKeyword(0, Keywords.ImplicitVariableTypeDeclaration)
+      && tokens.isTokenType(1, TokenType.StringLiteralToken)
       || tokens.length == 2
-      && tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken)
-      && tokens.isTokenType<StringLiteralToken>(1, TokenType.StringLiteralToken)
+      && tokens.isTokenType(0, TokenType.StringLiteralToken)
+      && tokens.isTokenType(1, TokenType.StringLiteralToken)
       || tokens.length == 2
-      && tokens.isTokenType<MemberAccessLiteral>(0, TokenType.MemberAccessLiteral)
-      && tokens.isTokenType<StringLiteralToken>(1, TokenType.StringLiteralToken)
+      && tokens.isTokenType(0, TokenType.MemberAccessLiteralToken)
+      && tokens.isTokenType(1, TokenType.StringLiteralToken)
       || tokens.length >= 4
-      && tokens.isKeyword(0, Keywords.ImplicitVariableDeclaration)
-      && tokens.isTokenType<StringLiteralToken>(1, TokenType.StringLiteralToken)
+      && tokens.isKeyword(0, Keywords.ImplicitVariableTypeDeclaration)
+      && tokens.isTokenType(1, TokenType.StringLiteralToken)
       && tokens.isOperatorToken(2, OperatorType.Assignment)
       || tokens.length >= 4
-      && tokens.isTokenType<StringLiteralToken>(0, TokenType.StringLiteralToken)
-      && tokens.isTokenType<StringLiteralToken>(1, TokenType.StringLiteralToken)
+      && tokens.isTokenType(0, TokenType.StringLiteralToken)
+      && tokens.isTokenType(1, TokenType.StringLiteralToken)
       && tokens.isOperatorToken(2, OperatorType.Assignment);
   }
 
@@ -106,31 +106,31 @@ export class VariableDeclarationExpression extends Expression {
 
   protected override validate(context: IValidationContext): void {
 
-    const assignmentType = this.assignment?.deriveType(context);
+    const assignmentType = this.assignment ? this.assignment.deriveType(context) : null;
 
     if (this.assignment != null && assignmentType == null) {
       context.logger.fail(this.reference, `Invalid expression. Could not derive type.`);
     }
 
-    this.variableType = this.getVariableType(context, assignmentType ?? null);
+    this.variableType = this.getVariableType(context, assignmentType);
     if (this.variableType == null) {
-      context.logger.fail(this.reference, `Invalid variable type '${this.type}'`);
+      context.logger.fail(this.reference, `Invalid variable type '${this.type.toString()}'`);
     }
 
-    context.variableContext?.registerVariableAndVerifyUnique(this.reference, this.name, this.variableType, VariableSource.Code);
+    context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, this.variableType, VariableSource.Code);
   }
 
   private getVariableType(context: IValidationContext, assignmentType: VariableType | null): VariableType | null {
-    if (this.type.nodeType == NodeType.ImplicitVariableDeclaration) {
+    if (this.type.nodeType == NodeType.ImplicitVariableTypeDeclaration) {
       if (assignmentType == null) return null;
 
-      const implicitVariableType = this.type as ImplicitVariableDeclaration;
+      const implicitVariableType = this.type as ImplicitVariableTypeDeclaration;
       implicitVariableType.define(assignmentType);
       return assignmentType;
     }
 
     let variableType = this.type.variableType;
-    if (this.assignment != null && !assignmentType?.equals(variableType)) {
+    if (this.assignment != null && (assignmentType == null || !assignmentType?.equals(variableType))) {
       context.logger.fail(this.reference, `Invalid expression. Literal or enum value expression expected.`);
     }
 
@@ -142,7 +142,7 @@ export class VariableDeclarationExpression extends Expression {
   }
 
   override usedVariables(): ReadonlyArray<VariableUsage> {
-    const writeVariable = new VariableUsage(VariablePathParser.parseString(this.name), null, this.variableType, VariableSource.Code, VariableAccess.Write);
+    const writeVariable = new VariableUsage(IdentifierPath.parseString(this.name), null, this.variableType, VariableSource.Code, VariableAccess.Write);
     return this.assignment != null ? [writeVariable, ...getReadVariableUsage(this.assignment)] : [writeVariable];
   }
 }

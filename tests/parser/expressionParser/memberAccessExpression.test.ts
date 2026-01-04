@@ -13,7 +13,7 @@ describe('MemberAccessExpressionTests', () => {
     validateOfType<AssignmentExpression>(asAssignmentExpression, expression, assignmentExpression => {
       validateIdentifierExpression(assignmentExpression.variable, `A`);
       validateOfType<MemberAccessExpression>(asMemberAccessExpression, assignmentExpression.assignment, memberAccess =>
-        expect(memberAccess.variablePath.toString()).toBe(`B.C`));
+        expect(memberAccess.identifierPath.toString()).toBe(`B.C`));
     });
   });
 });

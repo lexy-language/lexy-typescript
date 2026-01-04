@@ -1,14 +1,14 @@
 import {VariableSource} from "./variableSource";
-import {VariablePath} from "./variablePath";
+import {IdentifierPath} from "./identifierPath";
 import {VariableType} from "./variableTypes/variableType";
 
 export class VariableReference {
-  public readonly path: VariablePath;
+  public readonly path: IdentifierPath;
   public readonly source: VariableSource;
   public readonly componentType: VariableType | null;
   public readonly variableType: VariableType | null;
 
-  constructor(path: VariablePath, componentType: VariableType | null,
+  constructor(path: IdentifierPath, componentType: VariableType | null,
               variableType: VariableType | null, source: VariableSource) {
     this.path = path;
     this.componentType = componentType;

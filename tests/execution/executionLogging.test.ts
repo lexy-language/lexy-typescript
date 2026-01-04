@@ -15,7 +15,6 @@ describe('executionLogging', () => {
   function expectNoTableValuesProperty(script: ExecutableFunction) {
     let result = script.run();
     walkLogging(result.logging, log => {
-      console.log(JSON.stringify(log))
       const table = log.readVariables[LexyCodeConstants.valuesVariable];
       if (table != null) {
         const values = table["__values"];
@@ -38,7 +37,7 @@ function ValidateTableKeywordFunction
   parameters
   results
     number Result
-  Result = lookUp(SimpleTable, 2, SimpleTable.Search, SimpleTable.Value)`);
+  Result = SimpleTable.LookUp(2, SimpleTable.Search, SimpleTable.Value)`);
 
     expectNoTableValuesProperty(script);
   });
@@ -55,7 +54,7 @@ function ValidateTableKeywordFunction
   parameters
   results
     SimpleTable.Row Result
-  Result = lookUpRow(SimpleTable, 2, SimpleTable.Search)`);
+  Result = SimpleTable.LookUpRow(2, SimpleTable.Search)`);
 
     expectNoTableValuesProperty(script);
   });

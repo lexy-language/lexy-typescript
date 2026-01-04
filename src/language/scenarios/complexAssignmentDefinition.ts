@@ -4,13 +4,13 @@ import type {IValidationContext} from "../../parser/validationContext";
 import type {IAssignmentDefinition} from "./assignmentDefinition";
 import type {AssignmentDefinitionParserHandler} from "./assignmentDefinitionParser";
 
-import {VariablePath} from "../variablePath";
+import {IdentifierPath} from "../identifierPath";
 import {SourceReference} from "../../parser/sourceReference";
 import {instanceOfParsableNode, IParsableNode, ParsableNode} from "../parsableNode";
 import {AssignmentDefinition} from "./assignmentDefinition";
 import {NodeType} from "../nodeType";
-import {instanceOfCustomType} from "../variableTypes/customType";
-import {instanceOfComplexType} from "../variableTypes/complexType";
+import {instanceOfGeneratedType} from "../variableTypes/generatedType";
+import {instanceOfDeclaredType} from "../variableTypes/declaredType";
 
 export function instanceOfComplexAssignmentDefinition(object: any): object is ComplexAssignmentDefinition {
   return object?.nodeType == NodeType.ComplexAssignmentDefinition;
@@ -24,7 +24,7 @@ export class ComplexAssignmentDefinition extends ParsableNode implements IAssign
 
   private assignmentsValue: Array<IAssignmentDefinition> = [];
 
-  public readonly variable: VariablePath;
+  public readonly variable: IdentifierPath;
 
   public nodeType = NodeType.ComplexAssignmentDefinition;
   private assignmentDefinitionParser: AssignmentDefinitionParserHandler;
@@ -33,7 +33,7 @@ export class ComplexAssignmentDefinition extends ParsableNode implements IAssign
     return this.assignmentsValue;
   }
 
-  constructor(variable: VariablePath, reference: SourceReference, assignmentDefinitionParser: AssignmentDefinitionParserHandler) {
+  constructor(variable: IdentifierPath, reference: SourceReference, assignmentDefinitionParser: AssignmentDefinitionParserHandler) {
     super(reference);
     this.variable = variable;
     this.assignmentDefinitionParser = assignmentDefinitionParser;
@@ -61,7 +61,7 @@ export class ComplexAssignmentDefinition extends ParsableNode implements IAssign
     }
 
     const variableType = context.variableContext.getVariableTypeByPath(this.variable, context);
-    if (!instanceOfCustomType(variableType) && !instanceOfComplexType(variableType)) {
+    if (!instanceOfDeclaredType(variableType) && !instanceOfGeneratedType(variableType)) {
       context.logger.fail(this.reference, `Variable '${this.variable}' without assignment should be a complex type, but is ${variableType}.`);
     }
   }

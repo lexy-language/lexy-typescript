@@ -9,7 +9,7 @@ describe('DependencyOrder', () => {
     EnumExample EnumValue
   results
     number Result
-  Result = lookUp(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
+  Result = TableExample.LookUp(EnumExample.Single, TableExample.Example, TableExample.Value)
 
 table TableExample
   | EnumExample Example | number Value |
@@ -74,7 +74,7 @@ function FunctionWithTableDependency
     TypeExample Example
   results
     number Result
-  Result = lookUp(TableExample, EnumExample.Single, TableExample.Example, TableExample.Value)
+  Result = TableExample.LookUp(EnumExample.Single, TableExample.Example, TableExample.Value)
 
 function FunctionWithEnumDependency
   parameters
@@ -102,8 +102,8 @@ enum EnumExample
   CivilPartnership`, true);
 
     expect(dependencies.sortedNodes.length).toBe(11);
-    expect(dependencies.sortedNodes[0].nodeName).toBe(`NestedType`);
-    expect(dependencies.sortedNodes[1].nodeName).toBe(`EnumExample`);
+    expect(dependencies.sortedNodes[0].nodeName).toBe(`EnumExample`);
+    expect(dependencies.sortedNodes[1].nodeName).toBe(`NestedType`);
     expect(dependencies.sortedNodes[2].nodeName).toBe(`TypeExample`);
     expect(dependencies.sortedNodes[3].nodeName).toBe(`TableExample`);
     expect(dependencies.sortedNodes[4].nodeName).toBe(`FunctionWithTypeDependency`);

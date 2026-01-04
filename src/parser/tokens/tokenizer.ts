@@ -61,8 +61,7 @@ export class Tokenizer implements ITokenizer {
     let current: ParsableToken | null = null;
 
     for (let index = 0; index < line.content.length; index++) {
-      let value = line.content.charCodeAt(index);
-      let tokenCharacter = new TokenCharacter(value, index);
+      let tokenCharacter = line.character(index);
       let valueProcessed = false;
       if (current != null) {
         let result = current.parse(tokenCharacter);

@@ -1,25 +1,25 @@
 import {VariableDefinition} from "../../../language/variableDefinition";
-import {CodeWriter} from "../writers/codeWriter";
-import {VariableDeclarationType} from "../../../language/variableTypes/variableDeclarationType";
+import {CodeWriter} from "../codeWriter";
+import {VariableTypeDeclaration} from "../../../language/variableTypes/declarations/variableTypeDeclaration";
 import {
-  asPrimitiveVariableDeclarationType,
-  PrimitiveVariableDeclarationType
-} from "../../../language/variableTypes/primitiveVariableDeclarationType";
+  asPrimitiveVariableTypeDeclaration,
+  PrimitiveVariableTypeDeclaration
+} from "../../../language/variableTypes/declarations/primitiveVariableTypeDeclaration";
 import {
-  asCustomVariableDeclarationType,
-  CustomVariableDeclarationType
-} from "../../../language/variableTypes/customVariableDeclarationType";
+  asComplexVariableTypeDeclaration,
+  ComplexVariableTypeDeclaration
+} from "../../../language/variableTypes/declarations/complexVariableTypeDeclaration";
 import {TypeNames} from "../../../language/variableTypes/typeNames";
-import {translateComplexType, translateType} from "../types";
 import {asEnumType} from "../../../language/variableTypes/enumType";
 import {VariableTypeName} from "../../../language/variableTypes/variableTypeName";
-import {asComplexType} from "../../../language/variableTypes/complexType";
+import {asGeneratedType} from "../../../language/variableTypes/generatedType";
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {Assert} from "../../../infrastructure/assert";
-import {asCustomType} from "../../../language/variableTypes/customType";
+import {asDeclaredType} from "../../../language/variableTypes/declaredType";
 import {enumClassName, typeClassName} from "../classNames";
 import {asPrimitiveType, PrimitiveType} from "../../../language/variableTypes/primitiveType";
 import {customVariableIdentifier} from "./customVariableIdentifier";
+import {translateGeneratedType, translateType} from "../types";
 
 export function createVariableClass(name: string,
                                     className: string,
@@ -55,23 +55,23 @@ function renderDefaultExpression(variable: VariableDefinition,
   }
 }
 
-export function renderTypeDefaultExpression(variableDeclarationType: VariableDeclarationType,
+export function renderTypeDefaultExpression(variableTypeDeclaration: VariableTypeDeclaration,
                                             codeWriter: CodeWriter) {
 
-  const primitiveVariableDeclarationType = asPrimitiveVariableDeclarationType(variableDeclarationType);
-  if (primitiveVariableDeclarationType != null) {
-    renderPrimitiveTypeDefaultExpression(primitiveVariableDeclarationType, codeWriter);
+  const primitiveVariableTypeDeclaration = asPrimitiveVariableTypeDeclaration(variableTypeDeclaration);
+  if (primitiveVariableTypeDeclaration != null) {
+    renderPrimitiveTypeDefaultExpression(primitiveVariableTypeDeclaration, codeWriter);
     return;
   }
-  const customType = asCustomVariableDeclarationType(variableDeclarationType);
-  if (customType != null) {
-    renderDefaultExpressionSyntax(customType, codeWriter);
+  const declaredType = asComplexVariableTypeDeclaration(variableTypeDeclaration);
+  if (declaredType != null) {
+    renderDefaultExpressionSyntax(declaredType, codeWriter);
     return;
   }
-  throw new Error(`Wrong VariableDeclarationType ${variableDeclarationType.nodeType}`)
+  throw new Error(`Wrong VariableTypeDeclaration ${variableTypeDeclaration.nodeType}`)
 }
 
-function renderPrimitiveTypeDefaultExpression(type: PrimitiveVariableDeclarationType,
+function renderPrimitiveTypeDefaultExpression(type: PrimitiveVariableTypeDeclaration,
                                               codeWriter: CodeWriter) {
   switch (type.type) {
     case TypeNames.number:
@@ -95,26 +95,26 @@ function renderPrimitiveTypeDefaultExpression(type: PrimitiveVariableDeclaration
   }
 }
 
-function renderDefaultExpressionSyntax(customType: CustomVariableDeclarationType,
+function renderDefaultExpressionSyntax(declaredType: ComplexVariableTypeDeclaration,
                                        codeWriter: CodeWriter) {
-  switch (customType.variableType?.variableTypeName) {
-    case VariableTypeName.CustomType:
-      codeWriter.write(`new ${customVariableIdentifier(customType, codeWriter)}()`);
+  switch (declaredType.variableType?.variableTypeName) {
+    case VariableTypeName.DeclaredType:
+      codeWriter.write(`new ${customVariableIdentifier(declaredType, codeWriter)}()`);
       return;
     case VariableTypeName.EnumType:
-      const enumType = asEnumType(customType.variableType);
-      if (enumType == null) throw new Error("customType.variableType not enumType");
+      const enumType = asEnumType(declaredType.variableType);
+      if (enumType == null) throw new Error("declaredType.variableType not enumType");
       codeWriter.writeEnvironment(`.${translateType(enumType)}.${enumType.firstMemberName()}`)
       return;
-    case VariableTypeName.ComplexType:
-      const complexType = asComplexType(customType.variableType);
-      if (complexType == null) throw new Error("customType.variableType not complexType");
+    case VariableTypeName.GeneratedType:
+      const generatedType = asGeneratedType(declaredType.variableType);
+      if (generatedType == null) throw new Error("declaredType.variableType not generatedType");
       codeWriter.write(`new `);
-      codeWriter.writeEnvironment(`.${translateComplexType(complexType)}`)
+      codeWriter.writeEnvironment(`.${translateGeneratedType(generatedType)}`)
       codeWriter.write(`()`);
       return;
     default:
-      throw new Error(`Invalid renderDefaultExpressionSyntax: ${customType.variableType?.variableTypeName}`);
+      throw new Error(`Invalid renderDefaultExpressionSyntax: ${declaredType.variableType?.variableTypeName}`);
   }
 }
 
@@ -135,21 +135,21 @@ function renderValidationFunction(name: string, variables: ReadonlyArray<Variabl
 function renderResultValidation(variable: VariableDefinition, codeWriter: CodeWriter) {
   const optional = variable.defaultExpression != null;
   switch (variable.variableType?.variableTypeName) {
-    case VariableTypeName.CustomType:
-      const customType = Assert.notNull(asCustomType(variable.variableType), "customType");
-      codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${typeClassName(customType.type)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.variablePath(name, "${variable.name}"), value["${variable.name}"], validationErrors);`)
+    case VariableTypeName.DeclaredType:
+      const declaredType = Assert.notNull(asDeclaredType(variable.variableType), "declaredType");
+      codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${typeClassName(declaredType.type)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.identifierPath(name, "${variable.name}"), value["${variable.name}"], validationErrors);`)
       break;
     case VariableTypeName.EnumType:
       const enumType = Assert.notNull(asEnumType(variable.variableType), "enumType");
-      codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${enumClassName(enumType.type)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.variablePath(name, "${variable.name}"), value["${variable.name}"], ${optional}, validationErrors);`)
+      codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${enumClassName(enumType.type)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.identifierPath(name, "${variable.name}"), value["${variable.name}"], ${optional}, validationErrors);`)
       break;
     case VariableTypeName.PrimitiveType:
       const primitiveType = Assert.notNull(asPrimitiveType(variable.variableType), "primitiveType");
       renderResultsPrimitiveTypeValidation(variable.name, optional, primitiveType, codeWriter);
       break;
-    case VariableTypeName.ComplexType:
-      const complexType = Assert.notNull(asComplexType(variable.variableType), "complexType");
-      codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${translateComplexType(complexType)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.variablePath(name, "${variable.name}"), value["${variable.name}"], validationErrors);`)
+    case VariableTypeName.GeneratedType:
+      const generatedType = Assert.notNull(asGeneratedType(variable.variableType), "generatedType");
+      codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${translateGeneratedType(generatedType)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.identifierPath(name, "${variable.name}"), value["${variable.name}"], validationErrors);`)
       break;
     default:
       throw new Error(`Unexpected variable type: '${variable.variableType?.variableTypeName}'`)
@@ -158,7 +158,7 @@ function renderResultValidation(variable: VariableDefinition, codeWriter: CodeWr
 
 function renderResultsPrimitiveTypeValidation(variableName: string, optional: boolean, primitiveType: PrimitiveType, codeWriter: CodeWriter) {
   const validateMethod = validatePrimitiveTypeMethodName(primitiveType);
-  codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.validate.${validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.variablePath(name, "${variableName}"), value["${variableName}"], ${optional}, validationErrors);`)
+  codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.validate.${validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.identifierPath(name, "${variableName}"), value["${variableName}"], ${optional}, validationErrors);`)
 }
 
 function validatePrimitiveTypeMethodName(primitiveType: PrimitiveType): string {

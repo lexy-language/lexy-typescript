@@ -1,10 +1,10 @@
 import type {IValidationContext} from "../../parser/validationContext";
 
-import {VariableDeclarationType} from "../variableTypes/variableDeclarationType";
+import {VariableTypeDeclaration} from "../variableTypes/declarations/variableTypeDeclaration";
 import {SourceReference} from "../../parser/sourceReference";
 import {INode, Node} from "../node";
-import {VariableDeclarationTypeParser} from "../variableTypes/variableDeclarationTypeParser";
 import {NodeType} from "../nodeType";
+import {VariableTypeDeclarationParser} from "../variableTypes/declarations/variableTypeDeclarationParser";
 
 export function instanceOfColumnHeader(object: any) {
   return object?.nodeType == NodeType.ColumnHeader;
@@ -18,16 +18,16 @@ export class ColumnHeader extends Node {
 
   public nodeType = NodeType.ColumnHeader;
   public name: string
-  public type: VariableDeclarationType
+  public type: VariableTypeDeclaration
 
-  constructor(name: string, type: VariableDeclarationType, reference: SourceReference) {
+  constructor(name: string, type: VariableTypeDeclaration, reference: SourceReference) {
     super(reference);
     this.name = name;
     this.type = type;
   }
 
   public static parse(name: string, typeName: string, reference: SourceReference): ColumnHeader {
-    let type = VariableDeclarationTypeParser.parse(typeName, reference);
+    let type = VariableTypeDeclarationParser.parse(typeName, reference);
     return new ColumnHeader(name, type, reference);
   }
 

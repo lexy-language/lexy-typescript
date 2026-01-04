@@ -2,7 +2,8 @@ import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IValidationContext} from "../../parser/validationContext";
 import {INode, Node} from "../node";
 import {SourceReference} from "../../parser/sourceReference";
-import {isNullOrEmpty, isValidIdentifier} from "../../parser/tokens/character";
+import {isNullOrEmpty} from "../../infrastructure/validationFunctions";
+import {isValidIdentifier} from "../../parser/tokens/character";
 import {NodeType} from "../nodeType";
 import {Assert} from "../../infrastructure/assert";
 

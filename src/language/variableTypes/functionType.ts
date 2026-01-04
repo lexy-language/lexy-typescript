@@ -1,11 +1,10 @@
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IComponentNodeList} from "../componentNodeList";
 
 import {TypeWithMembers} from "./typeWithMembers";
 import {VariableType} from "./variableType";
 import {Function} from "../functions/function";
 import {VariableTypeName} from "./variableTypeName";
-import {ComplexType} from "./complexType";
-import {IComponentNodeList} from "../componentNodeList";
+import {GeneratedType} from "./generatedType";
 
 export function instanceOfFunctionType(object: any): object is FunctionType {
   return object?.variableTypeName == VariableTypeName.EnumType;
@@ -42,12 +41,12 @@ export class FunctionType extends TypeWithMembers {
     return null;
   }
 
-  private functionParametersType(componentNodes: IComponentNodeList): ComplexType | null {
+  private functionParametersType(componentNodes: IComponentNodeList): GeneratedType | null {
     const resultsType = componentNodes.getFunction(this.type)?.getParametersType();
     return !!resultsType ? resultsType : null;
   }
 
-  private functionResultsType(componentNodes: IComponentNodeList): ComplexType | null {
+  private functionResultsType(componentNodes: IComponentNodeList): GeneratedType | null {
     const resultsType = componentNodes.getFunction(this.type)?.getResultsType();
     return !!resultsType ? resultsType : null;
   }

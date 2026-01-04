@@ -4,7 +4,7 @@ import type {IParserContext} from "../parser/parserContext";
 import {SourceReference} from "../parser/sourceReference";
 import {Line} from "../parser/line";
 import {Keywords} from "../parser/Keywords";
-import {isNullOrEmpty} from "../parser/tokens/character";
+import {isNullOrEmpty} from "../infrastructure/validationFunctions";
 import {LexySourceDocument} from "../parser/lexySourceDocument";
 
 export class Include {

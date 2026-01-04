@@ -5,10 +5,9 @@ import {validateOfType} from "../../validateOfType";
 import {asBinaryExpression, BinaryExpression} from "../../../src/language/expressions/binaryExpression";
 import {asAssignmentExpression, AssignmentExpression} from "../../../src/language/expressions/assignmentExpression";
 import {
-  asFunctionCallExpression,
-  FunctionCallExpression
-} from "../../../src/language/expressions/functions/functionCallExpression";
-import {AbsFunction, asAbsFunction} from "../../../src/language/expressions/functions/absFunction";
+  asLexyFunctionCallExpression,
+  LexyFunctionCallExpression
+} from "../../../src/language/expressions/functions/lexyFunctionCallExpression";
 
 describe('LiteralExpressionTests', () => {
   it('number', async () => {
@@ -52,9 +51,9 @@ describe('LiteralExpressionTests', () => {
     let expression = parseExpression(`Result = abs(-2)`);
     validateOfType<AssignmentExpression>(asAssignmentExpression, expression, assignment => {
       validateIdentifierExpression(assignment.variable, `Result`);
-      validateOfType<AbsFunction>(asAbsFunction, assignment.assignment, functionCall => {
+      validateOfType<LexyFunctionCallExpression>(asLexyFunctionCallExpression, assignment.assignment, functionCall => {
         expect(functionCall.functionName).toBe(`abs`);
-        validateNumericLiteralExpression(functionCall.valueExpression, -2);
+        validateNumericLiteralExpression(functionCall.args[0], -2);
       });
     });
   });

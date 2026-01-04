@@ -6,7 +6,7 @@ import {NodeType} from "../nodeType";
 import {SourceReference} from "../../parser/sourceReference";
 import {asLiteralExpression} from "../expressions/literalExpression";
 import {ValidationTableHeader} from "./validationTableHeader";
-import {asMemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {asMemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
 import {asMemberAccessExpression} from "../expressions/memberAccessExpression";
 
 export class ValidationTableValue extends Node {

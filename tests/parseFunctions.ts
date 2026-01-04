@@ -11,17 +11,25 @@ import {ComponentNode} from "../src/language/componentNode";
 import {asFunction, Function} from "../src/language/functions/function";
 import {LoggingConfiguration} from "./loggingConfiguration";
 import {NodeFileSystem} from "./nodeFileSystem";
+import {ILibraries, Libraries} from "../src/functionLibraries/libraries";
+import {LibraryRuntime} from "../src/runTime/libraries/libraryRuntime";
 
-export function createParser() {
+export function createParser(libraries: ILibraries) {
+
   const logger = LoggingConfiguration.getParserLogger();
   const expressionFactory = new ExpressionFactory();
   const fileSystem = new NodeFileSystem();
   const tokenizer = new Tokenizer();
-  return new LexyParser(logger, tokenizer, fileSystem, expressionFactory);
+  return new LexyParser(logger, tokenizer, fileSystem, expressionFactory, libraries);
 }
 
-export function parseNodes(code: string): { nodes: ComponentNodeList, logger: IParserLogger } {
-  const parser = createParser();
+export function parseNodes(code: string, libraries: ILibraries): { nodes: ComponentNodeList, logger: IParserLogger } {
+
+  if (libraries == null) {
+    libraries = new Libraries([]);
+  }
+
+  const parser = createParser(libraries);
   const codeLines = code.split("\n");
   const result = parser.parse(codeLines, `tests.lexy`, {suppressException: true});
 

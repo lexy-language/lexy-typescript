@@ -1,27 +1,27 @@
-import {VariablePath} from "../variablePath";
+import {IdentifierPath} from "../identifierPath";
 
-export type VariablePathParseFailed = {
+export type IdentifierPathParseFailed = {
   state: "failed";
   errorMessage: string;
 }
 
-export function newVariablePathParseFailed(errorMessage: string, ): VariablePathParseFailed {
+export function newIdentifierPathParseFailed(errorMessage: string, ): IdentifierPathParseFailed {
   return {
     state: "failed",
     errorMessage: errorMessage,
   } as const;
 }
 
-export type VariablePathParseSuccess = {
+export type IdentifierPathParseSuccess = {
   state: "success";
-  result: VariablePath;
+  result: IdentifierPath;
 }
 
-export function newVariablePathParseSuccess(result: VariablePath): VariablePathParseSuccess {
+export function newIdentifierPathParseSuccess(result: IdentifierPath): IdentifierPathParseSuccess {
   return {
     state: "success",
     result: result
   } as const;
 }
 
-export type VariablePathParseResult = VariablePathParseFailed | VariablePathParseSuccess;
+export type VariablePathParseResult = IdentifierPathParseFailed | IdentifierPathParseSuccess;

@@ -3,16 +3,14 @@ import {OperatorType} from "../../src/parser/tokens/operatorType";
 
 describe('FunctionCallTests', () => {
   it('TestIntTypeLiteral', async () => {
-    tokenize("   lookUp(SimpleTable, Value, \"Result\")")
-      .count(8)
-      .stringLiteral(0, "lookUp")
+    tokenize("   SimpleTable.LookUp(Value, \"Result\")")
+      .count(6)
+      .memberAccess(0, "SimpleTable.LookUp")
       .operator(1, OperatorType.OpenParentheses)
-      .stringLiteral(2, "SimpleTable")
+      .stringLiteral(2, "Value")
       .operator(3, OperatorType.ArgumentSeparator)
-      .stringLiteral(4, "Value")
-      .operator(5, OperatorType.ArgumentSeparator)
-      .quotedString(6, "Result")
-      .operator(7, OperatorType.CloseParentheses)
+      .quotedString(4, "Result")
+      .operator(5, OperatorType.CloseParentheses)
       .assert();
   });
 });

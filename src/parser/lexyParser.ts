@@ -19,6 +19,8 @@ import {ParseOptions} from "./parseOptions";
 import {Dependencies} from "../dependencyGraph/dependencies";
 import {TrackLoggingCurrentNodeVisitor} from "./TrackLoggingCurrentNodeVisitor";
 import {Line} from "./line";
+import {ILibraries} from "../functionLibraries/libraries";
+import {Assert} from "../infrastructure/assert";
 
 export interface ILexyParser {
   parseFile(fileName: string, options: ParseOptions | null): ParserResult;
@@ -30,14 +32,18 @@ export class LexyParser implements ILexyParser {
   private readonly baseLogger: ILogger;
   private readonly sourceCode: ISourceCodeDocument;
   private readonly fileSystem: IFileSystem;
+  private readonly libraries: ILibraries;
   private readonly expressionFactory: IExpressionFactory;
 
-  constructor(baseLogger: ILogger, tokenizer: ITokenizer, fileSystem: IFileSystem, expressionFactory: IExpressionFactory) {
+  constructor(baseLogger: ILogger, tokenizer: ITokenizer,
+              fileSystem: IFileSystem, expressionFactory: IExpressionFactory,
+              libraries: ILibraries) {
     this.baseLogger = baseLogger;
     this.tokenizer = tokenizer;
     this.fileSystem = fileSystem;
     this.expressionFactory = expressionFactory;
     this.sourceCode = new SourceCodeDocument();
+    this.libraries = Assert.notNull(libraries, "libraries");
   }
 
   public parseFile(fileName: string, options: ParseOptions | null): ParserResult {
@@ -52,7 +58,7 @@ export class LexyParser implements ILexyParser {
   }
 
   public parse(code: string[], fullFileName: string, options: ParseOptions | null): ParserResult {
-    const context = new ParserContext(this.baseLogger, this.fileSystem, this.expressionFactory, options);
+    const context = new ParserContext(this.baseLogger, this.fileSystem, this.expressionFactory, this.libraries, options);
     context.addFileIncluded(fullFileName);
     context.setFileLineFilter(fullFileName);
 
@@ -165,7 +171,7 @@ export class LexyParser implements ILexyParser {
 
   private validateNodesTree(context: IParserContext): void {
     let visitor = new TrackLoggingCurrentNodeVisitor(context.logger);
-    let validationContext = new ValidationContext(context.logger, context.nodes, visitor);
+    let validationContext = new ValidationContext(context.logger, context.nodes, visitor, context.libraries);
     context.rootNode.validateTree(validationContext);
   }
 

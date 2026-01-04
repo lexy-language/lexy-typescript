@@ -15,7 +15,7 @@ export class SystemFunctions {
     return keys.map(key => ({name: key, value: value[key]}));
   }
 
-  public static variablePath(parent: string, name: string) {
+  public static identifierPath(parent: string, name: string) {
     return parent ? parent + "." + name : name;
   }
 }

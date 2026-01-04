@@ -1,8 +1,8 @@
 import {parseScenario} from "../parseFunctions";
 import {
-  asPrimitiveVariableDeclarationType,
-  PrimitiveVariableDeclarationType
-} from "../../src/language/variableTypes/primitiveVariableDeclarationType";
+  asPrimitiveVariableTypeDeclaration,
+  PrimitiveVariableTypeDeclaration
+} from "../../src/language/variableTypes/declarations/primitiveVariableTypeDeclaration";
 import {validateOfType} from "../validateOfType";
 import {format} from "../../src/infrastructure/formatting";
 
@@ -30,12 +30,12 @@ describe('ParseScenarioTests', () => {
 
     const parametersAssignments = scenario.parameters.allAssignments();
     expect(parametersAssignments.length).toBe(1);
-    expect(parametersAssignments[0].variable.parentIdentifier).toBe(`value`);
+    expect(parametersAssignments[0].variable.rootIdentifier).toBe(`value`);
     expect(parametersAssignments[0].constantValue.value).toBe(123);
 
     const resultsAssignments = scenario.results.allAssignments();
     expect(resultsAssignments.length).toBe(1);
-    expect(resultsAssignments[0].variable.parentIdentifier).toBe(`Result`);
+    expect(resultsAssignments[0].variable.rootIdentifier).toBe(`Result`);
     expect(resultsAssignments[0].constantValue.value).toBe(456);
   });
 
@@ -102,20 +102,20 @@ describe('ParseScenarioTests', () => {
 
     expect(scenario.functionNode.parameters.variables.length).toBe(2);
     expect(scenario.functionNode.parameters.variables[0].name).toBe(`Value1`);
-    validateOfType<PrimitiveVariableDeclarationType>(asPrimitiveVariableDeclarationType, scenario.functionNode.parameters.variables[0].type, value =>
+    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, scenario.functionNode.parameters.variables[0].type, value =>
       expect(value.type).toBe(`number`));
     expect(scenario.functionNode.parameters.variables[0].defaultExpression.toString()).toBe(`123`);
     expect(scenario.functionNode.parameters.variables[1].name).toBe(`Value2`);
-    validateOfType<PrimitiveVariableDeclarationType>(asPrimitiveVariableDeclarationType, scenario.functionNode.parameters.variables[1].type, value =>
+    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, scenario.functionNode.parameters.variables[1].type, value =>
       expect(value.type).toBe(`number`));
     expect(scenario.functionNode.parameters.variables[1].defaultExpression.toString()).toBe(`456`);
     expect(scenario.functionNode.results.variables.length).toBe(2);
     expect(scenario.functionNode.results.variables[0].name).toBe(`Result1`);
-    validateOfType<PrimitiveVariableDeclarationType>(asPrimitiveVariableDeclarationType, scenario.functionNode.results.variables[0].type, value =>
+    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, scenario.functionNode.results.variables[0].type, value =>
       expect(value.type).toBe(`number`));
     expect(scenario.functionNode.results.variables[0].defaultExpression).toBeNull();
     expect(scenario.functionNode.results.variables[1].name).toBe(`Result2`);
-    validateOfType<PrimitiveVariableDeclarationType>(asPrimitiveVariableDeclarationType, scenario.functionNode.results.variables[1].type, value =>
+    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, scenario.functionNode.results.variables[1].type, value =>
       expect(value.type).toBe(`number`));
     expect(scenario.functionNode.results.variables[1].defaultExpression).toBeNull();
     expect(scenario.functionNode.code.expressions.length).toBe(2);
@@ -124,16 +124,16 @@ describe('ParseScenarioTests', () => {
 
     const parametersAssignments = scenario.parameters.allAssignments();
     expect(parametersAssignments.length).toBe(2);
-    expect(parametersAssignments[0].variable.parentIdentifier).toBe(`Value1`);
+    expect(parametersAssignments[0].variable.rootIdentifier).toBe(`Value1`);
     expect(parametersAssignments[0].constantValue.value).toBe(987);
-    expect(parametersAssignments[1].variable.parentIdentifier).toBe(`Value2`);
+    expect(parametersAssignments[1].variable.rootIdentifier).toBe(`Value2`);
     expect(parametersAssignments[1].constantValue.value).toBe(654);
 
     const resultsAssignments = scenario.results.allAssignments();
     expect(resultsAssignments.length).toBe(2);
-    expect(resultsAssignments[0].variable.parentIdentifier).toBe(`Result1`);
+    expect(resultsAssignments[0].variable.rootIdentifier).toBe(`Result1`);
     expect(resultsAssignments[0].constantValue.value).toBe(123);
-    expect(resultsAssignments[1].variable.parentIdentifier).toBe(`Result2`);
+    expect(resultsAssignments[1].variable.rootIdentifier).toBe(`Result2`);
     expect(resultsAssignments[1].constantValue.value).toBe(456);
   });
 

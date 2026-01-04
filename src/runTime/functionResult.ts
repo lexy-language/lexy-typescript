@@ -1,4 +1,4 @@
-import {VariablePath} from "../language/variablePath";
+import {IdentifierPath} from "../language/identifierPath";
 import {ExecutionLogEntry} from "./executionLogEntry";
 import Decimal from "decimal.js";
 
@@ -36,15 +36,16 @@ export class FunctionResult {
     return this.valueObject[name];
   }
 
-  public getValue(reference: VariablePath): any {
+  public getValue(reference: IdentifierPath, validationResult: Array<string>): any {
     let currentReference = reference;
-    let currentValue: ResultsValue = this.valueObject[reference.parentIdentifier];
+    let currentValue: ResultsValue = this.valueObject[reference.rootIdentifier];
     while (currentReference.hasChildIdentifiers) {
       currentReference = currentReference.childrenReference();
       if (currentValue == null) {
-        throw new Error(`Can't get variable: '${reference}'` )
+        validationResult.push(`Can't get variable: '${reference}'. Values: '${JSON.stringify(this.valueObject, null,  4)}'`);
+        return null;
       }
-      currentValue = (currentValue as ResultsType)[currentReference.parentIdentifier];
+      currentValue = (currentValue as ResultsType)[currentReference.rootIdentifier];
     }
 
     return currentValue;

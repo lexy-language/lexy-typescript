@@ -5,6 +5,7 @@ import {SourceFile} from "./sourceFile";
 import {SourceReference} from "./sourceReference";
 import {TokenizeResult} from "./tokens/tokenizeResult";
 import {TokenList} from "./tokens/tokenList";
+import {TokenCharacter} from "./tokens/tokenCharacter";
 
 export class Line {
 
@@ -116,5 +117,10 @@ export class Line {
       this.tokensValues = tokenizeResult.result;
     }
     return tokenizeResult;
+  }
+
+  public character(index: number): TokenCharacter {
+    let value = this.content.charCodeAt(index);
+    return new TokenCharacter(value, index);
   }
 }

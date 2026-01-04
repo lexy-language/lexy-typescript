@@ -7,11 +7,11 @@ import {
   newParseTokenInvalidResult,
   ParseTokenResult
 } from "./parseTokenResult";
-import {DateTimeLiteral} from "./dateTimeLiteral";
+import {DateTimeLiteralToken} from "./dateTimeLiteralToken";
 import {KeywordToken} from "./keywordToken";
-import {MemberAccessLiteral} from "./memberAccessLiteral";
+import {MemberAccessLiteralToken} from "./memberAccessLiteralToken";
 import {StringLiteralToken} from "./stringLiteralToken";
-import {BooleanLiteral} from "./booleanLiteral";
+import {BooleanLiteralToken} from "./booleanLiteralToken";
 import {Token} from "./token";
 import {Keywords} from "../Keywords";
 import {isDigitOrLetter} from "./character";
@@ -69,7 +69,7 @@ export class BuildLiteralToken extends ParsableToken {
     }
 
     if (value == TokenValues.Quote && this.value == TokenValues.DateTimeStarter) {
-      return newParseTokenInProgressResult(new DateTimeLiteral(this.firstCharacter));
+      return newParseTokenInProgressResult(new DateTimeLiteralToken(this.firstCharacter));
     }
 
     return newParseTokenInvalidResult(`Unexpected character: '${String.fromCharCode(value)}'`);
@@ -88,11 +88,11 @@ export class BuildLiteralToken extends ParsableToken {
     if (Keywords.contains(value)) {
       return new KeywordToken(value, this.firstCharacter);
     }
-    if (BooleanLiteral.isValid(value)) {
-      return BooleanLiteral.parse(value, this.firstCharacter);
+    if (BooleanLiteralToken.isValid(value)) {
+      return BooleanLiteralToken.parse(value, this.firstCharacter);
     }
     if (this.hasMemberAccessor) {
-      return new MemberAccessLiteral(value, this.firstCharacter);
+      return new MemberAccessLiteralToken(value, this.firstCharacter);
     }
 
     return new StringLiteralToken(value, this.firstCharacter);

@@ -1,9 +1,9 @@
 import {parseFunction} from "../parseFunctions";
 import {validateOfType} from "../validateOfType";
 import {
-  asPrimitiveVariableDeclarationType,
-  PrimitiveVariableDeclarationType
-} from "../../src/language/variableTypes/primitiveVariableDeclarationType";
+  asPrimitiveVariableTypeDeclaration,
+  PrimitiveVariableTypeDeclaration
+} from "../../src/language/variableTypes/declarations/primitiveVariableTypeDeclaration";
 
 describe('LexyParserTests', () => {
   it('testSimpleReturn', async () => {
@@ -17,7 +17,7 @@ describe('LexyParserTests', () => {
     expect(functionNode.name.value).toBe(`TestSimpleReturn`);
     expect(functionNode.results.variables.length).toBe(1);
     expect(functionNode.results.variables[0].name).toBe(`Result`);
-    validateOfType<PrimitiveVariableDeclarationType>(asPrimitiveVariableDeclarationType,
+    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration,
       functionNode.results.variables[0].type, type =>
         expect(type.type).toBe(`number`));
     expect(functionNode.code.expressions.length).toBe(1);

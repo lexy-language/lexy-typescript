@@ -1,8 +1,8 @@
 import {IParserLogger} from "./parserLogger";
 import {Line} from "./line";
 import {TokenList} from "./tokens/tokenList";
-import {BooleanLiteral} from "./tokens/booleanLiteral";
-import {DateTimeLiteral} from "./tokens/dateTimeLiteral";
+import {BooleanLiteralToken} from "./tokens/booleanLiteralToken";
+import {DateTimeLiteralToken} from "./tokens/dateTimeLiteralToken";
 import {QuotedLiteralToken} from "./tokens/quotedLiteralToken";
 import {OperatorType} from "./tokens/operatorType";
 import {ILiteralToken} from "./tokens/ILiteralToken";
@@ -79,7 +79,7 @@ export class TokenValidator {
   }
 
   public memberAccess(index: number, value: string | null): TokenValidator {
-    this.type(index, TokenType.MemberAccessLiteral);
+    this.type(index, TokenType.MemberAccessLiteralToken);
     if (value != null) this.value(index, value);
     return this;
   }
@@ -109,7 +109,7 @@ export class TokenValidator {
   }
 
   public boolean(index: number, value: boolean): TokenValidator {
-    const token = this.validateType<BooleanLiteral>(index, TokenType.BooleanLiteral);
+    const token = this.validateType<BooleanLiteralToken>(index, TokenType.BooleanLiteralToken);
     if (token != null && token.booleanValue != value) {
       this.fail(index, `Invalid token ${index} value. Expected: '${value}' Actual: '${token.value}'`);
       this.isValid = false;
@@ -119,7 +119,7 @@ export class TokenValidator {
   }
 
   public dateTime(index: number, year: number, month: number, day: number, hours: number, minutes: number, seconds: number): TokenValidator {
-    let token = this.validateType<DateTimeLiteral>(index, TokenType.DateTimeLiteral);
+    let token = this.validateType<DateTimeLiteralToken>(index, TokenType.DateTimeLiteralToken);
     let expected = new Date(year, month-1, day, hours, minutes, seconds);
     if (token != null && token.dateTimeValue != null && token.dateTimeValue.getTime() != expected.getTime()) {
       this.fail(index, `Invalid token value at ${index}. Expected: '${expected.toISOString()}' Actual: '${token.dateTimeValue.toISOString()}'`);

@@ -3,12 +3,12 @@ import type {IValidationContext} from "../../parser/validationContext";
 import {Expression} from "../expressions/expression";
 import {INode, Node} from "../node";
 import {ConstantValue} from "./constantValue";
-import {VariablePath} from "../variablePath";
+import {IdentifierPath} from "../identifierPath";
 import {VariableType} from "../variableTypes/variableType";
 import {SourceReference} from "../../parser/sourceReference";
 import {NodeType} from "../nodeType";
 import {TokenList} from "../../parser/tokens/tokenList";
-import {asMemberAccessLiteral, MemberAccessLiteral} from "../../parser/tokens/memberAccessLiteral";
+import {asMemberAccessLiteralToken, MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
 import {asStringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {TokenCharacter} from "../../parser/tokens/tokenCharacter";
 
@@ -34,13 +34,13 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
   private variableTypeValue: VariableType | null = null;
 
   public readonly constantValue: ConstantValue;
-  public readonly variable: VariablePath;
+  public readonly variable: IdentifierPath;
 
   public get variableType(): VariableType | null {
     return this.variableTypeValue;
   }
 
-  constructor(variable: VariablePath, constantValue: ConstantValue, variableExpression: Expression,
+  constructor(variable: IdentifierPath, constantValue: ConstantValue, variableExpression: Expression,
               valueExpression: Expression, reference: SourceReference) {
     super(reference);
 
@@ -51,20 +51,20 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
     this.valueExpression = valueExpression;
   }
 
-  static addParentVariableAccessor(parentVariable: VariablePath, targetTokens: TokenList): TokenList {
+  static addParentVariableAccessor(parentVariable: IdentifierPath, targetTokens: TokenList): TokenList {
     if (targetTokens.length != 1) return targetTokens;
-    const variablePath = AssignmentDefinition.getVariablePath(targetTokens);
-    if (variablePath == null) {
+    const identifierPath = AssignmentDefinition.getIdentifierPath(targetTokens);
+    if (identifierPath == null) {
       return targetTokens;
     }
 
-    const newPath = parentVariable.append(variablePath.parts).fullPath();
-    const newToken = new MemberAccessLiteral(newPath, variablePath.firstCharacter);
+    const newPath = parentVariable.append(identifierPath.parts).fullPath();
+    const newToken = new MemberAccessLiteralToken(newPath, identifierPath.firstCharacter);
     return new TokenList([newToken]);
   }
 
-  private static getVariablePath(targetTokens: TokenList): {parts: Array<string>, firstCharacter: TokenCharacter} | null {
-    const memberAccess = asMemberAccessLiteral(targetTokens.get(0));
+  private static getIdentifierPath(targetTokens: TokenList): {parts: Array<string>, firstCharacter: TokenCharacter} | null {
+    const memberAccess = asMemberAccessLiteralToken(targetTokens.get(0));
     if (memberAccess != null) {
       return {parts: memberAccess.parts, firstCharacter: memberAccess.firstCharacter};
     }

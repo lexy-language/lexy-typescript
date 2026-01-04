@@ -6,7 +6,7 @@ import type {IComponentNode} from "./componentNode";
 import type {IComponentNodeList} from "./componentNodeList";
 
 import {VariableType} from "./variableTypes/variableType";
-import {VariableDeclarationType} from "./variableTypes/variableDeclarationType";
+import {VariableTypeDeclaration} from "./variableTypes/declarations/variableTypeDeclaration";
 import {SourceReference} from "../parser/sourceReference";
 import {Expression} from "./expressions/expression";
 import {VariableSource} from "./variableSource";
@@ -14,10 +14,10 @@ import {Node} from "./node";
 import {OperatorType} from "../parser/tokens/operatorType";
 import {asOperatorToken, OperatorToken} from "../parser/tokens/operatorToken";
 import {validateTypeAndDefault} from "./variableTypes/validationContextExtensions";
-import {VariableDeclarationTypeParser} from "./variableTypes/variableDeclarationTypeParser";
 import {NodeType} from "./nodeType";
 import {TokenType} from "../parser/tokens/tokenType";
 import {asHasNodeDependencies} from "./IHasNodeDependencies";
+import {VariableTypeDeclarationParser} from "./variableTypes/declarations/variableTypeDeclarationParser";
 
 export function instanceOfVariableDefinition(object: any): object is VariableDefinition {
   return object?.nodeType == NodeType.VariableDefinition;
@@ -33,7 +33,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
   public readonly nodeType = NodeType.VariableDefinition;
   public readonly defaultExpression: Expression | null;
   public readonly source: VariableSource;
-  public readonly type: VariableDeclarationType;
+  public readonly type: VariableTypeDeclaration;
   public readonly name: string;
 
   private variableTypeValue: VariableType | null = null;
@@ -42,7 +42,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     return this.variableTypeValue;
   }
 
-  constructor(name: string, type: VariableDeclarationType,
+  constructor(name: string, type: VariableTypeDeclaration,
               source: VariableSource, reference: SourceReference, defaultExpression: Expression | null = null) {
     super(reference);
     this.type = type;
@@ -51,9 +51,9 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     this.source = source;
   }
 
-  public getDependencies(componentNodeList: IComponentNodeList): ReadonlyArray<IComponentNode> {
+  public getDependencies(componentNodes: IComponentNodeList): ReadonlyArray<IComponentNode> {
     const hasDependencies = asHasNodeDependencies(this.type);
-    return hasDependencies ? hasDependencies.getDependencies(componentNodeList) : [];
+    return hasDependencies ? hasDependencies.getDependencies(componentNodes) : [];
   }
 
   public static parse(source: VariableSource, context: IParseLineContext): VariableDefinition | null {
@@ -66,7 +66,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
 
     if (!result) return null;
 
-    if (!tokens.isTokenType(0, TokenType.StringLiteralToken) && !tokens.isTokenType(0, TokenType.MemberAccessLiteral)) {
+    if (!tokens.isTokenType(0, TokenType.StringLiteralToken) && !tokens.isTokenType(0, TokenType.MemberAccessLiteralToken)) {
       context.logger.fail(line.tokenReference(0), `Unexpected token.`);
       return null;
     }
@@ -75,7 +75,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     const type = tokens.tokenValue(0);
     if (name == null || type == null) return null;
 
-    const variableType = VariableDeclarationTypeParser.parse(type, line.tokenReference(0));
+    const variableType = VariableTypeDeclarationParser.parse(type, line.tokenReference(0));
     if (variableType == null) return null;
 
     if (tokens.length == 2) return new VariableDefinition(name, variableType, source, line.lineStartReference());

@@ -1,60 +1,13 @@
-/*
-
-internal static class Types {
-   public static translateDate(dateTimeLiteral: DateTimeLiteral): ExpressionSyntax {
-     return TranslateDate(dateTimeLiteral.DateTimeValue);
-   }
-
-   private static translateDate(dateTimeValue: Date): ExpressionSyntax {
-     return ObjectCreationExpression(
-         QualifiedName(
-           IdentifierName(`System`),
-           IdentifierName(`Date`)))
-       .WithArgumentList(
-         ArgumentList(
-           SeparatedArray<ArgumentSyntax>(
-             new SyntaxNodeOrToken[] {
-               Arguments.Numeric(dateTimeValue.Year),
-               Token(SyntaxKind.CommaToken),
-               Arguments.Numeric(dateTimeValue.Month),
-               Token(SyntaxKind.CommaToken),
-               Arguments.Numeric(dateTimeValue.Day),
-               Token(SyntaxKind.CommaToken),
-               Arguments.Numeric(dateTimeValue.Hour),
-               Token(SyntaxKind.CommaToken),
-               Arguments.Numeric(dateTimeValue.Minute),
-               Token(SyntaxKind.CommaToken),
-               Arguments.Numeric(dateTimeValue.Second)
-             })));
-   }
-
-   public static syntax(variableDefinition: VariableDefinition): TypeSyntax {
-     return Syntax(variableDefinition.Type);
-   }
-
-   public static syntax(type: string): TypeSyntax {
-     return type switch {
-       TypeNames.String => PredefinedType(Token(SyntaxKind.StringKeyword)),
-       TypeNames.Number => PredefinedType(Token(SyntaxKind.DecimalKeyword)),
-       TypeNames.Date => ParseName(`System.Date`),
-       TypeNames.Boolean => PredefinedType(Token(SyntaxKind.BoolKeyword)),
-       _ => throw new Error(`Couldn't map type: ` + type)
-     };
-   }
-
-
- */
-
 import {VariableType} from "../../language/variableTypes/variableType";
 import {VariableTypeName} from "../../language/variableTypes/variableTypeName";
 import {asPrimitiveType} from "../../language/variableTypes/primitiveType";
 import {asEnumType} from "../../language/variableTypes/enumType";
-import {enumClassName, functionClassName, tableClassName, typeClassName} from "./classNames";
+import {enumClassName, functionClassName, tableClassName} from "./classNames";
 import {asTableType} from "../../language/variableTypes/tableType";
-import {asComplexType, ComplexType} from "../../language/variableTypes/complexType";
 import {LexyCodeConstants} from "./lexyCodeConstants";
-import {ComplexTypeSource} from "../../language/variableTypes/complexTypeSource";
-import {asCustomType} from "../../language/variableTypes/customType";
+import {asGeneratedType, GeneratedType} from "../../language/variableTypes/generatedType";
+import {GeneratedTypeSource} from "../../language/variableTypes/generatedTypeSource";
+import {asDeclaredType} from "../../language/variableTypes/declaredType";
 
 export function translateType(variableType: VariableType): string {
 
@@ -74,31 +27,31 @@ export function translateType(variableType: VariableType): string {
       if (tableType == null) throw new Error("Is not table");
       return tableType.tableName;
     }
-    case VariableTypeName.ComplexType: {
-      const complexType = asComplexType(variableType);
-      if (complexType == null) throw new Error("Is not complexType");
-      return translateComplexType(complexType);
+    case VariableTypeName.GeneratedType: {
+      const complexType = asGeneratedType(variableType);
+      if (complexType == null) throw new Error("Is not GeneratedType");
+      return translateGeneratedType(complexType);
     }
-    case VariableTypeName.CustomType: {
-      const customType = asCustomType(variableType);
-      if (customType == null) throw new Error("Is not customType");
+    case VariableTypeName.DeclaredType: {
+      const customType = asDeclaredType(variableType);
+      if (customType == null) throw new Error("Is not DeclaredType");
       return typeof (customType.type);
     }
     default:
-      throw new Error("Not supported: " + variableType.variableTypeName)
+      throw new Error(`Not supported: ${variableType.variableTypeName}`)
   }
 }
 
-export function translateComplexType(complexType: ComplexType) {
+export function translateGeneratedType(complexType: GeneratedType) {
   switch (complexType.source) {
-    case ComplexTypeSource.FunctionParameters: {
-      return functionClassName(complexType.name) + "." + LexyCodeConstants.parametersType;
+    case GeneratedTypeSource.FunctionParameters: {
+      return `${functionClassName(complexType.name)}.${LexyCodeConstants.parametersType}`;
     }
-    case ComplexTypeSource.FunctionResults: {
-      return functionClassName(complexType.name) + "." + LexyCodeConstants.resultsType;
+    case GeneratedTypeSource.FunctionResults: {
+      return `${functionClassName(complexType.name)}.${LexyCodeConstants.resultsType}`;
     }
-    case ComplexTypeSource.TableRow: {
-      return tableClassName(complexType.name) + "." + LexyCodeConstants.rowType;
+    case GeneratedTypeSource.TableRow: {
+      return `${tableClassName(complexType.name)}.${LexyCodeConstants.rowType}`;
     }
     default: {
       throw new Error(`Invalid type: ${complexType.source}`)
