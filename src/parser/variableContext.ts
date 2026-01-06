@@ -1,6 +1,6 @@
 import type {IParserLogger} from "./parserLogger";
-import type {ITypeWithMembers} from "../language/variableTypes/ITypeWithMembers";
-import {asTypeWithMembers} from "../language/variableTypes/ITypeWithMembers";
+import type {IObjectType} from "../language/variableTypes/objectType";
+import {asObjectType} from "../language/variableTypes/objectType";
 import type {IValidationContext} from "./validationContext";
 
 import {VariableType} from "../language/variableTypes/variableType";
@@ -67,7 +67,7 @@ export class VariableContext implements IVariableContext {
     if (parent == null) return false;
 
     return !path.hasChildIdentifiers ||
-      this.containChild(parent.variableType, path.childrenReference(), context);
+      this.containsChild(parent.variableType, path.childrenReference(), context);
   }
 
   public createVariableReference(reference: SourceReference, path: IdentifierPath, validationContext: IValidationContext): VariableReference | null {
@@ -145,23 +145,23 @@ export class VariableContext implements IVariableContext {
         : null;
   }
 
-  private containChild(parentType: VariableType | null, path: IdentifierPath, context: IValidationContext): boolean {
-    let typeWithMembers = (parentType as any).typeWithMember == true ? (parentType as any) as ITypeWithMembers : null;
+  private containsChild(parentType: VariableType | null, path: IdentifierPath, context: IValidationContext): boolean {
+    let objectType = (parentType as any).objectType == true ? (parentType as any) as IObjectType : null;
 
-    let memberVariableType = typeWithMembers != null ? typeWithMembers.memberType(path.rootIdentifier, context.componentNodes) : null;
+    let memberVariableType = objectType != null ? objectType.memberType(path.rootIdentifier, context.componentNodes) : null;
     if (memberVariableType == null) return false;
 
     return !path.hasChildIdentifiers
-      || this.containChild(memberVariableType, path.childrenReference(), context);
+      || this.containsChild(memberVariableType, path.childrenReference(), context);
   }
 
   private getVariableType(parentType: VariableType, path: IdentifierPath,
                           context: IValidationContext): VariableType | null {
 
-    let typeWithMembers = asTypeWithMembers(parentType);
-    if (typeWithMembers == null) return null;
+    let objectType = asObjectType(parentType);
+    if (objectType == null) return null;
 
-    let memberVariableType = typeWithMembers.memberType(path.rootIdentifier, context.componentNodes);
+    let memberVariableType = objectType.memberType(path.rootIdentifier, context.componentNodes);
     if (memberVariableType == null) return null;
 
     return !path.hasChildIdentifiers

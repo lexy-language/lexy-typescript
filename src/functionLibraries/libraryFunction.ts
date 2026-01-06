@@ -1,18 +1,19 @@
 import type {IValidationContext} from "../parser/validationContext";
-import type {IInstanceFunction} from "../language/functions/IInstanceFunction";
+import type {IObjectTypeFunction} from "../language/variableTypes/objectTypeFunction";
 
 import {SourceReference} from "../parser/sourceReference";
 import {Expression} from "../language/expressions/expression";
-import {
-  newValidateInstanceFunctionArgumentsFailed,
-  newValidateInstanceFunctionArgumentsSuccess, ValidateInstanceFunctionArgumentsResult
-} from "../language/functions/validateInstanceFunctionArgumentsResult";
+
 import {VariableType} from "../language/variableTypes/variableType";
 import {PrimitiveType} from "../language/variableTypes/primitiveType";
 import {LibraryFunctionInfo} from "../runTime/libraries/libraryRuntime";
 import {LibraryFunctionCall} from "./libraryFunctionCall";
+import {
+  newValidateMemberFunctionArgumentsFailed,
+  newValidateMemberFunctionArgumentsSuccess, ValidateMemberFunctionArgumentsResult
+} from "../language/variableTypes/functions/validateMemberFunctionArgumentsResult";
 
-export class LibraryFunction implements IInstanceFunction {
+export class LibraryFunction implements IObjectTypeFunction {
 
   private readonly returnType: VariableType ;
   private readonly parameterTypes: VariableType[];
@@ -27,10 +28,10 @@ export class LibraryFunction implements IInstanceFunction {
     this.name = name;
   }
 
-  public validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>, reference: SourceReference): ValidateInstanceFunctionArgumentsResult {
+  public validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>, reference: SourceReference): ValidateMemberFunctionArgumentsResult {
     if (args.length != this.parameterTypes.length) {
       context.logger.fail(reference, `Invalid number of function arguments: '${this.name}. Expected: '${this.parameterTypes.length}' Actual: '${args.length}'. `);
-      return newValidateInstanceFunctionArgumentsFailed();
+      return newValidateMemberFunctionArgumentsFailed();
     }
 
     let failed = false;
@@ -41,8 +42,8 @@ export class LibraryFunction implements IInstanceFunction {
     }
 
     return failed
-      ? newValidateInstanceFunctionArgumentsFailed()
-      : newValidateInstanceFunctionArgumentsSuccess(new LibraryFunctionCall(this.libraryName, this.name, this.returnType));
+      ? newValidateMemberFunctionArgumentsFailed()
+      : newValidateMemberFunctionArgumentsSuccess(new LibraryFunctionCall(this.libraryName, this.name, this.returnType));
   }
 
   public getResultsType(args: ReadonlyArray<Expression>): VariableType {

@@ -12,7 +12,7 @@ import {
   instanceOfLookUpFunctionCall
 } from "../../../language/variableTypes/functions/lookUpFunctionCall";
 
-export class TableLookUpFunctionCall {
+export class TableLookUpFunctionCallRenderer {
 
   public static matches(expression: Expression) {
     return instanceOfMemberFunctionCallExpression(expression)

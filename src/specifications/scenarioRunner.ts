@@ -262,7 +262,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
     if (actualErrors.length > 0 && expectErrors == undefined) {
       this.fail(`${title} errors: ${actualErrors.length}`, StringArrayBuilder
-        .new("Expected:").list(actualErrors)
+        .new("Actual:").list(actualErrors)
         .array());
       return false;
     }

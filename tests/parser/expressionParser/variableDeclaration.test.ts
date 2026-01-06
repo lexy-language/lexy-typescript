@@ -11,9 +11,9 @@ import {
   validateQuotedLiteralExpression
 } from "./expressionTestExtensions";
 import {
-  asComplexVariableTypeDeclaration,
-  ComplexVariableTypeDeclaration
-} from "../../../src/language/variableTypes/declarations/complexVariableTypeDeclaration";
+  asObjectVariableTypeDeclaration,
+  ObjectVariableTypeDeclaration
+} from "../../../src/language/variableTypes/declarations/objectVariableTypeDeclaration";
 import {
   asPrimitiveVariableTypeDeclaration,
   PrimitiveVariableTypeDeclaration
@@ -104,7 +104,7 @@ describe('VariableDeclaration', () => {
   it('declaredType', async () => {
     let expression = parseExpression(`Custom temp`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<ComplexVariableTypeDeclaration>(asComplexVariableTypeDeclaration, variableDeclarationExpression.type, type =>
+      validateOfType<ObjectVariableTypeDeclaration>(asObjectVariableTypeDeclaration, variableDeclarationExpression.type, type =>
         expect(type.type).toBe(`Custom`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       expect(variableDeclarationExpression.assignment).toBeNull();
@@ -114,7 +114,7 @@ describe('VariableDeclaration', () => {
   it('declaredTypeWithDefault', async () => {
     let expression = parseExpression(`Custom temp = Custom.First`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<ComplexVariableTypeDeclaration>(asComplexVariableTypeDeclaration, variableDeclarationExpression.type, type =>
+      validateOfType<ObjectVariableTypeDeclaration>(asObjectVariableTypeDeclaration, variableDeclarationExpression.type, type =>
         expect(type.type).toBe(`Custom`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       validateMemberAccessExpression(variableDeclarationExpression.assignment, `Custom.First`);

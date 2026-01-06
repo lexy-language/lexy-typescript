@@ -75,7 +75,7 @@ export class LexyParser implements ILexyParser {
       context.logger.assertNoErrors();
     }
 
-    return new ParserResult(context.nodes, context.logger);
+    return new ParserResult(context.rootNode, context.nodes, context.logger);
   }
 
   private parseDocument(context: IParserContext, code: string[], fullFileName: string): void {

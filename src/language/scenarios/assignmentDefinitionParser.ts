@@ -1,6 +1,6 @@
 import {IParseLineContext} from "../../parser/ParseLineContext";
 import {IdentifierPath} from "../identifierPath";
-import {ComplexAssignmentDefinition} from "./complexAssignmentDefinition";
+import {ObjectAssignmentDefinition} from "./objectAssignmentDefinition";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {TokenType} from "../../parser/tokens/tokenType";
@@ -8,10 +8,10 @@ import {VariablePathExpressionParser} from "./variablePathExpressionParser";
 import {ConstantValueParser} from "./constantValueParser";
 import {AssignmentDefinition} from "./assignmentDefinition";
 
-export type AssignmentDefinitionParserHandler = (context: IParseLineContext, parentVariable: IdentifierPath | null) => AssignmentDefinition | ComplexAssignmentDefinition | null;
+export type AssignmentDefinitionParserHandler = (context: IParseLineContext, parentVariable: IdentifierPath | null) => AssignmentDefinition | ObjectAssignmentDefinition | null;
 
 export class AssignmentDefinitionParser {
-  public static parse(context: IParseLineContext, parentVariable: IdentifierPath | null = null): AssignmentDefinition | ComplexAssignmentDefinition | null {
+  public static parse(context: IParseLineContext, parentVariable: IdentifierPath | null = null): AssignmentDefinition | ObjectAssignmentDefinition | null {
     const line = context.line;
     const tokens = line.tokens;
     const reference = line.lineStartReference();
@@ -39,7 +39,7 @@ export class AssignmentDefinitionParser {
     }
 
     if (assignmentIndex == tokens.length - 1) {
-      return new ComplexAssignmentDefinition(identifierPath.result, reference, AssignmentDefinitionParser.parse);
+      return new ObjectAssignmentDefinition(identifierPath.result, reference, AssignmentDefinitionParser.parse);
     }
 
     const valueExpression = context.expressionFactory.parse(tokens.tokensFrom(assignmentIndex + 1), line);

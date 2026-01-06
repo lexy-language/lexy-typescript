@@ -1,12 +1,13 @@
-import type {ITypeWithMembers} from "./ITypeWithMembers";
 import type {IComponentNode} from "../componentNode";
+import type {IComponentNodeList} from "../componentNodeList";
+import type {IObjectTypeVariable} from "./objectTypeVariable";
+import type {IObjectTypeFunction} from "./objectTypeFunction";
 
 import {VariableType} from "./variableType";
-import {GeneratedTypeMember} from "./generatedTypeMember";
 import {GeneratedTypeSource} from "./generatedTypeSource";
 import {VariableTypeName} from "./variableTypeName";
-import {IComponentNodeList} from "../componentNodeList";
-import {IInstanceFunction} from "../functions/IInstanceFunction";
+import {firstOrDefault} from "../../infrastructure/arrayFunctions";
+import {ObjectType} from "./objectType";
 
 export function instanceOfGeneratedType(object: any): object is GeneratedType {
   return object?.variableTypeName == VariableTypeName.GeneratedType;
@@ -16,16 +17,16 @@ export function asGeneratedType(object: any): GeneratedType | null {
   return instanceOfGeneratedType(object) ? object as GeneratedType : null;
 }
 
-export class GeneratedType extends VariableType implements ITypeWithMembers {
+export class GeneratedType extends ObjectType {
 
   public variableTypeName = VariableTypeName.GeneratedType;
-  public typeWithMember = true;
+  public objectType = true;
   public name: string;
   public node: IComponentNode;
   public source: GeneratedTypeSource;
-  public members: Array<GeneratedTypeMember>
+  public members: Array<IObjectTypeVariable>
 
-  constructor(name: string, node: IComponentNode, source: GeneratedTypeSource, members: Array<GeneratedTypeMember>) {
+  constructor(name: string, node: IComponentNode, source: GeneratedTypeSource, members: Array<IObjectTypeVariable>) {
     super();
     this.name = name;
     this.node = node;
@@ -43,7 +44,15 @@ export class GeneratedType extends VariableType implements ITypeWithMembers {
     return null;
   }
 
-  getFunction(name: string): IInstanceFunction | null {
+  override getVariables(): ReadonlyArray<IObjectTypeVariable> {
+    return this.members;
+  }
+
+  public override getVariable(name: string): IObjectTypeVariable | null {
+    return firstOrDefault(this.members, variable => variable.name == name);
+  }
+
+  public override getFunction(name: string): IObjectTypeFunction | null {
     return null;
   }
 
@@ -52,7 +61,6 @@ export class GeneratedType extends VariableType implements ITypeWithMembers {
   }
 
   public toString() {
-    return "(GeneratedType) " + this.name;
+    return this.name;
   }
-
 }

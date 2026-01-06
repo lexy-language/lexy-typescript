@@ -1,10 +1,12 @@
 import type {IComponentNodeList} from "../componentNodeList";
 
-import {TypeWithMembers} from "./typeWithMembers";
+import {ObjectType} from "./objectType";
 import {VariableType} from "./variableType";
 import {Function} from "../functions/function";
 import {VariableTypeName} from "./variableTypeName";
 import {GeneratedType} from "./generatedType";
+import {IObjectTypeFunction} from "./objectTypeFunction";
+import {IObjectTypeVariable} from "./objectTypeVariable";
 
 export function instanceOfFunctionType(object: any): object is FunctionType {
   return object?.variableTypeName == VariableTypeName.EnumType;
@@ -14,7 +16,7 @@ export function asFunctionType(object: any): FunctionType | null {
   return instanceOfFunctionType(object) ? object as FunctionType : null;
 }
 
-export class FunctionType extends TypeWithMembers {
+export class FunctionType extends ObjectType {
 
   public readonly variableTypeName = VariableTypeName.FunctionType;
 
@@ -27,12 +29,12 @@ export class FunctionType extends TypeWithMembers {
     this.functionValue = functionValue;
   }
 
-  public override equals(other: VariableType | null): boolean {
-    return other != null && instanceOfFunctionType(other) && this.type == other.type;
+  public override getVariable(name: string): IObjectTypeVariable | null {
+    return null;
   }
 
-  public toString(): string {
-    return this.type;
+  public override getFunction(name: string): IObjectTypeFunction | null {
+    return null;
   }
 
   public override memberType(name: string, componentNodes: IComponentNodeList): VariableType | null {
@@ -41,6 +43,18 @@ export class FunctionType extends TypeWithMembers {
     return null;
   }
 
+
+  public override isAssignableFrom(type: VariableType): boolean {
+    return this.equals(type);
+  }
+
+  public override equals(other: VariableType | null): boolean {
+    return other != null && instanceOfFunctionType(other) && this.type == other.type;
+  }
+
+  public toString(): string {
+    return this.type;
+  }
   private functionParametersType(componentNodes: IComponentNodeList): GeneratedType | null {
     const resultsType = componentNodes.getFunction(this.type)?.getParametersType();
     return !!resultsType ? resultsType : null;

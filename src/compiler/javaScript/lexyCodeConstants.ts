@@ -6,6 +6,7 @@ export class LexyCodeConstants {
 
    public static readonly validateMethod = `__validate`;
    public static readonly runMethod = `__run`;
+   public static readonly inlineMethod = `__inline`;
 
    public static readonly parameterVariable = `__parameters`;
    public static readonly resultsVariable = `__result`;

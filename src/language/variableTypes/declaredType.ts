@@ -2,10 +2,12 @@ import type {IComponentNode} from "../componentNode";
 import type {IComponentNodeList} from "../componentNodeList";
 import type {ITypeDefinition} from "../types/typeDefinition";
 
-import {TypeWithMembers} from "./typeWithMembers";
+import {ObjectType} from "./objectType";
 import {VariableType} from "./variableType";
 import {firstOrDefault} from "../../infrastructure/arrayFunctions";
 import {VariableTypeName} from "./variableTypeName";
+import {IObjectTypeVariable, ObjectTypeVariable} from "./objectTypeVariable";
+import {IObjectTypeFunction} from "./objectTypeFunction";
 
 export function instanceOfDeclaredType(object: any): object is DeclaredType {
   return object?.variableTypeName == VariableTypeName.DeclaredType;
@@ -15,7 +17,7 @@ export function asDeclaredType(object: any): DeclaredType | null {
   return instanceOfDeclaredType(object) ? object as DeclaredType : null;
 }
 
-export class DeclaredType extends TypeWithMembers {
+export class DeclaredType extends ObjectType {
 
   public readonly variableTypeName = VariableTypeName.DeclaredType;
   public type: string;
@@ -27,12 +29,17 @@ export class DeclaredType extends TypeWithMembers {
     this.typeDefinition = typeDefinition;
   }
 
-  public override equals(other: VariableType | null): boolean {
-    return other != null && instanceOfDeclaredType(other) && this.type == other.type;
+  override getVariables(): ReadonlyArray<IObjectTypeVariable> {
+    return this.typeDefinition.variables.map(variable => new ObjectTypeVariable(variable.name, variable.variableType));
   }
 
-  public toString(): string {
-    return this.type;
+  public override getVariable(name: string): IObjectTypeVariable | null {
+    const variable = firstOrDefault(this.typeDefinition.variables, variable => variable.name == name);
+    return variable != null ? new ObjectTypeVariable(variable.name, variable.variableType) : null;
+  }
+
+  public override getFunction(name: string): IObjectTypeFunction | null {
+    return null;
   }
 
   public override memberType(name: string, componentNodes: IComponentNodeList): VariableType | null {
@@ -43,5 +50,13 @@ export class DeclaredType extends TypeWithMembers {
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
     return [this.typeDefinition];
+  }
+
+  public override equals(other: VariableType | null): boolean {
+    return other != null && instanceOfDeclaredType(other) && this.type == other.type;
+  }
+
+  public toString(): string {
+    return this.type;
   }
 }

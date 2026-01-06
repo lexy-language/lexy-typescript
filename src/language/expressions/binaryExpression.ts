@@ -15,6 +15,8 @@ import {NodeType} from "../nodeType";
 import {PrimitiveType} from "../variableTypes/primitiveType";
 import {any} from "../../infrastructure/arrayFunctions";
 import {EnumType, instanceOfEnumType} from "../variableTypes/enumType";
+import {EnumDefinition} from "../enums/enumDefinition";
+import {SourceFile} from "../../parser/sourceFile";
 
 type OperatorCombination = {
   leftType: VariableType,
@@ -63,24 +65,28 @@ export class BinaryExpression extends Expression {
     ExpressionOperator.NotEqual
   ];
 
+  static EnumType() {
+    return new EnumType("*", new EnumDefinition("*", new SourceReference(new SourceFile("*"), 1, 1)));
+  }
+
   private static AllowedOperationCombinations: Array<OperatorCombination> = [
     { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.Equals},
     { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Equals},
     { leftType: PrimitiveType.boolean, rightType: PrimitiveType.boolean, operator: ExpressionOperator.Equals},
     { leftType: PrimitiveType.date, rightType: PrimitiveType.date, operator: ExpressionOperator.Equals},
-    { leftType: EnumType.Generic(), rightType: EnumType.Generic(), operator: ExpressionOperator.Equals},
+    { leftType: BinaryExpression.EnumType(), rightType: BinaryExpression.EnumType(), operator: ExpressionOperator.Equals},
 
     { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.NotEqual},
     { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.NotEqual},
     { leftType: PrimitiveType.boolean, rightType: PrimitiveType.boolean, operator: ExpressionOperator.NotEqual},
     { leftType: PrimitiveType.date, rightType: PrimitiveType.date, operator: ExpressionOperator.NotEqual},
-    { leftType: EnumType.Generic(), rightType: EnumType.Generic(), operator: ExpressionOperator.NotEqual},
+    { leftType: BinaryExpression.EnumType(), rightType: BinaryExpression.EnumType(), operator: ExpressionOperator.NotEqual},
 
     { leftType: PrimitiveType.string, rightType: PrimitiveType.string, operator: ExpressionOperator.Addition},
     { leftType: PrimitiveType.string, rightType: PrimitiveType.number, operator: ExpressionOperator.Addition},
     { leftType: PrimitiveType.string, rightType: PrimitiveType.boolean, operator: ExpressionOperator.Addition},
     { leftType: PrimitiveType.string, rightType: PrimitiveType.date, operator: ExpressionOperator.Addition},
-    { leftType: PrimitiveType.string, rightType: EnumType.Generic(), operator: ExpressionOperator.Addition},
+    { leftType: PrimitiveType.string, rightType: BinaryExpression.EnumType(), operator: ExpressionOperator.Addition},
 
     { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Addition},
     { leftType: PrimitiveType.number, rightType: PrimitiveType.number, operator: ExpressionOperator.Subtraction},
@@ -146,8 +152,9 @@ export class BinaryExpression extends Expression {
     let tokens = source.tokens;
     let supportedTokens = BinaryExpression.getCurrentLevelSupportedTokens(tokens);
     let lowestPriorityOperation = BinaryExpression.getLowestPriorityOperation(supportedTokens);
-    if (lowestPriorityOperation == null)
+    if (lowestPriorityOperation == null) {
       return newParseExpressionFailed("BinaryExpression", `No valid Operator token found.`);
+    }
 
     let leftTokens = tokens.tokensRange(0, lowestPriorityOperation.index - 1);
     if (leftTokens.length == 0) {

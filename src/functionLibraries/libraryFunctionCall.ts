@@ -1,18 +1,17 @@
-import {IdentifierPath} from "../language/identifierPath";
 import {VariableType} from "../language/variableTypes/variableType";
-import {FunctionCallType, IInstanceFunctionCall} from "../language/functions/IInstanceFunctionCall";
+import {IMemberFunctionCall, MemberFunctionCallType} from "../language/variableTypes/functions/memberFunctionCall";
 
 export function instanceOfLibraryFunctionCall(object: any): object is LibraryFunctionCall {
-  return object?.functionCallType == FunctionCallType.LibraryFunctionCall;
+  return object?.functionCallType == MemberFunctionCallType.LibraryFunctionCall;
 }
 
 export function asLibraryFunctionCall(object: any): LibraryFunctionCall | null {
   return instanceOfLibraryFunctionCall(object) ? object as LibraryFunctionCall : null;
 }
 
-export class LibraryFunctionCall implements IInstanceFunctionCall {
+export class LibraryFunctionCall implements IMemberFunctionCall {
 
-  public readonly functionCallType = FunctionCallType.LibraryFunctionCall;
+  public readonly functionCallType = MemberFunctionCallType.LibraryFunctionCall;
 
   public libraryName: string;
   public functionName: string;

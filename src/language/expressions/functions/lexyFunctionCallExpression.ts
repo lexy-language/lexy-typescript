@@ -5,19 +5,24 @@ import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import type {IComponentNodeList} from "../../componentNodeList";
 
 import {Expression} from "../expression";
-import {Mapping, mapToUsedVariable} from "./mapping";
+import {Mapping} from "./mapping";
 import {asGeneratedType} from "../../variableTypes/generatedType";
 import {FillParametersFunctionExpression} from "./systemFunctions/fillParametersFunctionExpression";
 import {ExtractResultsFunctionExpression} from "./systemFunctions/extractResultsFunctionExpression";
 import {VariableType} from "../../variableTypes/variableType";
 import {NodeType} from "../../nodeType";
 import {Function} from "../../functions/function";
-import {Assert} from "../../../infrastructure/assert";
 import {VariableUsage} from "../variableUsage";
-import {VariableAccess} from "../variableAccess";
 import {FunctionCallExpression} from "./functionCallExpression";
 import {ExpressionSource} from "../expressionSource";
-import {asIdentifierExpression} from "../identifierExpression";
+import {ILexyFunctionCall, LexyFunctionCall} from "./lexyFunctionCall";
+import {AutoMapLexyFunctionCall} from "./autoMapLexyFunctionCallExpression";
+import {
+  asValidateFunctionArgumentsAutoMapResult,
+  asValidateFunctionArgumentsCallFunctionResult,
+  ValidateFunctionArgumentsCallFunctionResult
+} from "../../functions/validateFunctionArgumentRsult";
+import {any, ofTypeOrNull} from "../../../infrastructure/arrayFunctions";
 
 export function instanceOfLexyFunctionCallExpression(object: any): object is LexyFunctionCallExpression {
   return object?.nodeType == NodeType.LexyFunctionCallExpression;
@@ -29,14 +34,6 @@ export function asLexyFunctionCallExpression(object: any): LexyFunctionCallExpre
 
 export class LexyFunctionCallExpression extends FunctionCallExpression implements IHasNodeDependencies {
 
-  private readonly mappingParametersValue: Array<Mapping> = [];
-  private readonly mappingResultsValue: Array<Mapping> = [];
-
-  private parameterNameValue: string | null = null;
-  private functionParametersTypesValue: VariableType | null = null;
-  private functionResultsTypeValue: VariableType | null = null;
-  private autoMapValue: boolean = false;
-
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.LexyFunctionCallExpression;
 
@@ -44,34 +41,13 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
 
   public readonly args: ReadonlyArray<Expression>;
 
-  public get mappingParameters(): ReadonlyArray<Mapping> {
-    return this.mappingParametersValue;
-  }
-
-  public get mappingResults(): ReadonlyArray<Mapping> {
-    return this.mappingResultsValue;
-  }
-
-  public get parameterName(): string | null {
-    return this.parameterNameValue;
-  }
-
-  public get autoMap(): boolean {
-    return this.autoMapValue;
-  }
-
-  public get functionParametersType(): VariableType {
-    return Assert.notNull(this.functionParametersTypesValue, "functionParametersType");
-  }
-
-  public get functionResultType(): VariableType {
-    return Assert.notNull(this.functionResultsTypeValue, "functionParametersType");
-  }
+  public functionCall: ILexyFunctionCall | null;
 
   constructor(functionName: string, argumentValues: ReadonlyArray<Expression>, source: ExpressionSource) {
     super(source);
     this.functionName = functionName;
     this.args = argumentValues;
+    this.functionCall = null;
   }
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
@@ -90,30 +66,55 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
       return;
     }
 
-    const result = functionNode.validateArguments(context, this.args);
-    if (result.state != "success") return;
+    const result = functionNode.validateArguments(context, this.args, this.reference);
+    if (result == null || result.state != "success") return;
 
-    if (result.autoMap)
-    {
-      this.autoMapValue = true;
-      this.functionResultsTypeValue = result.resultType;
-      this.functionParametersTypesValue = result.parameterType;
-      this.autoMapVariables(context, result.parameterType, result.resultType);
+    const autoMapResult = asValidateFunctionArgumentsAutoMapResult(result);
+    if (autoMapResult != null) {
+      this.functionCall = this.autoMapVariables(context, autoMapResult.parameterType, autoMapResult.resultType);
+      return;
     }
 
-    this.parameterNameValue = this.getParameterName();
+    const argumentsCall = asValidateFunctionArgumentsCallFunctionResult(result);
+    if (argumentsCall != null) {
+      this.functionCall = this.callLexyFunction(argumentsCall);
+      return;
+    }
+
+    throw new Error(`Invalid ValidateArguments result: ${result.state}`);
   }
 
-  private autoMapVariables(context: IValidationContext, functionParametersType: VariableType | null, functionResultsType: VariableType) {
-    const complexParameterType = asGeneratedType(functionParametersType);
-    if (complexParameterType != null) {
-        FillParametersFunctionExpression.getMapping(this.reference, context, complexParameterType, this.mappingParametersValue);
-    }
+  private autoMapVariables(context: IValidationContext,
+                           functionParametersType: VariableType | null,
+                           functionResultsType: VariableType | null): ILexyFunctionCall | null {
 
-    const complexResultsType = asGeneratedType(functionResultsType);
-    if (complexResultsType != null) {
-      ExtractResultsFunctionExpression.getMapping(this.reference, context, complexResultsType, this.mappingResultsValue);
-    }
+    const mappingParameters = new Array<Mapping>();
+    const parameterType = asGeneratedType(functionParametersType);
+    if (parameterType == null) return null;
+
+    FillParametersFunctionExpression.getMapping(this.reference, context, parameterType, mappingParameters);
+
+    const mappingResults = new Array<Mapping>();
+    const resultsType = asGeneratedType(functionResultsType);
+    if (resultsType == null) return null;
+
+    ExtractResultsFunctionExpression.getMapping(this.reference, context, resultsType, mappingResults);
+
+    return new AutoMapLexyFunctionCall(
+      mappingParameters,
+      mappingResults,
+      parameterType,
+      resultsType);
+  }
+
+  private callLexyFunction(result: ValidateFunctionArgumentsCallFunctionResult): ILexyFunctionCall | null {
+
+    if (result.function.resultsType == null) return null;
+
+    const parameters = ofTypeOrNull<VariableType>(result.function.parametersTypes);
+    if (parameters == null) return null;
+
+    return new LexyFunctionCall(parameters, result.function.resultsType, this.args);
   }
 
   private getFunction(context: IValidationContext): Function | null {
@@ -127,19 +128,10 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
   }
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {
+    if (this.functionCall == null) return super.usedVariables();
     return [
       ...super.usedVariables(),
-      ...this.mappingParameters.map(mapToUsedVariable(VariableAccess.Read)),
-      ...this.mappingResults.map(mapToUsedVariable(VariableAccess.Write))
+      ...this.functionCall.usedVariables()
     ];
-  }
-
-  private getParameterName(): string | null {
-    if (this.args.length == 0) return null;
-
-    const expressionArgument = asIdentifierExpression(this.args[0]);
-    if (expressionArgument == null) return expressionArgument;
-
-    return expressionArgument.identifier;
   }
 }

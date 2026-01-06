@@ -2,7 +2,7 @@ import type {LogVariable, LogVariables} from "../runTime/executionContext";
 import type {IAssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 
 import {ExecutionLog} from "../language/scenarios/executionLog";
-import {asComplexAssignmentDefinition} from "../language/scenarios/complexAssignmentDefinition";
+import {asObjectAssignmentDefinition} from "../language/scenarios/objectAssignmentDefinition";
 import {asAssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {ExecutionLogEntry} from "../runTime/executionLogEntry";
 
@@ -13,9 +13,9 @@ function validateEntry(indent: number, actualEntry: ExecutionLogEntry | null, ex
   }
 
   function getName(expectedVariable: IAssignmentDefinition, nested: boolean) {
-    const complex = asComplexAssignmentDefinition(expectedVariable);
-    if (complex != null) {
-      return nested ? complex.variable.lastPart() : complex.variable.fullPath();
+    const object = asObjectAssignmentDefinition(expectedVariable);
+    if (object != null) {
+      return nested ? object.variable.lastPart() : object.variable.fullPath();
     }
 
     const assignmentDefinition = asAssignmentDefinition(expectedVariable);
@@ -56,9 +56,9 @@ function validateEntry(indent: number, actualEntry: ExecutionLogEntry | null, ex
       }
     }
 
-    const complex = asComplexAssignmentDefinition(expectedVariable);
-    if (complex != null) {
-      validateVariables(true, actualValue as LogVariables, null, complex.assignments)
+    const object = asObjectAssignmentDefinition(expectedVariable);
+    if (object != null) {
+      validateVariables(true, actualValue as LogVariables, null, object.assignments)
     } else {
       validateValueVariable(actualValue, expectedVariable);
     }

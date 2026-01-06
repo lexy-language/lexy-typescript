@@ -9,6 +9,7 @@ import {format} from "../infrastructure/formatting";
 import {Scenario} from "../language/scenarios/scenario";
 import {ComponentNodeList} from "../language/componentNodeList";
 import {ParserResult} from "../parser/parserResult";
+import {SourceReference} from "../parser/sourceReference";
 
 export interface ISpecificationFileRunner {
   scenarioRunners: ReadonlyArray<IScenarioRunner>;
@@ -57,7 +58,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
   public run(): void {
     if (this.result == null) throw new Error("Runner not initialized")
 
-    this.validateHasScenarioCheckingComponentErrors(this.result.logger);
+    this.validateHasScenarioCheckingComponentErrors(this.result.rootNode.reference, this.result.logger);
 
     if (this.scenarioRunners.length == 0) return;
 
@@ -86,7 +87,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     return sum(this.scenarioRunners, runner => runner.countScenarios());
   }
 
-  private validateHasScenarioCheckingComponentErrors(logger: IParserLogger): void {
+  private validateHasScenarioCheckingComponentErrors(reference: SourceReference, logger: IParserLogger): void {
     if (!logger.hasComponentErrors()) return;
 
     let componentScenarioRunner =
@@ -94,7 +95,8 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
 
     if (componentScenarioRunner == null) {
       const componentErrors = format(logger.errorComponentMessages(), 2);
-      throw new Error(
+      logger.fail(
+        reference,
         `${this.fileName} has component errors but no scenario that verifies expected component errors. Errors: ${componentErrors}`);
     }
   }

@@ -96,13 +96,13 @@ function TestEnum
 
   it('declaredType', async () => {
     let script = compileFunction(`
-type SimpleComplex
+type SimpleObject
   number First
   string Second
     
 function TestDeclaredType
   results
-    SimpleComplex Result
+    SimpleObject Result
   Result.First = 777
   Result.Second = "123"`);
 
@@ -115,16 +115,16 @@ function TestDeclaredType
 
   it('DeclaredTypeNestedProperties', async () => {
     let script = compileFunction(`
-type InnerComplex
+type InnerObject
   number First
   string Second
     
-type SimpleComplex
-  InnerComplex Inner
+type SimpleObject
+  InnerObject Inner
     
 function TestDeclaredType
   results
-    SimpleComplex Result
+    SimpleObject Result
   Result.Inner.First = 777
   Result.Inner.Second = "123"`);
 

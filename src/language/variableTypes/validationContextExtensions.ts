@@ -3,7 +3,7 @@ import type {SourceReference} from "../../parser/sourceReference";
 
 import {Expression} from "../expressions/expression";
 import {VariableTypeDeclaration} from "./declarations/variableTypeDeclaration";
-import {asComplexVariableTypeDeclaration, ComplexVariableTypeDeclaration} from "./declarations/complexVariableTypeDeclaration";
+import {asObjectVariableTypeDeclaration, ObjectVariableTypeDeclaration} from "./declarations/objectVariableTypeDeclaration";
 import {asPrimitiveVariableTypeDeclaration, PrimitiveVariableTypeDeclaration} from "./declarations/primitiveVariableTypeDeclaration";
 import {instanceOfEnumType} from "./enumType";
 import {asMemberAccessExpression} from "../expressions/memberAccessExpression";
@@ -14,17 +14,17 @@ import {IdentifierPath} from "../identifierPath";
 
 function validateCustomVariableType(context: IValidationContext,
                                     reference: SourceReference,
-                                    complexVariableTypeDeclaration: ComplexVariableTypeDeclaration,
+                                    ObjectVariableTypeDeclaration: ObjectVariableTypeDeclaration,
                                     defaultValueExpression: Expression | null) {
 
-  const identifierPathComplex = IdentifierPath.parseString(complexVariableTypeDeclaration.type);
-  const variable = context.variableContext.createVariableReference(reference, identifierPathComplex, context);
+  const identifierPathObject = IdentifierPath.parseString(ObjectVariableTypeDeclaration.type);
+  const variable = context.variableContext.createVariableReference(reference, identifierPathObject, context);
   let type = variable?.variableType;
   if (type == null ||
     (type.variableTypeName != VariableTypeName.EnumType
     && type.variableTypeName != VariableTypeName.DeclaredType
     && type.variableTypeName != VariableTypeName.GeneratedType)) {
-    //logged by ComplexVariableTypeDeclaration
+    //logged by ObjectVariableTypeDeclaration
     return;
   }
 
@@ -34,31 +34,31 @@ function validateCustomVariableType(context: IValidationContext,
 
   if (!(instanceOfEnumType(type))) {
     context.logger.fail(reference,
-      `Invalid default value '${defaultValueExpression}'. (type: '${complexVariableTypeDeclaration.type}') does not support a default value.`);
+      `Invalid default value '${defaultValueExpression}'. (type: '${ObjectVariableTypeDeclaration.type}') does not support a default value.`);
     return;
   }
 
   const memberAccessExpression = asMemberAccessExpression(defaultValueExpression);
   if (memberAccessExpression == null || memberAccessExpression.identifierPath == null) {
     context.logger.fail(reference,
-      `Invalid default value '${defaultValueExpression}'. (type: '${complexVariableTypeDeclaration.type}')`);
+      `Invalid default value '${defaultValueExpression}'. (type: '${ObjectVariableTypeDeclaration.type}')`);
     return;
   }
 
   const identifierPath = memberAccessExpression.identifierPath;
   if (identifierPath.parts != 2) {
     context.logger.fail(reference,
-      `Invalid default value '${defaultValueExpression}'. (type: '${complexVariableTypeDeclaration.type}')`);
+      `Invalid default value '${defaultValueExpression}'. (type: '${ObjectVariableTypeDeclaration.type}')`);
   }
-  if (identifierPath.rootIdentifier != complexVariableTypeDeclaration.type) {
+  if (identifierPath.rootIdentifier != ObjectVariableTypeDeclaration.type) {
     context.logger.fail(reference,
-      `Invalid default value '${defaultValueExpression}'. Invalid enum type. (type: '${complexVariableTypeDeclaration.type}')`);
+      `Invalid default value '${defaultValueExpression}'. Invalid enum type. (type: '${ObjectVariableTypeDeclaration.type}')`);
   }
 
   const enumDeclaration = context.componentNodes.getEnum(identifierPath.rootIdentifier);
   if (enumDeclaration == null || !enumDeclaration.containsMember(identifierPath.path[1])) {
     context.logger.fail(reference,
-      `Invalid default value '${defaultValueExpression}'. Invalid member. (type: '${complexVariableTypeDeclaration.type}')`);
+      `Invalid default value '${defaultValueExpression}'. Invalid member. (type: '${ObjectVariableTypeDeclaration.type}')`);
   }
 }
 
@@ -112,7 +112,7 @@ function validateDefaultLiteral(literalType: string, context: IValidationContext
 export function validateTypeAndDefault(context: IValidationContext, reference: SourceReference,
                                        type: VariableTypeDeclaration, defaultValueExpression: Expression | null) {
 
-  const customVariableType = asComplexVariableTypeDeclaration(type);
+  const customVariableType = asObjectVariableTypeDeclaration(type);
   if (customVariableType != null) {
     validateCustomVariableType(context, reference, customVariableType, defaultValueExpression);
     return;

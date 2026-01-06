@@ -1,15 +1,15 @@
-import type {IInstanceFunction} from "../../functions/IInstanceFunction";
 import type {IValidationContext} from "../../../parser/validationContext";
 
 import {Table} from "../../tables/table";
 import {Assert} from "../../../infrastructure/assert";
 import {Expression} from "../../expressions/expression";
-import {ValidateInstanceFunctionArgumentsResult} from "../../functions/validateInstanceFunctionArgumentsResult";
 import {VariableType} from "../variableType";
 import {ColumnHeader} from "../../tables/columnHeader";
 import {asMemberAccessExpression, MemberAccessExpression} from "../../expressions/memberAccessExpression";
 import {IdentifierPath} from "../../identifierPath";
 import {SourceReference} from "../../../parser/sourceReference";
+import {ObjectTypeFunction} from "../objectTypeFunction";
+import {ValidateMemberFunctionArgumentsResult} from "./validateMemberFunctionArgumentsResult";
 
 type OverLoadArguments = {
     discriminator: number | null,
@@ -17,7 +17,7 @@ type OverLoadArguments = {
     defaultDiscriminatorColumn: number | null,
 }
 
-export abstract class TableFunction implements IInstanceFunction {
+export abstract class TableFunction implements ObjectTypeFunction {
 
     protected table: Table ;
 
@@ -29,7 +29,7 @@ export abstract class TableFunction implements IInstanceFunction {
 
     public abstract validateArguments(context: IValidationContext ,
         args: ReadonlyArray<Expression>,
-        reference: SourceReference): ValidateInstanceFunctionArgumentsResult;
+        reference: SourceReference): ValidateMemberFunctionArgumentsResult;
 
     public abstract getResultsType(args: ReadonlyArray<Expression>): VariableType | null;
 

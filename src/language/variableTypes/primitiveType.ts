@@ -26,6 +26,10 @@ export class PrimitiveType extends VariableType
     this.type = type;
   }
 
+  public override isAssignableFrom(type: VariableType): boolean {
+    return this.equals(type);
+  }
+
   public override equals(other: VariableType | null): boolean {
     return other != null && instanceOfPrimitiveType(other) && this.type == other.type;
   }

@@ -2,12 +2,12 @@ import {Expression} from "../../../language/expressions/expression";
 import {firstOrDefault} from "../../../infrastructure/arrayFunctions";
 import {CodeWriter} from "../codeWriter";
 import {FunctionCallExpression} from "../../../language/expressions/functions/functionCallExpression";
-import {LexyFunctionCall} from "./lexyFunctionCall";
+import {LexyFunctionCallRenderer} from "./lexyFunctionCallRenderer";
 import {MemberFunctionCallExpression} from "../../../language/expressions/functions/memberFunctionCallExpression";
 import {LexyFunctionCallExpression} from "../../../language/expressions/functions/lexyFunctionCallExpression";
-import {LibraryFunctionCall} from "./libraryFunctionCall";
-import {TableLookUpFunctionCall} from "./lookUpFunctionCall";
-import {TableLookUpRowFunctionCall} from "./lookUpRowFunctionCall";
+import {LibraryFunctionCallRenderer} from "./libraryFunctionCallRenderer";
+import {TableLookUpFunctionCallRenderer} from "./tableLookUpFunctionCallRenderer";
+import {TableLookUpRowFunctionCallRenderer} from "./tableLookUpRowFunctionCallRenderer";
 
 class Renderer {
 
@@ -32,10 +32,10 @@ class Renderer {
 
   private static initialize() {
     return [
-      add<MemberFunctionCallExpression>(TableLookUpFunctionCall.matches, TableLookUpFunctionCall.render),
-      add<MemberFunctionCallExpression>(TableLookUpRowFunctionCall.matches, TableLookUpRowFunctionCall.render),
-      add<LexyFunctionCallExpression>(LexyFunctionCall.matches, LexyFunctionCall.render),
-      add<MemberFunctionCallExpression>(LibraryFunctionCall.matches, LibraryFunctionCall.render)
+      add<MemberFunctionCallExpression>(TableLookUpFunctionCallRenderer.matches, TableLookUpFunctionCallRenderer.render),
+      add<MemberFunctionCallExpression>(TableLookUpRowFunctionCallRenderer.matches, TableLookUpRowFunctionCallRenderer.render),
+      add<LexyFunctionCallExpression>(LexyFunctionCallRenderer.matches, LexyFunctionCallRenderer.render),
+      add<MemberFunctionCallExpression>(LibraryFunctionCallRenderer.matches, LibraryFunctionCallRenderer.render)
     ];
   }
 }
@@ -53,8 +53,7 @@ function add<TExpression extends Expression>(
 
 export function renderFunctionCall(expression: FunctionCallExpression, codeWriter: CodeWriter) {
   const renderer = firstOrDefault(Renderer.all, renderer => {
-    let matches = renderer.matches(expression)
-    return matches;
+    return renderer.matches(expression);
   });
   if (renderer == null) {
     throw new Error(`Couldn't find creator for expression: '${expression.nodeType}'`)

@@ -4,7 +4,7 @@ import {createRunner} from "./createRunner";
 describe('runSingleSpecification', () => {
   it('specificFile',  async() => {
     const runner = createRunner();
-    runner.run(`tests/lexy-language/Specifications/SystemFunctions/Date.lexy`);
+    runner.run(`tests/lexy-language/Specifications/Function/FunctionCallInlineArguments.lexy`);
     //runner.run(`tests/lexy-language/src/specifications/Isolate.lexy`);
 
     //runner.run(`../laws/Specifications/ExecutionLogging/CallFunction.lexy`);

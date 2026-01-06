@@ -12,21 +12,21 @@ import {NodeType} from "../nodeType";
 import {instanceOfGeneratedType} from "../variableTypes/generatedType";
 import {instanceOfDeclaredType} from "../variableTypes/declaredType";
 
-export function instanceOfComplexAssignmentDefinition(object: any): object is ComplexAssignmentDefinition {
-  return object?.nodeType == NodeType.ComplexAssignmentDefinition;
+export function instanceOfObjectAssignmentDefinition(object: any): object is ObjectAssignmentDefinition {
+  return object?.nodeType == NodeType.ObjectAssignmentDefinition;
 }
 
-export function asComplexAssignmentDefinition(object: any): ComplexAssignmentDefinition | null {
-  return instanceOfComplexAssignmentDefinition(object) ? object as ComplexAssignmentDefinition : null;
+export function asObjectAssignmentDefinition(object: any): ObjectAssignmentDefinition | null {
+  return instanceOfObjectAssignmentDefinition(object) ? object as ObjectAssignmentDefinition : null;
 }
 
-export class ComplexAssignmentDefinition extends ParsableNode implements IAssignmentDefinition {
+export class ObjectAssignmentDefinition extends ParsableNode implements IAssignmentDefinition {
 
   private assignmentsValue: Array<IAssignmentDefinition> = [];
 
   public readonly variable: IdentifierPath;
 
-  public nodeType = NodeType.ComplexAssignmentDefinition;
+  public nodeType = NodeType.ObjectAssignmentDefinition;
   private assignmentDefinitionParser: AssignmentDefinitionParserHandler;
 
   public get assignments(): ReadonlyArray<IAssignmentDefinition> {
@@ -62,7 +62,7 @@ export class ComplexAssignmentDefinition extends ParsableNode implements IAssign
 
     const variableType = context.variableContext.getVariableTypeByPath(this.variable, context);
     if (!instanceOfDeclaredType(variableType) && !instanceOfGeneratedType(variableType)) {
-      context.logger.fail(this.reference, `Variable '${this.variable}' without assignment should be a complex type, but is ${variableType}.`);
+      context.logger.fail(this.reference, `Variable '${this.variable}' without assignment should be a object type, but is ${variableType}.`);
     }
   }
 

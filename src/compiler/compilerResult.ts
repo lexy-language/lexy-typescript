@@ -1,9 +1,10 @@
 import type {ICompilationEnvironment} from "./javaScript/compilationEnvironment";
+import type {ILogger} from "../infrastructure/logger";
+
 import {ExecutableFunction} from "./executableFunction";
 import {Function} from "../language/functions/function";
 import {GeneratedType} from "./generatedType";
 import {ExecutionContext, IExecutionContext} from "../runTime/executionContext";
-import {ILogger} from "../infrastructure/logger";
 
 export class CompilerResult {
 

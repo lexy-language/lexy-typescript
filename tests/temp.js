@@ -1,5 +1,5 @@
 "use strict";
-__environment.function__TableRowAsResultsFunction = function function__TableRowAsResultsFunction() {
+__environment.function__CallSingleTypeArgumentWithTypeFunctionFunction = function function__CallSingleTypeArgumentWithTypeFunctionFunction() {
   function __validate(__parameters) {
     const validationErrors = [];
     __Parameters.__validate(null, __parameters, validationErrors);
@@ -10,17 +10,44 @@ __environment.function__TableRowAsResultsFunction = function function__TableRowA
 
   function __run(__parameters, __context) {
     const __result = new __Result();
-    __context.setFileName("ComplexVariables.lexy");
-    __context.openScope("Execute: TableRowAsResultsFunction", 6);
-    __context.log("Parameters", 6, __parameters);
+    __context.setFileName("FunctionCallInlineArguments.lexy");
+    __context.openScope("Execute: CallSingleTypeArgumentWithTypeFunctionFunction", 26);
+    __context.log("Parameters", 26, __parameters);
 
-    const __logLine9 = __context.log("Result = SimpleTable.LookUpRow(2, SimpleTable.Search)", 9, {['SimpleTable.Search']: __environment.table__SimpleTable.Search});
-    __result.Result = __environment.tableLibrary.lookUp("Search", __environment.Decimal(2), "SimpleTable", __environment.table__SimpleTable.__values, "undefined", __context);
-    __logLine9.addVariables({['Result']: __result.Result});
+    const __logLine28 = __context.log("  SimpleType params", 28, {});
+    let params = new __environment.type__SimpleType();
+    __logLine28.addVariables({['params']: params});
 
-    __context.log("Results",  6, __result);
+    const __logLine29 = __context.log("  params.ValueString = 'efg'", 29, {});
+    params.ValueString = "efg";
+    __logLine29.addVariables({['params.ValueString']: params.ValueString});
+
+    const __logLine30 = __context.log("  params.ValueBoolean = true", 30, {});
+    params.ValueBoolean = true;
+    __logLine30.addVariables({['params.ValueBoolean']: params.ValueBoolean});
+
+    const __logLine31 = __context.log("  params.ValueDate = d'2025-01-05T09:20:45'", 31, {});
+    params.ValueDate = new Date("2025-01-05T09:20:45");
+    __logLine31.addVariables({['params.ValueDate']: params.ValueDate});
+
+    const __logLine32 = __context.log("  var result = SingleTypeArgumentWithTypeFunction(params)", 32, {['params']: params});
+    let result = __environment.function__SingleTypeArgumentWithTypeFunction(params, __context);
+    __logLine32.addVariables({['result']: result});
+
+    const __logLine33 = __context.log("  Result = result", 33, {['result']: result});
+    __result.Result = result;
+    __logLine33.addVariables({['Result']: __result.Result});
+
+    __context.log("Results",  26, __result);
     __context.closeScope();
     return __result;
+  }
+
+  function __inline(__run) {
+    return function __inline(    __context) {
+      const __parameters = new __run.__Parameters();
+      return __run(__parameters, __context);
+    }
   }
 
   class __Parameters {
@@ -30,13 +57,14 @@ __environment.function__TableRowAsResultsFunction = function function__TableRowA
   }
 
   class __Result {
-    Result = new __environment.table__SimpleTable.__Row();
+    Result = new __environment.function__SingleTypeArgumentWithTypeFunction.__Result();
     static __validate(name, value, validationErrors) {
       value = !!value ? value : {};
-      __environment.table__SimpleTable.__Row.__validate(__environment.systemFunctions.identifierPath(name, "Result"), value["Result"], validationErrors);
+      __environment.function__SingleTypeArgumentWithTypeFunction.__Result.__validate(__environment.systemFunctions.identifierPath(name, "Result"), value["Result"], validationErrors);
     }
   }
 
+  __run.__inline = __inline(__run);
   __run.__Parameters = __Parameters;
   __run.__Result = __Result;
   __run.__validate = __validate;

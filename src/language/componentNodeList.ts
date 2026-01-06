@@ -1,7 +1,7 @@
 import type {IComponentNode} from "./componentNode";
 import type {INode} from "./node";
 
-import {TypeWithMembers} from "./variableTypes/typeWithMembers";
+import {ObjectType} from "./variableTypes/objectType";
 import {asFunction, Function, instanceOfFunction} from "./functions/function";
 import {asTable, instanceOfTable, Table} from "./tables/table";
 import {asEnumDefinition, EnumDefinition, instanceOfEnumDefinition} from "./enums/enumDefinition";
@@ -28,7 +28,7 @@ export interface IComponentNodeList {
 
   getEnum(name: string): EnumDefinition | null;
 
-  getType(name: string): TypeWithMembers | null;
+  getType(name: string): ObjectType | null;
 
   asArray(): Array<IComponentNode>;
 }
@@ -100,7 +100,7 @@ export class ComponentNodeList implements IComponentNodeList {
     return firstOrDefault(this.values);
   }
 
-  public getType(name: string): TypeWithMembers | null {
+  public getType(name: string): ObjectType | null {
     let node = this.getNode(name);
 
     let table = asTable(node);

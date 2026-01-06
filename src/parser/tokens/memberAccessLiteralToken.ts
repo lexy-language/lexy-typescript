@@ -5,7 +5,7 @@ import {Token} from "./token";
 import {TokenCharacter} from "./tokenCharacter";
 import {TokenValues} from "./tokenValues";
 import {IdentifierPath} from "../../language/identifierPath";
-import {instanceOfTypeWithMembers, ITypeWithMembers} from "../../language/variableTypes/ITypeWithMembers";
+import {asObjectType, instanceOfObjectType, IObjectType} from "../../language/variableTypes/objectType";
 import {VariableType} from "../../language/variableTypes/variableType";
 import {TokenType} from "./tokenType";
 
@@ -43,7 +43,6 @@ export class MemberAccessLiteralToken extends Token implements ILiteralToken {
     this.parts = value.split(TokenValues.MemberAccessString);
   }
 
-
   public deriveType(context: IValidationContext): VariableType | null {
     let identifierPath = new IdentifierPath(this.parts);
     let variableType = context.variableContext.getVariableTypeByPath(identifierPath, context);
@@ -51,10 +50,10 @@ export class MemberAccessLiteralToken extends Token implements ILiteralToken {
 
     if (this.parts.length != 2) return null;
 
-    let componentType = context.componentNodes.getType(this.parent);
-    if (!instanceOfTypeWithMembers(componentType)) return null;
-    const typeWithMembers = componentType as ITypeWithMembers;
-    return typeWithMembers.memberType(this.member, context.componentNodes);
+    const componentType = context.componentNodes.getType(this.parent);
+    const objectType = asObjectType(componentType);
+    if (objectType == null) return null
+    return objectType.memberType(this.member, context.componentNodes);
   }
 
   public toString() {

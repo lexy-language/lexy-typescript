@@ -24,10 +24,12 @@ function createFunction(functionNode: Function, codeWriter: CodeWriter) {
   renderValidateParametersMethod(codeWriter);
 
   renderRunFunction(functionNode, codeWriter);
+  renderRunInlineFunction(functionNode, codeWriter);
 
   createVariableClass(`${functionNode.nodeName}.Parameters`, LexyCodeConstants.parametersType, functionNode.parameters?.variables, codeWriter);
   createVariableClass(`${functionNode.nodeName}.Results`, LexyCodeConstants.resultsType, functionNode.results?.variables, codeWriter);
 
+  codeWriter.writeLine(`${LexyCodeConstants.runMethod}.${LexyCodeConstants.inlineMethod} = ${LexyCodeConstants.inlineMethod}(${LexyCodeConstants.runMethod});`)
   codeWriter.writeLine(`${LexyCodeConstants.runMethod}.${LexyCodeConstants.parametersType} = ${LexyCodeConstants.parametersType};`)
   codeWriter.writeLine(`${LexyCodeConstants.runMethod}.${LexyCodeConstants.resultsType} = ${LexyCodeConstants.resultsType};`)
   codeWriter.writeLine(`${LexyCodeConstants.runMethod}.${LexyCodeConstants.validateMethod} = ${LexyCodeConstants.validateMethod};`)
@@ -44,6 +46,7 @@ function renderRunFunction(functionNode: Function, codeWriter: CodeWriter) {
   codeWriter.openScope(`function ${LexyCodeConstants.runMethod}(${LexyCodeConstants.parameterVariable}, ${LexyCodeConstants.contextVariable})`);
 
   renderResults(codeWriter)
+
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.setFileName("${functionNode.reference.file.fileName}");`)
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.openScope("Execute: ${functionNode.nodeName}", ${functionNode.reference.lineNumber});`)
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Parameters", ${functionNode.parameters?.reference.lineNumber}, ${LexyCodeConstants.parameterVariable});`)
@@ -79,3 +82,36 @@ function renderValidateParametersMethod(codeWriter: CodeWriter) {
   codeWriter.writeLine()
 }
 
+function renderRunInlineFunction(functionNode: Function, codeWriter: CodeWriter) {
+
+  codeWriter.openScope(`function ${LexyCodeConstants.inlineMethod}(${LexyCodeConstants.runMethod})`);
+
+  codeWriter.write(`return function ${LexyCodeConstants.inlineMethod}(`);
+  renderParameterNames(functionNode, codeWriter);
+  codeWriter.openScope(`${LexyCodeConstants.contextVariable})`);
+
+  renderCreateParameterObject(codeWriter, functionNode);
+
+  codeWriter.writeLine(`return ${LexyCodeConstants.runMethod}(${LexyCodeConstants.parameterVariable}, ${LexyCodeConstants.contextVariable});`);
+
+  codeWriter.closeScope();
+  codeWriter.closeScope();
+  codeWriter.writeLine();
+}
+
+function renderCreateParameterObject(codeWriter: CodeWriter, functionNode: Function) {
+  codeWriter.writeLine(`const ${LexyCodeConstants.parameterVariable} = new ${LexyCodeConstants.runMethod}.${LexyCodeConstants.parametersType}();`);
+
+  for (let index = 0; index < functionNode.parameters.variables.length; index++) {
+    const parameter = functionNode.parameters.variables[index];
+    codeWriter.writeLine(`${LexyCodeConstants.parameterVariable}.${parameter.name} = ${parameter.name};`);
+  }
+}
+
+function renderParameterNames(functionNode: Function, codeWriter: CodeWriter) {
+  for (let index = 0; index < functionNode.parameters.variables.length; index++) {
+    const parameter = functionNode.parameters.variables[index];
+    codeWriter.write(parameter.name);
+    codeWriter.write(", ");
+  }
+}

@@ -12,18 +12,21 @@ import {VariableTypeName} from "../variableTypeName";
 import {asDeclaredType} from "../declaredType";
 import {asGeneratedType} from "../generatedType";
 import {asEnumType} from "../enumType";
+import {Assert} from "../../../infrastructure/assert";
 
-export function instanceOfComplexVariableTypeDeclaration(object: any): boolean {
-  return object?.nodeType == NodeType.ComplexVariableTypeDeclaration;
+export function instanceOfObjectVariableTypeDeclaration(object: any): boolean {
+  return object?.nodeType == NodeType.ObjectVariableTypeDeclaration;
 }
 
-export function asComplexVariableTypeDeclaration(object: any): ComplexVariableTypeDeclaration | null {
-  return instanceOfComplexVariableTypeDeclaration(object) ? object as ComplexVariableTypeDeclaration : null;
+export function asObjectVariableTypeDeclaration(object: any): ObjectVariableTypeDeclaration | null {
+  return instanceOfObjectVariableTypeDeclaration(object) ? object as ObjectVariableTypeDeclaration : null;
 }
 
-export class ComplexVariableTypeDeclaration extends VariableTypeDeclaration implements IHasNodeDependencies {
+//Syntax: "Function.Parameters variableName"
+//Syntax: "Function.Row variableName"
+export class ObjectVariableTypeDeclaration extends VariableTypeDeclaration implements IHasNodeDependencies {
 
-  public readonly nodeType = NodeType.ComplexVariableTypeDeclaration;
+  public readonly nodeType = NodeType.ObjectVariableTypeDeclaration;
   public readonly hasNodeDependencies = true;
   public type: string;
 
@@ -40,18 +43,15 @@ export class ComplexVariableTypeDeclaration extends VariableTypeDeclaration impl
     const type = this.getVariableType(componentNodes);
     switch (type?.variableTypeName) {
       case VariableTypeName.DeclaredType: {
-        const declaredType = asDeclaredType(type);
-        if (declaredType == null) throw new Error("this.variableType is not DeclaredType");
+        const declaredType = Assert.notNull(asDeclaredType(type), "type as DeclaredType");
         return [declaredType.typeDefinition];
       }
       case VariableTypeName.GeneratedType: {
-        const generatedType = asGeneratedType(type);
-        if (generatedType == null) throw new Error("this.variableType is not GeneratedType");
+        const generatedType = Assert.notNull(asGeneratedType(type), "type as GeneratedType");
         return [generatedType.node];
       }
       case VariableTypeName.EnumType: {
-        const enumDeclaration = asEnumType(type);
-        if (enumDeclaration == null) throw new Error("this.variableType is not EnumType");
+        const enumDeclaration = Assert.notNull(asEnumType(type), "type as EnumType");
         return [enumDeclaration.enum];
       }
       default: {
@@ -80,6 +80,17 @@ export class ComplexVariableTypeDeclaration extends VariableTypeDeclaration impl
     if (parent == null) return null;
 
     return parent.memberType(parts[1], componentNodes);
+  }
+
+  public getNode(componentNodes: IComponentNodeList): IComponentNode | null {
+    if (!this.type.includes('.')) {
+        return componentNodes.getNode(this.type);
+    }
+
+    const parts = this.type.split(".");
+    if (parts.length > 2) return null;
+
+    return componentNodes.getNode(parts[0]);
   }
 
   public override getChildren(): Array<INode> {

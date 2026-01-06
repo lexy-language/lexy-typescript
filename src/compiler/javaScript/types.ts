@@ -28,9 +28,9 @@ export function translateType(variableType: VariableType): string {
       return tableType.tableName;
     }
     case VariableTypeName.GeneratedType: {
-      const complexType = asGeneratedType(variableType);
-      if (complexType == null) throw new Error("Is not GeneratedType");
-      return translateGeneratedType(complexType);
+      const objectType = asGeneratedType(variableType);
+      if (objectType == null) throw new Error("Is not GeneratedType");
+      return translateGeneratedType(objectType);
     }
     case VariableTypeName.DeclaredType: {
       const customType = asDeclaredType(variableType);
@@ -42,19 +42,19 @@ export function translateType(variableType: VariableType): string {
   }
 }
 
-export function translateGeneratedType(complexType: GeneratedType) {
-  switch (complexType.source) {
+export function translateGeneratedType(objectType: GeneratedType) {
+  switch (objectType.source) {
     case GeneratedTypeSource.FunctionParameters: {
-      return `${functionClassName(complexType.name)}.${LexyCodeConstants.parametersType}`;
+      return `${functionClassName(objectType.name)}.${LexyCodeConstants.parametersType}`;
     }
     case GeneratedTypeSource.FunctionResults: {
-      return `${functionClassName(complexType.name)}.${LexyCodeConstants.resultsType}`;
+      return `${functionClassName(objectType.name)}.${LexyCodeConstants.resultsType}`;
     }
     case GeneratedTypeSource.TableRow: {
-      return `${tableClassName(complexType.name)}.${LexyCodeConstants.rowType}`;
+      return `${tableClassName(objectType.name)}.${LexyCodeConstants.rowType}`;
     }
     default: {
-      throw new Error(`Invalid type: ${complexType.source}`)
+      throw new Error(`Invalid type: ${objectType.source}`)
     }
   }
 }

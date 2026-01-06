@@ -1,17 +1,17 @@
 import {Expression} from "../../expressions/expression";
-import {FunctionCallType, IInstanceFunctionCall} from "../../functions/IInstanceFunctionCall";
+import {IMemberFunctionCall, MemberFunctionCallType} from "./memberFunctionCall";
 
 export function instanceOfLookUpRowFunctionCall(object: any): object is LookUpRowFunctionCall {
-    return object?.functionCallType == FunctionCallType.LookUpRowFunctionCall;
+    return object?.functionCallType == MemberFunctionCallType.LookUpRowFunctionCall;
 }
 
 export function asLookUpRowFunctionCall(object: any): LookUpRowFunctionCall | null {
     return instanceOfLookUpRowFunctionCall(object) ? object as LookUpRowFunctionCall : null;
 }
 
-export class LookUpRowFunctionCall implements IInstanceFunctionCall {
+export class LookUpRowFunctionCall implements IMemberFunctionCall {
 
-    public readonly functionCallType = FunctionCallType.LookUpRowFunctionCall;
+    public readonly functionCallType = MemberFunctionCallType.LookUpRowFunctionCall;
 
     public tableName: string;
 

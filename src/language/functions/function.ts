@@ -1,33 +1,35 @@
 import type {IComponentNode} from "../componentNode";
-import {ComponentNode} from "../componentNode";
 import type {INode} from "../node";
 import type {IExpressionFactory} from "../expressions/expressionFactory";
 import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IComponentNodeList} from "../componentNodeList";
-import {IHasNodeDependencies} from "../IHasNodeDependencies";
+import type {IHasNodeDependencies} from "../IHasNodeDependencies";
+
+import {ComponentNode} from "../componentNode";
 import {FunctionName} from "./functionName";
 import {FunctionParameters} from "./functionParameters";
 import {FunctionResults} from "./functionResults";
 import {FunctionCode} from "./functionCode";
 import {SourceReference} from "../../parser/sourceReference";
 import {Keywords} from "../../parser/Keywords";
-import {KeywordToken} from "../../parser/tokens/keywordToken";
 import {VariableDefinition} from "../variableDefinition";
-import {asComplexVariableTypeDeclaration} from "../variableTypes/declarations/complexVariableTypeDeclaration";
+import {asObjectVariableTypeDeclaration} from "../variableTypes/declarations/objectVariableTypeDeclaration";
 import {GeneratedType} from "../variableTypes/generatedType";
-import {GeneratedTypeMember} from "../variableTypes/generatedTypeMember";
 import {GeneratedTypeSource} from "../variableTypes/generatedTypeSource";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {Expression} from "../expressions/expression";
 import {
+  newValidateFunctionArgumentsCallFunctionSuccess,
   newValidateFunctionArgumentsFailed,
-  newValidateFunctionArgumentsSuccess,
   newValidateFunctionArgumentsSuccessAutoMap,
   ValidateFunctionArgumentsResult
 } from "./validateFunctionArgumentRsult";
+import {VariableType} from "../variableTypes/variableType";
+import {FunctionSignature} from "./functionSignature";
+import {ObjectTypeVariable} from "../variableTypes/objectTypeVariable";
 
 export function instanceOfFunction(object: any) {
   return object?.nodeType == NodeType.Function;
@@ -41,9 +43,9 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
 
   private readonly factory: IExpressionFactory;
 
-  private parametersValue: FunctionParameters;
-  private resultsValue: FunctionResults;
-  private codeValue: FunctionCode;
+  private readonly parametersValue: FunctionParameters;
+  private readonly resultsValue: FunctionResults;
+  private readonly codeValue: FunctionCode;
 
   public static readonly parameterName = `Parameters`;
   public static readonly resultsName = `Results`;
@@ -80,8 +82,8 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
     let result = new Array<IComponentNode>();
-    Function.addEnumTypes(componentNodes, this.parameters.variables, result);
-    Function.addEnumTypes(componentNodes, this.results.variables, result);
+    Function.addObjectTypes(componentNodes, this.parameters.variables, result);
+    Function.addObjectTypes(componentNodes, this.results.variables, result);
     return result;
   }
 
@@ -106,14 +108,14 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
     }
   }
 
-  private static addEnumTypes(componentNodes: IComponentNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
+  private static addObjectTypes(componentNodes: IComponentNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
                               result: Array<IComponentNode>) {
     for (const parameter of variableDefinitions) {
 
-      const enumVariableType = asComplexVariableTypeDeclaration(parameter.type);
+      const enumVariableType = asObjectVariableTypeDeclaration(parameter.type);
       if (enumVariableType == null) continue;
 
-      let dependency = componentNodes.getEnum(enumVariableType.type);
+      let dependency = componentNodes.getNode(enumVariableType.type);
       if (dependency != null) {
         result.push(dependency);
       }
@@ -150,43 +152,90 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
 
   private generatedType(variableDefinitions: ReadonlyArray<VariableDefinition> | undefined, source: GeneratedTypeSource) {
     let members = variableDefinitions
-      ? variableDefinitions.map(parameter => new GeneratedTypeMember(parameter.name, parameter.type.variableType))
+      ? variableDefinitions.map(parameter => new ObjectTypeVariable(parameter.name, parameter.type.variableType))
       : [];
 
     return new GeneratedType(this.name.value, this, source, members);
   }
 
-  public validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>): ValidateFunctionArgumentsResult {
+  public validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>, reference: SourceReference): ValidateFunctionArgumentsResult {
     return args.length == 0
       ? this.validateNoArgumentCall()
-      : this.validateWithArguments(context, args);
+      : this.validateWithArguments(context, args, reference);
   }
 
   private validateNoArgumentCall(): ValidateFunctionArgumentsResult {
     return newValidateFunctionArgumentsSuccessAutoMap(this.getParametersType(), this.getResultsType());
   }
 
-  private validateWithArguments(context: IValidationContext, args: ReadonlyArray<Expression>): ValidateFunctionArgumentsResult {
+  private validateWithArguments(context: IValidationContext, args: ReadonlyArray<Expression>, reference: SourceReference): ValidateFunctionArgumentsResult {
 
-    if (args.length != 1) {
-      context.logger.fail(this.reference, `Invalid number of function arguments: '${this.name}'. `);
-      return newValidateFunctionArgumentsFailed();
+    let argumentTypes = this.getArgumentTypes(args, context);
+    let overloads = this.getFunctions();
+
+    for (const overload of overloads) {
+      if (overload.matches(argumentTypes)) {
+        return newValidateFunctionArgumentsCallFunctionSuccess(overload);
+      }
     }
 
-    let argumentType = args[0].deriveType(context);
-    let resultsType = this.getResultsType();
-    let parametersType = this.getParametersType();
+    var error = this.buildErrorMessage(overloads);
+    context.logger.fail(reference, error);
 
-    if (argumentType == null || !argumentType.equals(parametersType)) {
-      context.logger.fail(this.reference, `Invalid function argument: '${this.name}'. ` +
-        "Argument should be of type function parameters. Use new(Function) of fill(Function) to create an variable of the function result type.");
+    return newValidateFunctionArgumentsFailed();
+  }
 
-      return newValidateFunctionArgumentsFailed();
+  private buildErrorMessage(overloads: Array<FunctionSignature>): string {
+
+    const stringBuilder = [`Invalid function arguments: '${this.name}'. Function overloads:\n`];
+
+    for (const overload of overloads) {
+      stringBuilder.push(`- {Name}(`);
+      Function.addParameters(overload, stringBuilder);
+      stringBuilder.push(`)\n`);
     }
 
-    return newValidateFunctionArgumentsSuccess(resultsType);
+    return stringBuilder.join();
+  }
+
+  private static addParameters(signature: FunctionSignature, stringBuilder: Array<string>) {
+
+    for (let index = 0; index < signature.parametersTypes.length; index++) {
+      let parametersType = signature.parametersTypes[index];
+      if (parametersType) {
+        stringBuilder.push(parametersType.variableTypeName);
+      }
+      if (index < signature.parametersTypes.length - 1)
+      {
+        stringBuilder.push(", ");
+      }
+    }
+  }
+
+  private getFunctions(): Array<FunctionSignature> {
+    return [
+      this.getSingleParameterArgumentFunction(),
+      this.inlineParametersArgumentsFunction(),
+    ];
+  }
+
+  private getSingleParameterArgumentFunction(): FunctionSignature {
+    return new FunctionSignature([this.getParametersType()], this.getResultsType());
+  }
+
+  private inlineParametersArgumentsFunction(): FunctionSignature {
+    const parameters = this.getParametersTypes();
+    const resultsType = this.getResultsType();
+    return new FunctionSignature(parameters,  resultsType);
+  }
+
+  private getParametersTypes(): ReadonlyArray<VariableType | null> {
+    return this.parametersValue.variables.map(parameter => parameter.variableType);
+  }
+
+  private getArgumentTypes(args: ReadonlyArray<Expression>, context: IValidationContext):
+    ReadonlyArray<VariableType | null> {
+
+    return args.map(argument => argument.deriveType(context));
   }
 }
-
-
-

@@ -9,9 +9,9 @@ import {TableHeader} from "./tableHeader";
 import {TableRow} from "./tableRow";
 import {SourceReference} from "../../parser/sourceReference";
 import {GeneratedType} from "../variableTypes/generatedType";
-import {GeneratedTypeMember} from "../variableTypes/generatedTypeMember";
 import {NodeType} from "../nodeType";
 import {GeneratedTypeSource} from "../variableTypes/generatedTypeSource";
+import {ObjectTypeVariable} from "../variableTypes/objectTypeVariable";
 
 export function instanceOfTable(object: any) {
   return object?.nodeType == NodeType.Table;
@@ -96,7 +96,7 @@ export class Table extends ComponentNode {
     if (this.header == null) throw new Error("Header not set.");
     const members = this.header.columns.map(column => {
       const type = column.type.variableType;
-      return new GeneratedTypeMember(column.name, type)
+      return new ObjectTypeVariable(column.name, type)
     });
 
     return new GeneratedType(this.name.value, this, GeneratedTypeSource.TableRow, members);

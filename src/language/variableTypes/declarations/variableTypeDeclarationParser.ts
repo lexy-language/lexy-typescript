@@ -3,7 +3,7 @@ import {Keywords} from "../../../parser/Keywords";
 import {ImplicitVariableTypeDeclaration} from "./implicitVariableTypeDeclaration";
 import {TypeNames} from "../typeNames";
 import {PrimitiveVariableTypeDeclaration} from "./primitiveVariableTypeDeclaration";
-import {ComplexVariableTypeDeclaration} from "./complexVariableTypeDeclaration";
+import {ObjectVariableTypeDeclaration} from "./objectVariableTypeDeclaration";
 import {VariableTypeDeclaration} from "./variableTypeDeclaration";
 
 export class VariableTypeDeclarationParser {
@@ -11,6 +11,6 @@ export class VariableTypeDeclarationParser {
     if (type == Keywords.ImplicitVariableTypeDeclaration) return new ImplicitVariableTypeDeclaration(reference);
     if (TypeNames.contains(type)) return new PrimitiveVariableTypeDeclaration(type, reference);
 
-    return new ComplexVariableTypeDeclaration(type, reference);
+    return new ObjectVariableTypeDeclaration(type, reference);
   }
 }

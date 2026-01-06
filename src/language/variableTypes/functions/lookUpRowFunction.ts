@@ -6,11 +6,12 @@ import {Expression} from "../../expressions/expression";
 import {VariableType} from "../variableType";
 import {instanceOfMemberAccessExpression} from "../../expressions/memberAccessExpression";
 import {SourceReference} from "../../../parser/sourceReference";
-import {
-    newValidateInstanceFunctionArgumentsFailed, newValidateInstanceFunctionArgumentsSuccess,
-    ValidateInstanceFunctionArgumentsResult
-} from "../../functions/validateInstanceFunctionArgumentsResult";
 import {LookUpRowFunctionCall} from "./lookUpRowFunctionCall";
+import {
+    newValidateMemberFunctionArgumentsSuccess,
+    newValidateMemberFunctionArgumentsFailed,
+    ValidateMemberFunctionArgumentsResult
+} from "./validateMemberFunctionArgumentsResult";
 
 class OverloadArguments {
     public discriminator: number | null;
@@ -53,16 +54,17 @@ export class LookUpRowFunction extends TableFunction {
     }
 
     public override validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>,
-                                      reference: SourceReference): ValidateInstanceFunctionArgumentsResult {
-        if (!this.validateTable(context, reference)) return newValidateInstanceFunctionArgumentsFailed();
+                                      reference: SourceReference): ValidateMemberFunctionArgumentsResult {
+
+        if (!this.validateTable(context, reference)) return newValidateMemberFunctionArgumentsFailed();
 
         const overloadArguments = LookUpRowFunction.getArgumentColumns(context, args, reference);
-        if (!overloadArguments) return newValidateInstanceFunctionArgumentsFailed()
+        if (!overloadArguments) return newValidateMemberFunctionArgumentsFailed()
 
         const searchColumnHeader = this.getColumn(context, args, overloadArguments.searchColumnArgument, overloadArguments.defaultSearchColumn, reference) ;
 
         if (searchColumnHeader == null) {
-            return newValidateInstanceFunctionArgumentsFailed();
+            return newValidateMemberFunctionArgumentsFailed();
         }
 
         this.validateColumnValueType(context, args, overloadArguments.lookUpValue, "Search", searchColumnHeader, reference);
@@ -77,7 +79,7 @@ export class LookUpRowFunction extends TableFunction {
           searchColumnHeader.name,
           discriminatorColumnHeader ? discriminatorColumnHeader.name : null);
 
-        return newValidateInstanceFunctionArgumentsSuccess(result);
+        return newValidateMemberFunctionArgumentsSuccess(result);
     }
 
     private static getArgumentColumns(context: IValidationContext | null, args: ReadonlyArray<Expression>, reference: SourceReference | null):

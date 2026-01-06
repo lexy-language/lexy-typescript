@@ -1,4 +1,4 @@
-import {ComplexVariableTypeDeclaration} from "../../../language/variableTypes/declarations/complexVariableTypeDeclaration";
+import {ObjectVariableTypeDeclaration} from "../../../language/variableTypes/declarations/objectVariableTypeDeclaration";
 import {VariableTypeName} from "../../../language/variableTypes/variableTypeName";
 import {asEnumType} from "../../../language/variableTypes/enumType";
 import {enumClassName, tableClassName, typeClassName} from "../classNames";
@@ -6,7 +6,7 @@ import {asTableType} from "../../../language/variableTypes/tableType";
 import {asDeclaredType} from "../../../language/variableTypes/declaredType";
 import {CodeWriter} from "../codeWriter";
 
-export function customVariableIdentifier(customVariable: ComplexVariableTypeDeclaration, codeWriter: CodeWriter) {
+export function customVariableIdentifier(customVariable: ObjectVariableTypeDeclaration, codeWriter: CodeWriter) {
   if (customVariable.variableType == null) throw new Error("Variable type expected: " + customVariable.nodeType);
 
   const variableTypeName = customVariable.variableType.variableTypeName;

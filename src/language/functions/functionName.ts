@@ -36,4 +36,8 @@ export class FunctionName extends Node {
   public static parseName(name: string, reference: SourceReference): FunctionName {
     return new FunctionName(name, reference);
   }
+
+  public toString() {
+    return this.valueValue;
+  }
 }

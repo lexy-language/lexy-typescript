@@ -10,7 +10,7 @@ import {asLibraryFunctionCall, instanceOfLibraryFunctionCall} from "../../../fun
 import {Assert} from "../../../infrastructure/assert";
 
 //Syntax: "LexyFunction(variable)"
-export class LibraryFunctionCall {
+export class LibraryFunctionCallRenderer {
 
   public static matches(expression: Expression) {
     return instanceOfMemberFunctionCallExpression(expression)
@@ -20,7 +20,7 @@ export class LibraryFunctionCall {
   public static render(expression: MemberFunctionCallExpression, codeWriter: CodeWriter) {
 
     const functionCall = Assert.notNull(asLibraryFunctionCall(expression.functionCall), "functionCall as LibraryFunctionCall")
-    return LibraryFunctionCall.renderFunctionCall(
+    return LibraryFunctionCallRenderer.renderFunctionCall(
       functionCall.libraryName,
       functionCall.functionName,
       expression.args,

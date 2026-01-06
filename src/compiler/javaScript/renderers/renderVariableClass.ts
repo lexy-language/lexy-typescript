@@ -6,9 +6,9 @@ import {
   PrimitiveVariableTypeDeclaration
 } from "../../../language/variableTypes/declarations/primitiveVariableTypeDeclaration";
 import {
-  asComplexVariableTypeDeclaration,
-  ComplexVariableTypeDeclaration
-} from "../../../language/variableTypes/declarations/complexVariableTypeDeclaration";
+  asObjectVariableTypeDeclaration,
+  ObjectVariableTypeDeclaration
+} from "../../../language/variableTypes/declarations/objectVariableTypeDeclaration";
 import {TypeNames} from "../../../language/variableTypes/typeNames";
 import {asEnumType} from "../../../language/variableTypes/enumType";
 import {VariableTypeName} from "../../../language/variableTypes/variableTypeName";
@@ -63,7 +63,7 @@ export function renderTypeDefaultExpression(variableTypeDeclaration: VariableTyp
     renderPrimitiveTypeDefaultExpression(primitiveVariableTypeDeclaration, codeWriter);
     return;
   }
-  const declaredType = asComplexVariableTypeDeclaration(variableTypeDeclaration);
+  const declaredType = asObjectVariableTypeDeclaration(variableTypeDeclaration);
   if (declaredType != null) {
     renderDefaultExpressionSyntax(declaredType, codeWriter);
     return;
@@ -95,7 +95,7 @@ function renderPrimitiveTypeDefaultExpression(type: PrimitiveVariableTypeDeclara
   }
 }
 
-function renderDefaultExpressionSyntax(declaredType: ComplexVariableTypeDeclaration,
+function renderDefaultExpressionSyntax(declaredType: ObjectVariableTypeDeclaration,
                                        codeWriter: CodeWriter) {
   switch (declaredType.variableType?.variableTypeName) {
     case VariableTypeName.DeclaredType:
