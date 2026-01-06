@@ -1,4 +1,4 @@
-import type {ILexyCompiler} from "../compiler/lexyCompiler";
+import type {ILexyCompiler} from "../generation/lexyCompiler";
 import type {IParserLogger} from "../parser/parserLogger";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
 import type {IComponentNode} from "../language/componentNode";
@@ -9,7 +9,7 @@ import {Scenario} from "../language/scenarios/scenario";
 import {format} from "../infrastructure/formatting";
 import {FunctionResult} from "../runTime/functionResult";
 import {any, firstOrDefault} from "../infrastructure/arrayFunctions";
-import {ExecutableFunction} from "../compiler/executableFunction";
+import {ExecutableFunction} from "../generation/executableFunction";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {Assert} from "../infrastructure/assert";
 import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";

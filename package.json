@@ -29,6 +29,7 @@
     "test": "jest",
     "build": "tsc",
     "pack": "tsc && npm pack",
+    "fetch-submodules": "git submodule update --init",
     "update-submodules": "cd tests/lexy-language/ && git pull   #needs to check why git update --recursive is not working",
     "check-circular-dependencies": "npx madge -c --extensions ts ./",
     "coverage": "jest --coverage",

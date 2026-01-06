@@ -4,7 +4,7 @@ import type {IFileSystem} from "./infrastructure/IFileSystem";
 import {ExpressionFactory} from "./language/expressions/expressionFactory";
 import {Tokenizer} from "./parser/tokens/tokenizer";
 import {LexyParser} from "./parser/lexyParser";
-import {LexyCompiler} from "./compiler/lexyCompiler";
+import {LexyCompiler} from "./generation/lexyCompiler";
 import {ILibraries} from "./functionLibraries/libraries";
 
 export function createParser(baseLogger: ILogger, fileSystem: IFileSystem, libraries: ILibraries): LexyParser {

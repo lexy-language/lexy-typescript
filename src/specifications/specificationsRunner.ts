@@ -5,7 +5,7 @@ import {IFileSystem} from "../infrastructure/IFileSystem";
 import {SpecificationFileRunner} from "./specificationFileRunner";
 import {LexySourceDocument} from "../parser/lexySourceDocument";
 import {ILexyParser} from "../parser/lexyParser";
-import {ILexyCompiler} from "../compiler/lexyCompiler";
+import {ILexyCompiler} from "../generation/lexyCompiler";
 import {format} from "../infrastructure/formatting";
 
 export interface ISpecificationsRunner {

@@ -1,4 +1,4 @@
-import {CompilerResult} from "../compiler/compilerResult";
+import {CompilerResult} from "../generation/compilerResult";
 import {VariableType} from "../language/variableTypes/variableType";
 import {asEnumType, EnumType} from "../language/variableTypes/enumType";
 import {asPrimitiveType, PrimitiveType} from "../language/variableTypes/primitiveType";

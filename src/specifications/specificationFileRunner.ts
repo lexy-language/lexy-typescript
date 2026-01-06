@@ -1,6 +1,6 @@
 import type {ILexyParser} from "../parser/lexyParser";
 import type {IParserLogger} from "../parser/parserLogger";
-import type {ILexyCompiler} from "../compiler/lexyCompiler";
+import type {ILexyCompiler} from "../generation/lexyCompiler";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
 
 import {IScenarioRunner, ScenarioRunner} from "./scenarioRunner";
