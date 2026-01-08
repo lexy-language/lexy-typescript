@@ -35,8 +35,8 @@ enum EnumExample
       TypeExample Example
     results
       number Result
-    FunctionWithFunctionDependency()
-    FunctionWithFunctionTypeDependency()
+    ... = FunctionWithFunctionDependency(...)
+    ... = FunctionWithFunctionTypeDependency(...)
   parameters
     Example.EnumValue = EnumExample.Single
     Example.Nested.EnumValue = EnumExample.Married
@@ -48,9 +48,9 @@ function FunctionWithFunctionDependency
     TypeExample Example
   results
     number Result
-  FunctionWithTypeDependency()
-  FunctionWithTableDependency()
-  FunctionWithEnumDependency()
+  ... = FunctionWithTypeDependency(...)
+  ... = FunctionWithTableDependency(...)
+  ... = FunctionWithEnumDependency(...)
 
 function FunctionWithFunctionTypeDependency
   parameters

@@ -1,4 +1,4 @@
-import {tokenize} from "./tokenize";
+import {tokenize, tokenizeExpectError} from "./tokenize";
 
 describe('StringLiteralsTests', () => {
   it('TestQuotedLiteral', async () => {
@@ -12,5 +12,10 @@ describe('StringLiteralsTests', () => {
     tokenize("   ThisIsAStringLiteral").count(1)
       .stringLiteral(0, "ThisIsAStringLiteral")
       .assert();
+  });
+
+  it('TestOpenEndStringLiteral', async () => {
+    let result = tokenizeExpectError("   \"This is a quoted literal");
+    expect(result.errorMessage).toBe("Invalid token at end of line. Closing quote expected.");
   });
 });

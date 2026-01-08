@@ -131,7 +131,7 @@ export function take<TItem>(array: ReadonlyArray<TItem>, amount: number) {
   return array.slice(0, amount);
 }
 
-export function ofTypeOrNull<TItem>(array: ReadonlyArray<TItem | null>) {
+export function castType<TItem>(array: ReadonlyArray<TItem | null>) {
   const results: Array<TItem> = [];
   for (const item of array) {
     if (item == null) return null;

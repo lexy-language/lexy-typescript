@@ -6,11 +6,14 @@ import {
   instanceOfLexyFunctionCallExpression,
   LexyFunctionCallExpression
 } from "../../../language/expressions/functions/lexyFunctionCallExpression";
-import {asLexyFunctionCall, LexyFunctionCall} from "../../../language/expressions/functions/lexyFunctionCall";
-import {Assert} from "../../../infrastructure/assert";
-import {VariableType} from "../../../language/variableTypes/variableType";
 import {asGeneratedType} from "../../../language/variableTypes/generatedType";
 import {GeneratedTypeSource} from "../../../language/variableTypes/generatedTypeSource";
+import {VariablesMapping} from "../../../language/expressions/mapping";
+import {Assert} from "../../../infrastructure/assert";
+import {instanceOfSpreadExpression} from "../../../language/expressions/spreadExpression";
+import {translateType} from "../types";
+import {renderVariableMappingVariableSyntax} from "../renderers/variableMapping";
+import {VariableType} from "../../../language/variableTypes/variableType";
 
 //Syntax: "LexyFunction(variable)"
 export class LexyFunctionCallRenderer {
@@ -21,18 +24,18 @@ export class LexyFunctionCallRenderer {
 
   public static render(expression: LexyFunctionCallExpression, codeWriter: CodeWriter) {
 
-    const functionCall = Assert.is<LexyFunctionCall>(asLexyFunctionCall, expression.functionCall, "expression.functionCall as LexyFunctionCallRenderer");
-
     return LexyFunctionCallRenderer.renderRunFunction(
       expression.functionName,
       expression.args,
-      functionCall.parametersTypes,
+      expression.parametersTypes,
+      expression.parametersMapping,
       codeWriter);
   }
 
   public static renderRunFunction(functionName: string,
                                   args: ReadonlyArray<Expression>,
-                                  parametersTypes: ReadonlyArray<VariableType>,
+                                  parametersTypes: ReadonlyArray<VariableType> | null,
+                                  mapping: VariablesMapping | null,
                                   codeWriter: CodeWriter) {
 
     codeWriter.writeEnvironment("." + functionClassName(functionName));
@@ -44,16 +47,23 @@ export class LexyFunctionCallRenderer {
 
     codeWriter.write("(");
 
-    for (const argument of args) {
-      codeWriter.renderExpression(argument);
-      codeWriter.write(", ");
+    if (args.length == 1 && instanceOfSpreadExpression(args[0])) {
+      LexyFunctionCallRenderer.renderMappedParametersObject(
+        Assert.notNull(mapping, "mapping"),
+        codeWriter);
+    } else {
+      for (const argument of args) {
+        codeWriter.renderExpression(argument);
+        codeWriter.write(", ");
+      }
     }
 
     codeWriter.write(`${LexyCodeConstants.contextVariable})`);
   }
 
-  private static isInline(functionName: string, parameters: ReadonlyArray<VariableType>) {
+  private static isInline(functionName: string, parameters: ReadonlyArray<VariableType> | null) {
 
+    if (!parameters) return false;
     if (parameters.length != 1) return true;
 
     const generatedType = asGeneratedType(parameters[0]);
@@ -61,5 +71,21 @@ export class LexyFunctionCallRenderer {
 
     return generatedType.source != GeneratedTypeSource.FunctionParameters
         && generatedType.node.nodeName != functionName;
+  }
+
+
+  private static renderMappedParametersObject(mappings: VariablesMapping, codeWriter: CodeWriter) {
+
+    codeWriter.write("function() {");
+    codeWriter.write(`var ` + LexyCodeConstants.resultsVariable + " = new ");
+    codeWriter.writeEnvironment(`.${translateType(mappings.mappingType)}`)
+    codeWriter.write("();");
+
+    for (const mapping of mappings.values) {
+      codeWriter.write(`${LexyCodeConstants.resultsVariable}.${mapping.variableName} = `);
+      renderVariableMappingVariableSyntax(mapping, codeWriter);
+      codeWriter.write(";");
+    }
+    codeWriter.write(`return ${LexyCodeConstants.resultsVariable}; }(), `);
   }
 }

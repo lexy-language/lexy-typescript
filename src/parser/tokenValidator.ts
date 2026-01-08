@@ -71,7 +71,7 @@ export class TokenValidator {
     this.type(index, TokenType.OperatorToken);
     const token = this.tokens.get(index) as OperatorToken;
     if (token?.type != operatorType) {
-      this.fail(index, `Invalid operator token {index} value. Expected: '${operatorType}' Actual: '${token?.type}'`);
+      this.fail(index, `Invalid operator token ${index} value. Expected: '${operatorType}' Actual: '${token?.type}'`);
       this.isValid = false;
     }
 

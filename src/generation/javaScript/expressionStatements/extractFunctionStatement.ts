@@ -3,51 +3,50 @@ import {
   asFunctionCallExpression
 } from "../../../language/expressions/functions/functionCallExpression";
 import {CodeWriter} from "../codeWriter";
-import {Mapping} from "../../../language/expressions/functions/mapping";
+import {Mapping, VariablesMapping} from "../../../language/expressions/mapping";
 import {VariableSource} from "../../../language/variableSource";
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {
   asExtractResultsFunctionExpression, ExtractResultsFunctionExpression,
   instanceOfExtractResultsFunctionExpression
 } from "../../../language/expressions/functions/systemFunctions/extractResultsFunctionExpression";
+import {Assert} from "../../../infrastructure/assert";
+import {renderVariableMappingVariableSyntax} from "../renderers/variableMapping";
 
 //Syntax: "extract(params)"
 export class ExtractFunctionStatement {
 
   public static matches(expression: Expression): boolean {
+
     const functionCallExpression = asFunctionCallExpression(expression);
     if (functionCallExpression == null) return false;
 
     return instanceOfExtractResultsFunctionExpression(functionCallExpression);
-   }
+  }
 
-   public static render(functionCallExpression: ExtractResultsFunctionExpression, codeWriter: CodeWriter) {
-     const extractResultsFunction = asExtractResultsFunctionExpression(functionCallExpression);
-     if (extractResultsFunction == null) throw new Error("Expression not ExtractResultsFunctionExpression: " + functionCallExpression)
-     if (extractResultsFunction.functionResultVariable == null) throw new Error("extractResultsFunction.functionResultVariable is null");
+  public static render(functionCallExpression: ExtractResultsFunctionExpression, codeWriter: CodeWriter) {
 
-     return ExtractFunctionStatement.renderExtract(extractResultsFunction.mapping, extractResultsFunction.functionResultVariable, codeWriter);
-   }
+    const extractResultsFunction = Assert.is<ExtractResultsFunctionExpression>(asExtractResultsFunctionExpression, functionCallExpression, "functionCallExpression");
 
-   public static renderExtract(mappings: ReadonlyArray<Mapping>, functionResultVariable: string, codeWriter: CodeWriter) {
-     for (const mapping of mappings) {
-       this.renderMapping(functionResultVariable, mapping, codeWriter);
-     }
-   }
+    return ExtractFunctionStatement.renderExtract(
+      Assert.notNull(extractResultsFunction.mapping, "extractResultsFunction.mapping"),
+      Assert.notNull(extractResultsFunction.functionResultVariable, "extractResultsFunction.functionResultVariable"),
+      codeWriter);
+  }
 
-   private static renderMapping(functionResultVariable: string, mapping: Mapping, codeWriter: CodeWriter) {
+  public static renderExtract(mappings: VariablesMapping, functionResultVariable: string, codeWriter: CodeWriter) {
+    for (const mapping of mappings.values) {
+      this.renderMapping(functionResultVariable, mapping, codeWriter);
+    }
+  }
 
-     if (mapping.variableSource == VariableSource.Code) {
-       codeWriter.startLine(mapping.variableName);
-     } else  if (mapping.variableSource == VariableSource.Results) {
-       codeWriter.startLine(`${LexyCodeConstants.resultsVariable}.${mapping.variableName}`);
-     } else  if (mapping.variableSource == VariableSource.Parameters) {
-       codeWriter.startLine(`${LexyCodeConstants.parameterVariable}.${mapping.variableName}`);
-     } else {
-       throw new Error(`Invalid source: ${mapping.variableSource}`)
-     }
+  private static renderMapping(functionResultVariable: string, mapping: Mapping, codeWriter: CodeWriter) {
 
-     codeWriter.write(" = ");
-     codeWriter.endLine(`${functionResultVariable}.${mapping.variableName};`);
-   }
+    codeWriter.startLine();
+
+    renderVariableMappingVariableSyntax(mapping, codeWriter);
+
+    codeWriter.write(" = ");
+    codeWriter.endLine(`${functionResultVariable}.${mapping.variableName};`);
+  }
 }

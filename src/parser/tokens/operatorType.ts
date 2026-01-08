@@ -22,5 +22,6 @@ export enum OperatorType {
   And = "And",
   Or = "Or",
 
-  ArgumentSeparator = "ArgumentSeparator"
+  ArgumentSeparator = "ArgumentSeparator",
+  Spread = "Spread"
 }

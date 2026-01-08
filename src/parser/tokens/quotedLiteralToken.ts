@@ -56,10 +56,10 @@ export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
     return newParseTokenInProgressResult();
   }
 
-  public finalize(): ParseTokenResult {
+  public endOfLine(): ParseTokenResult {
     if (!this.quoteClosed) return newParseTokenInvalidResult("Closing quote expected.");
 
-    return newParseTokenFinishedResult(true);
+    throw new Error("Token should be finished by the Parse method before reaching end of line");
   }
 
   public toString() {

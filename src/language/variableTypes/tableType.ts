@@ -39,11 +39,7 @@ export class TableType extends ObjectType {
 
     if (name == Table.countName) return PrimitiveType.number;
     if (name == Table.rowName) return this.tableRowType(componentNodes);
-
-    if (this.table.header?.getColumn(name) != null) {
-      return new GeneratedType(name, this.table, GeneratedTypeSource.TableColumn, []);
-    }
-    return null;
+    return this.tableColumnType(name);
   }
 
   public override getVariable(name: string): IObjectTypeVariable | null {
@@ -72,5 +68,12 @@ export class TableType extends ObjectType {
 
   public toString(): string {
     return this.tableName;
+  }
+
+  private tableColumnType(name: string) {
+    if (this.table.header?.getColumn(name) != null) {
+      return new GeneratedType(name, this.table, GeneratedTypeSource.TableColumn, []);
+    }
+    return null;
   }
 }

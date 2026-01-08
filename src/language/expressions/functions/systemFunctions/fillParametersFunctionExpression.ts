@@ -4,7 +4,7 @@ import type {IValidationContext} from "../../../../parser/validationContext";
 import type {IHasNodeDependencies} from "../../../IHasNodeDependencies";
 import type {IComponentNodeList} from "../../../componentNodeList";
 
-import {Mapping, mapToUsedVariable} from "../mapping";
+import {Mapping, mapToUsedVariable, VariablesMapping} from "../../mapping";
 import {MemberAccessLiteralToken} from "../../../../parser/tokens/memberAccessLiteralToken";
 import {Expression} from "../../expression";
 import {SourceReference} from "../../../../parser/sourceReference";
@@ -43,7 +43,7 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
     return Assert.notNull(this.typeValue, "type");
   }
 
-  public readonly mapping: Array<Mapping> = [];
+  public mapping: VariablesMapping | null;
 
   private get functionHelp() {
     return `${FillParametersFunctionExpression.functionName} expects 1 argument (Function.Parameters)`;
@@ -55,6 +55,7 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
 
     const memberAccessExpression = asMemberAccessExpression(valueExpression);
     this.typeLiteralToken = memberAccessExpression ? memberAccessExpression.memberAccessLiteral : null;
+    this.mapping = null;
   }
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
@@ -81,12 +82,13 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
 
     this.typeValue = generatedType;
 
-    FillParametersFunctionExpression.getMapping(this.reference, context, generatedType, this.mapping);
+    this.mapping = FillParametersFunctionExpression.getMapping(this.reference, context, generatedType);
   }
 
-  public static getMapping(reference: SourceReference, context: IValidationContext, generatedType: GeneratedType,
-                           mapping: Array<Mapping>): void {
+  public static getMapping(reference: SourceReference, context: IValidationContext, generatedType: GeneratedType):
+    VariablesMapping {
 
+    const mapping = new Array<Mapping>();
     for (const member of generatedType.members) {
       let variable = context.variableContext.getVariable(member.name);
       if (variable == null) continue;
@@ -103,6 +105,8 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
       context.logger.fail(reference,
         `Invalid parameter mapping. No parameter could be mapped from variables.`);
     }
+
+    return new VariablesMapping(generatedType, mapping);
   }
 
   public override deriveType(context: IValidationContext): VariableType | null {
@@ -121,9 +125,10 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
   }
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {
+    if (this.mapping == null) return super.usedVariables();
     return [
       ...super.usedVariables(),
-      ...this.mapping.map(mapToUsedVariable(VariableAccess.Read)),
+      ...this.mapping.values.map(mapToUsedVariable(VariableAccess.Read)),
     ];
   }
 }

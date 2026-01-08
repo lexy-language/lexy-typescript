@@ -9,16 +9,17 @@ import {
   instanceOfFillParametersFunctionExpression
 } from "../../../language/expressions/functions/systemFunctions/fillParametersFunctionExpression";
 import {VariableType} from "../../../language/variableTypes/variableType";
-import {Mapping} from "../../../language/expressions/functions/mapping";
-import {VariableSource} from "../../../language/variableSource";
-import {LexyCodeConstants} from "../lexyCodeConstants";
+import {VariablesMapping} from "../../../language/expressions/mapping";
 import {translateType} from "../types";
 import {CodeWriter} from "../codeWriter";
+import {renderVariableMappingVariableSyntax} from "../renderers/variableMapping";
+import {Assert} from "../../../infrastructure/assert";
 
 //Syntax: "var result = fill(params)"
 export class FillFunctionStatement {
 
   public static matches(expression: Expression): boolean {
+
     const assignmentExpression = asVariableDeclarationExpression(expression);
     if (assignmentExpression == null) return false;
 
@@ -36,26 +37,23 @@ export class FillFunctionStatement {
      const fillParametersFunctionExpression = asFillParametersFunctionExpression(functionCallExpression);
      if (fillParametersFunctionExpression == null) throw new Error("Expression not FillParametersFunctionExpression: " + functionCallExpression)
 
-     return FillFunctionStatement.renderFill(assignmentExpression.name, fillParametersFunctionExpression.type, fillParametersFunctionExpression.mapping, codeWriter);
+     FillFunctionStatement.renderFill(
+       assignmentExpression.name,
+       fillParametersFunctionExpression.type,
+       Assert.notNull(fillParametersFunctionExpression.mapping, "fillParametersFunctionExpression.mapping"),
+       codeWriter);
    }
 
-   public static renderFill(variableName: string, type: VariableType, mappings: ReadonlyArray<Mapping>, codeWriter: CodeWriter) {
+   public static renderFill(variableName: string, type: VariableType, mappings: VariablesMapping, codeWriter: CodeWriter) {
+
      codeWriter.write(`const ` + variableName + " = new ");
      codeWriter.writeEnvironment(`.${translateType(type)}`)
      codeWriter.endLine("();");
 
-     for (const mapping of mappings) {
+     for (const mapping of mappings.values) {
        codeWriter.startLine(variableName + "." + mapping.variableName + " = ");
 
-       if (mapping.variableSource == VariableSource.Code) {
-         codeWriter.write(mapping.variableName);
-       } else  if (mapping.variableSource == VariableSource.Results) {
-         codeWriter.write(`${LexyCodeConstants.resultsVariable}.${mapping.variableName}`);
-       } else  if (mapping.variableSource == VariableSource.Parameters) {
-         codeWriter.write(`${LexyCodeConstants.parameterVariable}.${mapping.variableName}`);
-       } else {
-         throw new Error(`Invalid source: ${mapping.variableSource}`)
-       }
+       renderVariableMappingVariableSyntax(mapping, codeWriter);
 
        codeWriter.writeLine(";");
      }

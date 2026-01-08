@@ -5,11 +5,13 @@ import {TokenValidator} from "../../src/parser/tokenValidator";
 import {ParseLineContext} from "../../src/parser/ParseLineContext";
 import {TokenizeFailed} from "../../src/parser/tokens/tokenizeResult";
 import {ExpressionFactory} from "../../src/language/expressions/expressionFactory";
-import {ConsoleLogger} from "../../src/infrastructure/logger";
 import {ParserLogger} from "../../src/parser/parserLogger";
 import {LoggingConfiguration} from "../loggingConfiguration";
+import {Assert} from "../../src";
 
 export function tokenize(value: string): TokenValidator {
+
+  Assert.notNull(value, "value");
 
   const tokenizer = new Tokenizer();
   const file = new SourceFile("tests.lexy");
@@ -32,9 +34,9 @@ export function tokenizeExpectError(value: string): TokenizeFailed {
   const tokenizer = new Tokenizer();
   const file = new SourceFile("tests.lexy");
   const line = new Line(0, value, file);
-  const tokens = line.tokenize(tokenizer);
-  if (tokens.state != 'failed') {
-    throw new Error(`Process didn't fail.`);
+  const tokenizeResult = line.tokenize(tokenizer);
+  if (tokenizeResult.state != 'failed') {
+    throw new Error("Tokenizing didn't fail, but should have.");
   }
-  return tokens;
+  return tokenizeResult;
 }

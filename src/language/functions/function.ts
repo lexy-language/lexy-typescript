@@ -30,6 +30,7 @@ import {
 import {VariableType} from "../variableTypes/variableType";
 import {FunctionSignature} from "./functionSignature";
 import {ObjectTypeVariable} from "../variableTypes/objectTypeVariable";
+import {instanceOfSpreadExpression} from "../expressions/spreadExpression";
 
 export function instanceOfFunction(object: any) {
   return object?.nodeType == NodeType.Function;
@@ -159,13 +160,13 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
   }
 
   public validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>, reference: SourceReference): ValidateFunctionArgumentsResult {
-    return args.length == 0
-      ? this.validateNoArgumentCall()
+    return this.hasSpreadArgument(args)
+      ? this.validateAutoMap()
       : this.validateWithArguments(context, args, reference);
   }
 
-  private validateNoArgumentCall(): ValidateFunctionArgumentsResult {
-    return newValidateFunctionArgumentsSuccessAutoMap(this.getParametersType(), this.getResultsType());
+  private validateAutoMap(): ValidateFunctionArgumentsResult {
+    return newValidateFunctionArgumentsSuccessAutoMap(this.getParametersType());
   }
 
   private validateWithArguments(context: IValidationContext, args: ReadonlyArray<Expression>, reference: SourceReference): ValidateFunctionArgumentsResult {
@@ -190,12 +191,12 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
     const stringBuilder = [`Invalid function arguments: '${this.name}'. Function overloads:\n`];
 
     for (const overload of overloads) {
-      stringBuilder.push(`- {Name}(`);
+      stringBuilder.push(`- ${this.name}(`);
       Function.addParameters(overload, stringBuilder);
       stringBuilder.push(`)\n`);
     }
 
-    return stringBuilder.join();
+    return stringBuilder.join("");
   }
 
   private static addParameters(signature: FunctionSignature, stringBuilder: Array<string>) {
@@ -203,7 +204,7 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
     for (let index = 0; index < signature.parametersTypes.length; index++) {
       let parametersType = signature.parametersTypes[index];
       if (parametersType) {
-        stringBuilder.push(parametersType.variableTypeName);
+        stringBuilder.push(parametersType.toString());
       }
       if (index < signature.parametersTypes.length - 1)
       {
@@ -236,6 +237,12 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
   private getArgumentTypes(args: ReadonlyArray<Expression>, context: IValidationContext):
     ReadonlyArray<VariableType | null> {
 
-    return args.map(argument => argument.deriveType(context));
+    return this.hasSpreadArgument(args)
+      ? [this.getResultsType()]
+      : args.map(argument => argument.deriveType(context));
+  }
+
+  private hasSpreadArgument(args: ReadonlyArray<Expression>): boolean {
+    return args.length == 1 && instanceOfSpreadExpression(args[0]);
   }
 }

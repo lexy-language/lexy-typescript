@@ -6,8 +6,8 @@ import {firstOrDefault} from "../../../infrastructure/arrayFunctions";
 import {CodeWriter} from "../codeWriter";
 import {ExtractResultsFunctionExpression} from "../../../language/expressions/functions/systemFunctions/extractResultsFunctionExpression";
 import {VariableDeclarationExpression} from "../../../language/expressions/variableDeclarationExpression";
-import {LexyFunctionCallExpression} from "../../../language/expressions/functions/lexyFunctionCallExpression";
 import {NewFunctionExpressionStatement} from "./newFunctionStatement";
+import {SpreadAssignmentExpression} from "../../../language/expressions/spreadAssignmentExpression";
 
 class Renderer {
 
@@ -35,7 +35,7 @@ class Renderer {
       add<VariableDeclarationExpression>(NewFunctionExpressionStatement.matches, NewFunctionExpressionStatement.render),
       add<VariableDeclarationExpression>(FillFunctionStatement.matches, FillFunctionStatement.render),
       add<ExtractResultsFunctionExpression>(ExtractFunctionStatement.matches, ExtractFunctionStatement.render),
-      add<LexyFunctionCallExpression>(AutoMapLexyFunctionStatement.matches, AutoMapLexyFunctionStatement.render)
+      add<SpreadAssignmentExpression>(AutoMapLexyFunctionStatement.matches, AutoMapLexyFunctionStatement.render)
     ];
   }
 }

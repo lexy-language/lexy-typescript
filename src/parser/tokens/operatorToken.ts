@@ -4,21 +4,69 @@ import {ParsableToken} from "./parsableToken";
 import {OperatorType} from "./operatorType";
 import {TokenValues} from "./tokenValues";
 import {TokenCharacter} from "./tokenCharacter";
-import {newParseTokenFinishedResult, ParseTokenResult} from "./parseTokenResult";
+import {
+  newParseTokenFinishedResult,
+  newParseTokenInProgressResult,
+  newParseTokenInvalidResult,
+  ParseTokenResult
+} from "./parseTokenResult";
 import {TableSeparatorToken} from "./tableSeparatorToken";
 import {Character} from "./character";
 import {isDigitOrLetter} from "./character";
 import {TokenType} from "./tokenType";
 
-class OperatorCombinations {
-  public firstChar: Character;
-  public secondChar: Character | null;
+export interface IOperatorToken extends IToken {
+  type: OperatorType;
+}
+
+enum CombinationMatch {
+  Invalid,
+  Incomplete,
+  Complete,
+  CompleteNotProcessed
+}
+
+class OperatorCombinations
+{
+  private firstChar: Character;
+  private secondChar: Character | null;
+  private thirdChar: Character | null;
+  private chars: number;
+
   public type: OperatorType;
 
-  constructor(firstChar: Character, secondChar: Character | null, type: OperatorType) {
+  constructor(type: OperatorType, firstChar: Character,
+              secondChar: Character | null = null, thirdChar: Character | null = null) {
+    this.type = type;
     this.firstChar = firstChar;
     this.secondChar = secondChar;
-    this.type = type;
+    this.thirdChar = thirdChar;
+    this.chars = thirdChar != null ? 3 : secondChar != null ? 2 : 1;
+  }
+
+  public matches(firstCharacter: Character, secondCharacter: Character | null, thirdCharacter: Character | null): CombinationMatch {
+
+    if (firstCharacter != this.firstChar) return CombinationMatch.Invalid;
+
+    if (secondCharacter == null) {
+        return this.chars == 1 ? CombinationMatch.Complete : CombinationMatch.Invalid;
+    }
+
+    if (thirdCharacter == null) {
+      if (this.chars == 3) {
+        return secondCharacter == this.secondChar ? CombinationMatch.Incomplete : CombinationMatch.Invalid;
+      }
+      if (this.chars == 2) {
+        return secondCharacter == this.secondChar ? CombinationMatch.Complete : CombinationMatch.Invalid;
+      }
+      if (this.chars == 1) {
+        return CombinationMatch.CompleteNotProcessed;
+      }
+    }
+
+    return thirdCharacter == this.thirdChar && secondCharacter == this.secondChar
+      ? CombinationMatch.Complete
+      : CombinationMatch.Invalid;
   }
 }
 
@@ -28,10 +76,6 @@ export function instanceOfOperatorToken(object: any): object is OperatorToken {
 
 export function asOperatorToken(object: any): OperatorToken | null {
   return instanceOfOperatorToken(object) ? object as OperatorToken : null;
-}
-
-export interface IOperatorToken extends IToken {
-  type: OperatorType;
 }
 
 export class OperatorToken extends ParsableToken implements IOperatorToken {
@@ -51,68 +95,106 @@ export class OperatorToken extends ParsableToken implements IOperatorToken {
   ];
 
   private static readonly operatorCombinations = [
-    new OperatorCombinations(TokenValues.Assignment, null, OperatorType.Assignment),
-    new OperatorCombinations(TokenValues.Addition, null, OperatorType.Addition),
-    new OperatorCombinations(TokenValues.Subtraction, null, OperatorType.Subtraction),
-    new OperatorCombinations(TokenValues.Multiplication, null, OperatorType.Multiplication),
-    new OperatorCombinations(TokenValues.DivisionOrComment, null, OperatorType.Division),
-    new OperatorCombinations(TokenValues.Modulus, null, OperatorType.Modulus),
-    new OperatorCombinations(TokenValues.OpenParentheses, null, OperatorType.OpenParentheses),
-    new OperatorCombinations(TokenValues.CloseParentheses, null, OperatorType.CloseParentheses),
-    new OperatorCombinations(TokenValues.OpenBrackets, null, OperatorType.OpenBrackets),
-    new OperatorCombinations(TokenValues.CloseBrackets, null, OperatorType.CloseBrackets),
-    new OperatorCombinations(TokenValues.GreaterThan, null, OperatorType.GreaterThan),
-    new OperatorCombinations(TokenValues.LessThan, null, OperatorType.LessThan),
-    new OperatorCombinations(TokenValues.ArgumentSeparator, null, OperatorType.ArgumentSeparator),
-    new OperatorCombinations(TokenValues.GreaterThan, TokenValues.Assignment, OperatorType.GreaterThanOrEqual),
-    new OperatorCombinations(TokenValues.LessThan, TokenValues.Assignment, OperatorType.LessThanOrEqual),
-    new OperatorCombinations(TokenValues.Assignment, TokenValues.Assignment, OperatorType.Equals),
-    new OperatorCombinations(TokenValues.NotEqualStart, TokenValues.Assignment, OperatorType.NotEqual),
-    new OperatorCombinations(TokenValues.And, TokenValues.And, OperatorType.And),
-    new OperatorCombinations(TokenValues.Or, TokenValues.Or, OperatorType.Or)
+
+    new OperatorCombinations(OperatorType.GreaterThanOrEqual, TokenValues.GreaterThan, TokenValues.Assignment),
+    new OperatorCombinations(OperatorType.LessThanOrEqual, TokenValues.LessThan, TokenValues.Assignment),
+    new OperatorCombinations(OperatorType.Equals, TokenValues.Assignment, TokenValues.Assignment),
+    new OperatorCombinations(OperatorType.NotEqual, TokenValues.NotEqualStart, TokenValues.Assignment),
+
+    new OperatorCombinations(OperatorType.Assignment, TokenValues.Assignment),
+    new OperatorCombinations(OperatorType.Addition, TokenValues.Addition),
+    new OperatorCombinations(OperatorType.Subtraction, TokenValues.Subtraction),
+    new OperatorCombinations(OperatorType.Multiplication, TokenValues.Multiplication),
+    //Division is handled by buildCommentOrDivisionToken
+    new OperatorCombinations(OperatorType.Modulus, TokenValues.Modulus),
+    new OperatorCombinations(OperatorType.OpenParentheses, TokenValues.OpenParentheses),
+    new OperatorCombinations(OperatorType.CloseParentheses, TokenValues.CloseParentheses),
+    new OperatorCombinations(OperatorType.OpenBrackets, TokenValues.OpenBrackets),
+    new OperatorCombinations(OperatorType.CloseBrackets, TokenValues.CloseBrackets),
+
+    new OperatorCombinations(OperatorType.GreaterThan, TokenValues.GreaterThan),
+    new OperatorCombinations(OperatorType.LessThan, TokenValues.LessThan),
+
+    new OperatorCombinations(OperatorType.ArgumentSeparator, TokenValues.ArgumentSeparator),
+    new OperatorCombinations(OperatorType.And, TokenValues.And, TokenValues.And),
+    new OperatorCombinations(OperatorType.Or, TokenValues.Or, TokenValues.Or),
+
+    new OperatorCombinations(OperatorType.Spread, TokenValues.Spread, TokenValues.Spread, TokenValues.Spread)
   ];
 
-  constructor(character: TokenCharacter) {
+  constructor(character: TokenCharacter, operatorType: OperatorType | null = null) {
     super(character);
-    let operatorValue = character.value;
-    OperatorToken.operatorCombinations.forEach(combination => {
-      if (!combination.secondChar && combination.firstChar == operatorValue)
-        this.type = combination.type;
-    });
-  }
-
-  private terminatorValuescontains(value: number) {
-    return OperatorToken.terminatorValues.findIndex(terminator => terminator == value) >= 0;
+    if (operatorType) {
+      this.type = operatorType;
+    }
   }
 
   public parse(character: TokenCharacter): ParseTokenResult {
-    let value = character.value;
-    if (this.value.length == 1) {
 
-      for (let index = 0; index < OperatorToken.operatorCombinations.length; index++) {
-        let combination = OperatorToken.operatorCombinations[index];
-        if (combination.secondChar
-          && combination.secondChar == value
-          && combination.firstChar == this.value.charCodeAt(0)) {
-          this.type = combination.type;
-          return newParseTokenFinishedResult(true);
-        }
+    const nextCharacter = character.value;
+    const firstCharacter = this.value.charCodeAt(0);
+    const secondCharacter = this.value.length == 2 ? this.value.charCodeAt(1) : nextCharacter;
+    const thirdCharacter = this.value.length == 2 ? nextCharacter : null;
+
+    for (let index = 0; index < OperatorToken.operatorCombinations.length; index++) {
+      const combination = OperatorToken.operatorCombinations[index];
+      const matches = combination.matches(firstCharacter, secondCharacter, thirdCharacter);
+      if (matches != CombinationMatch.Invalid) {
+        return this.parseToken(matches, combination, nextCharacter);
       }
     }
 
-    if (isDigitOrLetter(value) || this.terminatorValuescontains(value)) {
+    if (isDigitOrLetter(nextCharacter) || this.terminatorValuesContains(nextCharacter)) {
       if (this.value.length == 1 && this.value.charCodeAt(0) == TokenValues.TableSeparator) {
         return {state: 'finished', charProcessed: false, newToken: new TableSeparatorToken(this.firstCharacter)};
       }
     }
-    return {state: 'finished', charProcessed: false, newToken: null};
+
+    return newParseTokenInvalidResult(`Invalid token at ${character.position}: '${nextCharacter}'`);
   }
 
-  public finalize(): ParseTokenResult {
-    if (this.value.length == 1 && this.value.charCodeAt(0) == TokenValues.TableSeparator) {
-      return {state: 'finished', charProcessed: false, newToken: new TableSeparatorToken(this.firstCharacter)};
+  private terminatorValuesContains(value: number) {
+    return OperatorToken.terminatorValues.findIndex(terminator => terminator == value) >= 0;
+  }
+
+  private parseToken(matches: CombinationMatch, combination: OperatorCombinations, nextCharacter: number): ParseTokenResult  {
+
+    if (matches == CombinationMatch.Incomplete) {
+        this.appendValue(nextCharacter);
+        return newParseTokenInProgressResult();
     }
 
-    return {state: 'finished', charProcessed: false, newToken: null};
+    this.type = combination.type;
+
+    if (matches == CombinationMatch.Complete)
+    {
+        this.appendValue(nextCharacter);
+    }
+
+    return newParseTokenFinishedResult(matches == CombinationMatch.Complete);
+  }
+
+  public endOfLine(): ParseTokenResult {
+
+    if (this.value.length == 1 && this.value.charCodeAt(0) == TokenValues.TableSeparator) {
+      return newParseTokenFinishedResult(false, new TableSeparatorToken(this.firstCharacter));
+    }
+
+    const firstCharacter = this.value.charCodeAt(0);
+    const secondCharacter = this.value.length > 1 ? this.value.charCodeAt(1) : null;
+    const thirdCharacter = this.value.length > 2 ? this.value.charCodeAt(2) : null;
+
+    for (let index = 0; index < OperatorToken.operatorCombinations.length; index++) {
+
+      let combination = OperatorToken.operatorCombinations[index];
+      let matches = combination.matches(firstCharacter, secondCharacter, thirdCharacter);
+
+      if (matches == CombinationMatch.Complete || matches == CombinationMatch.CompleteNotProcessed) {
+        this.type = combination.type;
+        return newParseTokenFinishedResult(true);
+      }
+    }
+
+    return newParseTokenInvalidResult(`Incomplete token: '${this.value}'`);
   }
 }

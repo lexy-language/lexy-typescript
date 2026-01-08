@@ -116,7 +116,7 @@ export class DateTimeLiteralToken extends ParsableToken implements ILiteralToken
     return newParseTokenInProgressResult();
   }
 
-  public finalize(): ParseTokenResult {
+  public endOfLine(): ParseTokenResult {
     return newParseTokenInvalidResult(
       'Unexpected end of line. Closing quote expected. Format: d"2024-12-18T14:17:30"');
   }

@@ -10,6 +10,7 @@ import {TokenType} from "./tokenType";
 import {OperatorToken} from "./operatorToken";
 import {TokenValues} from "./tokenValues";
 import {CommentToken} from "./commentToken";
+import {OperatorType} from "./operatorType";
 
 export class BuildCommentOrDivisionToken extends ParsableToken {
 
@@ -23,12 +24,19 @@ export class BuildCommentOrDivisionToken extends ParsableToken {
   public parse(character: TokenCharacter): ParseTokenResult {
     if (this.value.length != 1) throw new Error("Length should not exceed 1");
 
-    return character.value != TokenValues.DivisionOrComment
-      ? newParseTokenFinishedResult(false, new OperatorToken(this.firstCharacter))
-      : newParseTokenInProgressResult(new CommentToken(this.firstCharacter, this.value));
+    return this.buildToken(character);
   }
 
-  public finalize(): ParseTokenResult {
-    return newParseTokenInvalidResult("Unexpected end of line. Can't end with a single '/'.");
+  private buildToken(character: TokenCharacter) {
+    if (character.value != TokenValues.DivisionOrComment) {
+      return newParseTokenFinishedResult(false, new OperatorToken(this.firstCharacter, OperatorType.Division));
+    } else {
+      let commentToken = new CommentToken(this.firstCharacter, this.value);
+      return newParseTokenInProgressResult(commentToken);
+    }
+  }
+
+  public endOfLine(): ParseTokenResult {
+    return newParseTokenFinishedResult(true, new OperatorToken(this.firstCharacter, OperatorType.Division));
   }
 }

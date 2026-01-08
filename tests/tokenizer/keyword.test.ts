@@ -25,8 +25,13 @@ describe('KeywordTests', () => {
   });
 
   it('TestExpectErrorKeywordWithQuotedAndInvalidChar', async () => {
-    let result = tokenizeExpectError("  expectError \"Invalid token 'Paraeters'\".");
-    expect(result.errorMessage).toBe("Invalid character at 41 '.'");
+    let result = tokenizeExpectError("  expectError \"Invalid token 'Paraeters'\"$");
+    expect(result.errorMessage).toBe("Invalid character at 41 '$'");
+  });
+
+  it('TestIncompleteSpreadOperator', async () => {
+    let result = tokenizeExpectError("  .");
+    expect(result.errorMessage).toBe("Invalid token at end of line. Incomplete token: '.'");
   });
 
   it('TestAssignmentWithMemberAccess', async () => {

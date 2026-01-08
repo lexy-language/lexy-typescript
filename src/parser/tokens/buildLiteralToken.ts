@@ -75,7 +75,7 @@ export class BuildLiteralToken extends ParsableToken {
     return newParseTokenInvalidResult(`Unexpected character: '${String.fromCharCode(value)}'`);
   }
 
-  public finalize(): ParseTokenResult {
+  public endOfLine(): ParseTokenResult {
     if (this.lastMemberAccessor)
       return newParseTokenInvalidResult(
         "Unexpected end of line. Member accessor should be followed by member name.");

@@ -24,7 +24,7 @@ export class TableSeparatorToken extends ParsableToken {
     return newParseTokenFinishedResult(true);
   }
 
-  public finalize(): ParseTokenResult {
+  public endOfLine(): ParseTokenResult {
     return newParseTokenFinishedResult(true);
   }
 }

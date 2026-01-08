@@ -43,15 +43,15 @@ export abstract class ObjectType extends VariableType implements IObjectType {
 
    public override isAssignableFrom(type: VariableType): boolean {
 
-      const otherComplexType = asObjectType(type);
-      if (otherComplexType == null) return false;
+      const otherObjectType = asObjectType(type);
+      if (otherObjectType == null) return false;
 
-      return this.variablesAssignableFrom(otherComplexType);
+      return this.variablesAssignableFrom(otherObjectType);
    }
 
-   private variablesAssignableFrom(otherComplexType: IObjectType): boolean {
+   private variablesAssignableFrom(otherObjectType: IObjectType): boolean {
 
-      const neededVariables = otherComplexType.getVariables();
+      const neededVariables = otherObjectType.getVariables();
       for (const neededVariable of neededVariables) {
          const ownVariable = this.getVariable(neededVariable.name);
          if (ownVariable == null

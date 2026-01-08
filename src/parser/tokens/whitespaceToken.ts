@@ -25,7 +25,7 @@ export class WhitespaceToken extends ParsableToken {
     return value != ' ' ? newParseTokenFinishedResult(false) : newParseTokenInProgressResult();
   }
 
-  public finalize() : ParseTokenResult {
+  public endOfLine() : ParseTokenResult {
     return newParseTokenFinishedResult(true);
   }
 }

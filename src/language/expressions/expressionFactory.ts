@@ -7,6 +7,7 @@ import {ElseExpression} from "./elseExpression";
 import {SwitchExpression} from "./switchExpression";
 import {CaseExpression} from "./caseExpression";
 import {VariableDeclarationExpression} from "./variableDeclarationExpression";
+import {SpreadAssignmentExpression} from "./spreadAssignmentExpression";
 import {AssignmentExpression} from "./assignmentExpression";
 import {ParenthesizedExpression} from "./parenthesizedExpression";
 import {BracketedExpression} from "./bracketedExpression";
@@ -17,6 +18,7 @@ import {BinaryExpression} from "./binaryExpression";
 import {FunctionCallExpression} from "./functions/functionCallExpression";
 import {FunctionCallExpressionParser} from "./functions/functionCallExpressionParser";
 import {ElseifExpression} from "./elseifExpression";
+import {SpreadExpression} from "./spreadExpression";
 
 export interface IExpressionFactory {
   parse(tokens: TokenList, currentLine: Line): ParseExpressionResult;
@@ -33,6 +35,8 @@ export class ExpressionFactory implements IExpressionFactory {
          { criteria: SwitchExpression.isValid, parse: SwitchExpression.parse },
          { criteria: CaseExpression.isValid, parse: CaseExpression.parse },
          { criteria: VariableDeclarationExpression.isValid, parse: VariableDeclarationExpression.parse },
+         { criteria: SpreadExpression.isValid, parse: SpreadExpression.parse },
+         { criteria: SpreadAssignmentExpression.isValid, parse: SpreadAssignmentExpression.parse },
          { criteria: AssignmentExpression.isValid, parse: AssignmentExpression.parse },
          { criteria: ParenthesizedExpression.isValid, parse: ParenthesizedExpression.parse },
          { criteria: BracketedExpression.isValid, parse: BracketedExpression.parse },

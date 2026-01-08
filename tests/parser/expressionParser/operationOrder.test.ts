@@ -5,6 +5,7 @@ import {ExpressionOperator} from "../../../src/language/expressions/expressionOp
 import {validateVariableExpression} from "./expressionTestExtensions";
 
 describe('OperationOrderTests', () => {
+
   it('addAndMultiply', async () => {
     let expression = parseExpression(`a + b * c`);
     validateOfType<BinaryExpression>(asBinaryExpression, expression, add => {

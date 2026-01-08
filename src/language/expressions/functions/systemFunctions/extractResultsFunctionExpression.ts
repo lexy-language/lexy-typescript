@@ -1,7 +1,7 @@
 import type {IValidationContext} from "../../../../parser/validationContext";
 import type {INode} from "../../../node";
 
-import {Mapping, mapToUsedVariable} from "../mapping";
+import {Mapping, mapToUsedVariable, VariablesMapping} from "../../mapping";
 import {Expression} from "../../expression";
 import {SourceReference} from "../../../../parser/sourceReference";
 import {IdentifierExpression} from "../../identifierExpression";
@@ -35,13 +35,14 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
   public functionResultVariable: string | null;
   public valueExpression: Expression;
 
-  public readonly mapping: Array<Mapping> = [];
+  public mapping: VariablesMapping | null;
 
   constructor(valueExpression: Expression, source: ExpressionSource) {
     super(source);
     this.valueExpression = valueExpression;
     const identifierExpression = valueExpression as IdentifierExpression
     this.functionResultVariable = identifierExpression != null ? identifierExpression.identifier : null;
+    this.mapping = null;
   }
 
   public override getChildren(): Array<INode> {
@@ -69,14 +70,15 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
       return;
     }
 
-    ExtractResultsFunctionExpression.getMapping(this.reference, context, generatedType, this.mapping);
+    this.mapping = ExtractResultsFunctionExpression.getMapping(this.reference, context, generatedType);
   }
 
-  public static getMapping(reference: SourceReference, context: IValidationContext, generatedType: GeneratedType | null,
-                           mapping: Array<Mapping>): void {
+  public static getMapping(reference: SourceReference, context: IValidationContext, generatedType: GeneratedType | null):
+    VariablesMapping | null {
 
-    if (generatedType == null) return;
+    if (generatedType == null) return null;
 
+    const mapping = new Array<Mapping>();
     for (const member of generatedType.members) {
       const variable = context.variableContext.getVariable(member.name);
       if (variable == null || variable.variableSource == VariableSource.Parameters) continue;
@@ -92,7 +94,10 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
     if (mapping.length == 0) {
       context.logger.fail(reference,
         `Invalid parameter mapping. No parameter could be mapped from variables.`);
+      return null;
     }
+
+    return new VariablesMapping(generatedType, mapping);
   }
 
   public override deriveType(context: IValidationContext): VariableType {
@@ -104,9 +109,12 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
   }
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {
+    if (!this.mapping) return super.usedVariables();
+    let callbackfn = mapToUsedVariable(VariableAccess.Write);
+    let variableUsages = this.mapping.values.map(callbackfn);
     return [
       ...super.usedVariables(),
-      ...this.mapping.map(mapToUsedVariable(VariableAccess.Write)),
+      ...variableUsages,
     ];
   }
 }

@@ -90,11 +90,11 @@ export class NumberLiteralToken extends ParsableToken implements ILiteralToken {
     }
 
     return this.allowedNextTokensValues.findIndex(allowed => allowed == value) >= 0
-      ? this.finalize()
+      ? this.endOfLine()
       : newParseTokenInvalidResult(`Invalid number token character: '${String.fromCharCode(value)}'`);
   }
 
-  public finalize(): ParseTokenResult {
+  public endOfLine(): ParseTokenResult {
     this.numberValueValue = parseFloat(super.value);
     return newParseTokenFinishedResult(false);
   }

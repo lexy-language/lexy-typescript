@@ -5,13 +5,13 @@ import {ParsableToken} from "./parsableToken";
 import {TokenList} from "./tokenList";
 import {TokenCharacter} from "./tokenCharacter";
 import {Token} from "./token";
-import {CommentToken} from "./commentToken";
+import {instanceOfCommentToken} from "./commentToken";
 import {TokenValues} from "./tokenValues";
 import {QuotedLiteralToken} from "./quotedLiteralToken";
 import {OperatorToken} from "./operatorToken";
 import {NumberLiteralToken} from "./numberLiteralToken";
 import {BuildLiteralToken} from "./buildLiteralToken";
-import {WhitespaceToken} from "./whitespaceToken";
+import {instanceOfWhitespaceToken, WhitespaceToken} from "./whitespaceToken";
 import {Character, isLetter, isDigit, isWhitespace} from "./character";
 import {BuildCommentOrDivisionToken} from "./buildCommentOrDivisionToken";
 import {where} from "../../infrastructure/arrayFunctions";
@@ -38,7 +38,9 @@ const KnownTokens: Array<{value: number, factory: ((character: TokenCharacter) =
   {value: TokenValues.NotEqualStart, factory: value => new OperatorToken(value)},
 
   {value: TokenValues.And, factory: value => new OperatorToken(value)},
-  {value: TokenValues.Or, factory: value => new OperatorToken(value)}
+  {value: TokenValues.Or, factory: value => new OperatorToken(value)},
+
+  {value: TokenValues.Spread, factory: value => new OperatorToken(value)},
 ];
 
 const TokensValidators: Array<{
@@ -98,7 +100,7 @@ export class Tokenizer implements ITokenizer {
     }
 
     if (current != null) {
-      let result = current.finalize();
+      let result = current.endOfLine();
       if (result.state === 'invalid') {
         return newTokenizeFailed(
           line.lineEndReference(),
@@ -137,7 +139,7 @@ export class Tokenizer implements ITokenizer {
   private static discardWhitespaceAndComments(tokens: Array<Token>): TokenList {
 
     function notWhitespaceOrComment(token: Token): boolean {
-      return !(token instanceof CommentToken) && !(token instanceof WhitespaceToken);
+      return !instanceOfCommentToken(token) && !instanceOfWhitespaceToken(token);
     }
 
     return new TokenList(where(tokens, notWhitespaceOrComment));

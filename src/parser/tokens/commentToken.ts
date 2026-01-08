@@ -26,7 +26,7 @@ export class CommentToken extends ParsableToken {
     return newParseTokenInProgressResult();
   }
 
-  public finalize(): ParseTokenResult {
+  public endOfLine(): ParseTokenResult {
     return newParseTokenFinishedResult(true);
   }
 }

@@ -1,5 +1,4 @@
 import {compileFunction} from "./compileFunction";
-import Decimal from "decimal.js";
 
 describe('CompileFunctionTests', () => {
   it('testSimpleReturn', async () => {

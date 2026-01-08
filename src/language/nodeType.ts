@@ -42,6 +42,8 @@ export enum NodeType {
   ScenarioExpectComponentErrors = "ScenarioExpectComponentErrors",
   ScenarioExpectExecutionErrors = "ScenarioExpectExecutionErrors",
   ScenarioExpectErrors = "ScenarioExpectErrors",
+  SpreadAssignmentExpression = "SpreadAssignmentExpression",
+  SpreadExpression = "SpreadExpression",
   LexyScriptNode = "LexyScriptNode",
   SwitchExpression = "SwitchExpression",
   Table = "Table",

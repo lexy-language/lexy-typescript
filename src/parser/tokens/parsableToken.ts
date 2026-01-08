@@ -5,7 +5,7 @@ import {IToken, Token} from "./token";
 
 export interface IParsableToken extends IToken {
   parse(character: TokenCharacter): ParseTokenResult;
-  finalize(): ParseTokenResult;
+  endOfLine(): ParseTokenResult;
 }
 
 export abstract class ParsableToken extends Token {
@@ -31,5 +31,5 @@ export abstract class ParsableToken extends Token {
 
   public abstract parse(character: TokenCharacter): ParseTokenResult;
 
-  public abstract finalize(): ParseTokenResult;
+  public abstract endOfLine(): ParseTokenResult;
 }

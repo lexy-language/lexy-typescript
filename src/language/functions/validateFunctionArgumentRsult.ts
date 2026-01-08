@@ -14,16 +14,14 @@ export function newValidateFunctionArgumentsFailed(): ValidateFunctionArgumentsF
 type ValidateFunctionArgumentsSuccessAutoMap = {
   state: "success";
   parameterType: VariableType | null;
-  resultType: VariableType;
   autoMap: boolean;
 }
 
-export function newValidateFunctionArgumentsSuccessAutoMap(parameterType: VariableType, resultType: VariableType): ValidateFunctionArgumentsSuccessAutoMap {
+export function newValidateFunctionArgumentsSuccessAutoMap(parameterType: VariableType): ValidateFunctionArgumentsSuccessAutoMap {
   return {
     state: "success",
     autoMap: true,
     parameterType: parameterType,
-    resultType: resultType
   } as const;
 }
 
@@ -45,8 +43,10 @@ export function newValidateFunctionArgumentsCallFunctionSuccess(functionSignatur
   } as const;
 }
 
-export function asValidateFunctionArgumentsCallFunctionResult(value: any) {
-  return value.state == "success" && !value.autoMap ? value as ValidateFunctionArgumentsCallFunctionResult : null;
+export function asValidateFunctionArgumentsCallFunctionResult(value: any): ValidateFunctionArgumentsCallFunctionResult | null {
+  return value.state == "success" && !value.autoMap
+    ? value as ValidateFunctionArgumentsCallFunctionResult
+    : null;
 }
 
 export type ValidateFunctionArgumentsResult = ValidateFunctionArgumentsFailed
