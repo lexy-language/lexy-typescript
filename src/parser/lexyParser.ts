@@ -62,7 +62,7 @@ export class LexyParser implements ILexyParser {
     context.addFileIncluded(fullFileName);
     context.setFileLineFilter(fullFileName);
 
-    this.parseDocument(context, code, fullFileName);
+    await this.parseDocument(context, code, fullFileName);
     context.logger.logNodes(context.nodes.asArray());
 
     const dependencyGraph = this.sortByDependencyAndCheckCircularDependencies(context);
@@ -78,7 +78,8 @@ export class LexyParser implements ILexyParser {
     return new ParserResult(context.rootNode, context.nodes, context.logger);
   }
 
-  private parseDocument(context: IParserContext, code: string[], fullFileName: string): void {
+  private async parseDocument(context: IParserContext, code: string[], fullFileName: string): Promise<void> {
+
     this.sourceCode.setCode(code, this.fileSystem.getFileName(fullFileName));
 
     let currentIndent = 0;
@@ -110,7 +111,7 @@ export class LexyParser implements ILexyParser {
 
     this.reset(context);
 
-    this.loadIncludedFiles(context, fullFileName);
+    await this.loadIncludedFiles(context, fullFileName);
   }
 
   private getIndent(context: IParserContext, line: Line): {success: boolean, value: number} {
@@ -147,10 +148,10 @@ export class LexyParser implements ILexyParser {
     return true;
   }
 
-  private loadIncludedFiles(context: IParserContext, parentFullFileName: string): void {
+  private async loadIncludedFiles(context: IParserContext, parentFullFileName: string): Promise<void> {
     let includes = context.rootNode.getDueIncludes();
     for (const include of includes) {
-      this.includeFiles(context, parentFullFileName, include)
+      await this.includeFiles(context, parentFullFileName, include)
     }
   }
 
@@ -166,7 +167,7 @@ export class LexyParser implements ILexyParser {
 
     context.addFileIncluded(fileName);
 
-    this.parseDocument(context, code, fileName);
+    await this.parseDocument(context, code, fileName);
   }
 
   private validateNodesTree(context: IParserContext): void {
