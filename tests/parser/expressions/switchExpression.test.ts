@@ -19,7 +19,7 @@ describe('SwitchExpressionTests', () => {
       temp = 888
   Number = temp`;
 
-    const {nodes, logger} = parseNodes(code);
+    const {nodes, logger} = await parseNodes(code);
 
     logger.assertNoErrors();
 

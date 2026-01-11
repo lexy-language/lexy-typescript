@@ -2,7 +2,7 @@ import {compileFunction} from "./compileFunction";
 
 describe('CompileFunctionCallTests', () => {
   it('LibraryFunctionPower', async () => {
-    const script = compileFunction(`function SimpleFunction
+    const script = await compileFunction(`function SimpleFunction
   parameters
     number Value
   results
@@ -14,7 +14,7 @@ describe('CompileFunctionCallTests', () => {
    });
 
   it('NestedLibraryFunctionPower', async () => {
-    const script = compileFunction(`function SimpleFunction
+    const script = await compileFunction(`function SimpleFunction
   parameters
     string Value
   results
@@ -26,7 +26,7 @@ describe('CompileFunctionCallTests', () => {
    });
 
   it('LexyFunctionCallSpreadResults', async () => {
-    const script = compileFunction(`
+    const script = await compileFunction(`
 function Calling
   parameters
     number Value
@@ -48,7 +48,7 @@ function Caller
   });
 
   it('LexyFunctionCallSpreadParameters', async () => {
-    const script = compileFunction(`
+    const script = await compileFunction(`
 function Calling
   parameters
     number Value
@@ -69,7 +69,7 @@ function Caller
   });
 
   it('LexyFunctionCallSpreadResultsAndParameters', async () => {
-    const script = compileFunction(`
+    const script = await compileFunction(`
 function Calling
   parameters
     number Value

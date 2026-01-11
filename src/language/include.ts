@@ -41,7 +41,7 @@ export class Include {
     return new Include(value, line.lineStartReference());
   }
 
-  public process(parentFullFileName: string, context: IParserContext): string | null {
+  public async process(parentFullFileName: string, context: IParserContext): Promise<string | null> {
     this.isProcessedValue = true;
     if (isNullOrEmpty(this.fileName)) {
       context.logger.fail(this.reference, `No include file name specified.`);
@@ -52,7 +52,7 @@ export class Include {
     let fullPath = context.fileSystem.getFullPath(directName);
     let fullFileName = `${context.fileSystem.combine(fullPath, this.fileName)}.${LexySourceDocument.fileExtension}`;
 
-    if (!context.fileSystem.fileExists(fullFileName)) {
+    if (! await context.fileSystem.fileExists(fullFileName)) {
       context.logger.fail(this.reference, `Invalid include file name '${this.fileName}'`);
       return null;
     }

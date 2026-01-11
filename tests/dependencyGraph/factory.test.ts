@@ -22,28 +22,28 @@ describe('FactoryTests', () => {
 `;
 
   it('simpleEnum', async () => {
-    const dependencies = buildDependencyGraph(enumDefinition);
+    const dependencies = await buildDependencyGraph(enumDefinition);
     expect(dependencies.dependencyNodes.length).toBe(1);
     expect(dependencies.dependencyNodes[0].name).toBe(`SimpleEnum`);
     expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
   it('simpleTable', async () => {
-    const dependencies = buildDependencyGraph(table);
+    const dependencies = await buildDependencyGraph(table);
     expect(dependencies.dependencyNodes.length).toBe(1);
     expect(dependencies.dependencyNodes[0].name).toBe(`SimpleTable`);
     expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
   it('simpleFunction', async () => {
-    const dependencies = buildDependencyGraph(functionCode);
+    const dependencies = await buildDependencyGraph(functionCode);
     expect(dependencies.dependencyNodes.length).toBe(1);
     expect(dependencies.dependencyNodes[0].name).toBe(`SimpleFunction`);
     expect(dependencies.dependencyNodes[0].dependencies.length).toBe(0);
   });
 
   it('functionNewFunctionExpressionParameters', async () => {
-    const dependencies = buildDependencyGraph(functionCode + `
+    const dependencies = await buildDependencyGraph(functionCode + `
 function Caller
   var params = new(SimpleFunction.Parameters)
 `);
@@ -57,7 +57,7 @@ function Caller
   });
 
   it('functionNewFunctionExpressionResults', async () => {
-    const dependencies = buildDependencyGraph(functionCode + `
+    const dependencies = await buildDependencyGraph(functionCode + `
 function Caller
   var params = new(SimpleFunction.Results)
 `);
@@ -71,7 +71,7 @@ function Caller
   });
 
   it('functionFillFunctionParameters', async () => {
-    const dependencies = buildDependencyGraph(functionCode + `
+    const dependencies = await buildDependencyGraph(functionCode + `
 function Caller
   parameters
     number Value
@@ -87,7 +87,7 @@ function Caller
   });
 
   it('functionFillFunctionResults', async () => {
-    const dependencies = buildDependencyGraph(functionCode + `
+    const dependencies = await buildDependencyGraph(functionCode + `
 function Caller
   parameters
     number Result
@@ -103,7 +103,7 @@ function Caller
   });
 
   it('tableLookup', async () => {
-    const dependencies = buildDependencyGraph(table + `
+    const dependencies = await buildDependencyGraph(table + `
 function Caller
   var result = SimpleTable.LookUp(2, SimpleTable.Search, SimpleTable.Value)
 `);
@@ -117,7 +117,7 @@ function Caller
   });
 
   it('SimpleScenario', async () => {
-    const dependencies = buildDependencyGraph(functionCode + `
+    const dependencies = await buildDependencyGraph(functionCode + `
 scenario Simple
   function SimpleFunction
   results
@@ -134,7 +134,7 @@ scenario Simple
   });
 
   it('simpleType', async () => {
-    const dependencies = buildDependencyGraph(`
+    const dependencies = await buildDependencyGraph(`
 type Simple
   number Value1
   string Value2
@@ -145,7 +145,7 @@ type Simple
   });
 
   it('generatedType', async () => {
-    const dependencies = buildDependencyGraph(`
+    const dependencies = await buildDependencyGraph(`
 type Inner
   number Value1
   string Value2
@@ -163,7 +163,7 @@ type Parent
   });
 
   it('circularType', async () => {
-    const dependencies = buildDependencyGraph(`
+    const dependencies = await buildDependencyGraph(`
 type Inner
   number Value1
   string Value2
@@ -186,7 +186,7 @@ type Parent
   });
 
   it('circularFunctionCall', async () => {
-    const dependencies = buildDependencyGraph(`
+    const dependencies = await buildDependencyGraph(`
 function Inner
   Parent()
 

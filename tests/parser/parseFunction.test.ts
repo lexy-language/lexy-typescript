@@ -12,7 +12,7 @@ function ValidateTableKeyword
     number Result
   Result = 1`;
 
-    const {logger} = parseNodes(code);
+    const {logger} = await parseNodes(code);
     expect(logger.hasErrorMessage(`Duplicated node name: 'ValidateTableKeyword'`))
       .toBe(true);
   });

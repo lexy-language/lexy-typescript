@@ -12,7 +12,7 @@ describe('LexyParserTests', () => {
     number Result
   Result = 777`;
 
-    const {functionNode} = parseFunction(code);
+    const {functionNode} = await parseFunction(code);
 
     expect(functionNode.name.value).toBe(`TestSimpleReturn`);
     expect(functionNode.results.variables.length).toBe(1);
@@ -30,7 +30,7 @@ describe('LexyParserTests', () => {
   parameters
   results`;
 
-    const {logger} = parseFunction(code);
+    const {logger} = await parseFunction(code);
     expect(logger.hasErrors()).toBe(false);
   });
 });

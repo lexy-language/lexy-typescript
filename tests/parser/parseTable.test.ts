@@ -15,7 +15,7 @@ describe('ParseTablesTests', () => {
   | 7 | "Test quoted" |
   | 8 | "Test" |`;
 
-    const {table} = parseTable(code);
+    const {table} = await parseTable(code);
 
     expect(table.name.value).toBe(`TestTable`);
     expect(table.header?.columns.length).toBe(2);
@@ -36,7 +36,7 @@ describe('ParseTablesTests', () => {
   | d"2024-12-18T17:07:45" | false |
   | d"2024-12-18T17:08:12" | true |`;
 
-    const {table, _} = parseTable(code);
+    const {table, _} = await parseTable(code);
 
     expect(table.name.value).toBe(`TestTable`);
     expect(table.header?.columns.length).toBe(2);

@@ -2,7 +2,7 @@ import {compileFunction} from "./compileFunction";
 
 describe('CompileFunctionTests', () => {
   it('testSimpleReturn', async () => {
-     let script = compileFunction(`function TestSimpleReturn
+     let script = await compileFunction(`function TestSimpleReturn
   results
     number Result
   Result = 777`);
@@ -11,7 +11,7 @@ describe('CompileFunctionTests', () => {
    });
 
   it('testParameterDefaultReturn', async () => {
-     let script = compileFunction(`function TestSimpleReturn
+     let script = await compileFunction(`function TestSimpleReturn
   parameters
     number Input = 5
   results
@@ -22,7 +22,7 @@ describe('CompileFunctionTests', () => {
    });
 
   it('testAssignmentReturn', async () => {
-     let script = compileFunction(`function TestSimpleReturn
+     let script = await compileFunction(`function TestSimpleReturn
   parameters
     number Input = 5
 
@@ -36,7 +36,7 @@ describe('CompileFunctionTests', () => {
    });
 
   it('testMemberAccessAssignment', async () => {
-     let script = compileFunction(`table ValidateTableKeyword
+     let script = await compileFunction(`table ValidateTableKeyword
 // Validate table keywords
   | number Value | number Result |
   | 0 | 0 |
@@ -54,7 +54,7 @@ function ValidateTableKeywordFunction
    });
 
   it('variableDeclarationInCode', async () => {
-     let script = compileFunction(`function TestSimpleReturn
+     let script = await compileFunction(`function TestSimpleReturn
   parameters
     number Value = 5 
   results
@@ -68,7 +68,7 @@ function ValidateTableKeywordFunction
    });
 
   it('variableDeclarationWithDefaultInCode', async () => {
-     let script = compileFunction(`function TestSimpleReturn
+     let script = await compileFunction(`function TestSimpleReturn
   results
     number Result
   number temp = 5
@@ -79,7 +79,7 @@ function ValidateTableKeywordFunction
    });
 
   it('variableDeclarationWithDefaultEnumInCode', async () => {
-    let script = compileFunction(`
+    let script = await compileFunction(`
 enum SimpleEnum
   First
   Second
@@ -94,7 +94,7 @@ function TestEnum
   });
 
   it('declaredType', async () => {
-    let script = compileFunction(`
+    let script = await compileFunction(`
 type SimpleObject
   number First
   string Second
@@ -113,7 +113,7 @@ function TestDeclaredType
   });
 
   it('DeclaredTypeNestedProperties', async () => {
-    let script = compileFunction(`
+    let script = await compileFunction(`
 type InnerObject
   number First
   string Second

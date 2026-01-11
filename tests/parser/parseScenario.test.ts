@@ -10,7 +10,7 @@ describe('ParseScenarioTests', () => {
   it('testValidScenarioKeyword', async () => {
     const code = `scenario TestScenario`;
 
-    let {scenario} = parseScenario(code);
+    let {scenario} = await parseScenario(code);
 
     expect(scenario.name.value).toBe(`TestScenario`);
   });
@@ -23,7 +23,7 @@ describe('ParseScenarioTests', () => {
   results
     Result = 456`;
 
-    let {scenario} = parseScenario(code);
+    let {scenario} = await parseScenario(code);
 
     expect(scenario.name.value).toBe(`TestScenario`);
     expect(scenario.functionName.value).toBe(`TestScenarioFunction`);
@@ -47,7 +47,7 @@ describe('ParseScenarioTests', () => {
   results
     Result = 456`;
 
-    let {scenario, logger} = parseScenario(code);
+    let {scenario, logger} = await parseScenario(code);
 
     let errors = logger.errorNodeMessages(scenario);
 
@@ -71,7 +71,7 @@ describe('ParseScenarioTests', () => {
   results
     Result = 456`;
 
-    let {scenario, logger} = parseScenario(code);
+    let {scenario, logger} = await parseScenario(code);
 
     let errors = logger.errorNodeMessages(scenario);
     expect(errors).toStrictEqual([`tests.lexy(6, 15): ERROR - Invalid number token character: 'd'`]);
@@ -95,7 +95,7 @@ describe('ParseScenarioTests', () => {
     Result1 = 123
     Result2 = 456`;
 
-    let {scenario} = parseScenario(code);
+    let {scenario} = await parseScenario(code);
 
     expect(scenario.name.value).toBe(`ValidNumberIntAsParameter`);
     if (scenario.functionNode == null) throw new Error("functionNode == null");
@@ -143,7 +143,7 @@ describe('ParseScenarioTests', () => {
   function ValidateFunctionKeywords
   parameters
   results`;
-    let {scenario} = parseScenario(code);
+    let {scenario} = await parseScenario(code);
 
     expect(scenario.functionName.value).toBe(`ValidateFunctionKeywords`);
     expect(scenario.parameters.allAssignments().length).toBe(0);
@@ -160,7 +160,7 @@ describe('ParseScenarioTests', () => {
   expectErrors 
     "Invalid token at 18: Invalid number token character: A"`;
 
-    let {scenario, logger} = parseScenario(code);
+    let {scenario, logger} = await parseScenario(code);
 
     expect(logger.nodeHasErrors(scenario)).toBe(false);
     if (scenario.functionNode == null) throw new Error("scenario.functionNode == null")
@@ -174,7 +174,7 @@ describe('ParseScenarioTests', () => {
     const code = `scenario TestScenario
   function ThisShouldBeAllowed`;
 
-    let {scenario, logger} = parseScenario(code);
+    let {scenario, logger} = await parseScenario(code);
 
     expect(logger.hasErrors()).toBe(false);
     expect(logger.nodeHasErrors(scenario)).toBe(false);
@@ -185,7 +185,7 @@ describe('ParseScenarioTests', () => {
   function
     scenario`;
 
-    let {scenario, logger} = parseScenario(code);
+    let {scenario, logger} = await parseScenario(code);
 
     expect(logger.nodeHasErrors(scenario.functionNode)).toBe(true);
 

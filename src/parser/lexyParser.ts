@@ -23,8 +23,8 @@ import {ILibraries} from "../functionLibraries/libraries";
 import {Assert} from "../infrastructure/assert";
 
 export interface ILexyParser {
-  parseFile(fileName: string, options: ParseOptions | null): ParserResult;
-  parse(code: string[], fileName: string, options: ParseOptions | null): ParserResult;
+  parseFile(fileName: string, options: ParseOptions | null): Promise<ParserResult>;
+  parse(code: string[], fileName: string, options: ParseOptions | null): Promise<ParserResult>;
 }
 
 export class LexyParser implements ILexyParser {
@@ -46,18 +46,18 @@ export class LexyParser implements ILexyParser {
     this.libraries = Assert.notNull(libraries, "libraries");
   }
 
-  public parseFile(fileName: string, options: ParseOptions | null): ParserResult {
+  public async parseFile(fileName: string, options: ParseOptions | null): Promise<ParserResult> {
     const fullFileName = this.fileSystem.isPathRooted(fileName)
       ? fileName
       : this.fileSystem.getFullPath(fileName);
 
     this.baseLogger.logInformation(`Parse file: ` + fullFileName);
 
-    const code = this.fileSystem.readAllLines(fullFileName);
-    return this.parse(code, fileName, options);
+    const code = await this.fileSystem.readAllLines(fullFileName);
+    return await this.parse(code, fileName, options);
   }
 
-  public parse(code: string[], fullFileName: string, options: ParseOptions | null): ParserResult {
+  public async parse(code: string[], fullFileName: string, options: ParseOptions | null): Promise<ParserResult> {
     const context = new ParserContext(this.baseLogger, this.fileSystem, this.expressionFactory, this.libraries, options);
     context.addFileIncluded(fullFileName);
     context.setFileLineFilter(fullFileName);
@@ -154,15 +154,15 @@ export class LexyParser implements ILexyParser {
     }
   }
 
-  private includeFiles(context: IParserContext, parentFullFileName: string, include: Include): void {
-    let fileName = include.process(parentFullFileName, context);
+  private async includeFiles(context: IParserContext, parentFullFileName: string, include: Include): Promise<void> {
+    let fileName = await include.process(parentFullFileName, context);
     if (fileName == null) return;
 
     if (context.isFileIncluded(fileName)) return;
 
     context.logger.logInfo(`Parse file: ` + fileName);
 
-    const code = this.fileSystem.readAllLines(fileName);
+    const code = await this.fileSystem.readAllLines(fileName);
 
     context.addFileIncluded(fileName);
 

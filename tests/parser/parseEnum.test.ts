@@ -6,7 +6,7 @@ describe('ParseEnumTests', () => {
   First
   Second`;
 
-    let {enumDefinition} = parseEnum(code);
+    let {enumDefinition} = await parseEnum(code);
 
     expect(enumDefinition.name.value).toBe(`Enum1`);
     expect(enumDefinition.members.length).toBe(2);
@@ -23,7 +23,7 @@ describe('ParseEnumTests', () => {
   First = 5
   Second = 6`;
 
-    let {enumDefinition, _} = parseEnum(code);
+    let {enumDefinition, _} = await parseEnum(code);
 
     expect(enumDefinition.name.value).toBe(`Enum2`);
     expect(enumDefinition.members.length).toBe(2);

@@ -15,7 +15,7 @@ describe('IfExpressionTests', () => {
     temp = 666
   Number = temp`;
 
-    const {nodes, logger} = parseNodes(code);
+    const {nodes, logger} = await parseNodes(code);
 
     logger.assertNoErrors();
 

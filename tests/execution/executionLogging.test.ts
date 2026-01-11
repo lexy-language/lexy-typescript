@@ -26,7 +26,7 @@ describe('executionLogging', () => {
   }
 
   it('tableVariablesShouldNotStoreFullTableInLogging', async () => {
-    let script = compileFunction(`table SimpleTable
+    let script = await compileFunction(`table SimpleTable
 // Validate table keywords
   | number Search | number Value |
   | 0 | 0 |
@@ -43,7 +43,7 @@ function ValidateTableKeywordFunction
   });
 
   it('tableVariablesShouldNotStoreFullTableInLoggingRow', async () => {
-    let script = compileFunction(`table SimpleTable
+    let script = await compileFunction(`table SimpleTable
 // Validate table keywords
   | number Search | number Value | string Extra |
   | 0 | 0 | "ext" |

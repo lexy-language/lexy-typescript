@@ -19,7 +19,7 @@ const CustomLibrary: LibraryRuntime = {
 describe('CustomLibrariesTests', () => {
   it('LibraryFunctionString', async () => {
 
-    let script = compileFunction(`function SimpleFunction
+    let script = await compileFunction(`function SimpleFunction
   results
     string Result
   Result = CustomLibrary.FunctionString("b")`, [CustomLibrary]);

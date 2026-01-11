@@ -1,6 +1,12 @@
 export interface IFileSystem {
 
-  readAllLines(fileName: string): Array<string>;
+  readAllLines(fileName: string): Promise<Array<string>>;
+
+  fileExists(fileName: string): Promise<boolean>;
+  directoryExists(absoluteFolder: string): Promise<boolean>;
+
+  getDirectoryFiles(folder: string, extensions: Array<string>): Promise<string[]>;
+  getDirectories(folder: string): Promise<string[]>;
 
   getFileName(fileName: string): string;
   getDirectoryName(fileName: string): string;
@@ -8,13 +14,7 @@ export interface IFileSystem {
 
   combine(fullPath: string, fileName: string): string;
 
-  fileExists(fileName: string): boolean;
-  directoryExists(absoluteFolder: string): boolean;
-
   isPathRooted(folder: string): boolean;
-
-  getDirectoryFiles(folder: string, extensions: Array<string>): Array<string>;
-  getDirectories(folder: string): Array<string>;
 
   logFolders(): string;
 }

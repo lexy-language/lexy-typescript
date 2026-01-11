@@ -1,16 +1,16 @@
 import {parseNodes} from "../parseFunctions";
 import {firstOrDefault} from "../../src/infrastructure/arrayFunctions";
 import {asFunction, instanceOfFunction} from "../../src/language/functions/function";
-import {LexyCompiler} from "../../src/generation/lexyCompiler";
+import {LexyCompiler} from "../../src";
 import {ExecutableFunction} from "../../src/generation/executableFunction";
 import {LoggingConfiguration} from "../loggingConfiguration";
 import {LibraryRuntime} from "../../src/runTime/libraries/libraryRuntime";
 import {Libraries} from "../../src/functionLibraries/libraries";
 
-export function compileFunction(code: string, librariesRuntimes: LibraryRuntime[] = []): ExecutableFunction {
+export async function compileFunction(code: string, librariesRuntimes: LibraryRuntime[] = []): Promise<ExecutableFunction> {
 
   const libraries = new Libraries(librariesRuntimes)
-  const {nodes, logger} = parseNodes(code, libraries);
+  const {nodes, logger} = await parseNodes(code, libraries);
 
   logger.assertNoErrors();
 

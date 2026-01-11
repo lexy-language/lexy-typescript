@@ -3,7 +3,7 @@ import buildDependencyGraph from "./buildDependencyGraph";
 describe('DependencyOrder', () => {
 
   it('functionWithEnumAndTableDependency', async () => {
-    const dependencies = buildDependencyGraph(
+    const dependencies = await buildDependencyGraph(
 `function FunctionWithEnumDependency
   parameters
     EnumExample EnumValue
@@ -28,7 +28,7 @@ enum EnumExample
   });
 
   it('complexDependencyGraph', async () => {
-    const dependencies = buildDependencyGraph(
+    const dependencies = await buildDependencyGraph(
       `scenario ValidateBuiltOrder
   function
     parameters

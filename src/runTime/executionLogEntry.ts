@@ -13,7 +13,6 @@ export class ExecutionLogEntry {
   public readonly lineNumber: number | null;
   public readonly message: string;
   public readonly readVariables: LogVariables;
-  public readonly nodeType = NodeType.ExecutionLogEntry;
 
   public get writeVariables(): LogVariables | null {
     return this.writeVariablesValue;

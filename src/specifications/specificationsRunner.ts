@@ -27,15 +27,15 @@ export class SpecificationsRunner implements ISpecificationsRunner {
     this.compiler = compiler;
   }
 
-  public run(file: string): void {
+  public async run(file: string): Promise<void> {
     const context = new SpecificationRunnerContext(this.logger);
-    this.createFileRunner(context, file);
+    await this.createFileRunner(context, file);
     SpecificationsRunner.runScenarios(context);
   }
 
-  public runAll(folder: string): void {
+  public async runAll(folder: string): Promise<void> {
     const context = new SpecificationRunnerContext(this.logger);
-    this.getRunners(context, folder);
+    await this.getRunners(context, folder);
     SpecificationsRunner.runScenarios(context);
   }
 
@@ -63,37 +63,38 @@ export class SpecificationsRunner implements ISpecificationsRunner {
     throw new Error(`Specifications failed: ${context.failed}\n${context.formatGlobalLog()}`);
   }
 
-  private getRunners(context: ISpecificationRunnerContext, folder: string): void {
-    let absoluteFolder = this.getAbsoluteFolder(folder);
+  private async getRunners(context: ISpecificationRunnerContext, folder: string): Promise<void> {
+    let absoluteFolder = await this.getAbsoluteFolder(folder);
 
     context.logGlobal(`Specifications folder: ${absoluteFolder}`);
 
-    this.addFolder(context, absoluteFolder);
+    await this.addFolder(context, absoluteFolder);
   }
 
-  private addFolder(context: ISpecificationRunnerContext, folder: string): void {
-    let files = this.fileSystem.getDirectoryFiles(folder, [`.${LexySourceDocument.fileExtension}`, `.${LexySourceDocument.markdownExtension}`]);
+  private async addFolder(context: ISpecificationRunnerContext, folder: string): Promise<void> {
+    let files = await this.fileSystem.getDirectoryFiles(folder, [`.${LexySourceDocument.fileExtension}`, `.${LexySourceDocument.markdownExtension}`]);
 
-    files
-      .sort()
-      .forEach(file => this.createFileRunner(context, this.fileSystem.combine(folder, file)));
+    const sorted = files.sort();
+    for (const file of sorted) {
+      await this.createFileRunner(context, this.fileSystem.combine(folder, file))
+    }
 
-    this.fileSystem.getDirectories(folder)
-      .sort()
+    const folders = await this.fileSystem.getDirectories(folder);
+    folders.sort()
       .forEach(eachFolder => this.addFolder(context, this.fileSystem.combine(folder, eachFolder)));
   }
 
-  private createFileRunner(context: ISpecificationRunnerContext, fileName: string): void {
+  private async createFileRunner(context: ISpecificationRunnerContext, fileName: string): Promise<void> {
     let runner = new SpecificationFileRunner(fileName, this.compiler, this.parser, context);
-    runner.initialize();
+    await runner.initialize();
     context.add(runner);
   }
 
-  private getAbsoluteFolder(folder: string): string {
+  private async getAbsoluteFolder(folder: string): Promise<string> {
     let absoluteFolder = this.fileSystem.isPathRooted(folder)
       ? folder
       : this.fileSystem.getFullPath(folder);
-    if (!this.fileSystem.directoryExists(absoluteFolder)) {
+    if (!await this.fileSystem.directoryExists(absoluteFolder)) {
       throw new Error(`Specifications folder doesn't exist: ${absoluteFolder}\n` + this.fileSystem.logFolders());
     }
 

@@ -3,6 +3,6 @@ import {createRunner} from "./createRunner";
 describe('RunLexySpecifications', () => {
   it('runAll', async() => {
     const runner = createRunner();
-    runner.runAll(`tests/lexy-language/Specifications`);
+    await runner.runAll(`tests/lexy-language/Specifications`);
   });
 });

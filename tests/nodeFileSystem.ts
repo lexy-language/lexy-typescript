@@ -8,8 +8,35 @@ export class NodeFileSystem implements IFileSystem {
     return path.join(fullPath, fileName);
   }
 
-  fileExists(fullFinName: string): boolean {
-    return fs.existsSync(fullFinName);
+  async readAllLines(fileName: string): Promise<string[]> {
+    return new Promise<string[]>((resolve, reject) => {
+      fs.readFile(fileName, 'utf8', (error, value: string) => {
+        if (error) return reject(error);
+        resolve(value != null ? value.split('\n') : null);
+      })
+    });
+  }
+
+  fileExists(fileName: string): Promise<boolean> {
+    //Silly, but fs.exists is marked as deprecated in my node version
+    return new Promise<boolean>((resolve, reject) => {
+      try {
+        resolve(fs.existsSync(fileName));
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  directoryExists(folder: string): Promise<boolean> {
+    //Silly, but fs.exists is marked as deprecated in my node version
+    return new Promise<boolean>((resolve, reject) => {
+      try {
+        resolve(fs.existsSync(folder));
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   getDirectoryName(fileName: string): string {
@@ -24,26 +51,25 @@ export class NodeFileSystem implements IFileSystem {
     return path.resolve(fileName);
   }
 
-  readAllLines(fileName: string): Array<string> {
-    return fs.readFileSync(fileName)
-      .toString('utf8')
-      .split('\n');
+
+  async getDirectories(folder: string): Promise<string[]> {
+    return new Promise<string[]>((resolve, reject) => {
+      fs.readdir(folder, {withFileTypes: true}, (err, data) => {
+        if (err) return reject(err);
+        resolve(data.filter(dirent => dirent.isDirectory())
+          .map(dirent => dirent.name));
+      });
+    });
   }
 
-  directoryExists(absoluteFolder: string): boolean {
-    return fs.existsSync(absoluteFolder);
-  }
-
-  getDirectories(folder: string): Array<string> {
-    return fs.readdirSync(folder, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name);
-  }
-
-  getDirectoryFiles(folder: string, filter: Array<string>): Array<string> {
-    return fs.readdirSync(folder, { withFileTypes: true })
-      .filter(dirent => dirent.isFile() && any(filter, extension => dirent.name.endsWith(extension)))
-      .map(dirent => dirent.name);
+  async getDirectoryFiles(folder: string, filter: Array<string>): Promise<string[]> {
+    return new Promise<string[]>((resolve, reject) => {
+      return fs.readdir(folder, { withFileTypes: true }, (err, data) => {
+        if (err) return reject(err);
+        resolve(data.filter(dirent => dirent.isFile() && any(filter, extension => dirent.name.endsWith(extension)))
+          .map(dirent => dirent.name));
+      });
+    });
   }
 
   isPathRooted(folder: string): boolean {
@@ -61,7 +87,9 @@ export class NodeFileSystem implements IFileSystem {
   }
 
   private addFolder(folder: string, result: any[]) {
-    const folders = this.getDirectories(folder);
+    const folders = fs.readdirSync(folder, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
     for (const each of folders) {
       const fullPath = this.combine(folder, each);
       result.push(fullPath);

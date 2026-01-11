@@ -40,10 +40,10 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     this.runnerContext = runnerContext;
   }
 
-  initialize() {
+  async initialize(): Promise<void> {
     let result: ParserResult;
     try {
-      result = this.parser.parseFile(this.fileName, {suppressException: true});
+      result = await this.parser.parseFile(this.fileName, {suppressException: true});
     } catch (error: any) {
       throw new Error("Error while parsing " + this.fileName + "\n" + error.stack + "\n--------------------------------------\n")
     }

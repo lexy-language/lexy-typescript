@@ -23,6 +23,7 @@ export function asQuotedLiteralToken(object: any): QuotedLiteralToken | null {
 }
 
 export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
+
   private quoteClosed: boolean = false;
 
   public tokenIsLiteral: boolean = true;
