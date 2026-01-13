@@ -3,7 +3,7 @@ import {parseLines} from "../parseFunctions";
 import {runScenarios} from "../runScenarios";
 
 describe('CompileLargeFile', () => {
-  it('parse compile and run 4000 scenarios', async () => {
+  it('parse compile and run 1000 scenarios', async () => {
     const fileSystem = new NodeFileSystem();
     const fullPath = fileSystem.combine(fileSystem.currentFolder(), "/compiler/1mb.lexy")
     const bigLexy = await fileSystem.readAllLines(fullPath)

@@ -17,6 +17,7 @@ export interface ICompilationEnvironment {
 }
 
 export class CompilationEnvironment implements ICompilationEnvironment {
+
   private readonly generatedTypes: Array<GeneratedType> = [];
   private readonly enums: { [key: string]: GeneratedType } = {};
   private readonly executables: { [key: string]: ExecutableFunction } = {};

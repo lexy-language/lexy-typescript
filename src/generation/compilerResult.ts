@@ -13,8 +13,10 @@ export class CompilerResult {
   private environment: ICompilationEnvironment;
   private executionLogger: ILogger;
 
-  constructor(executables: {[key: string]: ExecutableFunction}, enums: {[key: string]: GeneratedType},
-              environment: ICompilationEnvironment, executionLogger: ILogger) {
+  constructor(executables: {[key: string]: ExecutableFunction},
+              enums: {[key: string]: GeneratedType},
+              environment: ICompilationEnvironment,
+              executionLogger: ILogger) {
     this.executables = executables;
     this.enums = enums;
     this.environment = environment;

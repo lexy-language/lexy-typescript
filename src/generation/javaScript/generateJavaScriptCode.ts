@@ -10,6 +10,7 @@ import {TypeDefinition} from "../../language/types/typeDefinition";
 import {Function} from "../../language/functions/function";
 import {EnumDefinition} from "../../language/enums/enumDefinition";
 import {Table} from "../../language/tables/table";
+import {asScenario} from "../../language/scenarios/scenario";
 
 export function generateJavaScriptCode(componentNode: IComponentNode): GeneratedType | null {
  switch (componentNode.nodeType) {
@@ -26,7 +27,8 @@ export function generateJavaScriptCode(componentNode: IComponentNode): Generated
      return createTypeCode(componentNode as TypeDefinition);
 
    case NodeType.Scenario:
-     return null;
+     const scenario = asScenario(componentNode);
+     return scenario && scenario.functionNode ? createFunctionCode(scenario.functionNode) : null;
 
    default:
      throw new Error(`No writer defined: '${componentNode.nodeType}'`);

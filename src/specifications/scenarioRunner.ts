@@ -12,7 +12,6 @@ import {any, firstOrDefault} from "../infrastructure/arrayFunctions";
 import {ExecutableFunction} from "../generation/executableFunction";
 import {asAssignmentDefinition, AssignmentDefinition} from "../language/scenarios/assignmentDefinition";
 import {Assert} from "../infrastructure/assert";
-import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
 import validateExecutionLogging from "./validateExecutionLogging";
 import StringArrayBuilder from "../infrastructure/stringArrayBuilder";
 import {getScenarioParameterValues, getTableRowValues} from "./getValues";
