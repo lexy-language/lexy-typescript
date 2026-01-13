@@ -161,7 +161,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
       return this.parseFunctionName(context, reference);
     }
 
-    this.functionNodeValue = Function.create(`${this.name.value}Function`, reference, context.expressionFactory);
+    this.functionNodeValue = Function.create(`${this.name.value}Function`, true, reference, context.expressionFactory);
     context.logger.setCurrentNode(this.functionNodeValue);
     return this.functionNodeValue;
   }

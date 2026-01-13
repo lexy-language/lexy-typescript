@@ -19,6 +19,7 @@ import {getScenarioParameterValues, getTableRowValues} from "./getValues";
 import {IdentifierPath} from "../language/identifierPath";
 import {ValidationTableRow} from "../language/scenarios/validationTableRow";
 import {ValidationTableValue} from "../language/scenarios/validationTableValue";
+import {Dependencies} from "../dependencyGraph/dependencies";
 
 export interface IScenarioRunner {
   failed: boolean;
@@ -39,6 +40,7 @@ export class ScenarioRunner implements IScenarioRunner {
   private readonly compiler: ILexyCompiler;
   private readonly parserLogger: IParserLogger;
   private readonly componentNodes: IComponentNodeList;
+  private readonly dependencies: Dependencies;
 
   private functionNode: Function | null = null;
 
@@ -51,12 +53,13 @@ export class ScenarioRunner implements IScenarioRunner {
   public readonly scenario: Scenario
 
   constructor(fileName: string, compiler: ILexyCompiler, componentNodes: IComponentNodeList, scenario: Scenario,
-              context: ISpecificationRunnerContext, parserLogger: IParserLogger) {
+              context: ISpecificationRunnerContext, parserLogger: IParserLogger, dependencies: Dependencies) {
     this.fileName = fileName;
     this.compiler = compiler;
     this.context = context;
     this.componentNodes = componentNodes;
     this.parserLogger = parserLogger;
+    this.dependencies = dependencies;
 
     this.scenario = scenario;
   }
@@ -71,7 +74,7 @@ export class ScenarioRunner implements IScenarioRunner {
     if (!this.validateErrors()) return;
 
     const functionNode = Assert.notNull(this.functionNode, "functionNode");
-    const nodes = DependencyGraphFactory.nodeAndDependencies(this.componentNodes, functionNode);
+    const nodes = this.dependencies.nodeAndDependencies(functionNode);
     const compilerResult = this.compile(nodes);
     const executable = compilerResult.getFunction(functionNode);
     if (this.scenario.validationTable != null) {
@@ -215,7 +218,7 @@ export class ScenarioRunner implements IScenarioRunner {
       return null;
     }
 
-    const dependencies = DependencyGraphFactory.nodeAndDependencies(this.componentNodes, node);
+    const dependencies = this.dependencies.nodeAndDependencies(node);
     return this.parserLogger.errorNodesMessages(dependencies)
   }
 

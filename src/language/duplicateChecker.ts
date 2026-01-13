@@ -6,7 +6,7 @@ import {SourceReference} from "../parser/sourceReference";
 export class DuplicateChecker {
 
    public static validate<T>(context: IValidationContext, getReference: ((value: T) => SourceReference) ,
-     getName: ((value: T) => string), getErrorMessage: ((value: T) => string), values: Array<T>): void {
+     getName: ((value: T) => string), getErrorMessage: ((value: T) => string), values: readonly T[]): void {
 
      const found = new Array<string>();
      for (const item of values) {

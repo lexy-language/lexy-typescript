@@ -1,6 +1,6 @@
 import {LoggingConfiguration} from "../loggingConfiguration";
 import {createParser} from "../parseFunctions";
-import {LexyCompiler} from "../../src/generation/lexyCompiler";
+import {LexyCompiler} from "../../src";
 import {NodeFileSystem} from "../nodeFileSystem";
 import {SpecificationsRunner} from "../../src/specifications/specificationsRunner";
 import {Libraries} from "../../src/functionLibraries/libraries";

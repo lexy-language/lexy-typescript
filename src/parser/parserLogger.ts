@@ -40,7 +40,7 @@ export interface IParserLogger {
 
   fail(reference: SourceReference, message: string): void;
 
-  logNodes(nodes: Array<INode>): void;
+  logNodes(nodes: readonly INode[]): void;
 
   hasErrors(): boolean;
   hasComponentErrors(): boolean;

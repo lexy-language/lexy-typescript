@@ -80,8 +80,9 @@ export class SpecificationsRunner implements ISpecificationsRunner {
     }
 
     const folders = await this.fileSystem.getDirectories(folder);
-    folders.sort()
-      .forEach(eachFolder => this.addFolder(context, this.fileSystem.combine(folder, eachFolder)));
+    for (const subFoder of folders) {
+      await this.addFolder(context, this.fileSystem.combine(folder, subFoder));
+    }
   }
 
   private async createFileRunner(context: ISpecificationRunnerContext, fileName: string): Promise<void> {

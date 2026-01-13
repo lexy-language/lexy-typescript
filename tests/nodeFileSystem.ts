@@ -1,9 +1,10 @@
-import {IFileSystem} from "../src/infrastructure/IFileSystem";
+import {IFileSystem} from "../src";
 import {any} from "../src/infrastructure/arrayFunctions"
 import path from "path";
 import fs from "fs";
 
 export class NodeFileSystem implements IFileSystem {
+
   combine(fullPath: string, fileName: string): string {
     return path.join(fullPath, fileName);
   }
@@ -51,13 +52,13 @@ export class NodeFileSystem implements IFileSystem {
     return path.resolve(fileName);
   }
 
-
   async getDirectories(folder: string): Promise<string[]> {
     return new Promise<string[]>((resolve, reject) => {
       fs.readdir(folder, {withFileTypes: true}, (err, data) => {
         if (err) return reject(err);
-        resolve(data.filter(dirent => dirent.isDirectory())
-          .map(dirent => dirent.name));
+        let directories = data.filter(dirent => dirent.isDirectory())
+          .map(dirent => dirent.name);
+        resolve(directories);
       });
     });
   }

@@ -4,23 +4,28 @@ import {asFunction, instanceOfFunction} from "../../src/language/functions/funct
 import {LexyCompiler} from "../../src";
 import {ExecutableFunction} from "../../src/generation/executableFunction";
 import {LoggingConfiguration} from "../loggingConfiguration";
-import {LibraryRuntime} from "../../src/runTime/libraries/libraryRuntime";
 import {Libraries} from "../../src/functionLibraries/libraries";
 
-export async function compileFunction(code: string, librariesRuntimes: LibraryRuntime[] = []): Promise<ExecutableFunction> {
+export function createCompiler(libraries: Libraries) {
+  return new LexyCompiler(LoggingConfiguration.getCompilerLogger(), LoggingConfiguration.getExecutionLogger(), libraries);
+}
 
-  const libraries = new Libraries(librariesRuntimes)
+export async function compileFunction(code: string, libraries: Libraries = null): Promise<ExecutableFunction> {
+
+  if (libraries == null) {
+    libraries = new Libraries([]);
+  }
+
   const {nodes, logger} = await parseNodes(code, libraries);
 
   logger.assertNoErrors();
 
-  const array = nodes.asArray();
+  const array = nodes.values;
   const functionNode = asFunction(firstOrDefault(array, value => instanceOfFunction(value)));
   if (functionNode == null) {
     throw new Error("No function found.")
   }
-
-  const compiler = new LexyCompiler(LoggingConfiguration.getCompilerLogger(), LoggingConfiguration.getExecutionLogger(), libraries);
+  const compiler = createCompiler(libraries);
   const environment = compiler.compile(array);
   const executableFunction = environment.getFunction(functionNode);
   if (executableFunction == null) {

@@ -23,7 +23,7 @@ export class LexyCompiler implements ILexyCompiler {
      this.libraries = Assert.notNull(libraries, "libraries");
    }
 
-   public compile(nodes: Array<IComponentNode>): CompilerResult {
+   public compile(nodes: readonly IComponentNode[]): CompilerResult {
      let environment = new CompilationEnvironment(this.compilationLogger, this.executionLogger, this.libraries);
      try {
        this.generateCode(nodes, environment);
@@ -35,7 +35,7 @@ export class LexyCompiler implements ILexyCompiler {
      }
    }
 
-   private generateCode(generateNodes: Array<IComponentNode>, environment: ICompilationEnvironment): void {
+   private generateCode(generateNodes: readonly IComponentNode[], environment: ICompilationEnvironment): void {
      generateNodes.map(node => LexyCompiler.generateType(node, environment));
    }
 

@@ -1,4 +1,4 @@
-import {ILogger, LogLevel} from "../src/infrastructure/logger";
+import {ILogger, LogLevel} from "../src";
 import winston, {Winston} from "winston";
 import path from "path-browserify";
 import fs from "fs";
@@ -89,7 +89,7 @@ export class LoggingConfiguration {
   private static addLogger(name: string, fileName: string) {
     winston.loggers.add(name, {
       transports: [
-        new winston.transports.Console({level: "debug"}),
+        new winston.transports.Console({level: "info"}),
         new winston.transports.File({
           filename: LoggingConfiguration.fullLogFile(fileName),
           level: "debug",

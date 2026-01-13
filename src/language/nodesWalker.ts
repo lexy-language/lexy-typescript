@@ -2,7 +2,7 @@ import {INode} from "./node";
 
 export class NodesWalker {
 
-   public static walkNodes(nodes: Array<INode>, action: (node : INode) => void): void {
+   public static walkNodes(nodes: readonly INode[], action: (node : INode) => void): void {
      for (const node of nodes) {
        NodesWalker.walk(node, action);
      }

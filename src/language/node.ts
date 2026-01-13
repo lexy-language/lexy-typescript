@@ -10,7 +10,7 @@ export interface INode {
 
   validateTree(context: IValidationContext): void
 
-  getChildren(): Array<INode>;
+  getChildren(): readonly INode[];
 }
 
 export abstract class Node implements INode {
@@ -41,7 +41,7 @@ export abstract class Node implements INode {
 
   public abstract nodeType: NodeType;
 
-  public abstract getChildren(): Array<INode>;
+  public abstract getChildren(): readonly INode[];
 
   protected validateChild(context: IValidationContext, child: INode | null): void {
     if (child == null) throw new Error(`(${this.nodeType}) Child is null`);

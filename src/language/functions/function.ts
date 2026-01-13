@@ -68,17 +68,20 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
     return this.codeValue;
   };
 
+  public readonly nested: boolean
+
   public override get nodeName() {
     return this.name.value;
   }
 
-  constructor(name: string, reference: SourceReference, factory: IExpressionFactory) {
+  constructor(name: string, nested: boolean, reference: SourceReference, factory: IExpressionFactory) {
     super(reference);
     this.factory = factory;
     this.parametersValue = new FunctionParameters(reference);
     this.resultsValue = new FunctionResults(reference);
     this.codeValue = new FunctionCode(reference, this.factory);
     this.name = FunctionName.parseName(name, reference);
+    this.nested = nested;
   }
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
@@ -88,8 +91,8 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
     return result;
   }
 
-  public static create(name: string, reference: SourceReference, factory: IExpressionFactory): Function {
-    return new Function(name, reference, factory);
+  public static create(name: string, nested: boolean, reference: SourceReference, factory: IExpressionFactory): Function {
+    return new Function(name, nested, reference, factory);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {

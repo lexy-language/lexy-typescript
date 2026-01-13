@@ -55,11 +55,12 @@ export class SpecificationRunnerContext implements ISpecificationRunnerContext {
   }
 
   public fail(scenario: Scenario, message: string, errors: Array<string> | null, index: number | null | undefined): void {
+
     this.failedValues++;
 
     const suffix = index != null ? `[${index}]` : ''
-
     const entry = new SpecificationsLogEntry(scenario.reference, scenario, true, `FAILED - ${scenario.name}${suffix}: ${message}`, errors);
+
     this.logEntriesValue.push(entry)
     this.logger.logError(`- FAILED - ${scenario.name}${suffix}: ${message}`);
     if (errors != null) {

@@ -6,7 +6,7 @@ export class NodesLogger {
    private readonly builder: string[] = [];
    private indent: number = 0;
 
-   public log(nodes: Array<INode>): void {
+   public log(nodes: readonly INode[]): void {
      for (const node of nodes) {
         this.logNode(node);
      }

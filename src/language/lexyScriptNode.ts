@@ -5,7 +5,7 @@ import type {INode} from "./node";
 import type {IValidationContext} from "../parser/validationContext";
 import type {IExpressionFactory} from "./expressions/expressionFactory";
 
-import {Function} from "./functions/function";
+import {asFunction, Function} from "./functions/function";
 import {ComponentNode} from "./componentNode";
 import {Comments} from "./comments";
 import {Include} from "./include";
@@ -81,7 +81,7 @@ export class LexyScriptNode extends ComponentNode {
 
     switch (tokenName.keyword) {
       case Keywords.Function:
-        return Function.create(tokenName.name, reference, this.expressionFactory);
+        return Function.create(tokenName.name, false, reference, this.expressionFactory);
       case Keywords.EnumKeyword:
         return EnumDefinition.parse(tokenName.name, reference);
       case Keywords.ScenarioKeyword:
@@ -100,8 +100,8 @@ export class LexyScriptNode extends ComponentNode {
     return null;
   }
 
-  public override getChildren(): Array<INode> {
-    return this.sortedNodes ? this.sortedNodes : this.componentNodes.asArray();
+  public override getChildren(): readonly INode[] {
+    return this.sortedNodes ? this.sortedNodes : this.componentNodes.values;
   }
 
   protected override validate(context: IValidationContext): void {
@@ -110,18 +110,18 @@ export class LexyScriptNode extends ComponentNode {
       node => node.reference,
       node => node.nodeName,
       node => `Duplicated node name: '${node.nodeName}'`,
-      this.componentNodes.asArray());
+      this.componentNodes.values);
   }
 
   public getDueIncludes(): ReadonlyArray<Include> {
     return where(this.includes, include => !include.isProcessed);
   }
 
-  public sortByDependency(sortedNodes: Array<IComponentNode>) {
+  public sortByDependency(sortedNodes: readonly IComponentNode[]) {
     this.sortedNodes = this.withoutScenarioInlineNode(sortedNodes);
   }
 
-  private withoutScenarioInlineNode(sortedNodes: Array<IComponentNode>) {
-    return sortedNodes.filter(where => this.componentNodes.getNode(where.nodeName) != null);
+  private withoutScenarioInlineNode(sortedNodes: readonly IComponentNode[]) {
+    return sortedNodes.filter(where => asFunction(where)?.nested != true);
   }
 }

@@ -1,12 +1,11 @@
 import type {IComponentNode} from "./componentNode";
-import type {INode} from "./node";
 
 import {ObjectType} from "./variableTypes/objectType";
-import {asFunction, Function, instanceOfFunction} from "./functions/function";
-import {asTable, instanceOfTable, Table} from "./tables/table";
+import {asFunction, Function} from "./functions/function";
+import {asTable, Table} from "./tables/table";
 import {asEnumDefinition, EnumDefinition, instanceOfEnumDefinition} from "./enums/enumDefinition";
-import {any, firstOrDefault, where, contains} from "../infrastructure/arrayFunctions";
-import {asTypeDefinition, instanceOfTypeDefinition, TypeDefinition} from "./types/typeDefinition";
+import {where} from "../infrastructure/arrayFunctions";
+import {asTypeDefinition, TypeDefinition} from "./types/typeDefinition";
 import {asScenario, instanceOfScenario, Scenario} from "./scenarios/scenario";
 import {TableType} from "./variableTypes/tableType";
 import {FunctionType} from "./variableTypes/functionType";
@@ -14,6 +13,9 @@ import {EnumType} from "./variableTypes/enumType";
 import {DeclaredType} from "./variableTypes/declaredType";
 
 export interface IComponentNodeList {
+
+  readonly values: readonly IComponentNode[];
+
   getNode(name: string | null): IComponentNode | null;
 
   contains(name: string): boolean;
@@ -29,56 +31,58 @@ export interface IComponentNodeList {
   getEnum(name: string): EnumDefinition | null;
 
   getType(name: string): ObjectType | null;
-
-  asArray(): Array<IComponentNode>;
 }
 
 export class ComponentNodeList implements IComponentNodeList {
 
-  private readonly values: Array<IComponentNode>;
+  private readonly index: Map<string, IComponentNode> = new Map();
+  private readonly valuesList: IComponentNode[];
+
+  public get values(): readonly IComponentNode[] {
+    return this.valuesList;
+  }
 
   constructor(values: Array<IComponentNode> | null = null) {
-    this.values = values != null ? values : [];
+    this.valuesList = values != null ? values : [];
+    for (const valuesKey in this.values) {
+      this.index.set(valuesKey, this.values[valuesKey]);
+    }
   }
 
   public get length(): number {
     return this.values.length;
   }
 
-  public asArray() {
-    return [...this.values];
-  }
-
   public add(componentNode: IComponentNode): void {
-    this.values.push(componentNode);
+    this.valuesList.push(componentNode);
+    this.index.set(componentNode.nodeName, componentNode);
   }
 
   public containsEnum(enumName: string): boolean {
-    return any(this.values, definition => instanceOfEnumDefinition(definition) && definition.nodeName == enumName);
+    let component = this.index.get(enumName);
+    return !!component && instanceOfEnumDefinition(component);
   }
 
   public getNode(name: string | null): IComponentNode | null {
     if (name == null) return null;
-    return firstOrDefault(this.values, definition => definition.nodeName == name);
+    let component = this.index.get(name);
+    return !!component ? component : null;
   }
 
   public contains(name: string): boolean {
-    return any(this.values, definition => definition.nodeName == name);
+    return this.index.has(name);
   }
 
   public getFunction(name: string): Function | null {
-    return asFunction(
-      firstOrDefault(this.values, functionValue => instanceOfFunction(functionValue) && functionValue.nodeName == name));
+    return asFunction(this.index.get(name));
   }
 
   public getTable(name: string): Table | null {
-    return asTable(
-      firstOrDefault(this.values, table => instanceOfTable(table) && table.nodeName == name));
+    return asTable(this.index.get(name));
   }
 
   public getDeclaredType(name: string): TypeDefinition | null {
-    return asTypeDefinition(
-      firstOrDefault(this.values, type => instanceOfTypeDefinition(type) && type.nodeName == name));
+    return asTypeDefinition(this.index.get(name));
   }
 
   public getScenarios(): Array<Scenario> {
@@ -87,17 +91,14 @@ export class ComponentNodeList implements IComponentNodeList {
   }
 
   public getEnum(name: string): EnumDefinition | null {
-    return asEnumDefinition(
-      firstOrDefault(this.values,
-        value => instanceOfEnumDefinition(value) && value?.nodeName == name));
+    return asEnumDefinition(this.index.get(name));
   }
 
   public addIfNew(node: IComponentNode): void {
-    if (!contains(this.values, node)) this.values.push(node);
-  }
-
-  public first(): INode | null {
-    return firstOrDefault(this.values);
+    if (!this.index.has(node.nodeName)) {
+      this.valuesList.push(node);
+      this.index.set(node.nodeName, node);
+    }
   }
 
   public getType(name: string): ObjectType | null {

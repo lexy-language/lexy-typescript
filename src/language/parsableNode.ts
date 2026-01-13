@@ -18,6 +18,7 @@ export interface IParsableNode extends INode {
 }
 
 export abstract class ParsableNode extends Node implements IParsableNode {
+
    protected constructor(reference: SourceReference) {
       super(reference);
    }

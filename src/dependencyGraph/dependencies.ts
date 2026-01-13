@@ -4,21 +4,20 @@ import type {IComponentNodeList} from "../language/componentNodeList";
 
 import {DependencyNode} from "./dependencyNode";
 import {asHasNodeDependencies} from "../language/IHasNodeDependencies";
-import {firstOrDefault} from "../infrastructure/arrayFunctions";
 import {Assert} from "../infrastructure/assert";
 import {NodesWalker} from "../language/nodesWalker";
 
 export class Dependencies {
   private readonly componentNodes: IComponentNodeList;
-  private readonly circularReferencesValue: Array<IComponentNode> = [];
-  private readonly dependencyMap: Map<string, DependencyNode> = new Map();
+  private readonly circularReferencesValue: IComponentNode[] = [];
   private readonly nodesMap: Map<string, IComponentNode> = new Map();
   private readonly nodeOccurrences: Map<string, number> = new Map();
-  private readonly dependencyNodesValue: Array<DependencyNode> = []
-  private readonly nodesToProcess: Array<IComponentNode>;
-  private sortedNodesValue: Array<IComponentNode> = [];
+  private readonly dependencyNodesValue: DependencyNode[] = []
+  private readonly dependencyMap: Map<string, DependencyNode> = new Map();
+  private readonly nodesToProcess: IComponentNode[];
+  private sortedNodesValue: readonly IComponentNode[] = [];
 
-  public get sortedNodes(): Array<IComponentNode>  {
+  public get sortedNodes(): readonly IComponentNode[]  {
     return this.sortedNodesValue;
   }
 
@@ -36,7 +35,7 @@ export class Dependencies {
 
   constructor(componentNodes: IComponentNodeList) {
     this.componentNodes = componentNodes;
-    this.nodesToProcess = this.componentNodes.asArray();
+    this.nodesToProcess = [...this.componentNodes.values];
   }
 
   public build(): void {
@@ -120,10 +119,8 @@ export class Dependencies {
     for (const dependencyNode of this.dependencyNodes) {
       if (!(dependencyNode != parent && dependencyNode.hasDependency(parent))) continue;
 
-      const dependency = Assert.notNull(firstOrDefault(this.dependencyNodes,
-          where => where.name == dependencyNode.name), "dependency");
-      if (node.name == dependency.name) return true;
-      if (this.isCircular(node, dependency)) return true;
+      if (node.name == dependencyNode.name) return true;
+      if (this.isCircular(node, dependencyNode)) return true;
     }
     return false;
   }
@@ -143,9 +140,9 @@ export class Dependencies {
     }
   }
 
-  private topologicalSort(): Array<IComponentNode> {
+  private topologicalSort(): readonly IComponentNode[] {
 
-    if (this.hasCircularReferences) return this.componentNodes.asArray()
+    if (this.hasCircularReferences) return this.componentNodes.values;
 
     const result: Array<IComponentNode> = []
     const processing: Array<string> = [];

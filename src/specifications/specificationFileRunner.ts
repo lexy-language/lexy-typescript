@@ -10,6 +10,8 @@ import {Scenario} from "../language/scenarios/scenario";
 import {ComponentNodeList} from "../language/componentNodeList";
 import {ParserResult} from "../parser/parserResult";
 import {SourceReference} from "../parser/sourceReference";
+import {Dependencies} from "../dependencyGraph/dependencies";
+import {Assert} from "../infrastructure/assert";
 
 export interface ISpecificationFileRunner {
   scenarioRunners: ReadonlyArray<IScenarioRunner>;
@@ -41,18 +43,23 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
   }
 
   async initialize(): Promise<void> {
+
     let result: ParserResult;
     try {
       result = await this.parser.parseFile(this.fileName, {suppressException: true});
     } catch (error: any) {
       throw new Error("Error while parsing " + this.fileName + "\n" + error.stack + "\n--------------------------------------\n")
     }
+
     this.result = result
+
+    let dependencies = Assert.notNull(result.dependencies, "dependencies");
+
     result
       .componentNodes
       .getScenarios()
       .forEach(scenario =>
-        this.scenarioRunnersValue.push(this.getScenarioRunner(scenario, result.componentNodes, result.logger)));
+        this.scenarioRunnersValue.push(this.getScenarioRunner(scenario, result.componentNodes, result.logger, dependencies)));
   }
 
   public run(): void {
@@ -75,9 +82,9 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     }
   }
 
-  private getScenarioRunner(scenario: Scenario, componentNodes: ComponentNodeList, parserLogger: IParserLogger) {
+  private getScenarioRunner(scenario: Scenario, componentNodes: ComponentNodeList, parserLogger: IParserLogger, dependencies: Dependencies) {
     try {
-      return new ScenarioRunner(this.fileName, this.compiler, componentNodes, scenario, this.runnerContext, parserLogger);
+      return new ScenarioRunner(this.fileName, this.compiler, componentNodes, scenario, this.runnerContext, parserLogger, dependencies);
     } catch (error: any) {
       throw new Error("Error occurred while create runner for: " + this.fileName + "\n" + error.stack);
     }

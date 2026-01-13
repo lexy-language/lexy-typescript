@@ -10,7 +10,9 @@ export function firstOrDefault<TItem>(array: ReadonlyArray<TItem>, where: ((valu
   if (where == null) return array.length > 0 ? array[0] : null;
 
   for (const item of array) {
-    if (where(item)) return item;
+    if (where(item)) {
+      return item;
+    }
   }
   return null;
 }
