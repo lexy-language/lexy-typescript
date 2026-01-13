@@ -8,9 +8,9 @@ export class ParserResult {
   public readonly rootNode: LexyScriptNode;
   public readonly componentNodes: ComponentNodeList;
   public readonly logger: IParserLogger;
-  public readonly dependencies: Dependencies | null;
+  public readonly dependencies: Dependencies;
 
-   constructor(rootNode: LexyScriptNode, componentNodes: ComponentNodeList, logger: IParserLogger, dependencies: Dependencies | null) {
+   constructor(rootNode: LexyScriptNode, componentNodes: ComponentNodeList, logger: IParserLogger, dependencies: Dependencies) {
      this.rootNode = rootNode;
      this.componentNodes = componentNodes;
      this.logger = logger;
