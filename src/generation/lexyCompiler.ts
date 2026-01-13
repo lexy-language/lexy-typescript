@@ -8,7 +8,7 @@ import {ILibraries} from "../functionLibraries/libraries";
 import {Assert} from "../infrastructure/assert";
 
 export interface ILexyCompiler {
-  compile(nodes: Array<IComponentNode>): CompilerResult;
+  compile(nodes: readonly IComponentNode[]): CompilerResult;
 }
 
 export class LexyCompiler implements ILexyCompiler {
