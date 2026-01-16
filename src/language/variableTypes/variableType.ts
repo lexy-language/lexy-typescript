@@ -2,9 +2,8 @@ import type {IComponentNode} from "../componentNode";
 import type {IComponentNodeList} from "../componentNodeList";
 
 import {VariableTypeName} from "./variableTypeName";
-import {IHasNodeDependencies} from "../IHasNodeDependencies";
 
-export abstract class VariableType implements IHasNodeDependencies {
+export abstract class VariableType {
 
   public readonly hasNodeDependencies = true;
 

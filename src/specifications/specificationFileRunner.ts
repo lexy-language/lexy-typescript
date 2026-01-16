@@ -44,22 +44,24 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
 
   async initialize(): Promise<void> {
 
-    let result: ParserResult;
+    let result = Assert.notNull(await this.parse(), "result");
+    this.result = result;
+
+    this.result
+      .componentNodes
+      .getScenarios()
+      .forEach(scenario => {
+        let scenarioRunner = this.createScenarioRunner(scenario, result.componentNodes, result.logger, result.dependencies);
+        return this.scenarioRunnersValue.push(scenarioRunner);
+      });
+  }
+
+  private async parse() {
     try {
-      result = await this.parser.parseFile(this.fileName, {suppressException: true});
+      return await this.parser.parseFile(this.fileName, {suppressException: true});
     } catch (error: any) {
       throw new Error("Error while parsing " + this.fileName + "\n" + error.stack + "\n--------------------------------------\n")
     }
-
-    this.result = result
-
-    let dependencies = Assert.notNull(result.dependencies, "dependencies");
-
-    result
-      .componentNodes
-      .getScenarios()
-      .forEach(scenario =>
-        this.scenarioRunnersValue.push(this.getScenarioRunner(scenario, result.componentNodes, result.logger, dependencies)));
   }
 
   public run(): void {
@@ -82,7 +84,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     }
   }
 
-  private getScenarioRunner(scenario: Scenario, componentNodes: ComponentNodeList, parserLogger: IParserLogger, dependencies: Dependencies) {
+  private createScenarioRunner(scenario: Scenario, componentNodes: ComponentNodeList, parserLogger: IParserLogger, dependencies: Dependencies) {
     try {
       return new ScenarioRunner(this.fileName, this.compiler, componentNodes, scenario, this.runnerContext, parserLogger, dependencies);
     } catch (error: any) {

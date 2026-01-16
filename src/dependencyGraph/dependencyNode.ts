@@ -1,26 +1,50 @@
 import {IComponentNode} from "../language/componentNode";
 
-export class DependencyNode {
-  private readonly dependenciesValue: ReadonlyArray<string> = [];
-  private readonly nodeValue: IComponentNode;
+export class NodeDependencies {
 
-  public name: string
+  private occurrence: number | null = null;
 
-  public get dependencies(): ReadonlyArray<string> {
+  private readonly dependenciesValue: Map<string, IComponentNode> = new Map();
+  private readonly dependantsValue: Map<string, IComponentNode> = new Map();
+
+  public readonly node: IComponentNode;
+
+  public get name(): string { return this.node.nodeName; }
+
+  public get dependencies(): Map<string, IComponentNode> {
     return this.dependenciesValue;
   }
 
-  public get node(): IComponentNode {
-    return this.nodeValue;
+  public get dependants(): Map<string, IComponentNode> {
+    return this.dependantsValue;
   }
 
-  constructor(name: string, node: IComponentNode, dependencies: ReadonlyArray<string>) {
-    this.nodeValue = node;
-    this.name = name;
-    this.dependenciesValue = dependencies;
+  constructor(node: IComponentNode) {
+    this.node = node;
   }
 
-  hasDependency(parent: DependencyNode) {
-    return this.dependenciesValue.indexOf(parent.name) >= 0;
+  public addDependencies(dependencies: MapIterator<IComponentNode>) {
+    for (let dependency of dependencies) {
+      this.dependencies.set(dependency.nodeName, dependency);
+    }
   }
+
+  public addDependant(componentNode: IComponentNode) {
+    this.dependants.set(componentNode.nodeName, componentNode);
+  }
+
+  public decreaseOccurrence(): number {
+
+    if (this.occurrence == null) {
+      this.occurrence = this.dependants.size;
+    } else{
+      this.occurrence -= 1;
+    }
+
+    return this.occurrence;
+  }
+
+  public toString(): string {
+    return `${this.node.nodeName} (dependencies: ${this.dependencies.size} dependants: ${this.dependants.size})`
+  };
 }

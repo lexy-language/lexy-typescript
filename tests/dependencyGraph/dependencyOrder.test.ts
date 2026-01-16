@@ -1,4 +1,7 @@
 import buildDependencyGraph from "./buildDependencyGraph";
+import {Verify} from "../verify";
+
+const nodeType = value => value.nodeType;
 
 describe('DependencyOrder', () => {
 
@@ -20,11 +23,32 @@ enum EnumExample
   Married
   CivilPartnership`, true);
 
-    expect(dependencies.sortedNodes.length).toBe(3);
-    expect(dependencies.sortedNodes[0].nodeName).toBe(`EnumExample`);
-    expect(dependencies.sortedNodes[1].nodeName).toBe(`TableExample`);
-    expect(dependencies.sortedNodes[2].nodeName).toBe(`FunctionWithEnumDependency`);
-    expect(dependencies.circularReferences.length).toBe(0);
+    Verify.model(_ => _
+      .countMapIs(dependencies.nodes, 3, "nodes")
+      .containsKey(dependencies.nodes, "TableExample", "nodes", (tableExample, __) => __
+        .areEqual(tableExample.dependencies.size, 1, "tableExample.dependencies")
+        .containsKey(tableExample.dependencies, "EnumExample", "tableExample.dependencies")
+        .areEqual(tableExample.dependants.size, 1, "tableExample.dependants")
+        .containsKey(tableExample.dependants, "FunctionWithEnumDependency", "tableExample.dependants")
+      )
+      .containsKey(dependencies.nodes, "EnumExample", "nodes",(enumExample, __) => __
+        .areEqual(enumExample.dependencies.size, 0, "enumExample.dependencies")
+        .areEqual(enumExample.dependants.size, 2, "enumExample.dependants")
+        .containsKey(enumExample.dependants, "TableExample", "enumExample.dependants")
+        .containsKey(enumExample.dependants, "FunctionWithEnumDependency", "enumExample.dependants")
+      )
+      .containsKey(dependencies.nodes, "FunctionWithEnumDependency", "nodes", (functionWithEnumDependency, __) => __
+        .areEqual(functionWithEnumDependency.dependencies.size, 2, "functionWithEnumDependency")
+        .containsKey(functionWithEnumDependency.dependencies, "TableExample", "functionWithEnumDependency")
+        .containsKey(functionWithEnumDependency.dependencies, "EnumExample", "functionWithEnumDependency")
+        .areEqual(functionWithEnumDependency.dependants.size, 0, "functionWithEnumDependency")
+      )
+      .countIs(dependencies.sortedNodes, 3, "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeType, "EnumExample", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeType, "TableExample", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 2, nodeType, "FunctionWithEnumDependency", "sortedNodes")
+      .countMapIs(dependencies.circularReferences, 0, "circularReferences")
+    );
   });
 
   it('complexDependencyGraph', async () => {
@@ -101,18 +125,20 @@ enum EnumExample
   Married
   CivilPartnership`, true);
 
-    expect(dependencies.sortedNodes.length).toBe(11);
-    expect(dependencies.sortedNodes[0].nodeName).toBe(`EnumExample`);
-    expect(dependencies.sortedNodes[1].nodeName).toBe(`NestedType`);
-    expect(dependencies.sortedNodes[2].nodeName).toBe(`TypeExample`);
-    expect(dependencies.sortedNodes[3].nodeName).toBe(`TableExample`);
-    expect(dependencies.sortedNodes[4].nodeName).toBe(`FunctionWithTypeDependency`);
-    expect(dependencies.sortedNodes[5].nodeName).toBe(`FunctionWithEnumDependency`);
-    expect(dependencies.sortedNodes[6].nodeName).toBe(`FunctionWithTableDependency`);
-    expect(dependencies.sortedNodes[7].nodeName).toBe(`FunctionWithFunctionTypeDependency`);
-    expect(dependencies.sortedNodes[8].nodeName).toBe(`FunctionWithFunctionDependency`);
-    expect(dependencies.sortedNodes[9].nodeName).toBe(`ValidateBuiltOrderFunction`);
-    expect(dependencies.sortedNodes[10].nodeName).toBe(`ValidateBuiltOrder`);
-    expect(dependencies.circularReferences.length).toBe(0);
+    Verify.model(_ => _
+      .countIs(dependencies.sortedNodes, 11, "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeType, "EnumExample", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeType, "NestedType", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 2, nodeType, "TypeExample", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 3, nodeType, "TableExample", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 4, nodeType, "FunctionWithTypeDependency", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 5, nodeType, "FunctionWithEnumDependency", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 6, nodeType, "FunctionWithTableDependency", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 7, nodeType, "FunctionWithFunctionTypeDependency", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 8, nodeType, "FunctionWithFunctionDependency", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 9, nodeType, "ValidateBuiltOrderFunction", "sortedNodes")
+      .valuePropertytAtEquals(dependencies.sortedNodes, 10, nodeType, "ValidateBuiltOrder", "sortedNodes")
+      .countMapIs(dependencies.circularReferences, 0, "")
+    );
   });
 });

@@ -183,12 +183,12 @@ export class LexyParser implements ILexyParser {
   private sortByDependencyAndCheckCircularDependencies(context: IParserContext): Dependencies {
 
     let dependencies = DependencyGraphFactory.create(context.nodes);
-    if (dependencies.hasCircularReferences) {
-      for (const circularReference of dependencies.circularReferences) {
-        context.logger.setCurrentNode(circularReference);
-        context.logger.fail(circularReference.reference,
-          `Circular reference detected in: '${circularReference.nodeName}'`);
-      }
+    if (!dependencies.hasCircularReferences) return dependencies;
+
+    for (const [key, circularReference] of dependencies.circularReferences) {
+      context.logger.setCurrentNode(circularReference);
+      context.logger.fail(circularReference.reference,
+        `Circular reference detected in: '${key}'`);
     }
     return dependencies;
   }

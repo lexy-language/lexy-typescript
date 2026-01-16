@@ -37,8 +37,8 @@ export class LookUpFunction extends TableFunction {
 
     public static readonly functionHelpValue: string = "Arguments: " +
         "TableName.LookUp(lookUpValue, Table.ResultColumn) " +
-        "or TableName.LookUp(lookUpValue, Table.SearchColumn, Table.ResultColumn)" +
-        "or TableName.LookUp(discriminator, lookUpValue, Table.ResultColumn)" +
+        "or TableName.LookUp(lookUpValue, Table.SearchColumn, Table.ResultColumn) " +
+        "or TableName.LookUp(discriminator, lookUpValue, Table.ResultColumn) " +
         "or TableName.LookUp(discriminator, lookUpValue, Table.DiscriminatorColumn, Table.SearchColumn, Table.ResultColumn)";
 
     public static readonly functionName = `LookUp`;

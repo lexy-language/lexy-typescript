@@ -2,174 +2,207 @@ import type {IComponentNode} from "../language/componentNode";
 import type {INode} from "../language/node";
 import type {IComponentNodeList} from "../language/componentNodeList";
 
-import {DependencyNode} from "./dependencyNode";
 import {asHasNodeDependencies} from "../language/IHasNodeDependencies";
 import {Assert} from "../infrastructure/assert";
-import {NodesWalker} from "../language/nodesWalker";
+import {NodeDependencies} from "./dependencyNode";
+
 
 export class Dependencies {
+
   private readonly componentNodes: IComponentNodeList;
-  private readonly circularReferencesValue: IComponentNode[] = [];
-  private readonly nodesMap: Map<string, IComponentNode> = new Map();
-  private readonly nodeOccurrences: Map<string, number> = new Map();
-  private readonly dependencyNodesValue: DependencyNode[] = []
-  private readonly dependencyMap: Map<string, DependencyNode> = new Map();
-  private readonly nodesToProcess: IComponentNode[];
+  private readonly circularReferencesValue: Map<string, IComponentNode> = new Map();
+  private readonly nodeDependencies: Map<string, NodeDependencies> = new Map();
+
+  private readonly nodesToProcess: Map<string, IComponentNode> = new Map();
+
   private sortedNodesValue: readonly IComponentNode[] = [];
+
+
+  public get hasCircularReferences(): boolean {
+    return this.circularReferencesValue.size > 0
+  };
 
   public get sortedNodes(): readonly IComponentNode[]  {
     return this.sortedNodesValue;
   }
 
-  public get dependencyNodes(): ReadonlyArray<DependencyNode>  {
-    return this.dependencyNodesValue;
+  public get nodes(): Map<string, NodeDependencies>  {
+    return this.nodeDependencies;
   }
 
-  public get hasCircularReferences() {
-    return this.circularReferences.length > 0
-  }
-
-  public get circularReferences() {
-    return [...this.circularReferencesValue];
+  public get circularReferences(): Map<string, IComponentNode> {
+    return this.circularReferencesValue;
   }
 
   constructor(componentNodes: IComponentNodeList) {
     this.componentNodes = componentNodes;
-    this.nodesToProcess = [...this.componentNodes.values];
   }
 
   public build(): void {
     this.processNodes();
     this.checkCircularDependencies();
-    this.sortedNodesValue = this.topologicalSort();
+    this.sortedNodesValue = this.sortNodesBeforeItsDependants();
   }
 
   public nodeAndDependencies(node: IComponentNode): Array<IComponentNode> {
-    const dependencyNode = this.dependencyMap.get(node.nodeName);
-    if (dependencyNode == null) return [];
-    return [node, ...this.flatten(dependencyNode.dependencies)];
+    const dependencies = this.getOrCreateNodeDependencies(node);
+    return !dependencies
+      ? [node]
+      : [node, ...this.flatten(dependencies.dependencies.values())];
   }
 
   private processNodes(): void {
-    while (this.nodesToProcess.length > 0) {
-      const node = this.nodesToProcess.shift() as IComponentNode;
-      const dependencyNode = this.processNode(node);
-      this.dependencyNodesValue.push(dependencyNode);
-      this.dependencyMap.set(node.nodeName, dependencyNode);
-      this.nodesMap.set(node.nodeName, node);
+
+    function first(nodesToProcess: Map<string, IComponentNode>): IComponentNode {
+      let iterator = nodesToProcess[Symbol.iterator]()
+        .next() as IteratorResult<[string, IComponentNode], undefined>;
+      if (!iterator.value) {
+        throw new Error("Element expected");
+      }
+      let [_, value] = iterator.value;
+      return value;
+    }
+
+    debugger;
+
+    for (const node of this.componentNodes.values) {
+      this.processNode(node);
+    }
+
+    while (this.nodesToProcess.size > 0) {
+      const node = first(this.nodesToProcess);
+      this.nodesToProcess.delete(node.nodeName)
+      this.processNode(node);
     }
   }
 
-  private processNode(componentNode: IComponentNode): DependencyNode {
-    this.increaseOccurrence(componentNode);
-    return this.newDependencyNode(componentNode);
-  }
+  private processNode(componentNode: IComponentNode): void {
 
-  private increaseOccurrence(componentNode: IComponentNode) {
-    let key = componentNode.nodeName;
-    const existingOccurrences = this.nodeOccurrences.get(key);
-    if (existingOccurrences != undefined) {
-      this.nodeOccurrences.set(key, existingOccurrences + 1);
-    } else {
-      this.nodeOccurrences.set(key, 1);
+    const nodeDependencies = this.getOrCreateNodeDependencies(componentNode);
+
+    const nodeDependenciesNodes = this.getDependencies(componentNode);
+    for (let dependency of nodeDependenciesNodes.values())
+    {
+      if (!this.nodesToProcess.has(dependency.nodeName)
+       && !this.nodeDependencies.has(dependency.nodeName)) {
+        this.nodesToProcess.set(dependency.nodeName, dependency);
+      }
+
+      let dependencyNodeDependencies = this.getOrCreateNodeDependencies(dependency);
+      dependencyNodeDependencies.addDependant(componentNode);
     }
+
+    nodeDependencies.addDependencies(nodeDependenciesNodes.values());
   }
 
-  private newDependencyNode(componentNode: IComponentNode): DependencyNode {
-    const dependencies = this.getDependencies(componentNode);
-    return new DependencyNode(componentNode.nodeName, componentNode, dependencies);
+  private getOrCreateNodeDependencies(node: IComponentNode): NodeDependencies {
+
+    let value = this.nodeDependencies.get(node.nodeName);
+    if (value != undefined) return value;
+
+    value = new NodeDependencies(node);
+    this.nodeDependencies.set(node.nodeName, value);
+    return value;
   }
 
-  private getDependencies(node: INode): ReadonlyArray<string> {
-    const resultDependencies = new Array<string>();
-    NodesWalker.walk(node, childNode => this.processDependencies(childNode, resultDependencies));
+  private getDependencies(node: INode): Map<string, IComponentNode> {
+    const resultDependencies = new Map<string, IComponentNode>();
+    this.processNodeDependencies(node, resultDependencies);
     return resultDependencies;
   }
 
-  private processDependencies(childNode: INode, resultDependencies: Array<string>) {
-    let nodeDependencies = asHasNodeDependencies(childNode)?.getDependencies(this.componentNodes);
-    if (nodeDependencies == null) return;
+  private processNodeDependencies(childNode: INode, resultDependencies: Map<string, IComponentNode>) {
 
-    for (const dependency of nodeDependencies) {
-      this.validateDependency(resultDependencies, dependency);
+    this.getNodeDependencies(childNode, resultDependencies);
+    let children = childNode.getChildren();
+    for (let child of children) {
+      this.processNodeDependencies(child, resultDependencies);
     }
   }
 
-  private validateDependency(resultDependencies: Array<string>, dependency: IComponentNode): void {
-    if (resultDependencies.indexOf(dependency.nodeName) >= 0) return;
+  private getNodeDependencies(childNode: INode, resultDependencies: Map<string, IComponentNode>)  {
 
-    if (this.nodesToProcess.indexOf(dependency) < 0 && !this.nodesMap.has(dependency.nodeName)) {
-      this.nodesToProcess.push(dependency);
-    }
+    let nodeWithDependencies = asHasNodeDependencies(childNode);
+    if (nodeWithDependencies == null) return;
 
-    this.increaseOccurrence(dependency);
-    resultDependencies.push(dependency.nodeName);
-  }
+    let nodeDependencies = nodeWithDependencies.getDependencies(this.componentNodes);
 
-  private checkCircularDependencies(): void {
-    for (const node of this.dependencyNodes) {
-      if (this.circularReferencesValue.indexOf(node.node) >= 0) continue;
-      if (this.isCircular(node, node)) {
-        this.circularReferencesValue.push(node.node);
+    for (let dependency of nodeDependencies) {
+      if (!resultDependencies.has(dependency.nodeName)) {
+        resultDependencies.set(dependency.nodeName, dependency);
       }
     }
   }
 
-  private isCircular(node: DependencyNode, parent: DependencyNode) {
-    for (const dependencyNode of this.dependencyNodes) {
-      if (!(dependencyNode != parent && dependencyNode.hasDependency(parent))) continue;
+  private checkCircularDependencies(): void {
+    for (const [key, value] of this.nodeDependencies) {
+      if (this.circularReferencesValue.has(key)) continue;
+      if (this.isCircular(value, value)) {
+        this.circularReferencesValue.set(key, value.node);
+      }
+    }
+  }
 
-      if (node.name == dependencyNode.name) return true;
-      if (this.isCircular(node, dependencyNode)) return true;
+  private isCircular(node: NodeDependencies, dependant: NodeDependencies) {
+    for (const [key] of dependant.dependants) {
+      if (node.name == key) return true;
+
+      let dependencyNodeDependencies = Assert.notNull(this.nodeDependencies.get(key), "dependencyNodeDependencies");
+      if (this.isCircular(node, dependencyNodeDependencies)) {
+        return true;
+      }
     }
     return false;
   }
 
-  private flatten(dependencies: ReadonlyArray<string>): Array<IComponentNode> {
+  private flatten(dependencies: MapIterator<IComponentNode>): Array<IComponentNode> {
     const result: Array<IComponentNode> = [];
     this.flattenNodes(result, dependencies);
-    return this.sortedNodes.filter(where => result.indexOf(where) >= 0);
+    return result;
   }
 
-  private flattenNodes(result: Array<IComponentNode>, dependencies: ReadonlyArray<string>): void {
-    for (const dependency of dependencies) {
-      const dependencyNode = Assert.notNull(this.dependencyMap.get(dependency), "dependencyNode");
-      if (result.indexOf(dependencyNode.node) >= 0) continue;
-      result.push(dependencyNode.node);
-      this.flattenNodes(result, dependencyNode.dependencies);
+  private flattenNodes(result: Array<IComponentNode>, nodes: MapIterator<IComponentNode>): void {
+    for (const node of nodes) {
+      if (result.indexOf(node) >= 0) continue;
+      result.push(node);
+
+      const dependencies = this.getOrCreateNodeDependencies(node);
+      this.flattenNodes(result, dependencies.dependencies.values());
     }
   }
 
-  private topologicalSort(): readonly IComponentNode[] {
+  private sortNodesBeforeItsDependants(): readonly IComponentNode[] {
 
     if (this.hasCircularReferences) return this.componentNodes.values;
 
     const result: Array<IComponentNode> = []
-    const processing: Array<string> = [];
-    this.nodeOccurrences.forEach((occurrences, node) => {
-      if (occurrences == 1) {
-        processing.push(node);
-      }
-    });
+
+    const nodesWithoutDependants = this.nodesWithoutDependants();
+    const processing: Array<string> = nodesWithoutDependants;
 
     while (processing.length > 0) {
       const nodeName = processing.shift() as string;
-      const node = Assert.notNull(this.nodesMap.get(nodeName), "node");
-      const dependencyNode = Assert.notNull(this.dependencyMap.get(nodeName), "dependencyNode");
+      const dependencyNode = Assert.notNull(this.nodeDependencies.get(nodeName), "nodeDependencies");
 
-      result.unshift(node);
+      result.unshift(dependencyNode.node);
 
       dependencyNode.dependencies.forEach(dependency => {
-        const occurrence = this.nodeOccurrences.get(dependency)
-        if (occurrence == undefined || occurrence < 1) return;
-
-        let newOccurrence = occurrence - 1;
-        this.nodeOccurrences.set(dependency, newOccurrence);
-
-        if (newOccurrence == 1) {
-          processing.push(dependency);
+        const dependant = this.getOrCreateNodeDependencies(dependency);
+        const occurrence = dependant.decreaseOccurrence();
+        if (occurrence == 1) {
+          processing.push(dependency.nodeName);
         }
       });
+    }
+    return result;
+  }
+
+  private nodesWithoutDependants(): Array<string> {
+    let result: string[] = [];
+    for (const [key, value] of this.nodeDependencies) {
+      if (value.dependants.size == 0) {
+        result.push(key)
+      }
     }
     return result;
   }
