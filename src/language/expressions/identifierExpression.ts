@@ -6,7 +6,6 @@ import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../../parser/sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
-import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {VariableType} from "../variableTypes/variableType";
 import {NodeType} from "../nodeType";
 import {IHasVariableReference} from "./IHasVariableReference";

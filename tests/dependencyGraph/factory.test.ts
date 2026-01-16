@@ -27,37 +27,37 @@ describe('FactoryTests', () => {
 
   it('simpleEnum', async () => {
     const dependencies = await buildDependencyGraph(enumDefinition);
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 1, "nodes")
-      .containsKey(dependencies.nodes, "SimpleEnum", "nodes",(simpleEnum, __) => __
-        .areEqual(simpleEnum.dependencies.size, 0, "simpleEnum.dependencies.size")
-        .areEqual(simpleEnum.dependants.size, 0, "simpleEnum.dependants.size")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 1)
+      .containsKey(model => model.nodes, "SimpleEnum", __ => __
+        .areEqual(simpleEnum => simpleEnum.dependencies.size, 0)
+        .areEqual(simpleEnum => simpleEnum.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleEnum", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleEnum")
     );
   });
 
   it('simpleTable', async () => {
     const dependencies = await buildDependencyGraph(table);
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 1, "nodes")
-      .containsKey(dependencies.nodes, "SimpleTable", "nodes", (simpleEnum, __) => __
-        .areEqual(simpleEnum.dependencies.size, 0, "simpleEnum.dependencies.size")
-        .areEqual(simpleEnum.dependants.size, 0, "simpleEnum.dependants.size")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 1)
+      .containsKey(model => model.nodes, "SimpleTable", __ => __
+        .areEqual(simpleEnum => simpleEnum.dependencies.size, 0)
+        .areEqual(simpleEnum => simpleEnum.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleTable", "")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleTable")
     );
   });
 
   it('simpleFunction', async () => {
     const dependencies = await buildDependencyGraph(functionCode);
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 1, "nodes")
-      .containsKey(dependencies.nodes, "SimpleFunction", "nodes", (simpleFunction, __) => __
-        .areEqual(simpleFunction.dependencies.size, 0, "simpleFunction.dependencies.size")
-        .areEqual(simpleFunction.dependants.size, 0, "simpleFunction.dependants.size")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 1)
+      .containsKey(model => model.nodes, "SimpleFunction", __ => __
+        .areEqual(simpleFunction => simpleFunction.dependencies.size, 0)
+        .areEqual(simpleFunction => simpleFunction.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleFunction", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleFunction")
     );
   });
 
@@ -67,20 +67,20 @@ function Caller
   var params = new(SimpleFunction.Parameters)
 `);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "nodes")
-      .containsKey(dependencies.nodes, "SimpleFunction", "nodes", (simpleFunction, __) => __
-        .areEqual(simpleFunction.dependencies.size, 0, "simpleFunction.dependencies.size")
-        .areEqual(simpleFunction.dependants.size, 1, "simpleFunction.dependants.size")
-        .containsKey(simpleFunction.dependants, "Caller", "simpleFunction.dependants")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "SimpleFunction", __ => __
+        .areEqual(simpleFunction => simpleFunction.dependencies.size, 0)
+        .areEqual(simpleFunction => simpleFunction.dependants.size, 1)
+        .containsKey(simpleFunction => simpleFunction.dependants, "Caller")
       )
-      .containsKey(dependencies.nodes, "Caller", "nodes", (caller, __) => __
-        .areEqual(caller.dependencies.size, 1, "caller.dependencies.size")
-        .containsKey(caller.dependencies, "SimpleFunction", "caller.dependencies")
-        .areEqual(caller.dependants.size, 0, "caller.dependants.size")
+      .containsKey(model => model.nodes, "Caller", __ => __
+        .areEqual(caller => caller.dependencies.size, 1)
+        .containsKey(caller => caller.dependencies, "SimpleFunction")
+        .areEqual(caller => caller.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleFunction", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeName, "Caller", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleFunction")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeName, "Caller")
     );
   });
 
@@ -89,20 +89,20 @@ function Caller
 function Caller
   var params = new(SimpleFunction.Results)
 `);
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "nodes")
-      .containsKey(dependencies.nodes, "SimpleFunction", "nodes", (simpleFunction, __) => __
-        .areEqual(simpleFunction.dependencies.size, 0, "simpleFunction.dependencies.size")
-        .areEqual(simpleFunction.dependants.size, 1, "simpleFunction.dependants.size")
-        .containsKey(simpleFunction.dependants, "Caller", "simpleFunction.dependants")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "SimpleFunction", __ => __
+        .areEqual(simpleFunction => simpleFunction.dependencies.size, 0)
+        .areEqual(simpleFunction => simpleFunction.dependants.size, 1)
+        .containsKey(simpleFunction => simpleFunction.dependants, "Caller")
       )
-      .containsKey(dependencies.nodes, "Caller", "nodes", (caller, __) => __
-        .areEqual(caller.dependencies.size, 1, "caller.dependencies.size")
-        .containsKey(caller.dependencies, "SimpleFunction", "caller.dependencies")
-        .areEqual(caller.dependants.size, 0, "caller.dependants")
+      .containsKey(model => model.nodes, "Caller", __ => __
+        .areEqual(caller => caller.dependencies.size, 1)
+        .containsKey(caller => caller.dependencies, "SimpleFunction")
+        .areEqual(caller => caller.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleFunction", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeName, "Caller", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleFunction")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeName, "Caller")
     );
   });
 
@@ -114,20 +114,20 @@ function Caller
   var params = fill(SimpleFunction.Parameters)
 `);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "nodes")
-      .containsKey(dependencies.nodes, "SimpleFunction", "nodes", (simpleFunction, __) => __
-        .areEqual(simpleFunction.dependencies.size, 0, "simpleFunction.dependencies.size")
-        .areEqual(simpleFunction.dependants.size, 1, "simpleFunction.dependants.size")
-        .containsKey(simpleFunction.dependants, "Caller", "simpleFunction.dependants")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "SimpleFunction", __ => __
+        .areEqual(simpleFunction => simpleFunction.dependencies.size, 0)
+        .areEqual(simpleFunction => simpleFunction.dependants.size, 1)
+        .containsKey(simpleFunction => simpleFunction.dependants, "Caller")
       )
-      .containsKey(dependencies.nodes, "Caller", "nodes", (caller, __) => __
-        .areEqual(caller.dependencies.size, 1, "caller.dependencies.size")
-        .containsKey(caller.dependencies, "SimpleFunction", "caller.dependencies")
-        .areEqual(caller.dependants.size, 0, "caller.dependants.size")
+      .containsKey(model => model.nodes, "Caller", __ => __
+        .areEqual(caller => caller.dependencies.size, 1)
+        .containsKey(caller => caller.dependencies, "SimpleFunction")
+        .areEqual(caller => caller.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleFunction", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeName, "Caller", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleFunction")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeName, "Caller")
     );
   });
 
@@ -139,20 +139,20 @@ function Caller
   var params = fill(SimpleFunction.Results)
 `);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "nodes")
-      .containsKey(dependencies.nodes, "SimpleFunction", "nodes", (simpleFunction, __) => __
-        .areEqual(simpleFunction.dependencies.size, 0, "simpleFunction.dependencies.size")
-        .areEqual(simpleFunction.dependants.size, 1, "simpleFunction.dependants.size")
-        .containsKey(simpleFunction.dependants, "Caller", "simpleFunction.dependants")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "SimpleFunction", __ => __
+        .areEqual(simpleFunction => simpleFunction.dependencies.size, 0)
+        .areEqual(simpleFunction => simpleFunction.dependants.size, 1)
+        .containsKey(simpleFunction => simpleFunction.dependants, "Caller")
       )
-      .containsKey(dependencies.nodes, "Caller", "nodes", (caller, __) => __
-        .areEqual(caller.dependencies.size, 1, "caller.dependencies.size")
-        .containsKey(caller.dependencies, "SimpleFunction", "caller.dependencies")
-        .areEqual(caller.dependants.size, 0, "caller.dependants.size")
+      .containsKey(model => model.nodes, "Caller", __ => __
+        .areEqual(caller => caller.dependencies.size, 1)
+        .containsKey(caller => caller.dependencies, "SimpleFunction")
+        .areEqual(caller => caller.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleFunction", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeName, "Caller", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleFunction")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeName, "Caller")
     );
   });
 
@@ -162,20 +162,20 @@ function Caller
   var result = SimpleTable.LookUp(2, SimpleTable.Search, SimpleTable.Value)
 `);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "")
-      .containsKey(dependencies.nodes, "SimpleTable", "nodes", (simpleTable, __) => __
-        .areEqual(simpleTable.dependencies.size, 0, "simpleTable.dependencies.size")
-        .areEqual(simpleTable.dependants.size, 1, "simpleTable.dependants.size")
-        .containsKey(simpleTable.dependants, "Caller", "simpleTable.dependants")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "SimpleTable", __ => __
+        .areEqual(simpleTable => simpleTable.dependencies.size, 0)
+        .areEqual(simpleTable => simpleTable.dependants.size, 1)
+        .containsKey(simpleTable => simpleTable.dependants, "Caller")
       )
-      .containsKey(dependencies.nodes, "Caller", "nodes", (caller, __) => __
-        .areEqual(caller.dependencies.size, 1, "caller.dependencies.size")
-        .containsKey(caller.dependencies, "SimpleTable", "caller.dependencies")
-        .areEqual(caller.dependants.size, 0, "caller.dependants.size")
+      .containsKey(model => model.nodes, "Caller", __ => __
+        .areEqual(caller => caller.dependencies.size, 1)
+        .containsKey(caller => caller.dependencies, "SimpleTable")
+        .areEqual(caller => caller.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleTable", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeName, "Caller", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleTable")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeName, "Caller")
     );
   });
 
@@ -189,20 +189,20 @@ scenario Simple
     Value = 2
 `);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "nodes")
-      .containsKey(dependencies.nodes, "SimpleFunction", "nodes", (simpleFunction, __) => __
-        .areEqual(simpleFunction.dependencies.size, 0, "simpleFunction.dependencies.size")
-        .areEqual(simpleFunction.dependants.size, 1, "simpleFunction.dependants.size")
-        .containsKey(simpleFunction.dependants, "Simple", "simpleFunction.dependants")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "SimpleFunction", __ => __
+        .areEqual(simpleFunction => simpleFunction.dependencies.size, 0)
+        .areEqual(simpleFunction => simpleFunction.dependants.size, 1)
+        .containsKey(simpleFunction => simpleFunction.dependants, "Simple")
       )
-      .containsKey(dependencies.nodes, "Simple", "nodes", (caller, __) => __
-        .areEqual(caller.dependencies.size, 1, "caller.dependencies.size")
-        .containsKey(caller.dependencies, "SimpleFunction", "caller.dependencies")
-        .areEqual(caller.dependencies.size, 1, "caller.dependencies.size")
+      .containsKey(model => model.nodes, "Simple", __ => __
+        .areEqual(caller => caller.dependencies.size, 1)
+        .containsKey(caller => caller.dependencies, "SimpleFunction")
+        .areEqual(caller => caller.dependencies.size, 1)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "SimpleFunction", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeName, "Simple", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "SimpleFunction")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeName, "Simple")
     );
   });
 
@@ -213,13 +213,13 @@ type Simple
   string Value2
 `);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 1, "nodes")
-      .containsKey(dependencies.nodes, "Simple", "nodes", (simpleFunction, __) => __
-        .areEqual(simpleFunction.dependencies.size, 0, "simpleFunction.dependencies.size")
-        .areEqual(simpleFunction.dependants.size, 0, "simpleFunction.dependants.size")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 1)
+      .containsKey(model => model.nodes, "Simple", __ => __
+        .areEqual(simpleFunction => simpleFunction.dependencies.size, 0)
+        .areEqual(simpleFunction => simpleFunction.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "Simple", "sortedNodes")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "Simple")
     );
   });
 
@@ -235,20 +235,20 @@ type Parent
   Inner Value3
 `);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "nodes")
-      .containsKey(dependencies.nodes, "Inner", "nodes", (value, __) => __
-        .areEqual(value.dependencies.size, 0, "value.dependencies.size")
-        .areEqual(value.dependants.size, 1, "value.dependants.size")
-        .containsKey(value.dependants, "Parent", "value.dependants")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "Inner", __ => __
+        .areEqual(value => value.dependencies.size, 0)
+        .areEqual(value => value.dependants.size, 1)
+        .containsKey(value => value.dependants, "Parent")
       )
-      .containsKey(dependencies.nodes, "Parent", "nodes", (value, __) => __
-        .areEqual(value.dependencies.size, 1, "value.dependencies.size")
-        .containsKey(value.dependencies, "Inner", "value.dependencies")
-        .areEqual(value.dependants.size, 0, "value.dependants")
+      .containsKey(model => model.nodes, "Parent", __ => __
+        .areEqual(value => value.dependencies.size, 1)
+        .containsKey(value => value.dependencies, "Inner")
+        .areEqual(value => value.dependants.size, 0)
       )
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeName, "Inner", "")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeName, "Parent", "")
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeName, "Inner")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeName, "Parent")
     );
   });
 
@@ -265,24 +265,24 @@ type Parent
   Inner Value3
 `, false);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "nodes")
-      .containsKey(dependencies.nodes, "Inner", "nodes", (value, __) => __
-        .areEqual(value.dependencies.size, 1, "value")
-        .containsKey(value.dependencies, "Parent", "value")
-        .areEqual(value.dependants.size, 1, "value")
-        .containsKey(value.dependants, "Parent", "value")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "Inner", __ => __
+        .areEqual(value => value.dependencies.size, 1)
+        .containsKey(value => value.dependencies, "Parent")
+        .areEqual(value => value.dependants.size, 1)
+        .containsKey(value => value.dependants, "Parent")
       )
-      .containsKey(dependencies.nodes, "Parent", "nodes", (value, __) => __
-        .areEqual(value.dependencies.size, 1, "value")
-        .containsKey(value.dependencies, "Inner", "value")
-        .areEqual(value.dependants.size, 1, "value")
-        .containsKey(value.dependants, "Inner", "value")
+      .containsKey(model => model.nodes, "Parent", __ => __
+        .areEqual(value => value.dependencies.size, 1)
+        .containsKey(value => value.dependencies, "Inner")
+        .areEqual(value => value.dependants.size, 1)
+        .containsKey(value => value.dependants, "Inner")
       )
-      .countMapIs(dependencies.circularReferences, 2, "circularReferences")
-      .containsKey(dependencies.circularReferences, "Inner", "circularReferences")
-      .containsKey(dependencies.circularReferences, "Parent", "circularReferences")
-      .areEqual(dependencies.sortedNodes.length, 2, "sortedNodes.length")
+      .countMapIs(model => model.circularReferences, 2)
+      .containsKey(model => model.circularReferences, "Inner")
+      .containsKey(model => model.circularReferences, "Parent")
+      .areEqual(model => model.sortedNodes.length, 2)
     );
   });
 
@@ -295,24 +295,24 @@ function Parent
   Inner()
 `, false);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 2, "nodes")
-      .containsKey(dependencies.nodes, "Inner", "nodes",(inner, __) => __
-        .areEqual(inner.dependencies.size, 1, "inner")
-        .containsKey(inner.dependencies, "Parent", "inner")
-        .areEqual(inner.dependants.size, 1, "inner")
-        .containsKey(inner.dependants, "Parent", "inner")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 2)
+      .containsKey(model => model.nodes, "Inner", __ => __
+        .areEqual(inner => inner.dependencies.size, 1)
+        .containsKey(inner => inner.dependencies, "Parent")
+        .areEqual(inner => inner.dependants.size, 1)
+        .containsKey(inner => inner.dependants, "Parent")
       )
-      .containsKey(dependencies.nodes, "Parent", "nodes",(parent, __) => __
-        .areEqual(parent.dependencies.size, 1, "parent")
-        .containsKey(parent.dependencies, "Inner", "parent")
-        .areEqual(parent.dependants.size, 1, "parent")
-        .containsKey(parent.dependants, "Inner", "parent")
+      .containsKey(model => model.nodes, "Parent", __ => __
+        .areEqual(parent => parent.dependencies.size, 1)
+        .containsKey(parent => parent.dependencies, "Inner")
+        .areEqual(parent => parent.dependants.size, 1)
+        .containsKey(parent => parent.dependants, "Inner")
       )
-      .countMapIs(dependencies.circularReferences, 2, "circularReferences")
-      .containsKey(dependencies.circularReferences, "Inner", "circularReferences")
-      .containsKey(dependencies.circularReferences, "Parent", "circularReferences")
-      .areEqual(dependencies.sortedNodes.length, 2, "sortedNodes.length")
+      .countMapIs(model => model.circularReferences, 2)
+      .containsKey(model => model.circularReferences, "Inner")
+      .containsKey(model => model.circularReferences, "Parent")
+      .areEqual(model => model.sortedNodes.length, 2)
     );
   });
 });

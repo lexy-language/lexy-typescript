@@ -23,31 +23,31 @@ enum EnumExample
   Married
   CivilPartnership`, true);
 
-    Verify.model(_ => _
-      .countMapIs(dependencies.nodes, 3, "nodes")
-      .containsKey(dependencies.nodes, "TableExample", "nodes", (tableExample, __) => __
-        .areEqual(tableExample.dependencies.size, 1, "tableExample.dependencies")
-        .containsKey(tableExample.dependencies, "EnumExample", "tableExample.dependencies")
-        .areEqual(tableExample.dependants.size, 1, "tableExample.dependants")
-        .containsKey(tableExample.dependants, "FunctionWithEnumDependency", "tableExample.dependants")
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.nodes, 3)
+      .containsKey(model => model.nodes, "TableExample", __ => __
+        .areEqual(tableExample => tableExample.dependencies.size, 1)
+        .containsKey(tableExample => tableExample.dependencies, "EnumExample")
+        .areEqual(tableExample => tableExample.dependants.size, 1)
+        .containsKey(tableExample => tableExample.dependants, "FunctionWithEnumDependency")
       )
-      .containsKey(dependencies.nodes, "EnumExample", "nodes",(enumExample, __) => __
-        .areEqual(enumExample.dependencies.size, 0, "enumExample.dependencies")
-        .areEqual(enumExample.dependants.size, 2, "enumExample.dependants")
-        .containsKey(enumExample.dependants, "TableExample", "enumExample.dependants")
-        .containsKey(enumExample.dependants, "FunctionWithEnumDependency", "enumExample.dependants")
+      .containsKey(model => model.nodes, "EnumExample", __ => __
+        .areEqual(enumExample => enumExample.dependencies.size, 0)
+        .areEqual(enumExample => enumExample.dependants.size, 2)
+        .containsKey(enumExample => enumExample.dependants, "TableExample")
+        .containsKey(enumExample => enumExample.dependants, "FunctionWithEnumDependency")
       )
-      .containsKey(dependencies.nodes, "FunctionWithEnumDependency", "nodes", (functionWithEnumDependency, __) => __
-        .areEqual(functionWithEnumDependency.dependencies.size, 2, "functionWithEnumDependency")
-        .containsKey(functionWithEnumDependency.dependencies, "TableExample", "functionWithEnumDependency")
-        .containsKey(functionWithEnumDependency.dependencies, "EnumExample", "functionWithEnumDependency")
-        .areEqual(functionWithEnumDependency.dependants.size, 0, "functionWithEnumDependency")
+      .containsKey(model => model.nodes, "FunctionWithEnumDependency", __ => __
+        .areEqual(functionWithEnumDependency => functionWithEnumDependency.dependencies.size, 2)
+        .containsKey(functionWithEnumDependency => functionWithEnumDependency.dependencies, "TableExample")
+        .containsKey(functionWithEnumDependency => functionWithEnumDependency.dependencies, "EnumExample")
+        .areEqual(functionWithEnumDependency => functionWithEnumDependency.dependants.size, 0)
       )
-      .countIs(dependencies.sortedNodes, 3, "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeType, "EnumExample", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeType, "TableExample", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 2, nodeType, "FunctionWithEnumDependency", "sortedNodes")
-      .countMapIs(dependencies.circularReferences, 0, "circularReferences")
+      .countIs(model => model.sortedNodes, 3)
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeType, "EnumExample")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeType, "TableExample")
+      .valuePropertyAtEquals(model => model.sortedNodes, 2, nodeType, "FunctionWithEnumDependency")
+      .countMapIs(model => model.circularReferences, 0)
     );
   });
 
@@ -125,20 +125,20 @@ enum EnumExample
   Married
   CivilPartnership`, true);
 
-    Verify.model(_ => _
-      .countIs(dependencies.sortedNodes, 11, "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 0, nodeType, "EnumExample", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 1, nodeType, "NestedType", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 2, nodeType, "TypeExample", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 3, nodeType, "TableExample", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 4, nodeType, "FunctionWithTypeDependency", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 5, nodeType, "FunctionWithEnumDependency", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 6, nodeType, "FunctionWithTableDependency", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 7, nodeType, "FunctionWithFunctionTypeDependency", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 8, nodeType, "FunctionWithFunctionDependency", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 9, nodeType, "ValidateBuiltOrderFunction", "sortedNodes")
-      .valuePropertytAtEquals(dependencies.sortedNodes, 10, nodeType, "ValidateBuiltOrder", "sortedNodes")
-      .countMapIs(dependencies.circularReferences, 0, "")
+    Verify.model(dependencies, _ => _
+      .countIs(model => model.sortedNodes, 11)
+      .valuePropertyAtEquals(model => model.sortedNodes, 0, nodeType, "EnumExample")
+      .valuePropertyAtEquals(model => model.sortedNodes, 1, nodeType, "NestedType")
+      .valuePropertyAtEquals(model => model.sortedNodes, 2, nodeType, "TypeExample")
+      .valuePropertyAtEquals(model => model.sortedNodes, 3, nodeType, "TableExample")
+      .valuePropertyAtEquals(model => model.sortedNodes, 4, nodeType, "FunctionWithTypeDependency")
+      .valuePropertyAtEquals(model => model.sortedNodes, 5, nodeType, "FunctionWithEnumDependency")
+      .valuePropertyAtEquals(model => model.sortedNodes, 6, nodeType, "FunctionWithTableDependency")
+      .valuePropertyAtEquals(model => model.sortedNodes, 7, nodeType, "FunctionWithFunctionTypeDependency")
+      .valuePropertyAtEquals(model => model.sortedNodes, 8, nodeType, "FunctionWithFunctionDependency")
+      .valuePropertyAtEquals(model => model.sortedNodes, 9, nodeType, "ValidateBuiltOrderFunction")
+      .valuePropertyAtEquals(model => model.sortedNodes, 10, nodeType, "ValidateBuiltOrder")
+      .countMapIs(model => model.circularReferences, 0)
     );
   });
 });
