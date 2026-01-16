@@ -7,23 +7,27 @@ import {LexyCodeConstants} from "./javaScript/lexyCodeConstants";
 import Decimal from "decimal.js";
 import {deepCopy} from "../infrastructure/deepCopy";
 import {IdentifierPath} from "../language/identifierPath";
+import {Function as FunctionNode} from "../language/functions/function";
 
 export class ExecutableFunction {
+
   private readonly environment: any;
   private readonly functionReference: Function;
   private readonly logger: ILogger;
+  private readonly functionNode: FunctionNode;
 
-  constructor(environment: any, functionReference: Function, logger: ILogger) {
+  constructor(functionNode: FunctionNode, environment: any, functionReference: Function, logger: ILogger) {
     this.environment = environment;
     this.functionReference = functionReference;
     this.logger = logger;
+    this.functionNode = functionNode;
   }
 
   public run(values: { [key: string]: any } | null = null): FunctionResult {
     const parameters = this.getParameters(values);
     const context = new ExecutionContext(this.logger);
     const results = this.functionReference(this.environment, parameters, context);
-    return new FunctionResult(deepCopy(results), context.entries);
+    return new FunctionResult(this.functionNode, deepCopy(results), context.entries);
   }
 
   private getParameters(values: { [p: string]: any } | null) {
@@ -61,7 +65,8 @@ return ${LexyCodeConstants.environmentVariable}.${generatedType.name}(${LexyCode
     compilationLogger.logDebug(`Execution code: ${code}`)
 
     const functionReference = new Function(LexyCodeConstants.environmentVariable, "parameters", "context", code);
-    return new ExecutableFunction(environment, functionReference, executionLogger);
+    const functionNode = generatedType.node as FunctionNode;
+    return new ExecutableFunction(functionNode, environment, functionReference, executionLogger);
   }
 
   private changeType<T>(value: any): any {

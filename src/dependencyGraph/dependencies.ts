@@ -63,8 +63,6 @@ export class Dependencies {
       return value;
     }
 
-    debugger;
-
     for (const node of this.componentNodes.values) {
       this.processNode(node);
     }

@@ -53,7 +53,7 @@ enum EnumExample
 
   it('complexDependencyGraph', async () => {
     const dependencies = await buildDependencyGraph(
-      `scenario ValidateBuiltOrder
+      `scenario ValidateBuildOrder
   function
     parameters
       TypeExample Example
@@ -72,6 +72,7 @@ function FunctionWithFunctionDependency
     TypeExample Example
   results
     number Result
+    string Message
   ... = FunctionWithTypeDependency(...)
   ... = FunctionWithTableDependency(...)
   ... = FunctionWithEnumDependency(...)
@@ -81,6 +82,7 @@ function FunctionWithFunctionTypeDependency
     TypeExample Example
   results
     number Result
+    string Message
   var functionParametersFill = fill(FunctionWithTypeDependency.Parameters)
   var functionParametersNew = new(FunctionWithTypeDependency.Parameters)
   var tableParameters = new(TableExample.Row)
@@ -91,6 +93,7 @@ function FunctionWithTypeDependency
     TypeExample Example
   results
     number Result
+    string Message
   Result = Example.Nested.Result
 
 function FunctionWithTableDependency
@@ -98,6 +101,7 @@ function FunctionWithTableDependency
     TypeExample Example
   results
     number Result
+    string Message
   Result = TableExample.LookUp(EnumExample.Single, TableExample.Example, TableExample.Value)
 
 function FunctionWithEnumDependency
@@ -106,6 +110,7 @@ function FunctionWithEnumDependency
     TypeExample Example
   results
     number Result
+    string Message
   Result = 666
 
 type NestedType
@@ -136,8 +141,8 @@ enum EnumExample
       .valuePropertyAtEquals(model => model.sortedNodes, 6, nodeType, "FunctionWithTableDependency")
       .valuePropertyAtEquals(model => model.sortedNodes, 7, nodeType, "FunctionWithFunctionTypeDependency")
       .valuePropertyAtEquals(model => model.sortedNodes, 8, nodeType, "FunctionWithFunctionDependency")
-      .valuePropertyAtEquals(model => model.sortedNodes, 9, nodeType, "ValidateBuiltOrderFunction")
-      .valuePropertyAtEquals(model => model.sortedNodes, 10, nodeType, "ValidateBuiltOrder")
+      .valuePropertyAtEquals(model => model.sortedNodes, 9, nodeType, "ValidateBuildOrderFunction")
+      .valuePropertyAtEquals(model => model.sortedNodes, 10, nodeType, "ValidateBuildOrder")
       .countMapIs(model => model.circularReferences, 0)
     );
   });

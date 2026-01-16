@@ -98,7 +98,9 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
   public override deriveType(context: IValidationContext): VariableType | null {
     const functionNode = context.componentNodes.getFunction(this.functionName);
     if (functionNode == null) return null;
-    return functionNode.getResultsType();
+    return functionNode.results.variables.length == 1
+         ? functionNode.results.variables[0].variableType
+         : functionNode.getResultsType();
   }
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {

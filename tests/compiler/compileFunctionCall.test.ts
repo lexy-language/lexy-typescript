@@ -32,7 +32,9 @@ function Calling
     number Value
   results
     number Result
-  Result = Value + 7 
+    string Message
+  Result = Value + 7
+  Message = "Life is good" 
 
 function Caller
   parameters
@@ -61,8 +63,7 @@ function Caller
     number Value
   results
     number Result
-  var result = Calling(...)
-  Result = result.Result`);
+  Result = Calling(...)`);
 
     const result = script.run({"Value": 2});
     expect(result.number(`Result`)).toEqual(9);
@@ -75,7 +76,9 @@ function Calling
     number Value
   results
     number Result
-  Result = Value + 7 
+    string Message
+  Result = Value + 7
+  Message = "Life is good" 
 
 function Caller
   parameters
@@ -83,9 +86,6 @@ function Caller
   results
     number Result
   ... = Calling(...)`);
-
-
-    "let result = __environment.function__Calling.__inline(function() {var __result = new __environment.function__Calling.__Parameters();__result.Value = __parameters.Value;return __result; }()__context);"
 
     const result = script.run({"Value": 2});
     expect(result.number(`Result`)).toEqual(9);
