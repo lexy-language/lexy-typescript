@@ -180,7 +180,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     let tokenName = NodeName.parse(context);
     if (tokenName == null || tokenName.name == null) return this;
 
-    this.enumValue = EnumDefinition.parse(tokenName.name, reference);
+    this.enumValue = EnumDefinition.parse(tokenName.name, true, reference);
     context.logger.setCurrentNode(this.enumValue);
     return this.enumValue;
   }

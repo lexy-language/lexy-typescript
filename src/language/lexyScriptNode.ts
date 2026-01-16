@@ -21,6 +21,7 @@ import {TypeDefinition} from "./types/typeDefinition";
 import {DuplicateChecker} from "./duplicateChecker";
 import {where} from "../infrastructure/arrayFunctions";
 import {NodeType} from "./nodeType";
+import {asNestedNode} from "./nestedNode";
 
 export function instanceOfLexyScriptNode(object: any) {
   return object?.nodeType == NodeType.LexyScriptNode;
@@ -83,7 +84,7 @@ export class LexyScriptNode extends ComponentNode {
       case Keywords.Function:
         return Function.create(tokenName.name, false, reference, this.expressionFactory);
       case Keywords.EnumKeyword:
-        return EnumDefinition.parse(tokenName.name, reference);
+        return EnumDefinition.parse(tokenName.name, false, reference);
       case Keywords.ScenarioKeyword:
         return Scenario.parse(tokenName.name, reference);
       case Keywords.TableKeyword:
@@ -122,6 +123,6 @@ export class LexyScriptNode extends ComponentNode {
   }
 
   private withoutScenarioInlineNode(sortedNodes: readonly IComponentNode[]) {
-    return sortedNodes.filter(where => asFunction(where)?.nested != true);
+    return sortedNodes.filter(where => asNestedNode(where)?.nested != true);
   }
 }

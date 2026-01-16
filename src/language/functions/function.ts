@@ -6,6 +6,7 @@ import type {IParsableNode} from "../parsableNode";
 import type {IValidationContext} from "../../parser/validationContext";
 import type {IComponentNodeList} from "../componentNodeList";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
+import type {INestedNode} from "../nestedNode";
 
 import {ComponentNode} from "../componentNode";
 import {FunctionName} from "./functionName";
@@ -40,7 +41,7 @@ export function asFunction(object: any): Function | null {
   return instanceOfFunction(object) ? object as Function : null;
 }
 
-export class Function extends ComponentNode implements IHasNodeDependencies {
+export class Function extends ComponentNode implements IHasNodeDependencies, INestedNode {
 
   private readonly factory: IExpressionFactory;
 
@@ -53,6 +54,8 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
 
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.Function;
+  public readonly isNestedNode = true;
+  public readonly nested: boolean
 
   public readonly name: FunctionName;
 
@@ -67,8 +70,6 @@ export class Function extends ComponentNode implements IHasNodeDependencies {
   public get code(): FunctionCode {
     return this.codeValue;
   };
-
-  public readonly nested: boolean
 
   public override get nodeName() {
     return this.name.value;

@@ -2,6 +2,7 @@ import type {IParsableNode} from "../parsableNode";
 import type {IParseLineContext} from "../../parser/ParseLineContext";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/validationContext";
+import type {INestedNode} from "../nestedNode";
 
 import {ComponentNode} from "../componentNode";
 import {EnumName} from "./enumName";
@@ -19,24 +20,28 @@ export function asEnumDefinition(object: any): EnumDefinition | null {
   return instanceOfEnumDefinition(object) ? object as EnumDefinition : null;
 }
 
-export class EnumDefinition extends ComponentNode {
+export class EnumDefinition extends ComponentNode implements INestedNode {
 
   public name: EnumName;
 
-  public nodeType = NodeType.EnumDefinition;
+  public readonly nodeType = NodeType.EnumDefinition;
+  public readonly isNestedNode = true;
+  public readonly nested;
+
   public readonly members: Array<EnumMember> = [];
 
   public override get nodeName() {
     return this.name.value;
   }
 
-  constructor(name: string, reference: SourceReference) {
+  constructor(name: string, nested: boolean, reference: SourceReference) {
     super(reference);
     this.name = EnumName.parseName(name, reference);
+    this.nested = nested;
   }
 
-  public static parse(name: string, reference: SourceReference): EnumDefinition {
-    return new EnumDefinition(name, reference);
+  public static parse(name: string, nested: boolean, reference: SourceReference): EnumDefinition {
+    return new EnumDefinition(name, nested, reference);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {

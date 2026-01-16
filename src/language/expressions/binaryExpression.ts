@@ -66,7 +66,7 @@ export class BinaryExpression extends Expression {
   ];
 
   static EnumType() {
-    return new EnumType("*", new EnumDefinition("*", new SourceReference(new SourceFile("*"), 1, 1)));
+    return new EnumType("*", new EnumDefinition("*", false, new SourceReference(new SourceFile("*"), 1, 1)));
   }
 
   private static AllowedOperationCombinations: Array<OperatorCombination> = [
