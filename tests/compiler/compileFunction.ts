@@ -5,7 +5,7 @@ import {LexyCompiler} from "../../src";
 import {ExecutableFunction} from "../../src/generation/executableFunction";
 import {LoggingConfiguration} from "../loggingConfiguration";
 import {Libraries} from "../../src/functionLibraries/libraries";
-import {asScenario} from "../../src/language/scenarios/scenario";
+import {asScenario, instanceOfScenario} from "../../src/language/scenarios/scenario";
 
 export function createCompiler(libraries: Libraries) {
   return new LexyCompiler(LoggingConfiguration.getCompilerLogger(), LoggingConfiguration.getExecutionLogger(), libraries);
@@ -22,10 +22,10 @@ export async function compileFunction(code: string, libraries: Libraries = null)
   logger.assertNoErrors();
 
   const array = nodes.values;
-  const node = firstOrDefault(array);
+  const node = firstOrDefault(array, where => instanceOfFunction(where) || instanceOfScenario(where));
   const functionNode = instanceOfFunction(node) ? asFunction(node) : asScenario(node)?.functionNode;
   if (functionNode == null) {
-    throw new Error("No function found.")
+    throw new Error("No function found: '" + node?.nodeType + "'");
   }
 
   const compiler = createCompiler(libraries);
