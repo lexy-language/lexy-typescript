@@ -42,15 +42,15 @@ export class ComponentNodeList implements IComponentNodeList {
     return this.valuesList;
   }
 
+  public get length(): number {
+    return this.values.length;
+  }
+
   constructor(values: Array<IComponentNode> | null = null) {
     this.valuesList = values != null ? values : [];
     for (const valuesKey in this.values) {
       this.index.set(valuesKey, this.values[valuesKey]);
     }
-  }
-
-  public get length(): number {
-    return this.values.length;
   }
 
   public add(componentNode: IComponentNode): void {

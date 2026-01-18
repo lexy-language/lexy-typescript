@@ -27,7 +27,7 @@ export class ExecutableFunction {
     const parameters = this.getParameters(values);
     const context = new ExecutionContext(this.logger);
     const results = this.functionReference(this.environment, parameters, context);
-    return new FunctionResult(this.functionNode, deepCopy(results), context.entries);
+    return new FunctionResult(deepCopy(results), context.entries);
   }
 
   private getParameters(values: { [p: string]: any } | null) {

@@ -21,6 +21,8 @@ import {Line} from "./line";
 import {ILibraries} from "../functionLibraries/libraries";
 import {Assert} from "../infrastructure/assert";
 import {asComponentNode} from "../language/componentNode";
+import {NodesWalker} from "../language/nodesWalker";
+import {INode, INodeWithParent} from "../language/node";
 
 export interface ILexyParser {
   parseFile(fileName: string, options: ParseOptions | null): Promise<ParserResult>;
@@ -177,6 +179,7 @@ export class LexyParser implements ILexyParser {
   private validateNodesTree(context: IParserContext): void {
     let visitor = new TrackLoggingCurrentNodeVisitor(context.logger);
     let validationContext = new ValidationContext(context.logger, context.nodes, visitor, context.libraries);
+    this.setParents(context);
     context.rootNode.validateTree(validationContext);
   }
 
@@ -218,5 +221,12 @@ export class LexyParser implements ILexyParser {
     }
 
     return node;
+  }
+
+  private setParents(context: IParserContext) {
+    NodesWalker.walkWithParent(context.rootNode, (node: INode, parent: INode | null) => {
+      const nodeWithParent = node as unknown as INodeWithParent;
+      nodeWithParent.setParent(parent);
+    }, null);
   }
 }

@@ -41,14 +41,6 @@ function createFunction(functionNode: Function, codeWriter: CodeWriter) {
   return new GeneratedType(GeneratedTypeKind.Function, functionNode,  name, codeWriter.toString());
 }
 
-function getResultsVariable(functionNode: Function) {
-
-  if (functionNode.results.variables.length != 1) return LexyCodeConstants.resultsVariable;
-
-  let variableDefinition = functionNode.results.variables[0];
-  return `${LexyCodeConstants.resultsVariable}.${variableDefinition.name}`;
-}
-
 function renderRunFunction(functionNode: Function, codeWriter: CodeWriter) {
 
   codeWriter.openScope(`function ${LexyCodeConstants.runMethod}(${LexyCodeConstants.parameterVariable}, ${LexyCodeConstants.contextVariable})`);
@@ -65,7 +57,7 @@ function renderRunFunction(functionNode: Function, codeWriter: CodeWriter) {
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Results",  ${functionNode.results?.reference.lineNumber}, ${LexyCodeConstants.resultsVariable});`)
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.closeScope();`)
 
-  codeWriter.writeLine(`return ${(getResultsVariable(functionNode))};`);
+  codeWriter.writeLine(`return ${LexyCodeConstants.resultsVariable};`);
 
   codeWriter.closeScope();
   codeWriter.writeLine();

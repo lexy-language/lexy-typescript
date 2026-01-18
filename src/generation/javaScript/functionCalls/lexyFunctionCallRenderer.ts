@@ -24,19 +24,25 @@ export class LexyFunctionCallRenderer {
 
   public static render(expression: LexyFunctionCallExpression, codeWriter: CodeWriter) {
 
-    return LexyFunctionCallRenderer.renderRunFunction(
+    const state = Assert.notNull(expression.state, "expression.state");
+
+    LexyFunctionCallRenderer.renderRunFunction(
       expression.functionName,
       expression.args,
-      expression.parametersTypes,
-      expression.parametersMapping,
+      state.parametersTypes,
+      state.parametersMapping,
       codeWriter);
+
+    if (expression.state?.returnSingleResultsVariablesName) {
+      codeWriter.write("." + expression.state.returnSingleResultsVariablesName);
+    }
   }
 
-  public static renderRunFunction(functionName: string,
-                                  args: ReadonlyArray<Expression>,
-                                  parametersTypes: ReadonlyArray<VariableType> | null,
-                                  mapping: VariablesMapping | null,
-                                  codeWriter: CodeWriter) {
+  private static renderRunFunction(functionName: string,
+                                   args: ReadonlyArray<Expression>,
+                                   parametersTypes: ReadonlyArray<VariableType> | null,
+                                   mapping: VariablesMapping | null,
+                                   codeWriter: CodeWriter) {
 
     codeWriter.writeEnvironment("." + functionClassName(functionName));
 
@@ -72,7 +78,6 @@ export class LexyFunctionCallRenderer {
     return generatedType.source != GeneratedTypeSource.FunctionParameters
         && generatedType.node.nodeName != functionName;
   }
-
 
   private static renderMappedParametersObject(mappings: VariablesMapping, codeWriter: CodeWriter) {
 

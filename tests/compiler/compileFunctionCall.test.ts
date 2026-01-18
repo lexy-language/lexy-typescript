@@ -34,7 +34,6 @@ function Calling
     number Result
     string Message
   Result = Value + 7
-  Message = "Life is good" 
 
 function Caller
   parameters
@@ -78,7 +77,6 @@ function Calling
     number Result
     string Message
   Result = Value + 7
-  Message = "Life is good" 
 
 function Caller
   parameters

@@ -72,7 +72,6 @@ function FunctionWithFunctionDependency
     TypeExample Example
   results
     number Result
-    string Message
   ... = FunctionWithTypeDependency(...)
   ... = FunctionWithTableDependency(...)
   ... = FunctionWithEnumDependency(...)
@@ -82,7 +81,6 @@ function FunctionWithFunctionTypeDependency
     TypeExample Example
   results
     number Result
-    string Message
   var functionParametersFill = fill(FunctionWithTypeDependency.Parameters)
   var functionParametersNew = new(FunctionWithTypeDependency.Parameters)
   var tableParameters = new(TableExample.Row)
@@ -93,7 +91,6 @@ function FunctionWithTypeDependency
     TypeExample Example
   results
     number Result
-    string Message
   Result = Example.Nested.Result
 
 function FunctionWithTableDependency
@@ -101,7 +98,6 @@ function FunctionWithTableDependency
     TypeExample Example
   results
     number Result
-    string Message
   Result = TableExample.LookUp(EnumExample.Single, TableExample.Example, TableExample.Value)
 
 function FunctionWithEnumDependency
@@ -110,7 +106,6 @@ function FunctionWithEnumDependency
     TypeExample Example
   results
     number Result
-    string Message
   Result = 666
 
 type NestedType

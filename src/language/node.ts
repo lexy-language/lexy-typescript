@@ -3,19 +3,26 @@ import type {NodeType} from "./nodeType";
 
 import {SourceReference} from "../parser/sourceReference";
 
+export interface INodeWithParent {
+  setParent(parent: INode | null): void;
+}
+
 export interface INode {
 
   nodeType: NodeType;
-  reference: SourceReference
+  reference: SourceReference;
+  parent: INode | null;
 
   validateTree(context: IValidationContext): void
 
   getChildren(): readonly INode[];
 }
 
-export abstract class Node implements INode {
+export abstract class Node implements INode, INodeWithParent {
 
   private readonly referenceValue: SourceReference;
+
+  public parent: INode | null = null;
 
   public get reference(): SourceReference {
     return this.referenceValue;
@@ -49,4 +56,8 @@ export abstract class Node implements INode {
   }
 
   protected abstract validate(context: IValidationContext): void;
+
+  setParent(parent: INode | null) {
+    this.parent = parent;
+  }
 }

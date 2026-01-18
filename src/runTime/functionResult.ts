@@ -7,7 +7,6 @@ export type ResultsType = { [key: string]: ResultsValue };
 
 export class FunctionResult {
 
-  private readonly functionNode: Function;
   private readonly valueObject: ResultsType;
   private readonly loggingValue: ReadonlyArray<ExecutionLogEntry>;
 
@@ -19,8 +18,7 @@ export class FunctionResult {
     return this.loggingValue;
   }
 
-  constructor(functionNode: Function, valueObject: ResultsType, logging: ReadonlyArray<ExecutionLogEntry>) {
-    this.functionNode = functionNode;
+  constructor(valueObject: ResultsType, logging: ReadonlyArray<ExecutionLogEntry>) {
     this.valueObject = valueObject;
     this.loggingValue = logging;
   }
@@ -58,9 +56,7 @@ export class FunctionResult {
   public getValue(reference: IdentifierPath, validationResult: Array<string>): any {
 
     let currentReference = reference;
-    let currentValue: ResultsValue = this.functionNode.results.variables.length == 1
-      ? this.valueObject
-      : this.valueObject[reference.rootIdentifier];
+    let currentValue: ResultsValue = this.valueObject[reference.rootIdentifier];
 
     while (currentReference.hasChildIdentifiers) {
       currentReference = currentReference.childrenReference();
