@@ -12,8 +12,8 @@ import {TokenCharacter} from "./tokenCharacter";
 import {TokenValues} from "./tokenValues";
 import {formatLine} from "../../formatting/formatLine";
 import {Character, isDigit} from "./character";
-import {VariableType} from "../../language/variableTypes/variableType";
-import {PrimitiveType} from "../../language/variableTypes/primitiveType";
+import {Type} from "../../language/typeSystem/type";
+import {ValueType} from "../../language/typeSystem/valueType";
 import {TokenType} from "./tokenType";
 
 export function instanceOfDateTimeLiteral(object: any): boolean {
@@ -57,8 +57,8 @@ export class DateTimeLiteralToken extends ParsableToken implements ILiteralToken
     return this.dateTimeValue as object;
   }
 
-  public deriveType(context: IValidationContext): VariableType {
-    return PrimitiveType.date;
+  public deriveType(context: IValidationContext): Type {
+    return ValueType.date;
   }
 
   public parse(character: TokenCharacter): ParseTokenResult {

@@ -75,19 +75,19 @@ ${code}`)
     switch (generatedType.kind) {
       case GeneratedTypeKind.Function: {
         const executable = ExecutableFunction.create(this.codeEnvironment, generatedType, this.compilationLogger, this.executionLogger);
-        this.executables[generatedType.node.nodeName] = executable;
+        this.executables[generatedType.node.name] = executable;
         break;
       }
       case GeneratedTypeKind.Enum: {
-        this.enums[generatedType.node.nodeName] = generatedType;
+        this.enums[generatedType.node.name] = generatedType;
         break;
       }
       case GeneratedTypeKind.Table: {
-        this.tables[generatedType.node.nodeName] = generatedType;
+        this.tables[generatedType.node.name] = generatedType;
         break;
       }
       case GeneratedTypeKind.Type: {
-        this.types[generatedType.node.nodeName] = generatedType;
+        this.types[generatedType.node.name] = generatedType;
         break;
       }
       default: {

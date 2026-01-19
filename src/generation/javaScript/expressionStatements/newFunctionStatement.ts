@@ -21,7 +21,7 @@ export class NewFunctionExpressionStatement {
   }
 
   public static render(assignmentExpression: VariableDeclarationExpression, codeWriter: CodeWriter) {
-    if (assignmentExpression.type.variableType == null) throw new Error(`assignmentExpression.type.variableType should not be null`);
+    if (assignmentExpression.typeDeclaration.type == null) throw new Error(`assignmentExpression.type.type should not be null`);
 
     const functionCallExpression = asFunctionCallExpression(assignmentExpression.assignment);
     if (functionCallExpression == null) throw new Error(`assignmentExpression.assignment should be FunctionCallExpression`);
@@ -29,9 +29,9 @@ export class NewFunctionExpressionStatement {
     const newFunctionExpression = asNewFunctionExpression(functionCallExpression)
     if (newFunctionExpression == null) throw new Error(`functionCallExpression.FunctionCallExpression should be NewFunctionExpression`);
 
-    const type = translateType(assignmentExpression.type.variableType);
+    const type = translateType(assignmentExpression.typeDeclaration.type);
     codeWriter.write("const " + assignmentExpression.name + " = new ");
-    codeWriter.writeEnvironment(`.${translateType(assignmentExpression.type.variableType)}`)
+    codeWriter.writeEnvironment(`.${translateType(assignmentExpression.typeDeclaration.type)}`)
     codeWriter.endLine("();")
   }
 }

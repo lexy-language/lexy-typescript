@@ -9,8 +9,8 @@ import {MemberAccessLiteralToken} from "../../../../parser/tokens/memberAccessLi
 import {Expression} from "../../expression";
 import {SourceReference} from "../../../../parser/sourceReference";
 import {asMemberAccessExpression} from "../../memberAccessExpression";
-import {asGeneratedType, GeneratedType} from "../../../variableTypes/generatedType";
-import {VariableType} from "../../../variableTypes/variableType";
+import {asGeneratedType, GeneratedType} from "../../../typeSystem/objects/generatedType";
+import {Type} from "../../../typeSystem/type";
 import {Function} from "../../../functions/function";
 import {NodeType} from "../../../nodeType";
 import {Assert} from "../../../../infrastructure/assert";
@@ -48,6 +48,8 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
   private get functionHelp() {
     return `${FillParametersFunctionExpression.functionName} expects 1 argument (Function.Parameters)`;
   }
+
+  public readonly name: string = FillParametersFunctionExpression.functionName;
 
   constructor(valueExpression: Expression, source: ExpressionSource) {
     super(source);
@@ -93,11 +95,11 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
       let variable = context.variableContext.getVariable(member.name);
       if (variable == null) continue;
 
-      if (variable.variableType == null || !variable.variableType.equals(member.type)) {
+      if (variable.type == null || !variable.type.equals(member.type)) {
         context.logger.fail(reference,
-          `Invalid parameter mapping. Variable '${member.name}' of type '${variable.variableType}' can't be mapped to parameter '${member.name}' of type '${member.type}'.`);
+          `Invalid parameter mapping. Variable '${member.name}' of type '${variable.type}' can't be mapped to parameter '${member.name}' of type '${member.type}'.`);
       } else {
-        mapping.push(new Mapping(member.name, variable.variableType, variable.variableSource));
+        mapping.push(new Mapping(member.name, variable.type, variable.variableSource));
       }
     }
 
@@ -109,7 +111,7 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
     return new VariablesMapping(generatedType, mapping);
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
 
     if (this.typeLiteralToken == undefined) return null;
     let functionValue = context.componentNodes.getFunction(this.typeLiteralToken.parent);

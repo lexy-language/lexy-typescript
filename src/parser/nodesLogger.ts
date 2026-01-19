@@ -20,7 +20,7 @@ export class NodesLogger {
      } else {
        const componentNode = this.asComponentNode(node)
        if (componentNode != null) {
-         this.builder.push(`${componentNode.nodeType}: ${componentNode.nodeName}`);
+         this.builder.push(`${componentNode.nodeType}: ${componentNode.name}`);
        } else {
          this.builder.push(node.nodeType);
        }

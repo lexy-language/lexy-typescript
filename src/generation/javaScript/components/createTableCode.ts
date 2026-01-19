@@ -11,7 +11,7 @@ export function createTableCode(table: Table): GeneratedType {
 
   if (table == null) throw new Error(`Component token not Table`);
 
-  const className = tableClassName(table.name.value);
+  const className = tableClassName(table.name);
 
   const codeWriter = new CodeWriter(renderExpression);
   codeWriter.openScope(`function ${className}()`);
@@ -21,7 +21,7 @@ export function createTableCode(table: Table): GeneratedType {
 
   codeWriter.openScope(`return`)
   codeWriter.writeLine(`${LexyCodeConstants.rowType}: ${LexyCodeConstants.rowType},`)
-  codeWriter.writeLine(`Count: ${LexyCodeConstants.valuesVariable}.length,`)
+  codeWriter.writeLine(`${Table.rowsCountName}: ${LexyCodeConstants.valuesVariable}.length,`)
   codeWriter.writeLine(`__values: ${LexyCodeConstants.valuesVariable}`)
   codeWriter.closeScope(";")
 
@@ -36,7 +36,7 @@ function renderRowClass(rowName: string, table: Table, codeWriter: CodeWriter) {
   codeWriter.openScope("class " + rowName);
   for (const column of header.columns) {
     codeWriter.startLine(column.name + " = ")
-    renderTypeDefaultExpression(column.type, codeWriter);
+    renderTypeDefaultExpression(column.typeDeclaration, codeWriter);
     codeWriter.endLine(";")
   }
   codeWriter.startLine("constructor(")

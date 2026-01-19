@@ -136,8 +136,21 @@ export function take<TItem>(array: ReadonlyArray<TItem>, amount: number) {
 export function castType<TItem>(array: ReadonlyArray<TItem | null>) {
   const results: Array<TItem> = [];
   for (const item of array) {
-    if (item == null) return null;
-    results.push(item);
+    if (item != null) {
+      results.push(item);
+    }
+  }
+  return results;
+}
+
+
+export function ofType<TItem>(asType: (value: any) => TItem | null, array: ReadonlyArray<any>): ReadonlyArray<TItem> {
+  const results: Array<TItem> = [];
+  for (const item of array) {
+    const specific = asType(item);
+    if (specific != null) {
+      results.push(specific);
+    }
   }
   return results;
 }

@@ -1,4 +1,4 @@
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {FunctionSignature} from "./functionSignature";
 
 type ValidateFunctionArgumentsFailed = {
@@ -13,15 +13,15 @@ export function newValidateFunctionArgumentsFailed(): ValidateFunctionArgumentsF
 
 type ValidateFunctionArgumentsSuccessAutoMap = {
   state: "success";
-  parameterType: VariableType | null;
+  parameterType: Type | null;
   autoMap: boolean;
 }
 
-export function newValidateFunctionArgumentsSuccessAutoMap(parameterType: VariableType): ValidateFunctionArgumentsSuccessAutoMap {
+export function newValidateFunctionArgumentsSuccessAutoMap(parameterType: Type): ValidateFunctionArgumentsSuccessAutoMap {
   return {
     state: "success",
     autoMap: true,
-    parameterType: parameterType,
+    parameterType: parameterType
   } as const;
 }
 

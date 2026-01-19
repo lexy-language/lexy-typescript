@@ -3,7 +3,7 @@ import type {IValidationContext} from "../../../parser/validationContext";
 import {TableFunction} from "./tableFunction";
 import {Table} from "../../tables/table";
 import {Expression} from "../../expressions/expression";
-import {VariableType} from "../variableType";
+import {Type} from "../type";
 import {asMemberAccessExpression, instanceOfMemberAccessExpression} from "../../expressions/memberAccessExpression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {
@@ -48,10 +48,10 @@ export class LookUpFunction extends TableFunction {
     }
 
     constructor(table: Table){
-        super(table);
+        super(LookUpFunction.functionName, table);
     }
 
-    public override getResultsType(args: ReadonlyArray<Expression>): VariableType | null {
+    public override getResultsType(args: ReadonlyArray<Expression>): Type | null {
 
         const overloadArguments = LookUpFunction.getArgumentColumns(null, args, null);
         if (!overloadArguments) return null;
@@ -61,11 +61,12 @@ export class LookUpFunction extends TableFunction {
         if (columnExpression == null) return null;
 
         const column = this.table.header?.get(columnExpression.identifierPath);
-        return column ? column.type.variableType : null;
+        return column ? column.typeDeclaration.type : null;
     }
 
     public override validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>,
         reference: SourceReference): ValidateMemberFunctionArgumentsResult {
+
         if (!this.validateTable(context, reference)) return newValidateMemberFunctionArgumentsFailed();
 
         const overloadArguments = LookUpFunction.getArgumentColumns(context, args, reference);
@@ -84,7 +85,7 @@ export class LookUpFunction extends TableFunction {
         const discriminatorExpression = overloadArguments.discriminator != null ? args[overloadArguments.discriminator] : null;
 
         const result = new LookUpFunctionCall(
-            this.table.name.value,
+            this.table.name,
             args[overloadArguments.lookUpValue],
             discriminatorExpression,
             resultColumnHeader.name,

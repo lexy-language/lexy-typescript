@@ -12,7 +12,7 @@ import {SourceReference} from "../../parser/sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 
 export function instanceOfElseExpression(object: any): object is ElseExpression {
@@ -79,7 +79,7 @@ export class ElseExpression extends Expression implements IParsableNode, IChildE
   protected override validate(context: IValidationContext): void {
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     return null;
   }
 }

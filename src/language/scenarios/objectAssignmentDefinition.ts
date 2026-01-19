@@ -9,8 +9,8 @@ import {SourceReference} from "../../parser/sourceReference";
 import {instanceOfParsableNode, IParsableNode, ParsableNode} from "../parsableNode";
 import {AssignmentDefinition} from "./assignmentDefinition";
 import {NodeType} from "../nodeType";
-import {instanceOfGeneratedType} from "../variableTypes/generatedType";
-import {instanceOfDeclaredType} from "../variableTypes/declaredType";
+import {instanceOfGeneratedType} from "../typeSystem/objects/generatedType";
+import {instanceOfDeclaredType} from "../typeSystem/objects/declaredType";
 
 export function instanceOfObjectAssignmentDefinition(object: any): object is ObjectAssignmentDefinition {
   return object?.nodeType == NodeType.ObjectAssignmentDefinition;
@@ -56,13 +56,13 @@ export class ObjectAssignmentDefinition extends ParsableNode implements IAssignm
   }
 
   protected override validate(context: IValidationContext): void {
-    if (!context.variableContext.containsPath(this.variable, context)) {
+    if (!context.variableContext.containsPath(this.variable)) {
       context.logger.fail(this.reference, `Variable '${this.variable}' not found.`);
     }
 
-    const variableType = context.variableContext.getVariableTypeByPath(this.variable, context);
-    if (!instanceOfDeclaredType(variableType) && !instanceOfGeneratedType(variableType)) {
-      context.logger.fail(this.reference, `Variable '${this.variable}' without assignment should be a object type, but is ${variableType}.`);
+    const type = context.variableContext.getTypeByPath(this.variable);
+    if (!instanceOfDeclaredType(type) && !instanceOfGeneratedType(type)) {
+      context.logger.fail(this.reference, `Variable '${this.variable}' without assignment should be a object type, but is ${type}.`);
     }
   }
 

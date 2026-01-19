@@ -11,20 +11,20 @@ import {
   validateQuotedLiteralExpression
 } from "./expressionTestExtensions";
 import {
-  asObjectVariableTypeDeclaration,
-  ObjectVariableTypeDeclaration
-} from "../../../src/language/variableTypes/declarations/objectVariableTypeDeclaration";
+  asObjectTypeDeclaration,
+  ObjectTypeDeclaration
+} from "../../../src/language/typeSystem/declarations/objectTypeDeclaration";
 import {
-  asPrimitiveVariableTypeDeclaration,
-  PrimitiveVariableTypeDeclaration
-} from "../../../src/language/variableTypes/declarations/primitiveVariableTypeDeclaration";
+  asValueTypeDeclaration,
+  ValueTypeDeclaration
+} from "../../../src/language/typeSystem/declarations/valueTypeDeclaration";
 
 describe('VariableDeclaration', () => {
   it('number', async () => {
     let expression = parseExpression(`number temp`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`number`));
+      validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`number`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       expect(variableDeclarationExpression.assignment).toBeNull();
     });
@@ -33,8 +33,8 @@ describe('VariableDeclaration', () => {
   it('numberWithDefaultValue', async () => {
     let expression = parseExpression(`number temp = 123.45`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`number`));
+      validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`number`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       validateNumericLiteralExpression(variableDeclarationExpression.assignment, 123.45);
     });
@@ -43,8 +43,8 @@ describe('VariableDeclaration', () => {
   it('string', async () => {
     let expression = parseExpression(`string temp`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`string`));
+      validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`string`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       expect(variableDeclarationExpression.assignment).toBeNull();
     });
@@ -53,8 +53,8 @@ describe('VariableDeclaration', () => {
   it('stringWithDefaultValue', async () => {
     let expression = parseExpression(`string temp = "abc"`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`string`));
+      validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`string`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       validateQuotedLiteralExpression(variableDeclarationExpression.assignment, `abc`);
     });
@@ -64,8 +64,8 @@ describe('VariableDeclaration', () => {
   it('boolean', async () => {
     let expression = parseExpression(`boolean temp`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`boolean`));
+      validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`boolean`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       expect(variableDeclarationExpression.assignment).toBeNull();
     });
@@ -74,8 +74,8 @@ describe('VariableDeclaration', () => {
   it('booleanWithDefaultValue', async () => {
     let expression = parseExpression(`boolean temp = true`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`boolean`));
+      validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`boolean`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       validateBooleanLiteralExpression(variableDeclarationExpression.assignment, true);
     });
@@ -84,8 +84,8 @@ describe('VariableDeclaration', () => {
   it('dateTime', async () => {
     let expression = parseExpression(`date temp`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`date`));
+      validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`date`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       expect(variableDeclarationExpression.assignment).toBeNull();
     });
@@ -94,8 +94,8 @@ describe('VariableDeclaration', () => {
   it('dateTimeWithDefaultValue', async () => {
     let expression = parseExpression(`date temp = d"2024-12-16T16:51:12"`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe("date"));
+      validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe("date"));
       expect(variableDeclarationExpression.name).toBe("temp");
       validateDateTimeLiteralExpression(variableDeclarationExpression.assignment, "2024-12-16T16:51:12");
     });
@@ -104,8 +104,8 @@ describe('VariableDeclaration', () => {
   it('declaredType', async () => {
     let expression = parseExpression(`Custom temp`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<ObjectVariableTypeDeclaration>(asObjectVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`Custom`));
+      validateOfType<ObjectTypeDeclaration>(asObjectTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`Custom`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       expect(variableDeclarationExpression.assignment).toBeNull();
     });
@@ -114,8 +114,8 @@ describe('VariableDeclaration', () => {
   it('declaredTypeWithDefault', async () => {
     let expression = parseExpression(`Custom temp = Custom.First`);
     validateOfType<VariableDeclarationExpression>(asVariableDeclarationExpression, expression, variableDeclarationExpression => {
-      validateOfType<ObjectVariableTypeDeclaration>(asObjectVariableTypeDeclaration, variableDeclarationExpression.type, type =>
-        expect(type.type).toBe(`Custom`));
+      validateOfType<ObjectTypeDeclaration>(asObjectTypeDeclaration, variableDeclarationExpression.typeDeclaration, type =>
+        expect(type.typeName).toBe(`Custom`));
       expect(variableDeclarationExpression.name).toBe(`temp`);
       validateMemberAccessExpression(variableDeclarationExpression.assignment, `Custom.First`);
     });

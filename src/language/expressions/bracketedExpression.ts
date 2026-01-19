@@ -10,7 +10,7 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
 
@@ -87,7 +87,7 @@ export class BracketedExpression extends Expression {
   protected override validate(context: IValidationContext): void {
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     return this.expression.deriveType(context);
   }
 }

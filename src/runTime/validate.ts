@@ -4,8 +4,8 @@ export class Validate {
   public static number(name: string, value: any, optional: boolean, validationErrors: Array<string>) {
     if (this.isMissing(name, value, 'number', optional, validationErrors)) return;
 
-    if (toString.call(value) !== '[object Decimal]' && !(value instanceof Decimal)) {
-      validationErrors.push(`'${name}' should have a 'number' value. Invalid type: ${toString.call(value)}. Use decimal.js.`)
+    if (value.toString() !== '[object Decimal]' && !(value instanceof Decimal)) {
+      validationErrors.push(`'${name}' should have a 'number' value. Invalid type: ${value.toString()}. Use decimal.js.`)
     } else if (value.isNaN() || !value.isFinite()) {
       validationErrors.push(`'${name}' should have a 'number' value. Invalid number value: '${value}'`)
     }
@@ -15,7 +15,7 @@ export class Validate {
     if (this.isMissing(name, value, 'string', optional, validationErrors)) return;
 
     if (typeof value !== 'string' && !(value instanceof String)) {
-      validationErrors.push(`'${name}' should have a 'string' value. Invalid type: '${toString.call(value)}'`)
+      validationErrors.push(`'${name}' should have a 'string' value. Invalid type: '${value.toString()}'`)
     }
   }
 
@@ -23,7 +23,7 @@ export class Validate {
     if (this.isMissing(name, value, 'date', optional, validationErrors)) return;
 
     if (!(value instanceof Date)) {
-      validationErrors.push(`'${name}' should have a 'date' value. Invalid type: '${toString.call(value)}'`)
+      validationErrors.push(`'${name}' should have a 'date' value. Invalid type: '${value.toString()}'`)
     } else if (String(value) === 'Invalid Date') {
       validationErrors.push(`'${name}' should have a 'date' value. Invalid date value: '${value}'`)
     }
@@ -32,8 +32,8 @@ export class Validate {
   public static boolean(name: string, value: any, optional: boolean, validationErrors: Array<string>) {
     if (this.isMissing(name, value, 'boolean', optional, validationErrors)) return;
 
-    const type = toString.call(value);
-    if (type !== '[object Boolean]') {
+    const type = typeof value;
+    if (type !== "boolean") {
       validationErrors.push(`'${name}' should have a 'boolean' value. Invalid type: ${type}`)
     }
   }

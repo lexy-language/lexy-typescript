@@ -1,33 +1,31 @@
 import type {IParserLogger} from "./parserLogger";
-import type {IObjectType} from "../language/variableTypes/objectType";
-import {asObjectType} from "../language/variableTypes/objectType";
-import type {IValidationContext} from "./validationContext";
 
-import {VariableType} from "../language/variableTypes/variableType";
+import {Type} from "../language/typeSystem/type";
 import {SourceReference} from "./sourceReference";
 import {VariableEntry} from "./variableEntry";
 import {IdentifierPath} from "../language/identifierPath";
 import {VariableSource} from "../language/variableSource";
 import {VariableReference} from "../language/variableReference";
 import {ComponentNodeList} from "../language/componentNodeList";
+import {asObjectType} from "../language/typeSystem/objects/objectType";
 
 export interface IVariableContext {
-  addVariable(variableName: string, type: VariableType, source: VariableSource): void;
+  addVariable(variableName: string, type: Type, source: VariableSource): void;
 
-  registerVariableAndVerifyUnique(reference: SourceReference, variableName: string, type: VariableType | null,
-                                  source: VariableSource): void;
+  registerVariableAndVerifyUnique(reference: SourceReference, variableName: string,
+                                  type: Type | null, source: VariableSource): void;
 
   containsName(variableName: string): boolean;
 
-  containsPath(path: IdentifierPath, context: IValidationContext): boolean;
+  containsPath(path: IdentifierPath): boolean;
 
-  getVariableTypeByName(variableName: string): VariableType | null;
+  getTypeByName(variableName: string): Type | null;
 
-  getVariableTypeByPath(identifierPath: IdentifierPath, context: IValidationContext): VariableType | null;
+  getTypeByPath(identifierPath: IdentifierPath): Type | null;
 
   getVariable(variableName: string): VariableEntry | null;
 
-  createVariableReference(reference: SourceReference, path: IdentifierPath, validationContext: IValidationContext): VariableReference | null;
+  createVariableReference(reference: SourceReference, path: IdentifierPath): VariableReference | null;
 }
 
 export class VariableContext implements IVariableContext {
@@ -42,13 +40,13 @@ export class VariableContext implements IVariableContext {
     this.parentContext = parentContext;
   }
 
-  public addVariable(name: string, type: VariableType, source: VariableSource): void {
+  public addVariable(name: string, type: Type, source: VariableSource): void {
     if (this.containsName(name)) return;
 
     this.variables[name] = new VariableEntry(type, source);
   }
 
-  public registerVariableAndVerifyUnique(reference: SourceReference, name: string, type: VariableType | null,
+  public registerVariableAndVerifyUnique(reference: SourceReference, name: string, type: Type | null,
                                          source: VariableSource): void {
     if (this.containsName(name)) {
       this.logger.fail(reference, `Duplicated variable name: '${name}'`);
@@ -62,23 +60,23 @@ export class VariableContext implements IVariableContext {
     return name in this.variables || (this.parentContext != null && this.parentContext.containsName(name));
   }
 
-  public containsPath(path: IdentifierPath, context: IValidationContext): boolean {
+  public containsPath(path: IdentifierPath): boolean {
     let parent = this.getVariable(path.rootIdentifier);
     if (parent == null) return false;
 
     return !path.hasChildIdentifiers ||
-      this.containsChild(parent.variableType, path.childrenReference(), context);
+      this.containsChild(parent.type, path.childrenReference());
   }
 
-  public createVariableReference(reference: SourceReference, path: IdentifierPath, validationContext: IValidationContext): VariableReference | null {
+  public createVariableReference(reference: SourceReference, path: IdentifierPath): VariableReference | null {
 
-    type CreateHandler = (path: IdentifierPath, validationContext: IValidationContext) => VariableReference | null;
+    type CreateHandler = (path: IdentifierPath) => VariableReference | null;
 
     function executeWithPriority(firstPriorityHandler: CreateHandler, secondPriorityHandler: CreateHandler) {
-      const value1 = firstPriorityHandler(path, validationContext);
+      const value1 = firstPriorityHandler(path);
       if (value1 != null) return value1;
 
-      const value2 = secondPriorityHandler(path, validationContext);
+      const value2 = secondPriorityHandler(path);
       if (value2 != null) return value2;
 
       return null;
@@ -93,48 +91,48 @@ export class VariableContext implements IVariableContext {
       : executeWithPriority(fromVariables, fromTypeSystem);
   }
 
-  private createVariableReferenceFromRegisteredVariables(path: IdentifierPath, validationContext: IValidationContext) {
+  private createVariableReferenceFromRegisteredVariables(path: IdentifierPath) {
     const variable = this.getVariable(path.rootIdentifier);
     if (variable == null) return null;
 
-    const variableType = this.getVariableTypeByPath(path, validationContext);
-    return variableType == null
+    const type = this.getTypeByPath(path);
+    return type == null
       ? null
-      : new VariableReference(path, null, variableType, variable.variableSource);
+      : new VariableReference(path, null, type, variable.variableSource);
   }
 
-  private createVariableReferenceFromTypeSystem(path: IdentifierPath, validationContext: IValidationContext): VariableReference | null {
+  private createVariableReferenceFromTypeSystem(path: IdentifierPath): VariableReference | null {
 
     if (path.parts > 2) return null;
 
-    const componentVariableType = this.componentNodes.getType(path.rootIdentifier);
-    if (componentVariableType == null) return null;
+    const componentType = this.componentNodes.getType(path.rootIdentifier);
+    if (componentType == null) return null;
 
     if (path.parts == 1) {
-      return new VariableReference(path, componentVariableType, componentVariableType, VariableSource.Type);
+      return new VariableReference(path, componentType, componentType, VariableSource.Type);
     }
 
     const member = path.lastPart();
-    let memberType = componentVariableType.memberType(member, validationContext.componentNodes);
+    let memberType = componentType.memberType(member);
     if (memberType == null) return null;
 
-    return new VariableReference(path, componentVariableType, memberType, VariableSource.Type);
+    return new VariableReference(path, componentType, memberType, VariableSource.Type);
   }
 
 
-  public getVariableTypeByName(name: string): VariableType | null {
+  public getTypeByName(name: string): Type | null {
     return name in this.variables
-      ? this.variables[name].variableType
+      ? this.variables[name].type
       : this.parentContext != null
-        ? this.parentContext.getVariableTypeByName(name)
+        ? this.parentContext.getTypeByName(name)
         : null;
   }
 
-  public getVariableTypeByPath(path: IdentifierPath, context: IValidationContext): VariableType | null {
-    let parent = this.getVariableTypeByName(path.rootIdentifier);
+  public getTypeByPath(path: IdentifierPath): Type | null {
+    let parent = this.getTypeByName(path.rootIdentifier);
     return parent == null || !path.hasChildIdentifiers
       ? parent
-      : this.getVariableType(parent, path.childrenReference(), context);
+      : this.getType(parent, path.childrenReference());
   }
 
   public getVariable(name: string): VariableEntry | null {
@@ -145,27 +143,27 @@ export class VariableContext implements IVariableContext {
         : null;
   }
 
-  private containsChild(parentType: VariableType | null, path: IdentifierPath, context: IValidationContext): boolean {
-    let objectType = (parentType as any).objectType == true ? (parentType as any) as IObjectType : null;
+  private containsChild(parentType: Type | null, path: IdentifierPath): boolean {
 
-    let memberVariableType = objectType != null ? objectType.memberType(path.rootIdentifier, context.componentNodes) : null;
-    if (memberVariableType == null) return false;
+    let objectType = asObjectType(parentType);
+
+    let memberType = objectType != null ? objectType.memberType(path.rootIdentifier) : null;
+    if (memberType == null) return false;
 
     return !path.hasChildIdentifiers
-      || this.containsChild(memberVariableType, path.childrenReference(), context);
+      || this.containsChild(memberType, path.childrenReference());
   }
 
-  private getVariableType(parentType: VariableType, path: IdentifierPath,
-                          context: IValidationContext): VariableType | null {
+  private getType(parentType: Type, path: IdentifierPath): Type | null {
 
     let objectType = asObjectType(parentType);
     if (objectType == null) return null;
 
-    let memberVariableType = objectType.memberType(path.rootIdentifier, context.componentNodes);
-    if (memberVariableType == null) return null;
+    let memberType = objectType.memberType(path.rootIdentifier);
+    if (memberType == null) return null;
 
     return !path.hasChildIdentifiers
-      ? memberVariableType
-      : this.getVariableType(memberVariableType, path.childrenReference(), context);
+      ? memberType
+      : this.getType(memberType, path.childrenReference());
   }
 }

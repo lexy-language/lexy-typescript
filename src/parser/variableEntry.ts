@@ -1,12 +1,12 @@
 import {VariableSource} from "../language/variableSource"
-import {VariableType} from "../language/variableTypes/variableType"
+import {Type} from "../language/typeSystem/type"
 
 export class VariableEntry {
-  public variableType: VariableType | null;
+  public type: Type | null;
   public variableSource: VariableSource;
 
-  constructor(variableType: VariableType | null, variableSource: VariableSource) {
-    this.variableType = variableType;
+  constructor(type: Type | null, variableSource: VariableSource) {
+    this.type = type;
     this.variableSource = variableSource;
    }
 }

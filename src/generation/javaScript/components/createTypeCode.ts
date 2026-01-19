@@ -6,11 +6,11 @@ import {CodeWriter} from "../codeWriter";
 import {renderExpression} from "../renderers/renderExpression";
 
 export function createTypeCode(typeDefinition: TypeDefinition): GeneratedType {
-  const className = typeClassName(typeDefinition.name.value);
+  const className = typeClassName(typeDefinition.name);
   const codeWriter = new CodeWriter(renderExpression);
 
   codeWriter.openScope(`function ${className}()`);
-  createVariableClass(typeDefinition.name.value, className, typeDefinition.variables, codeWriter);
+  createVariableClass(typeDefinition.name, className, typeDefinition.variables, codeWriter);
   codeWriter.writeLine(`return ${className};`);
   codeWriter.closeScope("();");
 

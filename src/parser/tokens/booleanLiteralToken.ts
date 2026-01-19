@@ -4,8 +4,8 @@ import type {ILiteralToken} from "./ILiteralToken";
 import {Token} from "./token";
 import {TokenCharacter} from "./tokenCharacter";
 import {TokenValues} from "./tokenValues";
-import {VariableType} from "../../language/variableTypes/variableType";
-import {PrimitiveType} from "../../language/variableTypes/primitiveType";
+import {Type} from "../../language/typeSystem/type";
+import {ValueType} from "../../language/typeSystem/valueType";
 import {TokenType} from "./tokenType";
 
 export function instanceOfBooleanLiteral(object: any): boolean {
@@ -35,8 +35,8 @@ export class BooleanLiteralToken extends Token implements ILiteralToken {
     return this.booleanValue ? TokenValues.BooleanTrue : TokenValues.BooleanFalse;
   }
 
-  public deriveType(context: IValidationContext): VariableType {
-    return PrimitiveType.boolean;
+  public deriveType(context: IValidationContext): Type {
+    return ValueType.boolean;
   }
 
   public static parse(value: string, character: TokenCharacter): BooleanLiteralToken {

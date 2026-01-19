@@ -2,23 +2,23 @@ import {VariableSource} from "../variableSource";
 import {IdentifierPath} from "../identifierPath";
 import {VariableAccess} from "./variableAccess";
 import {VariableReference} from "../variableReference";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 
 export class VariableUsage extends VariableReference {
   public readonly access: VariableAccess;
 
-  constructor(path: IdentifierPath, parentVariableType: VariableType | null,
-              variableType: VariableType | null, source: VariableSource, access: VariableAccess) {
-    super(path, parentVariableType, variableType, source);
+  constructor(path: IdentifierPath, parentType: Type | null,
+              type: Type | null, source: VariableSource, access: VariableAccess) {
+    super(path, parentType, type, source);
     this.access = access;
   }
 
   static read(reference: VariableReference) {
-    return new VariableUsage(reference.path, reference.componentType, reference.variableType, reference.source, VariableAccess.Read);
+    return new VariableUsage(reference.path, reference.componentType, reference.type, reference.source, VariableAccess.Read);
   }
 
   static write(reference: VariableReference) {
-    return new VariableUsage(reference.path, reference.componentType, reference.variableType, reference.source, VariableAccess.Write);
+    return new VariableUsage(reference.path, reference.componentType, reference.type, reference.source, VariableAccess.Write);
   }
 }
 

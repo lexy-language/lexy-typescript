@@ -4,7 +4,7 @@ import {Expression} from "../expressions/expression";
 import {INode, Node} from "../node";
 import {ConstantValue} from "./constantValue";
 import {IdentifierPath} from "../identifierPath";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {SourceReference} from "../../parser/sourceReference";
 import {NodeType} from "../nodeType";
 import {TokenList} from "../../parser/tokens/tokenList";
@@ -31,13 +31,13 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
   private readonly valueExpression: Expression;
   private readonly variableExpression: Expression;
 
-  private variableTypeValue: VariableType | null = null;
+  private typeValue: Type | null = null;
 
   public readonly constantValue: ConstantValue;
   public readonly variable: IdentifierPath;
 
-  public get variableType(): VariableType | null {
-    return this.variableTypeValue;
+  public get type(): Type | null {
+    return this.typeValue;
   }
 
   constructor(variable: IdentifierPath, constantValue: ConstantValue, variableExpression: Expression,
@@ -80,23 +80,23 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
   }
 
   protected override validate(context: IValidationContext): void {
-    if (!context.variableContext.containsPath(this.variable, context))
+    if (!context.variableContext.containsPath(this.variable))
       //logger by IdentifierExpressionValidation
       return;
 
     let expressionType = this.valueExpression.deriveType(context);
 
-    const variableTypeValue = context.variableContext.getVariableTypeByPath(this.variable, context);
-    if (variableTypeValue == null) {
+    const typeValue = context.variableContext.getTypeByPath(this.variable);
+    if (typeValue == null) {
       context.logger.fail(this.reference,
         `Type of variable '${this.variable}' is unknown.`);
       return;
     }
 
-    this.variableTypeValue = variableTypeValue;
-    if (expressionType != null && !expressionType.equals(variableTypeValue)) {
+    this.typeValue = typeValue;
+    if (expressionType != null && !expressionType.equals(typeValue)) {
       context.logger.fail(this.reference,
-        `Variable '${this.variable}' of type '${this.variableType}' is not assignable from expression of type '${expressionType}'.`);
+        `Variable '${this.variable}' of type '${this.type}' is not assignable from expression of type '${expressionType}'.`);
     }
   }
 

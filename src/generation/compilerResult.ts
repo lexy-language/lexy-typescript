@@ -24,7 +24,7 @@ export class CompilerResult {
   }
 
   public getFunction(functionNode: Function): ExecutableFunction {
-    return this.executables[functionNode.name.value];
+    return this.executables[functionNode.name];
   }
 
   public getEnumType(type: string): any {

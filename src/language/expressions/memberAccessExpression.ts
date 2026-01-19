@@ -8,7 +8,7 @@ import type {IComponentNodeList} from "../componentNodeList";
 
 import {Expression} from "./expression";
 import {IdentifierPath} from "../identifierPath";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {SourceReference} from "../../parser/sourceReference";
 import {ExpressionSource} from "./expressionSource";
 import {asMemberAccessLiteralToken, MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
@@ -81,13 +81,13 @@ export class MemberAccessExpression extends Expression
   }
 
   private createVariableReference(context: IValidationContext) {
-    this.variableValue = context.variableContext.createVariableReference(this.reference, this.identifierPath, context);
+    this.variableValue = context.variableContext.createVariableReference(this.reference, this.identifierPath);
     if (this.variableValue == null) {
       context.logger.fail(this.reference, `Invalid identifier: '${this.identifierPath.fullPath()}'`);
     }
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     return this.memberAccessLiteral.deriveType(context);
   }
 }

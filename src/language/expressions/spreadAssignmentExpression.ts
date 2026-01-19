@@ -8,12 +8,12 @@ import {ExpressionSource} from "./expressionSource";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {OperatorType} from "../../parser/tokens/operatorType";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {VariableUsage} from "./variableUsage";
 import {getReadVariableUsage} from "./getReadVariableUsage";
 import {VariablesMapping} from "./mapping";
-import {asGeneratedType} from "../variableTypes/generatedType";
+import {asGeneratedType} from "../typeSystem/objects/generatedType";
 import {ExtractResultsFunctionExpression} from "./functions/systemFunctions/extractResultsFunctionExpression";
 
 export function instanceOfSpreadAssignmentExpression(object: any): object is SpreadAssignmentExpression {
@@ -70,11 +70,11 @@ export class SpreadAssignmentExpression extends Expression {
     if (objectResultsType != null) {
       this.mapping = ExtractResultsFunctionExpression.getMapping(this.reference, context, objectResultsType);
     } else {
-      context.logger.fail(this.reference, "Couldn't determine type of assignment.");
+      context.logger.fail(this.reference, "Couldn't determine typeDeclaration of assignment.");
     }
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     return this.assignment.deriveType(context);
   }
 

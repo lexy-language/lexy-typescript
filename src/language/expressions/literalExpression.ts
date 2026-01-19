@@ -10,7 +10,7 @@ import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResu
 import {TokenList} from "../../parser/tokens/tokenList";
 import {instanceOfNumberLiteralToken, NumberLiteralToken} from "../../parser/tokens/numberLiteralToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 
 export function instanceOfLiteralExpression(object: any): boolean {
@@ -76,7 +76,7 @@ export class LiteralExpression extends Expression {
   protected override validate(context: IValidationContext): void {
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     return this.literal.deriveType(context);
   }
 }

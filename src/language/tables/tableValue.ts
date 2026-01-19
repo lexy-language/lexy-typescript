@@ -30,8 +30,8 @@ export class TableValue extends Node {
     const column = this.tableHeader.getColumnByIndex(this.index);
     if (column == null) return;
     const actualType = this.expression.deriveType(context);
-    const expectedType = column.type.variableType;
-    if (expectedType?.equals(actualType) != true) {
+    const expectedType = column.typeDeclaration.type;
+    if (!expectedType?.equals(actualType)) {
       context.logger.fail(this.reference, `Invalid value type '${actualType}'. Expected '${expectedType}'.`);
     }
   }

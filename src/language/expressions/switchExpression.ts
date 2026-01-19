@@ -11,9 +11,9 @@ import {SourceReference} from "../../parser/sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
-import {IfExpression} from "./ifExpression";
+import {TypeKind} from "../typeSystem/typeKind";
 
 export function instanceOfSwitchExpression(object: any): boolean {
   return object?.nodeType == NodeType.SwitchExpression;
@@ -30,7 +30,7 @@ export class SwitchExpression extends Expression implements IParsableNode {
   public readonly isParsableNode = true;
   public readonly nodeType = NodeType.SwitchExpression;
 
-  public conditionType: VariableType | null = null;
+  public conditionType: Type | null = null;
   public readonly condition: Expression;
   public readonly cases: Array<CaseExpression> = [];
 
@@ -88,9 +88,10 @@ export class SwitchExpression extends Expression implements IParsableNode {
    protected override validate(context: IValidationContext): void {
      this.conditionType = this.condition.deriveType(context);
      if (this.conditionType == null
-       || this.conditionType.variableTypeName != "PrimitiveType" && this.conditionType.variableTypeName != "EnumType") {
+       || this.conditionType.typeKind != TypeKind.ValueType
+       && this.conditionType.typeKind != TypeKind.EnumType) {
        context.logger.fail(this.reference,
-         `'Switch' condition expression should have a primitive or enum type. Not: '${this.conditionType}'.`);
+         `'Switch' condition expression should have a value or enum type. Not: '${this.conditionType}'.`);
        return;
      }
 
@@ -104,7 +105,7 @@ export class SwitchExpression extends Expression implements IParsableNode {
      });
    }
 
-   public override deriveType(context: IValidationContext): VariableType | null {
+   public override deriveType(context: IValidationContext): Type | null {
      return null;
    }
 }

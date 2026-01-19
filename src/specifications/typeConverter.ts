@@ -1,36 +1,36 @@
 import {CompilerResult} from "../generation/compilerResult";
-import {VariableType} from "../language/variableTypes/variableType";
-import {asEnumType, EnumType} from "../language/variableTypes/enumType";
-import {asPrimitiveType, PrimitiveType} from "../language/variableTypes/primitiveType";
-import {TypeNames} from "../language/variableTypes/typeNames";
+import {Type} from "../language/typeSystem/type";
+import {asEnumType, EnumType} from "../language/typeSystem/enumType";
+import {asValueType, ValueType} from "../language/typeSystem/valueType";
+import {TypeNames} from "../language/typeSystem/typeNames";
 
 export class TypeConverter {
-   public static convert(compilerResult: CompilerResult, value: object, type: VariableType): any {
+   public static convert(compilerResult: CompilerResult, value: object, type: Type): any {
 
-     const enumVariableType = asEnumType(type);
-     if (enumVariableType != null) {
-       return this.convertEnum(compilerResult, enumVariableType, value);
+     const enumType = asEnumType(type);
+     if (enumType != null) {
+       return this.convertEnum(compilerResult, enumType, value);
      }
 
-     const primitiveVariableType = asPrimitiveType(type);
-     if (primitiveVariableType != null) {
-       return this.convertPrimitive(primitiveVariableType, value);
+     const valueType = asValueType(type);
+     if (valueType != null) {
+       return this.convertValue(valueType, value);
      }
 
      throw new Error(`Invalid type: '${type}'`);
    }
 
-  private static convertEnum(compilerResult: CompilerResult, enumVariableType: EnumType, value: object) {
-    let enumType = compilerResult.getEnumType(enumVariableType.type);
-    if (enumType == null) throw new Error(`Unknown enum: ${enumVariableType.type}`);
+  private static convertEnum(compilerResult: CompilerResult, enumType: EnumType, value: object) {
+    let enumTypeObject = compilerResult.getEnumType(enumType.typeKind);
+    if (enumTypeObject == null) throw new Error(`Unknown enum: ${enumType.typeKind}`);
 
     let enumValueName = value.toString();
     let indexOfSeparator = enumValueName.indexOf(`.`);
     return enumValueName.substring(indexOfSeparator + 1);
   }
 
-  private static convertPrimitive(primitiveVariableType: PrimitiveType, value: object) {
-    switch (primitiveVariableType.type) {
+  private static convertValue(valueType: ValueType, value: object) {
+    switch (valueType.type) {
       case TypeNames.number:
         return parseFloat(value.toString());
 
@@ -43,7 +43,7 @@ export class TypeConverter {
       case TypeNames.string:
         return value;
       default:
-        throw new Error(`Invalid type: '${primitiveVariableType.type}'`)
+        throw new Error(`Invalid type: '${valueType.type}'`)
     }
   }
 }

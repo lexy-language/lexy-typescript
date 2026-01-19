@@ -40,10 +40,10 @@ function setParameter(functionNode: Function,
   let type = firstOrDefault(functionParameters.variables, variable => variable.name == assignmentDefinition.variable.rootIdentifier);
 
   if (type == null) {
-    throw new Error(`Function '${functionNode?.name?.value}' parameter '${assignmentDefinition.variable.rootIdentifier}' not found.`);
+    throw new Error(`Function '${functionNode?.name}' parameter '${assignmentDefinition.variable.rootIdentifier}' not found.`);
   }
 
-  if (assignmentDefinition.variableType == null) throw new Error("parameter.variableType is null")
+  if (assignmentDefinition.type == null) throw new Error("parameter.type is null")
   const value = getValue(assignmentDefinition);
 
   setValueObjectProperty(result, assignmentDefinition.variable, value);

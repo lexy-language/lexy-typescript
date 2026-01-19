@@ -1,5 +1,5 @@
 import {IToken} from "./token";
-import {VariableType} from "../../language/variableTypes/variableType";
+import {Type} from "../../language/typeSystem/type";
 
 import type {IValidationContext} from "../validationContext";
 
@@ -10,5 +10,5 @@ export interface ILiteralToken extends IToken {
   typedValue: Object;
   value: string;
 
-  deriveType(context: IValidationContext) : VariableType | null;
+  deriveType(context: IValidationContext) : Type | null;
 }

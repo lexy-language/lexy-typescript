@@ -1,44 +1,44 @@
-import {VariableType} from "../../language/variableTypes/variableType";
-import {VariableTypeName} from "../../language/variableTypes/variableTypeName";
-import {asPrimitiveType} from "../../language/variableTypes/primitiveType";
-import {asEnumType} from "../../language/variableTypes/enumType";
+import {Type} from "../../language/typeSystem/type";
+import {TypeKind} from "../../language/typeSystem/typeKind";
+import {asValueType} from "../../language/typeSystem/valueType";
+import {asEnumType} from "../../language/typeSystem/enumType";
 import {enumClassName, functionClassName, tableClassName} from "./classNames";
-import {asTableType} from "../../language/variableTypes/tableType";
+import {asTableType} from "../../language/typeSystem/tableType";
 import {LexyCodeConstants} from "./lexyCodeConstants";
-import {asGeneratedType, GeneratedType} from "../../language/variableTypes/generatedType";
-import {GeneratedTypeSource} from "../../language/variableTypes/generatedTypeSource";
-import {asDeclaredType} from "../../language/variableTypes/declaredType";
+import {asGeneratedType, GeneratedType} from "../../language/typeSystem/objects/generatedType";
+import {GeneratedTypeSource} from "../../language/typeSystem/objects/generatedTypeSource";
+import {asDeclaredType} from "../../language/typeSystem/objects/declaredType";
 
-export function translateType(variableType: VariableType): string {
+export function translateType(type: Type): string {
 
-  switch (variableType.variableTypeName) {
-    case VariableTypeName.PrimitiveType: {
-      const primitiveType = asPrimitiveType(variableType);
-      if (primitiveType == null) throw new Error("Is not primitiveType");
-      return primitiveType.type;
+  switch (type.typeKind) {
+    case TypeKind.ValueType: {
+      const valueType = asValueType(type);
+      if (valueType == null) throw new Error("Is not valueType");
+      return valueType.type;
     }
-    case VariableTypeName.EnumType: {
-      const enumType = asEnumType(variableType);
+    case TypeKind.EnumType: {
+      const enumType = asEnumType(type);
       if (enumType == null) throw new Error("Is not enumType");
-      return enumClassName(enumType.type);
+      return enumClassName(enumType.name);
     }
-    case VariableTypeName.TableType: {
-      const tableType = asTableType(variableType);
+    case TypeKind.TableType: {
+      const tableType = asTableType(type);
       if (tableType == null) throw new Error("Is not table");
-      return tableType.tableName;
+      return tableType.name;
     }
-    case VariableTypeName.GeneratedType: {
-      const objectType = asGeneratedType(variableType);
+    case TypeKind.GeneratedType: {
+      const objectType = asGeneratedType(type);
       if (objectType == null) throw new Error("Is not GeneratedType");
       return translateGeneratedType(objectType);
     }
-    case VariableTypeName.DeclaredType: {
-      const customType = asDeclaredType(variableType);
+    case TypeKind.DeclaredType: {
+      const customType = asDeclaredType(type);
       if (customType == null) throw new Error("Is not DeclaredType");
-      return typeof (customType.type);
+      return typeof (customType.name);
     }
     default:
-      throw new Error(`Not supported: ${variableType.variableTypeName}`)
+      throw new Error(`Not supported: ${type.typeKind}`)
   }
 }
 

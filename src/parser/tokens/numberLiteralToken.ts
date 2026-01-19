@@ -11,8 +11,8 @@ import {
   ParseTokenResult
 } from "./parseTokenResult";
 import {isDigit} from "./character";
-import {VariableType} from "../../language/variableTypes/variableType";
-import {PrimitiveType} from "../../language/variableTypes/primitiveType";
+import {Type} from "../../language/typeSystem/type";
+import {ValueType} from "../../language/typeSystem/valueType";
 import {TokenType} from "./tokenType";
 
 export function instanceOfNumberLiteralToken(object: any): object is NumberLiteralToken {
@@ -68,8 +68,8 @@ export class NumberLiteralToken extends ParsableToken implements ILiteralToken {
     return this.numberValue;
   }
 
-  public deriveType(context: IValidationContext): VariableType | null {
-    return PrimitiveType.number;
+  public deriveType(context: IValidationContext): Type | null {
+    return ValueType.number;
   }
 
   public parse(character: TokenCharacter): ParseTokenResult {

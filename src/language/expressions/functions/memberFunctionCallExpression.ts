@@ -2,18 +2,18 @@ import type {IComponentNode} from "../../componentNode";
 import type {INode} from "../../node";
 import type {IValidationContext} from "../../../parser/validationContext";
 import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
-import type {IMemberFunctionCall} from "../../variableTypes/functions/memberFunctionCall";
-import type {IObjectTypeFunction} from "../../variableTypes/objectTypeFunction";
+import type {IMemberFunctionCall} from "../../typeSystem/functions/memberFunctionCall";
+import type {IObjectFunction} from "../../typeSystem/objects/objectFunction";
 import type {IComponentNodeList} from "../../componentNodeList";
 
 import {Expression} from "../expression";
-import {VariableType} from "../../variableTypes/variableType";
+import {Type} from "../../typeSystem/type";
 import {NodeType} from "../../nodeType";
 import {Assert} from "../../../infrastructure/assert";
 import {FunctionCallExpression} from "./functionCallExpression";
 import {ExpressionSource} from "../expressionSource";
 import {IdentifierPath} from "../../identifierPath";
-import {asObjectType} from "../../variableTypes/objectType";
+import {asObjectType} from "../../typeSystem/objects/objectType";
 
 export function instanceOfMemberFunctionCallExpression(object: any): object is MemberFunctionCallExpression {
   return object?.nodeType == NodeType.MemberFunctionCallExpression;
@@ -36,6 +36,10 @@ export class MemberFunctionCallExpression extends FunctionCallExpression impleme
   get functionCall(): IMemberFunctionCall {
     return Assert.notNull(this.functionCallValue, "functionCall");
   }
+
+  public get name(): string {
+    return this.functionPath.lastPart();
+  };
 
   constructor(functionPath: IdentifierPath, argumentValues: ReadonlyArray<Expression>, source: ExpressionSource) {
     super(source);
@@ -70,32 +74,32 @@ export class MemberFunctionCallExpression extends FunctionCallExpression impleme
     this.functionCallValue = result.functionCall;
   }
 
-  private getFunction(context: IValidationContext): IObjectTypeFunction | null {
-    const variable = context.variableContext.getVariableTypeByPath(this.functionPath.withoutLastPart(), context);
+  private getFunction(context: IValidationContext): IObjectFunction | null {
+    const variable = context.variableContext.getTypeByPath(this.functionPath.withoutLastPart());
     if (variable != null) {
-      return this.getVariableTypeFunction(context, variable);
+      return this.getTypeFunction(context, variable);
     }
 
     const type = context.componentNodes.getType(this.functionPath.rootIdentifier);
     if (type != null) {
-      return this.getVariableTypeFunction(context, type);
+      return this.getTypeFunction(context, type);
     }
     return this.getLibraryFunction(context);
   }
 
-  private getVariableTypeFunction(context: IValidationContext, variable: VariableType): IObjectTypeFunction | null {
+  private getTypeFunction(context: IValidationContext, variable: Type): IObjectFunction | null {
     const objectType = asObjectType(variable);
     return objectType == null ? null : objectType.getFunction(this.functionPath.lastPart());
   }
 
-  private getLibraryFunction(context: IValidationContext): IObjectTypeFunction | null {
+  private getLibraryFunction(context: IValidationContext): IObjectFunction | null {
     const libraryName = this.functionPath.withoutLastPart();
     const library = context.libraries.getLibrary(libraryName);
     const functionName = this.functionPath.lastPart();
     return library == null ? null : library.getFunction(functionName);
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     const functionNode = this.getFunction(context);
     return functionNode == null ? null : functionNode.getResultsType(this.args);
   }

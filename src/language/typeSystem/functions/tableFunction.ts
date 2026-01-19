@@ -3,12 +3,12 @@ import type {IValidationContext} from "../../../parser/validationContext";
 import {Table} from "../../tables/table";
 import {Assert} from "../../../infrastructure/assert";
 import {Expression} from "../../expressions/expression";
-import {VariableType} from "../variableType";
+import {Type} from "../type";
 import {ColumnHeader} from "../../tables/columnHeader";
 import {asMemberAccessExpression, MemberAccessExpression} from "../../expressions/memberAccessExpression";
 import {IdentifierPath} from "../../identifierPath";
 import {SourceReference} from "../../../parser/sourceReference";
-import {ObjectTypeFunction} from "../objectTypeFunction";
+import {ObjectFunction} from "../objects/objectFunction";
 import {ValidateMemberFunctionArgumentsResult} from "./validateMemberFunctionArgumentsResult";
 
 type OverLoadArguments = {
@@ -17,21 +17,22 @@ type OverLoadArguments = {
     defaultDiscriminatorColumn: number | null,
 }
 
-export abstract class TableFunction implements ObjectTypeFunction {
+export abstract class TableFunction extends ObjectFunction {
 
     protected table: Table ;
 
     protected abstract functionHelp: string;
 
-    protected constructor(table: Table) {
+    protected constructor(name: string, table: Table) {
+        super(name, table.createType());
         this.table = Assert.notNull(table, "table");
     }
 
-    public abstract validateArguments(context: IValidationContext ,
+    public abstract validateArguments(context: IValidationContext,
         args: ReadonlyArray<Expression>,
         reference: SourceReference): ValidateMemberFunctionArgumentsResult;
 
-    public abstract getResultsType(args: ReadonlyArray<Expression>): VariableType | null;
+    public abstract getResultsType(args: ReadonlyArray<Expression>): Type | null;
 
     protected validateTable(context: IValidationContext, reference: SourceReference): boolean {
         if (this.table.header == null || this.table.header.columns.length < 2)
@@ -48,11 +49,12 @@ export abstract class TableFunction implements ObjectTypeFunction {
 
         this.validateColumnValueTypeValue(context, valueColumn, argumentName,
           columnHeader.name, valueType,
-          Assert.notNull(columnHeader.type.variableType, "columnHeader.type.variableType"), reference);
+          Assert.notNull(columnHeader.typeDeclaration.type, "columnHeader.typeDeclaration.type"), reference);
     }
 
     private validateColumnValueTypeValue(context: IValidationContext, argumentIndex: number, argumentName: string,
-                                    columnName: string, valueType: VariableType | null, columnType: VariableType, reference: SourceReference)
+                                         columnName: string, valueType: Type | null,
+                                         columnType: Type, reference: SourceReference)
     {
         if (valueType == null) {
             context.logger.fail(reference,
@@ -113,7 +115,7 @@ export abstract class TableFunction implements ObjectTypeFunction {
     private validateColumn(context: IValidationContext, columnIdentifier: IdentifierPath,
                            index: number, reference: SourceReference): boolean {
 
-        if (columnIdentifier.rootIdentifier != this.table.name.value || columnIdentifier.parts != 2) {
+        if (columnIdentifier.rootIdentifier != this.table.name || columnIdentifier.parts != 2) {
             context.logger.fail(reference,
                 `Invalid argument {index}. Result column table '${columnIdentifier.rootIdentifier}' should be table name '${this.table.name}'. ${this.functionHelp}`);
             return false;

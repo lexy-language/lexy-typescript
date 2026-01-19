@@ -1,12 +1,12 @@
 import {parseTable} from "../parseFunctions";
-import {shouldBePrimitiveType} from "./variableTypeExtensions";
-import {TypeNames} from "../../src/language/variableTypes/typeNames";
+import {TypeNames} from "../../src/language/typeSystem/typeNames";
 import {
   validateBooleanLiteralExpression,
   validateDateTimeLiteralExpression,
   validateNumericLiteralExpression,
   validateQuotedLiteralExpression
 } from "./expressionParser/expressionTestExtensions";
+import {shouldBeValueType} from "./variableTypeExtensions";
 
 describe('ParseTablesTests', () => {
   it('testInAndStringColumns', async () => {
@@ -17,12 +17,12 @@ describe('ParseTablesTests', () => {
 
     const {table} = await parseTable(code);
 
-    expect(table.name.value).toBe(`TestTable`);
+    expect(table.name).toBe(`TestTable`);
     expect(table.header?.columns.length).toBe(2);
     expect(table.header?.columns[0].name).toBe(`value`);
-    shouldBePrimitiveType(table.header?.columns[0].type, TypeNames.number);
+    shouldBeValueType(table.header?.columns[0].typeDeclaration, TypeNames.number);
     expect(table.header?.columns[1].name).toBe(`Result`);
-    shouldBePrimitiveType(table.header?.columns[1].type, TypeNames.string);
+    shouldBeValueType(table.header?.columns[1].typeDeclaration, TypeNames.string);
     expect(table.rows.length).toBe(2);
     validateNumericLiteralExpression(table.rows[0].values[0].expression, 7);
     validateQuotedLiteralExpression(table.rows[0].values[1].expression, `Test quoted`);
@@ -38,12 +38,12 @@ describe('ParseTablesTests', () => {
 
     const {table, _} = await parseTable(code);
 
-    expect(table.name.value).toBe(`TestTable`);
+    expect(table.name).toBe(`TestTable`);
     expect(table.header?.columns.length).toBe(2);
     expect(table.header?.columns[0].name).toBe(`value`);
-    shouldBePrimitiveType(table.header?.columns[0].type, TypeNames.date);
+    shouldBeValueType(table.header?.columns[0].typeDeclaration, TypeNames.date);
     expect(table.header?.columns[1].name).toBe(`Result`);
-    shouldBePrimitiveType(table.header?.columns[1].type, TypeNames.boolean);
+    shouldBeValueType(table.header?.columns[1].typeDeclaration, TypeNames.boolean);
     expect(table.rows.length).toBe(2);
     validateDateTimeLiteralExpression(table.rows[0].values[0].expression, `2024-12-18T17:07:45`);
     validateBooleanLiteralExpression(table.rows[0].values[1].expression, false);

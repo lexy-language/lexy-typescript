@@ -5,19 +5,19 @@ import type {IParseLineContext} from "../parser/ParseLineContext";
 import type {IComponentNode} from "./componentNode";
 import type {IComponentNodeList} from "./componentNodeList";
 
-import {VariableType} from "./variableTypes/variableType";
-import {VariableTypeDeclaration} from "./variableTypes/declarations/variableTypeDeclaration";
+import {Type} from "./typeSystem/type";
+import {TypeDeclaration} from "./typeSystem/declarations/typeDeclaration";
 import {SourceReference} from "../parser/sourceReference";
 import {Expression} from "./expressions/expression";
 import {VariableSource} from "./variableSource";
 import {Node} from "./node";
 import {OperatorType} from "../parser/tokens/operatorType";
 import {asOperatorToken, OperatorToken} from "../parser/tokens/operatorToken";
-import {validateTypeAndDefault} from "./variableTypes/validationContextExtensions";
+import {validateTypeAndDefault} from "./typeSystem/validationContextExtensions";
 import {NodeType} from "./nodeType";
 import {TokenType} from "../parser/tokens/tokenType";
 import {asHasNodeDependencies} from "./IHasNodeDependencies";
-import {VariableTypeDeclarationParser} from "./variableTypes/declarations/variableTypeDeclarationParser";
+import {TypeDeclarationParser} from "./typeSystem/declarations/typeDeclarationParser";
 
 export function instanceOfVariableDefinition(object: any): object is VariableDefinition {
   return object?.nodeType == NodeType.VariableDefinition;
@@ -33,19 +33,19 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
   public readonly nodeType = NodeType.VariableDefinition;
   public readonly defaultExpression: Expression | null;
   public readonly source: VariableSource;
-  public readonly type: VariableTypeDeclaration;
+  public readonly typeDeclaration: TypeDeclaration;
   public readonly name: string;
 
-  private variableTypeValue: VariableType | null = null;
+  private typeValue: Type | null = null;
 
-  public get variableType(): VariableType | null {
-    return this.variableTypeValue;
+  public get type(): Type | null {
+    return this.typeValue;
   }
 
-  constructor(name: string, type: VariableTypeDeclaration,
+  constructor(name: string, typeDeclaration: TypeDeclaration,
               source: VariableSource, reference: SourceReference, defaultExpression: Expression | null = null) {
     super(reference);
-    this.type = type;
+    this.typeDeclaration = typeDeclaration;
     this.name = name;
     this.defaultExpression = defaultExpression;
     this.source = source;
@@ -72,13 +72,13 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     }
 
     const name = tokens.tokenValue(1);
-    const type = tokens.tokenValue(0);
-    if (name == null || type == null) return null;
+    const typeToken = tokens.tokenValue(0);
+    if (name == null || typeToken == null) return null;
 
-    const variableType = VariableTypeDeclarationParser.parse(type, line.tokenReference(0));
-    if (variableType == null) return null;
+    const type = TypeDeclarationParser.parse(typeToken, line.tokenReference(0));
+    if (type == null) return null;
 
-    if (tokens.length == 2) return new VariableDefinition(name, variableType, source, line.lineStartReference());
+    if (tokens.length == 2) return new VariableDefinition(name, type, source, line.lineStartReference());
 
     if (tokens.token<OperatorToken>(2, asOperatorToken)?.type != OperatorType.Assignment) {
       context.logger.fail(line.tokenReference(2), `Invalid variable declaration token. Expected '='.`);
@@ -97,18 +97,20 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
       return null;
     }
 
-    return new VariableDefinition(name, variableType, source, line.lineStartReference(), defaultValue.result);
+    return new VariableDefinition(name, type, source, line.lineStartReference(), defaultValue.result);
   }
 
   public override getChildren(): Array<INode> {
-    return this.defaultExpression != null ? [this.defaultExpression, this.type] : [this.type];
+    return this.defaultExpression != null
+      ? [this.defaultExpression, this.typeDeclaration]
+      : [this.typeDeclaration];
   }
 
   protected override validate(context: IValidationContext): void {
-    this.variableTypeValue = this.type.variableType;
+    this.typeValue = this.typeDeclaration.type;
 
-    context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, this.variableTypeValue, this.source);
+    context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, this.typeValue, this.source);
 
-    validateTypeAndDefault(context, this.reference, this.type, this.defaultExpression);
+    validateTypeAndDefault(context, this.reference, this.typeDeclaration, this.defaultExpression);
   }
 }

@@ -8,7 +8,7 @@ import {
   asFillParametersFunctionExpression,
   instanceOfFillParametersFunctionExpression
 } from "../../../language/expressions/functions/systemFunctions/fillParametersFunctionExpression";
-import {VariableType} from "../../../language/variableTypes/variableType";
+import {Type} from "../../../language/typeSystem/type";
 import {VariablesMapping} from "../../../language/expressions/mapping";
 import {translateType} from "../types";
 import {CodeWriter} from "../codeWriter";
@@ -44,7 +44,7 @@ export class FillFunctionStatement {
        codeWriter);
    }
 
-   public static renderFill(variableName: string, type: VariableType, mappings: VariablesMapping, codeWriter: CodeWriter) {
+   public static renderFill(variableName: string, type: Type, mappings: VariablesMapping, codeWriter: CodeWriter) {
 
      codeWriter.write(`const ` + variableName + " = new ");
      codeWriter.writeEnvironment(`.${translateType(type)}`)

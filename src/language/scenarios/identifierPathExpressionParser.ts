@@ -2,25 +2,25 @@ import {Expression} from "../expressions/expression";
 import {
   newIdentifierPathParseFailed,
   newIdentifierPathParseSuccess,
-  VariablePathParseResult
-} from "./variablePathParseResult";
+  IdentifierPathParseResult
+} from "./identifierPathParseResult";
 import {asMemberAccessExpression, MemberAccessExpression} from "../expressions/memberAccessExpression";
 import {asLiteralExpression, LiteralExpression} from "../expressions/literalExpression";
 import {asIdentifierExpression} from "../expressions/identifierExpression";
 import {IdentifierPath} from "../identifierPath";
 import {asStringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 
-export class VariablePathExpressionParser {
-  public static parseExpression(expression: Expression): VariablePathParseResult {
+export class IdentifierPathExpressionParser {
+  public static parseExpression(expression: Expression): IdentifierPathParseResult {
 
     const memberAccessExpression = asMemberAccessExpression(expression);
     if (memberAccessExpression != null) {
-      return VariablePathExpressionParser.parseMemberAccessExpression(memberAccessExpression);
+      return IdentifierPathExpressionParser.parseMemberAccessExpression(memberAccessExpression);
     }
 
     const literalExpression = asLiteralExpression(expression);
     if (literalExpression != null) {
-      return VariablePathExpressionParser.parseLiteralExpression(literalExpression);
+      return IdentifierPathExpressionParser.parseLiteralExpression(literalExpression);
     }
 
     const identifierExpression = asIdentifierExpression(expression);
@@ -31,7 +31,7 @@ export class VariablePathExpressionParser {
     return newIdentifierPathParseFailed(`Invalid constant value. Expected: 'Variable = ConstantValue'`);
   }
 
-  private static parseLiteralExpression(literalExpression: LiteralExpression): VariablePathParseResult {
+  private static parseLiteralExpression(literalExpression: LiteralExpression): IdentifierPathParseResult {
     const stringLiteral = asStringLiteralToken(literalExpression.literal);
     if (stringLiteral != null) {
       return newIdentifierPathParseSuccess(new IdentifierPath(stringLiteral.value.split(".")))
@@ -39,7 +39,7 @@ export class VariablePathExpressionParser {
     return newIdentifierPathParseFailed(`Invalid expression literal. Expected: 'Variable = ConstantValue'`);
   }
 
-  private static parseMemberAccessExpression(memberAccessExpression: MemberAccessExpression): VariablePathParseResult {
+  private static parseMemberAccessExpression(memberAccessExpression: MemberAccessExpression): IdentifierPathParseResult {
     if (memberAccessExpression.memberAccessLiteral.parts.length == 0) {
       return newIdentifierPathParseFailed(
         `Invalid number of variable reference parts: ${memberAccessExpression.memberAccessLiteral.parts.length}`);

@@ -6,6 +6,7 @@ import {VariableUsage} from "../variableUsage";
 import {getReadVariableUsageNodes} from "../getReadVariableUsage";
 import {TokenType} from "../../../parser/tokens/tokenType";
 import {whereSelect} from "../../../infrastructure/arrayFunctions";
+import {INodeWithName} from "../../nodeWithName";
 
 export function instanceOfFunctionCallExpression(object: any): object is FunctionCallExpression {
   return object?.isFunctionCallExpression == true;
@@ -15,9 +16,12 @@ export function asFunctionCallExpression(object: any): FunctionCallExpression | 
   return instanceOfFunctionCallExpression(object) ? object as FunctionCallExpression : null;
 }
 
-export abstract class FunctionCallExpression extends Expression {
+export abstract class FunctionCallExpression extends Expression implements INodeWithName {
 
   public readonly isFunctionCallExpression = true;
+  public readonly isNodeWithName = true;
+
+  public readonly abstract name: string
 
   protected constructor(source: ExpressionSource) {
     super(source, source.createReference());

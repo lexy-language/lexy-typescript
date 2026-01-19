@@ -10,7 +10,7 @@ import {Assert} from "../../../infrastructure/assert";
 import {
   asLookUpRowFunctionCall,
   instanceOfLookUpRowFunctionCall
-} from "../../../language/variableTypes/functions/lookUpRowFunctionCall";
+} from "../../../language/typeSystem/functions/lookUpRowFunctionCall";
 
 export class TableLookUpRowFunctionCallRenderer {
 

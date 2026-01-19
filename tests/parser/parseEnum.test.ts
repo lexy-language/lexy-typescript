@@ -8,7 +8,7 @@ describe('ParseEnumTests', () => {
 
     let {enumDefinition} = await parseEnum(code);
 
-    expect(enumDefinition.name.value).toBe(`Enum1`);
+    expect(enumDefinition.name).toBe(`Enum1`);
     expect(enumDefinition.members.length).toBe(2);
     expect(enumDefinition.members[0].name).toBe(`First`);
     expect(enumDefinition.members[0].numberValue).toBe(0);
@@ -25,7 +25,7 @@ describe('ParseEnumTests', () => {
 
     let {enumDefinition, _} = await parseEnum(code);
 
-    expect(enumDefinition.name.value).toBe(`Enum2`);
+    expect(enumDefinition.name).toBe(`Enum2`);
     expect(enumDefinition.members.length).toBe(2);
     expect(enumDefinition.members[0].name).toBe(`First`);
     expect(enumDefinition.members[0].numberValue).toBe(5);

@@ -6,14 +6,14 @@ import {
   instanceOfLexyFunctionCallExpression,
   LexyFunctionCallExpression
 } from "../../../language/expressions/functions/lexyFunctionCallExpression";
-import {asGeneratedType} from "../../../language/variableTypes/generatedType";
-import {GeneratedTypeSource} from "../../../language/variableTypes/generatedTypeSource";
+import {asGeneratedType} from "../../../language/typeSystem/objects/generatedType";
+import {GeneratedTypeSource} from "../../../language/typeSystem/objects/generatedTypeSource";
 import {VariablesMapping} from "../../../language/expressions/mapping";
 import {Assert} from "../../../infrastructure/assert";
 import {instanceOfSpreadExpression} from "../../../language/expressions/spreadExpression";
 import {translateType} from "../types";
 import {renderVariableMappingVariableSyntax} from "../renderers/variableMapping";
-import {VariableType} from "../../../language/variableTypes/variableType";
+import {Type} from "../../../language/typeSystem/type";
 
 //Syntax: "LexyFunction(variable)"
 export class LexyFunctionCallRenderer {
@@ -40,7 +40,7 @@ export class LexyFunctionCallRenderer {
 
   private static renderRunFunction(functionName: string,
                                    args: ReadonlyArray<Expression>,
-                                   parametersTypes: ReadonlyArray<VariableType> | null,
+                                   parametersTypes: ReadonlyArray<Type> | null,
                                    mapping: VariablesMapping | null,
                                    codeWriter: CodeWriter) {
 
@@ -67,7 +67,7 @@ export class LexyFunctionCallRenderer {
     codeWriter.write(`${LexyCodeConstants.contextVariable})`);
   }
 
-  private static isInline(functionName: string, parameters: ReadonlyArray<VariableType> | null) {
+  private static isInline(functionName: string, parameters: ReadonlyArray<Type> | null) {
 
     if (!parameters) return false;
     if (parameters.length != 1) return true;
@@ -76,7 +76,7 @@ export class LexyFunctionCallRenderer {
     if (generatedType == null) return true;
 
     return generatedType.source != GeneratedTypeSource.FunctionParameters
-        && generatedType.node.nodeName != functionName;
+        && generatedType.node.name != functionName;
   }
 
   private static renderMappedParametersObject(mappings: VariablesMapping, codeWriter: CodeWriter) {

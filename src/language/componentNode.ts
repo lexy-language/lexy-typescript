@@ -2,6 +2,7 @@ import type {IParsableNode} from "./parsableNode";
 
 import {ParsableNode} from "./parsableNode";
 import {SourceReference} from "../parser/sourceReference";
+import {INodeWithName} from "./nodeWithName";
 
 export function instanceOfComponentNode(object: any): object is IComponentNode {
    return object?.isComponentNode == true;
@@ -11,15 +12,15 @@ export function asComponentNode(object: any): IComponentNode | null {
    return instanceOfComponentNode(object) ? object as IComponentNode : null;
 }
 
-export interface IComponentNode extends IParsableNode {
+export interface IComponentNode extends IParsableNode, INodeWithName {
    isComponentNode: true;
-   nodeName: string;
 }
 
 export abstract class ComponentNode extends ParsableNode implements IComponentNode {
 
    public readonly isComponentNode = true;
-   public readonly abstract nodeName: string;
+   public readonly isNodeWithName = true;
+   public readonly abstract name: string;
 
    protected constructor(reference: SourceReference){
       super(reference)

@@ -1,16 +1,17 @@
 import type {IComponentNode} from "./componentNode";
 
-import {ObjectType} from "./variableTypes/objectType";
+import {asObjectType, ObjectType} from "./typeSystem/objects/objectType";
 import {asFunction, Function} from "./functions/function";
 import {asTable, Table} from "./tables/table";
 import {asEnumDefinition, EnumDefinition, instanceOfEnumDefinition} from "./enums/enumDefinition";
 import {where} from "../infrastructure/arrayFunctions";
 import {asTypeDefinition, TypeDefinition} from "./types/typeDefinition";
 import {asScenario, instanceOfScenario, Scenario} from "./scenarios/scenario";
-import {TableType} from "./variableTypes/tableType";
-import {FunctionType} from "./variableTypes/functionType";
-import {EnumType} from "./variableTypes/enumType";
-import {DeclaredType} from "./variableTypes/declaredType";
+import {TableType} from "./typeSystem/tableType";
+import {FunctionType} from "./typeSystem/functionType";
+import {EnumType} from "./typeSystem/enumType";
+import {DeclaredType} from "./typeSystem/objects/declaredType";
+import {asNodeWithType} from "./nodeWithType";
 
 export interface IComponentNodeList {
 
@@ -55,7 +56,7 @@ export class ComponentNodeList implements IComponentNodeList {
 
   public add(componentNode: IComponentNode): void {
     this.valuesList.push(componentNode);
-    this.index.set(componentNode.nodeName, componentNode);
+    this.index.set(componentNode.name, componentNode);
   }
 
   public containsEnum(enumName: string): boolean {
@@ -95,27 +96,16 @@ export class ComponentNodeList implements IComponentNodeList {
   }
 
   public addIfNew(node: IComponentNode): void {
-    if (!this.index.has(node.nodeName)) {
+    if (!this.index.has(node.name)) {
       this.valuesList.push(node);
-      this.index.set(node.nodeName, node);
+      this.index.set(node.name, node);
     }
   }
 
   public getType(name: string): ObjectType | null {
+
     let node = this.getNode(name);
-
-    let table = asTable(node);
-    if (table != null) return new TableType(name, table);
-
-    let functionValue = asFunction(node);
-    if (functionValue != null) return new FunctionType(name, functionValue);
-
-    let enumDefinition = asEnumDefinition(node);
-    if (enumDefinition != null) return new EnumType(name, enumDefinition);
-
-    let typeDefinition = asTypeDefinition(node);
-    if (typeDefinition != null) return new DeclaredType(name, typeDefinition);
-
-    return null;
+    let nodeWithType = asNodeWithType(node);
+    return asObjectType(nodeWithType?.createType());
   }
 }

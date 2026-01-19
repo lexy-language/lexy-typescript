@@ -1,4 +1,4 @@
-import type {IObjectTypeFunction} from "../language/variableTypes/objectTypeFunction";
+import type {IObjectFunction} from "../language/typeSystem/objects/objectFunction";
 
 import {LibraryFunctionInfo, LibraryRuntime} from "../runTime/libraries/libraryRuntime";
 import {LibraryFunction} from "./libraryFunction";
@@ -7,7 +7,7 @@ import {Assert} from "../infrastructure/assert";
 export interface ILibrary {
   name: string;
   runTime: LibraryRuntime;
-  getFunction(identifier: string): IObjectTypeFunction;
+  getFunction(identifier: string): IObjectFunction;
 }
 
 export class Library implements ILibrary {
@@ -23,7 +23,7 @@ export class Library implements ILibrary {
     this.functions = Assert.notNull(functions, "functions");
   }
 
-  public getFunction(identifier: string): IObjectTypeFunction {
+  public getFunction(identifier: string): IObjectFunction {
     return this.functions[identifier] ?? null;
   }
 

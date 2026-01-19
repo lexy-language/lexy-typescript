@@ -3,7 +3,7 @@ import type {IValidationContext} from "../../parser/validationContext";
 import {Node} from "../node";
 import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../../parser/sourceReference";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {VariableUsage} from "./variableUsage";
 
 export function instanceOfExpression(object: any): object is Expression {
@@ -33,7 +33,7 @@ export abstract class Expression extends Node {
     return writer.join('');
   }
 
-  public abstract deriveType(context: IValidationContext): VariableType | null;
+  public abstract deriveType(context: IValidationContext): Type | null;
 
   public usedVariables(): ReadonlyArray<VariableUsage> {
     return [];

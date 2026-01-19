@@ -13,8 +13,8 @@ import {SourceReference} from "../../parser/sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
-import {PrimitiveType} from "../variableTypes/primitiveType";
-import {VariableType} from "../variableTypes/variableType";
+import {ValueType} from "../typeSystem/valueType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {VariableUsage} from "./variableUsage";
 import {getReadVariableUsage} from "./getReadVariableUsage";
@@ -88,12 +88,12 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
 
   protected override validate(context: IValidationContext): void {
     let type = this.condition.deriveType(context);
-    if (type == null || !type.equals(PrimitiveType.boolean)) {
+    if (type == null || !type.equals(ValueType.boolean)) {
       context.logger.fail(this.reference, `'if' condition expression should be 'boolean', is of wrong type '${type}'.`);
     }
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     return null;
   }
 

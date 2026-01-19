@@ -1,7 +1,7 @@
 import buildDependencyGraph from "./buildDependencyGraph";
 import {Verify} from "../verify";
 
-const nodeName = value => value.nodeName;
+const nodeName = value => value.name;
 
 describe('FactoryTests', () => {
   

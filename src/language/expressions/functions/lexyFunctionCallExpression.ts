@@ -6,9 +6,9 @@ import type {IComponentNodeList} from "../../componentNodeList";
 
 import {Expression} from "../expression";
 import {mapToUsedVariable, VariablesMapping} from "../mapping";
-import {asGeneratedType} from "../../variableTypes/generatedType";
+import {asGeneratedType} from "../../typeSystem/objects/generatedType";
 import {FillParametersFunctionExpression} from "./systemFunctions/fillParametersFunctionExpression";
-import {VariableType} from "../../variableTypes/variableType";
+import {Type} from "../../typeSystem/type";
 import {NodeType} from "../../nodeType";
 import {Function} from "../../functions/function";
 import {VariableUsage} from "../variableUsage";
@@ -34,13 +34,13 @@ export function asLexyFunctionCallExpression(object: any): LexyFunctionCallExpre
 export class LexyFunctionCallState {
 
   public parametersMapping: VariablesMapping | null;
-  public parametersTypes: ReadonlyArray<VariableType> | null;
-  public resultsObjectType: VariableType;
+  public parametersTypes: ReadonlyArray<Type> | null;
+  public resultsObjectType: Type;
   public returnSingleResultsVariablesName: string | null;
 
   constructor(parametersMapping: VariablesMapping | null,
-              parametersTypes: ReadonlyArray<VariableType> | null,
-              resultsObjectType: VariableType,
+              parametersTypes: ReadonlyArray<Type> | null,
+              resultsObjectType: Type,
               returnSingleResultsVariablesName: string | null) {
     this.parametersMapping = parametersMapping;
     this.parametersTypes = parametersTypes;
@@ -59,6 +59,10 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
   public readonly args: ReadonlyArray<Expression>;
 
   public state: LexyFunctionCallState | null;
+
+  public get name(): string {
+   return this.functionName;
+  };
 
   constructor(functionName: string, argumentValues: ReadonlyArray<Expression>, source: ExpressionSource) {
     super(source);
@@ -95,7 +99,7 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
 
   private getParametersTypes(result: ValidateFunctionArgumentsResult) {
     const functionCall = asValidateFunctionArgumentsCallFunctionResult(result);
-    return functionCall != null ? castType<VariableType>(functionCall.function.parametersTypes) : null;
+    return functionCall != null ? castType<Type>(functionCall.function.parametersTypes) : null;
   }
 
   private autoMapParameters(result: ValidateFunctionArgumentsResult, context: IValidationContext) {
@@ -114,11 +118,11 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
     return  context.componentNodes.getFunction(this.functionName);
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     const functionNode = context.componentNodes.getFunction(this.functionName);
     if (!functionNode) return null;
     const variable = this.returnSingleResultsVariable(functionNode);
-    return variable != null ? variable.type.variableType : functionNode.getResultsType();
+    return variable != null && variable.type ? variable.type : functionNode.getResultsType();
   }
 
   private returnSingleResultsVariablesName(functionNode: Function): string | null {

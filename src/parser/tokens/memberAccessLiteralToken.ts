@@ -5,8 +5,8 @@ import {Token} from "./token";
 import {TokenCharacter} from "./tokenCharacter";
 import {TokenValues} from "./tokenValues";
 import {IdentifierPath} from "../../language/identifierPath";
-import {asObjectType, instanceOfObjectType, IObjectType} from "../../language/variableTypes/objectType";
-import {VariableType} from "../../language/variableTypes/variableType";
+import {asObjectType} from "../../language/typeSystem/objects/objectType";
+import {Type} from "../../language/typeSystem/type";
 import {TokenType} from "./tokenType";
 
 export function instanceOfMemberAccessLiteralToken(object: any): boolean {
@@ -43,17 +43,17 @@ export class MemberAccessLiteralToken extends Token implements ILiteralToken {
     this.parts = value.split(TokenValues.MemberAccessString);
   }
 
-  public deriveType(context: IValidationContext): VariableType | null {
+  public deriveType(context: IValidationContext): Type | null {
     let identifierPath = new IdentifierPath(this.parts);
-    let variableType = context.variableContext.getVariableTypeByPath(identifierPath, context);
-    if (variableType != null) return variableType;
+    let type = context.variableContext.getTypeByPath(identifierPath);
+    if (type != null) return type;
 
     if (this.parts.length != 2) return null;
 
     const componentType = context.componentNodes.getType(this.parent);
     const objectType = asObjectType(componentType);
     if (objectType == null) return null
-    return objectType.memberType(this.member, context.componentNodes);
+    return objectType.memberType(this.member);
   }
 
   public toString() {

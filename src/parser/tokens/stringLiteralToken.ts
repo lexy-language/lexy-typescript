@@ -3,7 +3,7 @@ import type {IValidationContext} from "../validationContext";
 
 import {Token} from "./token";
 import {TokenCharacter} from "./tokenCharacter";
-import {VariableType} from "../../language/variableTypes/variableType";
+import {Type} from "../../language/typeSystem/type";
 import {TokenType} from "./tokenType";
 
 export function instanceOfStringLiteralToken(object: any) {
@@ -30,7 +30,7 @@ export class StringLiteralToken extends Token implements ILiteralToken {
     this.value = value;
   }
 
-  public deriveType(context: IValidationContext): VariableType | null {
+  public deriveType(context: IValidationContext): Type | null {
     throw new Error("Not supported. Type should be defined by node or expression.");
   }
 

@@ -8,9 +8,7 @@ import {ExpressionSource} from "./expressionSource";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {OperatorType} from "../../parser/tokens/operatorType";
-import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
-import {MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {VariableUsage} from "./variableUsage";
 import {asHasVariableReference} from "./IHasVariableReference";
@@ -79,13 +77,13 @@ export class AssignmentExpression extends Expression {
 
     const variableReference = hasVariableReference.variable;
     const expressionType = this.assignment.deriveType(context);
-    if (expressionType != null && !variableReference.variableType?.equals(expressionType)) {
+    if (expressionType != null && !variableReference.type?.equals(expressionType)) {
       context.logger.fail(this.reference,
-        `Variable '${variableReference}' of type '${variableReference.variableType}' is not assignable from expression of type '${expressionType}'.`);
+        `Variable '${variableReference}' of type '${variableReference.type}' is not assignable from expression of type '${expressionType}'.`);
     }
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     return this.assignment.deriveType(context);
   }
 
@@ -98,7 +96,7 @@ export class AssignmentExpression extends Expression {
     const assignmentVariable = hasVariableReference.variable;
     const writeVariableUsage = new VariableUsage(
       assignmentVariable.path, assignmentVariable.componentType,
-      assignmentVariable.variableType,
+      assignmentVariable.type,
       assignmentVariable.source,
       VariableAccess.Write);
 

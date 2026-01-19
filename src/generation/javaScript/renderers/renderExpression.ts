@@ -29,8 +29,8 @@ import {LexyCodeConstants} from "../lexyCodeConstants";
 import {CodeWriter} from "../codeWriter";
 import {asElseifExpression, ElseifExpression} from "../../../language/expressions/elseifExpression";
 import {asElseExpression, ElseExpression} from "../../../language/expressions/elseExpression";
-import {PrimitiveType} from "../../../language/variableTypes/primitiveType";
-import {VariableType} from "../../../language/variableTypes/variableType";
+import {ValueType} from "../../../language/typeSystem/valueType";
+import {Type} from "../../../language/typeSystem/type";
 import {renderExpressionStatement} from "../expressionStatements/renderExpressionStatement";
 
 function renderExpressionLine(codeWriter: CodeWriter, expression: Expression) {
@@ -221,25 +221,25 @@ function renderNumberOperationExpression(expression: BinaryExpression, codeWrite
 }
 
 function renderBinaryExpression(expression: BinaryExpression, codeWriter: CodeWriter) {
-  if (expression.leftVariableType?.equals(PrimitiveType.number) && expression.rightVariableType?.equals(PrimitiveType.number)) {
+  if (expression.leftType?.equals(ValueType.number) && expression.rightType?.equals(ValueType.number)) {
     if (renderNumberOperationExpression(expression, codeWriter)) {
       return;
     }
   }
   renderExpression(expression.left, codeWriter);
-  if (expression.leftVariableType?.equals(PrimitiveType.date)) {
+  if (expression.leftType?.equals(ValueType.date)) {
     codeWriter.write(".getTime()");
   }
 
   codeWriter.write(operatorString(expression.operator));
 
-  if (expression.leftVariableType?.equals(PrimitiveType.string) &&  expression.rightVariableType?.equals(PrimitiveType.date)) {
+  if (expression.leftType?.equals(ValueType.string) &&  expression.rightType?.equals(ValueType.date)) {
     codeWriter.write(`${LexyCodeConstants.environmentVariable}.libraries.Date.functions.Format(`);
     renderExpression(expression.right, codeWriter);
     codeWriter.write(`)`);
   } else {
     renderExpression(expression.right, codeWriter);
-    if (expression.rightVariableType?.equals(PrimitiveType.date)) {
+    if (expression.rightType?.equals(ValueType.date)) {
       codeWriter.write(".getTime()");
     }
   }
@@ -342,9 +342,9 @@ function renderCaseExpression(caseValue: CaseExpression, codeWriter: CodeWriter)
   codeWriter.closeScope()
 }
 
-function renderRawExpression(expression: Expression, type: VariableType | null, codeWriter: CodeWriter) {
+function renderRawExpression(expression: Expression, type: Type | null, codeWriter: CodeWriter) {
   renderExpression(expression, codeWriter)
-  if (type?.equals(PrimitiveType.number)) {
+  if (type?.equals(ValueType.number)) {
     codeWriter.write(".toNumber()");
   }
 }
@@ -364,6 +364,6 @@ function renderVariableDeclarationExpression(expression: VariableDeclarationExpr
   if (expression.assignment != null) {
     renderExpression(expression.assignment, codeWriter);
   } else {
-    renderTypeDefaultExpression(expression.type, codeWriter);
+    renderTypeDefaultExpression(expression.typeDeclaration, codeWriter);
   }
 }

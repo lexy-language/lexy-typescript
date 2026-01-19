@@ -8,12 +8,12 @@ import {renderExpression} from "../renderers/renderExpression";
 export function createEnumCode(enumDefinition: EnumDefinition): GeneratedType {
     if (enumDefinition == null) throw new Error(`Component token not enumDefinition`);
 
-    const enumName = enumClassName(enumDefinition.name.value);
+    const enumName = enumClassName(enumDefinition.name);
 
     const codeWriter = new CodeWriter(renderExpression);
     codeWriter.openScope();
     for (const member of enumDefinition.members) {
-      codeWriter.writeLine(`${member.name}: "${enumDefinition.name.value}.${member.name}",`);
+      codeWriter.writeLine(`${member.name}: "${enumDefinition.name}.${member.name}",`);
     }
     renderValidationFunction(enumDefinition, codeWriter);
     codeWriter.closeScope();
@@ -25,13 +25,13 @@ function renderValidationFunction(enumDefinition: EnumDefinition, codeWriter: Co
   codeWriter.openScope(`${LexyCodeConstants.validateMethod}: function ${LexyCodeConstants.validateMethod}(name, value, optional, validationErrors)`);
   codeWriter.openScope('if (value === null || value === undefined)');
   codeWriter.openScope('if (!optional)');
-  codeWriter.writeLine(`validationErrors.push(\`'\${name}' should have a '${enumDefinition.name.value}' value. Value missing.\`);`);
+  codeWriter.writeLine(`validationErrors.push(\`'\${name}' should have a '${enumDefinition.name}' value. Value missing.\`);`);
   codeWriter.closeScope();
   codeWriter.writeLine(`return;`);
   codeWriter.closeScope();
 
   codeWriter.openScope(`if (typeof value !== 'string' && !(value instanceof String))`);
-  codeWriter.writeLine(`validationErrors.push(\`'\${name}' should have a '${enumDefinition.name.value}' value. Invalid type: '\${toString.call(value)}\`);`);
+  codeWriter.writeLine(`validationErrors.push(\`'\${name}' should have a '${enumDefinition.name}' value. Invalid type: '\${toString.call(value)}\`);`);
   codeWriter.writeLine(`return;`);
   codeWriter.closeScope();
 
@@ -40,13 +40,13 @@ function renderValidationFunction(enumDefinition: EnumDefinition, codeWriter: Co
   for (let index = 0; index < enumDefinition.members.length; index++){
     const member = enumDefinition.members[index];
     if (index < enumDefinition.members.length - 1) {
-      codeWriter.writeLine(`    value !== "${enumDefinition.name.value}.${member.name}" &&`);
+      codeWriter.writeLine(`    value !== "${enumDefinition.name}.${member.name}" &&`);
     } else {
-      codeWriter.writeLine(`    value !== "${enumDefinition.name.value}.${member.name}"`);
+      codeWriter.writeLine(`    value !== "${enumDefinition.name}.${member.name}"`);
     }
   }
   codeWriter.openScope('   )');
-  codeWriter.writeLine(`validationErrors.push(\`'\${name}' should have a '${enumDefinition.name.value}' value. Invalid value: '\${value}'\`);`);
+  codeWriter.writeLine(`validationErrors.push(\`'\${name}' should have a '${enumDefinition.name}' value. Invalid value: '\${value}'\`);`);
   codeWriter.closeScope();
 
   codeWriter.closeScope();

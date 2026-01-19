@@ -33,7 +33,7 @@ export class ValidationColumnHeader extends Node {
 
   protected override validate(context: IValidationContext): void {
     const identifierPath = IdentifierPath.parseString(this.name);
-    const variable = context.variableContext.getVariableTypeByPath(identifierPath, context);
+    const variable = context.variableContext.getTypeByPath(identifierPath);
     if (variable == null) {
       context.logger.fail(this.reference, `Unknown variable: '${this.name}'`);
     }

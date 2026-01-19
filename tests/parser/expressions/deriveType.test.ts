@@ -1,5 +1,5 @@
-import {PrimitiveType} from "../../../src/language/variableTypes/primitiveType";
-import {VariableType} from "../../../src/language/variableTypes/variableType";
+import {ValueType} from "../../../src/language/typeSystem/valueType";
+import {Type} from "../../../src/language/typeSystem/type";
 import {SourceReference} from "../../../src/parser/sourceReference";
 import {SourceFile} from "../../../src/parser/sourceFile";
 import {IValidationContext, ValidationContext} from "../../../src/parser/validationContext";
@@ -14,99 +14,99 @@ import {Libraries} from "../../../src/functionLibraries/libraries";
 describe('DeriveTypeTests', () => {
   it('numberLiteral', async () => {
     const type = deriveType(`5`);
-    expect(type).toBe(PrimitiveType.number);
+    expect(type).toBe(ValueType.number);
   });
 
   it('stringLiteral', async () => {
     const type = deriveType(`"abc"`);
-    expect(type).toBe(PrimitiveType.string);
+    expect(type).toBe(ValueType.string);
   });
 
   it('booleanLiteralToken', async () => {
     const type = deriveType(`true`);
-    expect(type).toBe(PrimitiveType.boolean);
+    expect(type).toBe(ValueType.boolean);
   });
 
   it('booleanLiteralFalse', async () => {
     const type = deriveType(`false`);
-    expect(type).toBe(PrimitiveType.boolean);
+    expect(type).toBe(ValueType.boolean);
   });
 
   it('dateTimeLiteralToken', async () => {
     const type = deriveType(`d"2024-12-24T10:05:00"`);
-    expect(type).toBe(PrimitiveType.date);
+    expect(type).toBe(ValueType.date);
   });
 
   it('numberCalculationLiteral', async () => {
     const type = deriveType(`5 + 5`);
-    expect(type).toBe(PrimitiveType.number);
+    expect(type).toBe(ValueType.number);
   });
 
   it('stringConcatLiteral', async () => {
     const type = deriveType(`"abc" + "def"`);
-    expect(type).toBe(PrimitiveType.string);
+    expect(type).toBe(ValueType.string);
   });
 
   it('booleanLogicalLiteral', async () => {
     const type = deriveType(`true && false`);
-    expect(type).toBe(PrimitiveType.boolean);
+    expect(type).toBe(ValueType.boolean);
   });
 
   it('stringVariable', async () => {
     const type = deriveType(`a`, context => {
-      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, PrimitiveType.string,
+      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, ValueType.string,
         VariableSource.Results);
     });
 
-    expect(type).toBe(PrimitiveType.string);
+    expect(type).toBe(ValueType.string);
   });
 
   it('numberVariable', async () => {
     const type = deriveType(`a`, context => {
-      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, PrimitiveType.number,
+      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, ValueType.number,
         VariableSource.Results);
     });
-    expect(type).toBe(PrimitiveType.number);
+    expect(type).toBe(ValueType.number);
   });
 
   it('booleanVariable', async () => {
     const type = deriveType(`a`, context => {
-      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, PrimitiveType.boolean,
+      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, ValueType.boolean,
         VariableSource.Results);
     });
-    expect(type).toBe(PrimitiveType.boolean);
+    expect(type).toBe(ValueType.boolean);
   });
 
   it('dateTimeVariable', async () => {
     const type = deriveType(`a`, context => {
-      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, PrimitiveType.date,
+      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, ValueType.date,
         VariableSource.Results);
     });
-    expect(type).toBe(PrimitiveType.date);
+    expect(type).toBe(ValueType.date);
   });
 
   it('stringVariableConcat', async () => {
     const type = deriveType(`a + "bc"`, context => {
-      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, PrimitiveType.string,
+      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, ValueType.string,
         VariableSource.Results);
     });
-    expect(type).toBe(PrimitiveType.string);
+    expect(type).toBe(ValueType.string);
   });
 
   it('numberVariableCalculation', async () => {
     const type = deriveType(`a + 20`, context => {
-      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, PrimitiveType.number,
+      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, ValueType.number,
         VariableSource.Results);
     });
-    expect(type).toBe(PrimitiveType.number);
+    expect(type).toBe(ValueType.number);
   });
 
   it('numberVariableWithParenthesisCalculation', async () => {
     const type = deriveType(`(a + 20.05) * 3`, context => {
-      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, PrimitiveType.number,
+      context.variableContext.registerVariableAndVerifyUnique(newReference(), `a`, ValueType.number,
         VariableSource.Results);
     });
-    expect(type).toBe(PrimitiveType.number);
+    expect(type).toBe(ValueType.number);
   });
 
   function newReference() {
@@ -114,7 +114,7 @@ describe('DeriveTypeTests', () => {
   }
 
   function deriveType(expressionValue: string,
-                      validationContextHandler: ((context: IValidationContext) => void) | null = null): VariableType | null {
+                      validationContextHandler: ((context: IValidationContext) => void) | null = null): Type | null {
 
     const componentNodes = new ComponentNodeList();
     const logger = new ParserLogger(LoggingConfiguration.getParserLogger());

@@ -38,7 +38,7 @@ export class LexyScriptNode extends ComponentNode {
   private sortedNodes: Array<IComponentNode> | null = null;
 
   public readonly nodeType = NodeType.LexyScriptNode;
-  public readonly nodeName = "LexyScriptNode";
+  public override readonly name = "LexyScriptNode";
 
   public readonly comments: Comments;
   public componentNodes: ComponentNodeList = new ComponentNodeList();
@@ -109,8 +109,8 @@ export class LexyScriptNode extends ComponentNode {
     DuplicateChecker.validate(
       context,
       node => node.reference,
-      node => node.nodeName,
-      node => `Duplicated node name: '${node.nodeName}'`,
+      node => node.name,
+      node => `Duplicated node name: '${node.name}'`,
       this.componentNodes.values);
   }
 

@@ -1,9 +1,10 @@
-export enum VariableTypeName {
+export enum TypeKind {
   GeneratedType = "GeneratedType",
   DeclaredType = "DeclaredType",
   EnumType = "EnumType",
+  EnumMemberType = "EnumMemberType",
   FunctionType = "FunctionType",
-  PrimitiveType = "PrimitiveType",
+  ValueType = "ValueType",
   TableType = "TableType",
   VoidType = "VoidType",
 }

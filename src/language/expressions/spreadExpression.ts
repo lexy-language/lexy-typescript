@@ -10,7 +10,7 @@ import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResu
 import {TokenList} from "../../parser/tokens/tokenList";
 import {instanceOfNumberLiteralToken, NumberLiteralToken} from "../../parser/tokens/numberLiteralToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 
 export function instanceOfSpreadExpression(object: any): boolean {
@@ -52,7 +52,7 @@ export class SpreadExpression extends Expression {
   protected override validate(context: IValidationContext): void {
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
+  public override deriveType(context: IValidationContext): Type | null {
     context.logger.fail(this.reference, "Invalid spread operator. The spread operator '...' can only be used in an Lexy function call with as a single argument.");
     return null;
   }

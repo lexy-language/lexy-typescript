@@ -6,7 +6,7 @@ import {VariableContext} from "./variableContext";
 import {Stack} from "../infrastructure/stack";
 import {ComponentNodeList} from "../language/componentNodeList";
 import {Expression} from "../language/expressions/expression";
-import {VariableType} from "../language/variableTypes/variableType";
+import {Type} from "../language/typeSystem/type";
 import {SourceReference} from "./sourceReference";
 import {Assert} from "../infrastructure/assert";
 import {ILibraries} from "../functionLibraries/libraries";
@@ -23,7 +23,7 @@ export interface IValidationContext {
   createVariableScope(): { [Symbol.dispose]: () => void };
 
   validateType(expression: Expression, argumentIndex: number, name: string,
-               type: VariableType, reference: SourceReference, functionHelp: string): IValidationContext;
+               type: Type, reference: SourceReference, functionHelp: string): IValidationContext;
 }
 
 export class ValidationContext implements IValidationContext {
@@ -74,11 +74,12 @@ export class ValidationContext implements IValidationContext {
   }
 
   public validateType(expression: Expression, argumentIndex: number, name: string,
-                      type: VariableType, reference: SourceReference, functionHelp: string): IValidationContext {
+                      type: Type, reference: SourceReference, functionHelp: string): IValidationContext {
 
     let valueTypeEnd = expression.deriveType(this);
-    if (valueTypeEnd == null || !valueTypeEnd.equals(type))
-      this.logger.fail(reference, `Invalid argument ${argumentIndex}. '${name}' should be of type '${type}' but is '${valueTypeEnd}'. ${functionHelp}`);
+    if (valueTypeEnd == null || !valueTypeEnd.equals(type)) {
+      this.logger.fail(reference, `Invalid argument ${argumentIndex} '${name}' should be of type '${type}' but is '${valueTypeEnd}'. ${functionHelp}`);
+    }
 
     return this;
   }

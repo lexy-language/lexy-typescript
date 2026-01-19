@@ -27,10 +27,7 @@ export class FunctionName extends Node {
   }
 
   protected override validate(context: IValidationContext): void {
-    if (isNullOrEmpty(this.value)) {
-      context.logger.fail(this.reference, `Invalid function name: '${this.value}'. Name should not be empty.`);
-    }
-    if (!isValidIdentifier(this.value)) context.logger.fail(this.reference, `Invalid function name: '${this.value}'.`);
+
   }
 
   public static parseName(name: string, reference: SourceReference): FunctionName {

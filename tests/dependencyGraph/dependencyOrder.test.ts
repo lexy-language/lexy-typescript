@@ -1,7 +1,7 @@
 import buildDependencyGraph from "./buildDependencyGraph";
 import {Verify} from "../verify";
 
-const nodeType = value => value.nodeType;
+const nodeType = value => value.name;
 
 describe('DependencyOrder', () => {
 

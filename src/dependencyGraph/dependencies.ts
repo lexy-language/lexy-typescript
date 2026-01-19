@@ -69,7 +69,7 @@ export class Dependencies {
 
     while (this.nodesToProcess.size > 0) {
       const node = first(this.nodesToProcess);
-      this.nodesToProcess.delete(node.nodeName)
+      this.nodesToProcess.delete(node.name)
       this.processNode(node);
     }
   }
@@ -81,9 +81,9 @@ export class Dependencies {
     const nodeDependenciesNodes = this.getDependencies(componentNode);
     for (let dependency of nodeDependenciesNodes.values())
     {
-      if (!this.nodesToProcess.has(dependency.nodeName)
-       && !this.nodeDependencies.has(dependency.nodeName)) {
-        this.nodesToProcess.set(dependency.nodeName, dependency);
+      if (!this.nodesToProcess.has(dependency.name)
+       && !this.nodeDependencies.has(dependency.name)) {
+        this.nodesToProcess.set(dependency.name, dependency);
       }
 
       let dependencyNodeDependencies = this.getOrCreateNodeDependencies(dependency);
@@ -95,11 +95,11 @@ export class Dependencies {
 
   private getOrCreateNodeDependencies(node: IComponentNode): NodeDependencies {
 
-    let value = this.nodeDependencies.get(node.nodeName);
+    let value = this.nodeDependencies.get(node.name);
     if (value != undefined) return value;
 
     value = new NodeDependencies(node);
-    this.nodeDependencies.set(node.nodeName, value);
+    this.nodeDependencies.set(node.name, value);
     return value;
   }
 
@@ -126,8 +126,8 @@ export class Dependencies {
     let nodeDependencies = nodeWithDependencies.getDependencies(this.componentNodes);
 
     for (let dependency of nodeDependencies) {
-      if (!resultDependencies.has(dependency.nodeName)) {
-        resultDependencies.set(dependency.nodeName, dependency);
+      if (!resultDependencies.has(dependency.name)) {
+        resultDependencies.set(dependency.name, dependency);
       }
     }
   }
@@ -188,7 +188,7 @@ export class Dependencies {
         const dependant = this.getOrCreateNodeDependencies(dependency);
         const occurrence = dependant.decreaseOccurrence();
         if (occurrence == 1) {
-          processing.push(dependency.nodeName);
+          processing.push(dependency.name);
         }
       });
     }

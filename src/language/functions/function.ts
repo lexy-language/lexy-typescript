@@ -9,16 +9,15 @@ import type {IHasNodeDependencies} from "../IHasNodeDependencies";
 import type {INestedNode} from "../nestedNode";
 
 import {ComponentNode} from "../componentNode";
-import {FunctionName} from "./functionName";
 import {FunctionParameters} from "./functionParameters";
 import {FunctionResults} from "./functionResults";
 import {FunctionCode} from "./functionCode";
 import {SourceReference} from "../../parser/sourceReference";
 import {Keywords} from "../../parser/Keywords";
 import {VariableDefinition} from "../variableDefinition";
-import {asObjectVariableTypeDeclaration} from "../variableTypes/declarations/objectVariableTypeDeclaration";
-import {GeneratedType} from "../variableTypes/generatedType";
-import {GeneratedTypeSource} from "../variableTypes/generatedTypeSource";
+import {asObjectTypeDeclaration} from "../typeSystem/declarations/objectTypeDeclaration";
+import {GeneratedType} from "../typeSystem/objects/generatedType";
+import {GeneratedTypeSource} from "../typeSystem/objects/generatedTypeSource";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {Expression} from "../expressions/expression";
@@ -28,10 +27,14 @@ import {
   newValidateFunctionArgumentsSuccessAutoMap,
   ValidateFunctionArgumentsResult
 } from "./validateFunctionArgumentRsult";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {FunctionSignature} from "./functionSignature";
-import {ObjectTypeVariable} from "../variableTypes/objectTypeVariable";
+import {ObjectVariable} from "../typeSystem/objects/objectVariable";
 import {instanceOfSpreadExpression} from "../expressions/spreadExpression";
+import {INodeWithType} from "../nodeWithType";
+import {FunctionType} from "../typeSystem/functionType";
+import {isNullOrEmpty} from "../../infrastructure/validationFunctions";
+import {isValidIdentifier} from "../../parser/tokens/character";
 
 export function instanceOfFunction(object: any) {
   return object?.nodeType == NodeType.Function;
@@ -41,7 +44,7 @@ export function asFunction(object: any): Function | null {
   return instanceOfFunction(object) ? object as Function : null;
 }
 
-export class Function extends ComponentNode implements IHasNodeDependencies, INestedNode {
+export class Function extends ComponentNode implements IHasNodeDependencies, INestedNode, INodeWithType {
 
   private readonly factory: IExpressionFactory;
 
@@ -53,11 +56,14 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
   public static readonly resultsName = `Results`;
 
   public readonly hasNodeDependencies = true;
+
   public readonly nodeType = NodeType.Function;
   public readonly isNestedNode = true;
+  public readonly isNodeWithType = true;
+
   public readonly nested: boolean
 
-  public readonly name: FunctionName;
+  public override readonly name: string;
 
   public get parameters(): FunctionParameters {
     return this.parametersValue;
@@ -71,18 +77,32 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
     return this.codeValue;
   };
 
-  public override get nodeName() {
-    return this.name.value;
-  }
-
   constructor(name: string, nested: boolean, reference: SourceReference, factory: IExpressionFactory) {
     super(reference);
+    this.nested = nested;
     this.factory = factory;
     this.parametersValue = new FunctionParameters(reference);
     this.resultsValue = new FunctionResults(reference);
     this.codeValue = new FunctionCode(reference, this.factory);
-    this.name = FunctionName.parseName(name, reference);
-    this.nested = nested;
+    this.name = name;
+  }
+
+  public createType(): Type {
+    return new FunctionType(this);
+  }
+
+  public getParametersType(): GeneratedType {
+    let members = this.parameters.variables
+      .map(parameter => new ObjectVariable(parameter.name, parameter.typeDeclaration.type));
+
+    return new GeneratedType(this.name, this, GeneratedTypeSource.FunctionParameters, members);
+  }
+
+  public getResultsType(): GeneratedType {
+    let members = this.results.variables
+      .map(parameter => new ObjectVariable(parameter.name, parameter.typeDeclaration.type));
+
+    return new GeneratedType(this.name, this, GeneratedTypeSource.FunctionResults, members);
   }
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
@@ -113,14 +133,15 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
     }
   }
 
-  private static addObjectTypes(componentNodes: IComponentNodeList, variableDefinitions: ReadonlyArray<VariableDefinition>,
-                              result: Array<IComponentNode>) {
+  private static addObjectTypes(componentNodes: IComponentNodeList,
+                                variableDefinitions: readonly VariableDefinition[],
+                                result: Array<IComponentNode>) {
+
     for (const parameter of variableDefinitions) {
+      const objectType = asObjectTypeDeclaration(parameter.typeDeclaration);
+      if (objectType == null) continue;
 
-      const enumVariableType = asObjectVariableTypeDeclaration(parameter.type);
-      if (enumVariableType == null) continue;
-
-      let dependency = componentNodes.getNode(enumVariableType.type);
+      let dependency = objectType.getNode(componentNodes);
       if (dependency != null) {
         result.push(dependency);
       }
@@ -137,7 +158,7 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
   }
 
   public override getChildren(): Array<INode> {
-    const result: Array<INode> = [this.name];
+    const result: Array<INode> = [];
     if (this.parameters != null) result.push(this.parameters);
     if (this.results != null) result.push(this.results);
     if (this.code != null) result.push(this.code);
@@ -145,22 +166,12 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
   }
 
   protected override validate(context: IValidationContext): void {
-  }
-
-  public getParametersType(): GeneratedType {
-    return this.generatedType(this.parameters?.variables, GeneratedTypeSource.FunctionParameters);
-  }
-
-  public getResultsType(): GeneratedType {
-    return this.generatedType(this.results?.variables, GeneratedTypeSource.FunctionResults);
-  }
-
-  private generatedType(variableDefinitions: ReadonlyArray<VariableDefinition> | undefined, source: GeneratedTypeSource) {
-    let members = variableDefinitions
-      ? variableDefinitions.map(parameter => new ObjectTypeVariable(parameter.name, parameter.type.variableType))
-      : [];
-
-    return new GeneratedType(this.name.value, this, source, members);
+    if (isNullOrEmpty(this.name)) {
+      context.logger.fail(this.reference, `Invalid function name: '${this.name}'. Name should not be empty.`);
+    }
+    if (!isValidIdentifier(this.name)) {
+      context.logger.fail(this.reference, `Invalid function name: '${this.name}'.`);
+    }
   }
 
   public validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>, reference: SourceReference): ValidateFunctionArgumentsResult {
@@ -170,7 +181,11 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
   }
 
   private validateAutoMap(): ValidateFunctionArgumentsResult {
-    return newValidateFunctionArgumentsSuccessAutoMap(this.getParametersType());
+
+    let parametersType = this.getParametersType();
+    let resultsType = this.getResultsType();
+
+    return newValidateFunctionArgumentsSuccessAutoMap(parametersType);
   }
 
   private validateWithArguments(context: IValidationContext, args: ReadonlyArray<Expression>, reference: SourceReference): ValidateFunctionArgumentsResult {
@@ -234,12 +249,12 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
     return new FunctionSignature(parameters,  resultsType);
   }
 
-  private getParametersTypes(): ReadonlyArray<VariableType | null> {
-    return this.parametersValue.variables.map(parameter => parameter.variableType);
+  private getParametersTypes(): ReadonlyArray<Type | null> {
+    return this.parametersValue.variables.map(parameter => parameter.type);
   }
 
   private getArgumentTypes(args: ReadonlyArray<Expression>, context: IValidationContext):
-    ReadonlyArray<VariableType | null> {
+    ReadonlyArray<Type | null> {
 
     return this.hasSpreadArgument(args)
       ? [this.getResultsType()]

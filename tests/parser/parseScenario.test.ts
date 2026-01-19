@@ -1,8 +1,8 @@
 import {parseScenario} from "../parseFunctions";
 import {
-  asPrimitiveVariableTypeDeclaration,
-  PrimitiveVariableTypeDeclaration
-} from "../../src/language/variableTypes/declarations/primitiveVariableTypeDeclaration";
+  asValueTypeDeclaration,
+  ValueTypeDeclaration
+} from "../../src/language/typeSystem/declarations/valueTypeDeclaration";
 import {validateOfType} from "../validateOfType";
 import {format} from "../../src/infrastructure/formatting";
 
@@ -12,7 +12,7 @@ describe('ParseScenarioTests', () => {
 
     let {scenario} = await parseScenario(code);
 
-    expect(scenario.name.value).toBe(`TestScenario`);
+    expect(scenario.name).toBe(`TestScenario`);
   });
 
   it('testValidScenario', async () => {
@@ -25,7 +25,7 @@ describe('ParseScenarioTests', () => {
 
     let {scenario} = await parseScenario(code);
 
-    expect(scenario.name.value).toBe(`TestScenario`);
+    expect(scenario.name).toBe(`TestScenario`);
     expect(scenario.functionName.value).toBe(`TestScenarioFunction`);
 
     const parametersAssignments = scenario.parameters.allAssignments();
@@ -97,26 +97,30 @@ describe('ParseScenarioTests', () => {
 
     let {scenario} = await parseScenario(code);
 
-    expect(scenario.name.value).toBe(`ValidNumberIntAsParameter`);
+    expect(scenario.name).toBe(`ValidNumberIntAsParameter`);
     if (scenario.functionNode == null) throw new Error("functionNode == null");
 
     expect(scenario.functionNode.parameters.variables.length).toBe(2);
     expect(scenario.functionNode.parameters.variables[0].name).toBe(`Value1`);
-    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, scenario.functionNode.parameters.variables[0].type, value =>
-      expect(value.type).toBe(`number`));
+    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, scenario.functionNode.parameters.variables[0].typeDeclaration, value =>
+      expect(value.typeName).toBe(`number`));
+
     expect(scenario.functionNode.parameters.variables[0].defaultExpression.toString()).toBe(`123`);
     expect(scenario.functionNode.parameters.variables[1].name).toBe(`Value2`);
-    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, scenario.functionNode.parameters.variables[1].type, value =>
-      expect(value.type).toBe(`number`));
+    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, scenario.functionNode.parameters.variables[1].typeDeclaration, value =>
+      expect(value.typeName).toBe(`number`));
+
     expect(scenario.functionNode.parameters.variables[1].defaultExpression.toString()).toBe(`456`);
     expect(scenario.functionNode.results.variables.length).toBe(2);
     expect(scenario.functionNode.results.variables[0].name).toBe(`Result1`);
-    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, scenario.functionNode.results.variables[0].type, value =>
-      expect(value.type).toBe(`number`));
+    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, scenario.functionNode.results.variables[0].typeDeclaration, value =>
+      expect(value.typeName).toBe(`number`));
+
     expect(scenario.functionNode.results.variables[0].defaultExpression).toBeNull();
     expect(scenario.functionNode.results.variables[1].name).toBe(`Result2`);
-    validateOfType<PrimitiveVariableTypeDeclaration>(asPrimitiveVariableTypeDeclaration, scenario.functionNode.results.variables[1].type, value =>
-      expect(value.type).toBe(`number`));
+    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, scenario.functionNode.results.variables[1].typeDeclaration, value =>
+      expect(value.typeName).toBe(`number`));
+
     expect(scenario.functionNode.results.variables[1].defaultExpression).toBeNull();
     expect(scenario.functionNode.code.expressions.length).toBe(2);
     expect(scenario.functionNode.code.expressions[0].toString()).toBe(`Result1=Value1`);

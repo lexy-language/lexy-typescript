@@ -168,7 +168,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
   private static validateResult(expected: AssignmentDefinition, result: FunctionResult, validationResult: Array<string>) {
     const assignmentDefinition = Assert.notNull(asAssignmentDefinition(expected), "assignmentDefinition");
-    if (assignmentDefinition.variableType == null) throw new Error("expected.variableType is null")
+    if (assignmentDefinition.type == null) throw new Error("expected.type is null")
     const actual = result.getValue(assignmentDefinition.variable, validationResult);
     const expectedValue = assignmentDefinition.constantValue.value;
 

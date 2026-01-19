@@ -1,10 +1,10 @@
 import type {IValidationContext} from "../../parser/validationContext";
 
-import {VariableTypeDeclaration} from "../variableTypes/declarations/variableTypeDeclaration";
+import {TypeDeclaration} from "../typeSystem/declarations/typeDeclaration";
 import {SourceReference} from "../../parser/sourceReference";
 import {INode, Node} from "../node";
 import {NodeType} from "../nodeType";
-import {VariableTypeDeclarationParser} from "../variableTypes/declarations/variableTypeDeclarationParser";
+import {TypeDeclarationParser} from "../typeSystem/declarations/typeDeclarationParser";
 
 export function instanceOfColumnHeader(object: any) {
   return object?.nodeType == NodeType.ColumnHeader;
@@ -18,21 +18,21 @@ export class ColumnHeader extends Node {
 
   public nodeType = NodeType.ColumnHeader;
   public name: string
-  public type: VariableTypeDeclaration
+  public typeDeclaration: TypeDeclaration
 
-  constructor(name: string, type: VariableTypeDeclaration, reference: SourceReference) {
+  constructor(name: string, type: TypeDeclaration, reference: SourceReference) {
     super(reference);
     this.name = name;
-    this.type = type;
+    this.typeDeclaration = type;
   }
 
   public static parse(name: string, typeName: string, reference: SourceReference): ColumnHeader {
-    let type = VariableTypeDeclarationParser.parse(typeName, reference);
+    let type = TypeDeclarationParser.parse(typeName, reference);
     return new ColumnHeader(name, type, reference);
   }
 
   public override getChildren(): Array<INode> {
-    return [this.type];
+    return [this.typeDeclaration];
   }
 
   protected override validate(context: IValidationContext): void {

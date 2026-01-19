@@ -1,16 +1,16 @@
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 
 export class FunctionSignature {
 
-  public parametersTypes: ReadonlyArray<VariableType | null>;
-  public resultsType: VariableType | null;
+  public parametersTypes: ReadonlyArray<Type | null>;
+  public resultsType: Type | null;
 
-  constructor(parametersTypes: ReadonlyArray<VariableType | null>, resultsType: VariableType | null) {
+  constructor(parametersTypes: ReadonlyArray<Type | null>, resultsType: Type | null) {
     this.parametersTypes = parametersTypes;
     this.resultsType = resultsType;
   }
 
-  public matches(argumentTypes: ReadonlyArray<VariableType | null>): boolean {
+  public matches(argumentTypes: ReadonlyArray<Type | null>): boolean {
 
     if (argumentTypes.length != this.parametersTypes.length) return false;
 

@@ -4,15 +4,17 @@ import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
 import type {IComponentNode} from "../componentNode";
 import type {IComponentNodeList} from "../componentNodeList";
+import type {INodeWithType} from "../nodeWithType";
 
 import {ComponentNode} from "../componentNode";
-import {TypeName} from "./typeName";
 import {VariableDefinition} from "../variableDefinition";
 import {SourceReference} from "../../parser/sourceReference";
 import {VariableSource} from "../variableSource";
 import {NodeType} from "../nodeType";
 import {asHasNodeDependencies, IHasNodeDependencies} from "../IHasNodeDependencies";
 import {selectMany} from "../../infrastructure/arrayFunctions";
+import {DeclaredType} from "../typeSystem/objects/declaredType";
+import {Type} from "../typeSystem/type";
 
 export function instanceOfTypeDefinition(object: any) {
   return object?.nodeType == NodeType.TypeDefinition;
@@ -26,26 +28,26 @@ export interface ITypeDefinition extends IComponentNode {
  get variables(): ReadonlyArray<VariableDefinition>;
 }
 
-export class TypeDefinition extends ComponentNode implements IHasNodeDependencies, ITypeDefinition {
+export class TypeDefinition extends ComponentNode implements ITypeDefinition, IHasNodeDependencies, INodeWithType {
 
   private readonly variablesValue: Array<VariableDefinition> = [];
 
   public readonly nodeType = NodeType.TypeDefinition;
   public readonly hasNodeDependencies = true;
+  public readonly isNodeWithType = true;
 
-  public name: TypeName;
+  public override name: string;
 
   public get variables(): ReadonlyArray<VariableDefinition> {
     return this.variablesValue;
   }
 
-  public override get nodeName() {
-    return this.name.value;
-  }
-
   constructor(name: string, reference: SourceReference) {
     super(reference);
-    this.name = TypeName.parseName(name);
+    this.name = name;
+  }
+  public createType(): Type {
+    return new DeclaredType(this);
   }
 
   public static parse(name: string, reference: SourceReference): TypeDefinition {
@@ -60,7 +62,7 @@ export class TypeDefinition extends ComponentNode implements IHasNodeDependencie
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
     const dependencies = selectMany(this.variablesValue, variable => {
-      const hasDependencies = asHasNodeDependencies(variable.type);
+      const hasDependencies = asHasNodeDependencies(variable.typeDeclaration);
       return hasDependencies != null ? hasDependencies.getDependencies(componentNodes) : [];
     });
     return dependencies;

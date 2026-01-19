@@ -1,27 +1,27 @@
 import type {IValidationContext} from "../parser/validationContext";
-import type {IObjectTypeFunction} from "../language/variableTypes/objectTypeFunction";
+import type {IObjectFunction} from "../language/typeSystem/objects/objectFunction";
 
 import {SourceReference} from "../parser/sourceReference";
 import {Expression} from "../language/expressions/expression";
 
-import {VariableType} from "../language/variableTypes/variableType";
-import {PrimitiveType} from "../language/variableTypes/primitiveType";
+import {Type} from "../language/typeSystem/type";
+import {ValueType} from "../language/typeSystem/valueType";
 import {LibraryFunctionInfo} from "../runTime/libraries/libraryRuntime";
 import {LibraryFunctionCall} from "./libraryFunctionCall";
 import {
   newValidateMemberFunctionArgumentsFailed,
   newValidateMemberFunctionArgumentsSuccess, ValidateMemberFunctionArgumentsResult
-} from "../language/variableTypes/functions/validateMemberFunctionArgumentsResult";
+} from "../language/typeSystem/functions/validateMemberFunctionArgumentsResult";
 
-export class LibraryFunction implements IObjectTypeFunction {
+export class LibraryFunction implements IObjectFunction {
 
-  private readonly returnType: VariableType ;
-  private readonly parameterTypes: VariableType[];
+  private readonly returnType: Type ;
+  private readonly parameterTypes: Type[];
 
   public libraryName: string;
   public name: string;
 
-  private constructor(libraryName: string, name: string,  returnType: VariableType, parameterTypes: VariableType[]) {
+  private constructor(libraryName: string, name: string, returnType: Type, parameterTypes: Type[]) {
     this.returnType = returnType;
     this.parameterTypes = parameterTypes;
     this.libraryName = libraryName;
@@ -46,7 +46,7 @@ export class LibraryFunction implements IObjectTypeFunction {
       : newValidateMemberFunctionArgumentsSuccess(new LibraryFunctionCall(this.libraryName, this.name, this.returnType));
   }
 
-  public getResultsType(args: ReadonlyArray<Expression>): VariableType {
+  public getResultsType(args: ReadonlyArray<Expression>): Type {
     return this.returnType;
   }
 
@@ -63,9 +63,9 @@ export class LibraryFunction implements IObjectTypeFunction {
     return true;
   }
 
-  public static build(libraryName: string, name: string, functionInfo: LibraryFunctionInfo):LibraryFunction {
-    const parameterTypes = functionInfo.args.map(value => PrimitiveType.parse(value));
-    const returnType = PrimitiveType.parse(functionInfo.returnType);
+  public static build(libraryName: string, name: string, functionInfo: LibraryFunctionInfo): LibraryFunction {
+    const parameterTypes = functionInfo.args.map(value => ValueType.parse(value));
+    const returnType = ValueType.parse(functionInfo.returnType);
     return new LibraryFunction(libraryName, name, returnType, parameterTypes);
   }
 }

@@ -7,7 +7,6 @@ import type {IComponentNodeList} from "../componentNodeList";
 
 import {Function} from "../functions/function";
 import {IComponentNode, ComponentNode} from "../componentNode";
-import {ScenarioName} from "./scenarioName";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {Table} from "../tables/table";
 import {ExpectErrors} from "./expectErrors";
@@ -26,6 +25,8 @@ import {ExpectExecutionErrors} from "./expectExecutionErrors";
 import {ExecutionLogging} from "./executionLogging";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {ValidationTable} from "./validationTable";
+import {isNullOrEmpty} from "../../infrastructure/validationFunctions";
+import {isValidIdentifier} from "../../parser/tokens/character";
 
 export function instanceOfScenario(object: any) {
   return object?.nodeType == NodeType.Scenario;
@@ -53,7 +54,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
 
   public readonly nodeType = NodeType.Scenario;
   public readonly hasNodeDependencies = true;
-  public readonly name: ScenarioName;
+  public override readonly name: string;
 
   public get functionName(): functionName | null {
     return this.functionNameValue;
@@ -99,13 +100,9 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     return this.expectExecutionErrorsValue;
   }
 
-  public override get nodeName() {
-    return this.name.value;
-  }
-
   constructor(name: string, reference: SourceReference) {
     super(reference);
-    this.name = ScenarioName.parseName(name, reference);
+    this.name = name;
   }
 
   public static parse(name: string, reference: SourceReference): Scenario {
@@ -134,7 +131,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
       case Keywords.Results:
         return this.resultsValue = new Results(reference);
       case Keywords.ValidationTable:
-        return this.validationTableValue = new ValidationTable(`${this.name.value}Table`, reference);
+        return this.validationTableValue = new ValidationTable(`${this.name}Table`, reference);
 
       case Keywords.ExecutionLogging:
         return this.executionLoggingValue = new ExecutionLogging(reference);
@@ -152,7 +149,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
 
   private parseFunction(context: IParseLineContext, reference: SourceReference): IParsableNode {
     if (this.functionNodeValue != null) {
-      context.logger.fail(reference, `Duplicated inline Function '${this.nodeName}'.`);
+      context.logger.fail(reference, `Duplicated inline Function '${this.name}'.`);
       return this.functionNodeValue;
     }
 
@@ -161,7 +158,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
       return this.parseFunctionName(context, reference);
     }
 
-    this.functionNodeValue = Function.create(`${this.name.value}Function`, true, reference, context.expressionFactory);
+    this.functionNodeValue = Function.create(`${this.name}Function`, true, reference, context.expressionFactory);
     context.logger.setCurrentNode(this.functionNodeValue);
     return this.functionNodeValue;
   }
@@ -173,7 +170,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
 
   private parseEnum(context: IParseLineContext, reference: SourceReference): IParsableNode {
     if (this.enum != null) {
-      context.logger.fail(reference, `Duplicated inline Enum '${this.nodeName}'.`);
+      context.logger.fail(reference, `Duplicated inline Enum '${this.name}'.`);
       return this.enum;
     }
 
@@ -187,7 +184,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
 
   private parseTable(context: IParseLineContext, reference: SourceReference): IParsableNode {
     if (this.tableValue != null) {
-      context.logger.fail(reference, `Duplicated inline table '${this.nodeName}'.`);
+      context.logger.fail(reference, `Duplicated inline table '${this.name}'.`);
       return this.tableValue;
     }
 
@@ -209,7 +206,6 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     if (this.functionNodeValue != null) result.push(this.functionNodeValue);
     if (this.enumValue != null) result.push(this.enumValue);
     if (this.tableValue != null) result.push(this.tableValue);
-    result.push(this.name);
     if (this.functionName != null) result.push(this.functionName);
     if (this.parameters != null) result.push(this.parameters);
     if (this.results != null) result.push(this.results);
@@ -251,9 +247,9 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
 
     if (definitions == null) return;
     for (const definition of definitions) {
-      let variableType = definition.type.variableType;
-      if (variableType == null) continue;
-      context.variableContext.addVariable(definition.name, variableType, source);
+      let type = definition.typeDeclaration.type;
+      if (type == null) continue;
+      context.variableContext.addVariable(definition.name, type, source);
     }
   }
 
@@ -264,6 +260,13 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
       && this.table == null
       && (this.expectComponentErrors == null || !this.expectComponentErrors?.hasValues)) {
       context.logger.fail(this.reference, `Scenario has no function, enum, table or expect errors.`);
+    }
+
+    if (isNullOrEmpty(this.name)) {
+      context.logger.fail(this.reference, `Invalid scenario name: '${this.name}'. Name should not be empty.`);
+    }
+    if (!isValidIdentifier(this.name)) {
+      context.logger.fail(this.reference, `Invalid scenario name: '${this.name}'.`);
     }
   }
 

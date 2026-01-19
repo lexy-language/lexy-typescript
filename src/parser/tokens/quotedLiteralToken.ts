@@ -10,8 +10,8 @@ import {
   newParseTokenInvalidResult,
   ParseTokenResult
 } from "./parseTokenResult";
-import {VariableType} from "../../language/variableTypes/variableType";
-import {PrimitiveType} from "../../language/variableTypes/primitiveType";
+import {Type} from "../../language/typeSystem/type";
+import {ValueType} from "../../language/typeSystem/valueType";
 import {TokenType} from "./tokenType";
 
 export function instanceOfQuotedLiteralToken(object: any): object is QuotedLiteralToken {
@@ -40,8 +40,8 @@ export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
     return this.value;
   }
 
-  public deriveType(context: IValidationContext): VariableType {
-    return PrimitiveType.string;
+  public deriveType(context: IValidationContext): Type {
+    return ValueType.string;
   }
 
   public parse(character: TokenCharacter): ParseTokenResult {

@@ -6,7 +6,7 @@ import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../../parser/sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {IHasVariableReference} from "./IHasVariableReference";
 import {VariableReference} from "../variableReference";
@@ -68,14 +68,14 @@ export class IdentifierExpression extends Expression implements IHasVariableRefe
 
   public createVariableReference(context: IValidationContext) {
     const path = IdentifierPath.parseString(this.identifier);
-    this.variableValue = context.variableContext.createVariableReference(this.reference, path, context);
+    this.variableValue = context.variableContext.createVariableReference(this.reference, path);
     if (this.variableValue == null) {
       context.logger.fail(this.reference, `Invalid identifier: '${path.fullPath()}'`);
     }
   }
 
-  public override deriveType(context: IValidationContext): VariableType | null {
-    return context.variableContext.getVariableTypeByName(this.identifier);
+  public override deriveType(context: IValidationContext): Type | null {
+    return context.variableContext.getTypeByName(this.identifier);
   }
 
   public override usedVariables(): Array<VariableUsage> {

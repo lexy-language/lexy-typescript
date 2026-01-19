@@ -4,7 +4,7 @@ import {ObjectAssignmentDefinition} from "./objectAssignmentDefinition";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {TokenType} from "../../parser/tokens/tokenType";
-import {VariablePathExpressionParser} from "./variablePathExpressionParser";
+import {IdentifierPathExpressionParser} from "./identifierPathExpressionParser";
 import {ConstantValueParser} from "./constantValueParser";
 import {AssignmentDefinition} from "./assignmentDefinition";
 
@@ -32,7 +32,7 @@ export class AssignmentDefinitionParser {
       return null;
     }
 
-    const identifierPath = VariablePathExpressionParser.parseExpression(targetExpression.result);
+    const identifierPath = IdentifierPathExpressionParser.parseExpression(targetExpression.result);
     if (identifierPath.state == "failed") {
       context.logger.fail(reference, identifierPath.errorMessage);
       return null;

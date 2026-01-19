@@ -47,7 +47,7 @@ function ValidateTableKeywordFunction
   parameters
   results
     number Result
-  Result = ValidateTableKeyword.Count`);
+  Result = ValidateTableKeyword.RowsCount`);
 
      let result = script.run();
      expect(result.number(`Result`)).toEqual(2);

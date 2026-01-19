@@ -1,5 +1,5 @@
 import {IdentifierPath} from "../../src/language/identifierPath";
-import {PrimitiveType} from "../../src/language/variableTypes/primitiveType";
+import {ValueType} from "../../src/language/typeSystem/valueType";
 import {Libraries} from "../../src/functionLibraries/libraries";
 
 describe('libraries', () => {
@@ -10,7 +10,7 @@ describe('libraries', () => {
     expect(math).not.toBeNull();
     let func = math.getFunction("Power");
     expect(func).not.toBeNull();
-    expect(func.getResultsType([])).toEqual(PrimitiveType.number);
+    expect(func.getResultsType([])).toEqual(ValueType.number);
   });
 
   it('should contain date library', async () => {
@@ -20,7 +20,7 @@ describe('libraries', () => {
     expect(date).not.toBeNull();
     let func = date.getFunction("Now");
     expect(func).not.toBeNull();
-    expect(func.getResultsType([])).toEqual(PrimitiveType.date);
+    expect(func.getResultsType([])).toEqual(ValueType.date);
   });
 
   it('should contain number library', async () => {
@@ -30,6 +30,6 @@ describe('libraries', () => {
     expect(number).not.toBeNull();
     let func = number.getFunction("Floor");
     expect(func).not.toBeNull();
-    expect(func.getResultsType([])).toEqual(PrimitiveType.number);
+    expect(func.getResultsType([])).toEqual(ValueType.number);
   });
 });

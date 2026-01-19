@@ -3,7 +3,7 @@ import type {IValidationContext} from "../../../parser/validationContext";
 import {TableFunction} from "./tableFunction";
 import {Table} from "../../tables/table";
 import {Expression} from "../../expressions/expression";
-import {VariableType} from "../variableType";
+import {Type} from "../type";
 import {instanceOfMemberAccessExpression} from "../../expressions/memberAccessExpression";
 import {SourceReference} from "../../../parser/sourceReference";
 import {LookUpRowFunctionCall} from "./lookUpRowFunctionCall";
@@ -46,10 +46,10 @@ export class LookUpRowFunction extends TableFunction {
     }
 
     constructor(table: Table){
-        super(table);
+        super(LookUpRowFunction.functionName, table);
     }
 
-    public override getResultsType(args: ReadonlyArray<Expression>): VariableType | null {
+    public override getResultsType(args: ReadonlyArray<Expression>): Type | null {
         return this.table ? this.table.getRowType() : null;
     }
 
@@ -73,7 +73,7 @@ export class LookUpRowFunction extends TableFunction {
         const discriminatorExpression = overloadArguments.discriminator != null ? args[overloadArguments.discriminator] : null;
 
         const result = new LookUpRowFunctionCall(
-          this.table.name.value,
+          this.table.name,
           args[overloadArguments.lookUpValue],
           discriminatorExpression,
           searchColumnHeader.name,

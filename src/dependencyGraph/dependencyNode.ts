@@ -9,7 +9,7 @@ export class NodeDependencies {
 
   public readonly node: IComponentNode;
 
-  public get name(): string { return this.node.nodeName; }
+  public get name(): string { return this.node.name; }
 
   public get dependencies(): Map<string, IComponentNode> {
     return this.dependenciesValue;
@@ -25,12 +25,12 @@ export class NodeDependencies {
 
   public addDependencies(dependencies: MapIterator<IComponentNode>) {
     for (let dependency of dependencies) {
-      this.dependencies.set(dependency.nodeName, dependency);
+      this.dependencies.set(dependency.name, dependency);
     }
   }
 
   public addDependant(componentNode: IComponentNode) {
-    this.dependants.set(componentNode.nodeName, componentNode);
+    this.dependants.set(componentNode.name, componentNode);
   }
 
   public decreaseOccurrence(): number {
@@ -45,6 +45,6 @@ export class NodeDependencies {
   }
 
   public toString(): string {
-    return `${this.node.nodeName} (dependencies: ${this.dependencies.size} dependants: ${this.dependants.size})`
+    return `${this.node.name} (dependencies: ${this.dependencies.size} dependants: ${this.dependants.size})`
   };
 }

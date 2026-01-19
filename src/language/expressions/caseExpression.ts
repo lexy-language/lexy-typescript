@@ -4,7 +4,7 @@ import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/validationContext";
 
 import {Expression} from "./expression";
-import {VariableType} from "../variableTypes/variableType";
+import {Type} from "../typeSystem/type";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
 import {ExpressionSource} from "./expressionSource";
@@ -32,7 +32,7 @@ export class CaseExpression extends Expression implements IParsableNode {
   public readonly isDefault: boolean;
   public readonly nodeType = NodeType.CaseExpression;
   public readonly value: Expression | null;
-  public valueType: VariableType | null = null;
+  public valueType: Type | null = null;
 
    public get expressions(): Array<Expression>  {
     return this.expressionsValues.asArray();
@@ -97,7 +97,7 @@ export class CaseExpression extends Expression implements IParsableNode {
      this.valueType = this.deriveType(context);
    }
 
-   public override deriveType(context: IValidationContext): VariableType | null {
+   public override deriveType(context: IValidationContext): Type | null {
      return this.value != null ? this.value.deriveType(context) : null;
    }
 }

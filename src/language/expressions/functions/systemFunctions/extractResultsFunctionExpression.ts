@@ -5,15 +5,16 @@ import {Mapping, mapToUsedVariable, VariablesMapping} from "../../mapping";
 import {Expression} from "../../expression";
 import {SourceReference} from "../../../../parser/sourceReference";
 import {IdentifierExpression} from "../../identifierExpression";
-import {asGeneratedType, GeneratedType} from "../../../variableTypes/generatedType";
+import {asGeneratedType, GeneratedType} from "../../../typeSystem/objects/generatedType";
 import {VariableSource} from "../../../variableSource";
-import {VariableType} from "../../../variableTypes/variableType";
-import {VoidType} from "../../../variableTypes/voidType";
+import {Type} from "../../../typeSystem/type";
+import {VoidType} from "../../../typeSystem/voidType";
 import {NodeType} from "../../../nodeType";
 import {VariableUsage} from "../../variableUsage";
 import {VariableAccess} from "../../variableAccess";
 import {FunctionCallExpression} from "../functionCallExpression";
 import {ExpressionSource} from "../../expressionSource";
+import {functionName} from "../../../scenarios/functionName";
 
 export function instanceOfExtractResultsFunctionExpression(object: any): object is ExtractResultsFunctionExpression {
   return object?.nodeType == NodeType.ExtractResultsFunction;
@@ -25,8 +26,9 @@ export function asExtractResultsFunctionExpression(object: any): ExtractResultsF
 
 export class ExtractResultsFunctionExpression extends FunctionCallExpression {
 
-  public readonly nodeType = NodeType.ExtractResultsFunction;
   public static readonly functionName: string = `extract`;
+
+  public readonly nodeType = NodeType.ExtractResultsFunction;
 
   private get functionHelp() {
     return `${ExtractResultsFunctionExpression.functionName} expects 1 argument. extract(variable)`;
@@ -36,6 +38,8 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
   public valueExpression: Expression;
 
   public mapping: VariablesMapping | null;
+
+  public readonly name: string = ExtractResultsFunctionExpression.functionName;
 
   constructor(valueExpression: Expression, source: ExpressionSource) {
     super(source);
@@ -55,13 +59,13 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
       return;
     }
 
-    let variableType = context.variableContext.getVariableTypeByName(this.functionResultVariable);
-    if (variableType == null) {
+    let type = context.variableContext.getTypeByName(this.functionResultVariable);
+    if (type == null) {
       context.logger.fail(this.reference, `Unknown variable: '${(this.functionResultVariable)}'. ${(this.functionHelp)}`);
       return;
     }
 
-    const generatedType = asGeneratedType(variableType);
+    const generatedType = asGeneratedType(type);
     if (generatedType == null) {
       context.logger.fail(this.reference,
         `Invalid variable type: '${this.functionResultVariable}'. ` +
@@ -83,11 +87,11 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
       const variable = context.variableContext.getVariable(member.name);
       if (variable == null || variable.variableSource == VariableSource.Parameters) continue;
 
-      if (variable.variableType == null || !variable.variableType?.equals(member.type)) {
+      if (variable.type == null || !variable.type?.equals(member.type)) {
         context.logger.fail(reference,
-          `Invalid parameter mapping. Variable '${member.name}' of type '${variable.variableType}' can't be mapped to parameter '${member.name}' of type '${member.type}'.`);
+          `Invalid parameter mapping. Variable '${member.name}' of type '${variable.type}' can't be mapped to parameter '${member.name}' of type '${member.type}'.`);
       } else {
-        mapping.push(new Mapping(member.name, variable.variableType, variable.variableSource));
+        mapping.push(new Mapping(member.name, variable.type, variable.variableSource));
       }
     }
 
@@ -100,7 +104,7 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
     return new VariablesMapping(generatedType, mapping);
   }
 
-  public override deriveType(context: IValidationContext): VariableType {
+  public override deriveType(context: IValidationContext): Type {
     return new VoidType();
   }
 

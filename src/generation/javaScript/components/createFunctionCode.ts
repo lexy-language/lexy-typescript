@@ -17,7 +17,7 @@ export function createFunctionCode(node: Function): GeneratedType {
 
 function createFunction(functionNode: Function, codeWriter: CodeWriter) {
 
-  const name = functionClassName(functionNode.nodeName);
+  const name = functionClassName(functionNode.name);
 
   codeWriter.openScope(`function ${name}()`);
 
@@ -26,8 +26,8 @@ function createFunction(functionNode: Function, codeWriter: CodeWriter) {
   renderRunFunction(functionNode, codeWriter);
   renderRunInlineFunction(functionNode, codeWriter);
 
-  createVariableClass(`${functionNode.nodeName}.Parameters`, LexyCodeConstants.parametersType, functionNode.parameters?.variables, codeWriter);
-  createVariableClass(`${functionNode.nodeName}.Results`, LexyCodeConstants.resultsType, functionNode.results?.variables, codeWriter);
+  createVariableClass(`${functionNode.name}.Parameters`, LexyCodeConstants.parametersType, functionNode.parameters?.variables, codeWriter);
+  createVariableClass(`${functionNode.name}.Results`, LexyCodeConstants.resultsType, functionNode.results?.variables, codeWriter);
 
   codeWriter.writeLine(`${LexyCodeConstants.runMethod}.${LexyCodeConstants.inlineMethod} = ${LexyCodeConstants.inlineMethod}(${LexyCodeConstants.runMethod});`)
   codeWriter.writeLine(`${LexyCodeConstants.runMethod}.${LexyCodeConstants.parametersType} = ${LexyCodeConstants.parametersType};`)
@@ -48,7 +48,7 @@ function renderRunFunction(functionNode: Function, codeWriter: CodeWriter) {
   renderResults(codeWriter)
 
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.setFileName("${functionNode.reference.file.fileName}");`)
-  codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.openScope("Execute: ${functionNode.nodeName}", ${functionNode.reference.lineNumber});`)
+  codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.openScope("Execute: ${functionNode.name}", ${functionNode.reference.lineNumber});`)
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Parameters", ${functionNode.parameters?.reference.lineNumber}, ${LexyCodeConstants.parameterVariable});`)
   codeWriter.writeLine();
 

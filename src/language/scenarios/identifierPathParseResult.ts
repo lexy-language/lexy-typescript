@@ -24,4 +24,4 @@ export function newIdentifierPathParseSuccess(result: IdentifierPath): Identifie
   } as const;
 }
 
-export type VariablePathParseResult = IdentifierPathParseFailed | IdentifierPathParseSuccess;
+export type IdentifierPathParseResult = IdentifierPathParseFailed | IdentifierPathParseSuccess;
