@@ -43,7 +43,7 @@ function setParameter(functionNode: Function,
     throw new Error(`Function '${functionNode?.name}' parameter '${assignmentDefinition.variable.rootIdentifier}' not found.`);
   }
 
-  if (assignmentDefinition.state.type == null) throw new Error("parameter.type is null")
+  if (assignmentDefinition.state == null || assignmentDefinition.state.type == null) throw new Error("parameter.type is null")
   const value = getValue(assignmentDefinition);
 
   setValueObjectProperty(result, assignmentDefinition.variable, value);
