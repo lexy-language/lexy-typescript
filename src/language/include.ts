@@ -1,25 +1,41 @@
-import type {IParseLineContext} from "../parser/ParseLineContext";
-import type {IParserContext} from "../parser/parserContext";
+import type {IParseLineContext} from "../parser/context/parseLineContext";
+import type {IParserContext} from "../parser/context/parserContext";
 
-import {SourceReference} from "../parser/sourceReference";
+import {SourceReference} from "./sourceReference";
 import {Line} from "../parser/line";
 import {Keywords} from "../parser/Keywords";
 import {isNullOrEmpty} from "../infrastructure/validationFunctions";
 import {LexySourceDocument} from "../parser/lexySourceDocument";
 
+export class IncludeState {
+
+  private isProcessedValue: boolean;
+
+  public get isProcessed() {
+    return this.isProcessedValue;
+  }
+
+  constructor(isProcessed: boolean) {
+    this.isProcessedValue = isProcessed;
+  }
+
+  public setProcessed(): void {
+    this.isProcessedValue = true;
+  }
+}
+
 export class Include {
-  private isProcessedValue: boolean = false;
+
   private readonly reference: SourceReference;
 
   public readonly fileName: string
 
-  public get isProcessed(): boolean {
-    return this.isProcessedValue;
-  }
+  public readonly state: IncludeState;
 
   constructor(fileName: string, reference: SourceReference) {
     this.reference = reference;
     this.fileName = fileName;
+    this.state = new IncludeState(false);
   }
 
   public static isValid(line: Line): boolean {
@@ -30,7 +46,7 @@ export class Include {
     let line = context.line;
     let lineTokens = line.tokens;
     if (lineTokens.length != 2 || !lineTokens.isQuotedString(1)) {
-      context.logger.fail(line.lineStartReference(),
+      context.logger.fail(lineTokens.allReference(),
         "Invalid syntax. Expected: 'include \`FileName\`");
       return null;
     }
@@ -38,11 +54,11 @@ export class Include {
     let value = lineTokens.tokenValue(1);
     if (value == null) return null;
 
-    return new Include(value, line.lineStartReference());
+    return new Include(value, lineTokens.allReference());
   }
 
   public async process(parentFullFileName: string, context: IParserContext): Promise<string | null> {
-    this.isProcessedValue = true;
+    this.state.setProcessed();
     if (isNullOrEmpty(this.fileName)) {
       context.logger.fail(this.reference, `No include file name specified.`);
       return null;

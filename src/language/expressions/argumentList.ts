@@ -8,6 +8,7 @@ import {Token} from "../../parser/tokens/token";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {Line} from "../../parser/line";
 
 class ParseContext {
   public result: Array<TokenList> = new Array<TokenList>();
@@ -26,7 +27,7 @@ export class ArgumentList {
    for (let index = 0 ; index < tokens.length; index ++) {
      const token = tokens.get(index);
 
-     let result = this.processToken(context, token);
+     let result = this.processToken(context, token, tokens.line);
      if (result != null) return result;
    }
 
@@ -34,12 +35,12 @@ export class ArgumentList {
      return newArgumentTokenParseFailed(`Invalid token ','. No tokens before comma.`);
    }
 
-   context.result.push(new TokenList(context.argumentTokens));
+   context.result.push(new TokenList(tokens.line, context.argumentTokens));
 
    return newArgumentTokenParseSuccess(context.result);
  }
 
-   private static processToken(context: ParseContext, token: Token): ArgumentTokenParseResult | null {
+   private static processToken(context: ParseContext, token: Token, line: Line): ArgumentTokenParseResult | null {
      if (token.tokenType != TokenType.OperatorToken) {
        context.argumentTokens.push(token);
        return null;
@@ -56,7 +57,7 @@ export class ArgumentList {
          return newArgumentTokenParseFailed(`Invalid token ','. No tokens before comma.`);
        }
 
-       context.result.push(new TokenList(context.argumentTokens));
+       context.result.push(new TokenList(line, context.argumentTokens));
        context.argumentTokens = new Array<Token>();
      } else {
        context.argumentTokens.push(token);

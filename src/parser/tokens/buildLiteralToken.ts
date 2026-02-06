@@ -9,13 +9,14 @@ import {
 } from "./parseTokenResult";
 import {DateTimeLiteralToken} from "./dateTimeLiteralToken";
 import {KeywordToken} from "./keywordToken";
-import {MemberAccessLiteralToken} from "./memberAccessLiteralToken";
+import {MemberAccessToken} from "./memberAccessToken";
 import {StringLiteralToken} from "./stringLiteralToken";
 import {BooleanLiteralToken} from "./booleanLiteralToken";
 import {Token} from "./token";
 import {Keywords} from "../Keywords";
 import {isDigitOrLetter} from "./character";
 import {TokenType} from "./tokenType";
+import {IncompleteMemberAccessToken} from "./incompleteMemberAccessToken";
 
 const point = '.'.charCodeAt(0);
 const colon = ':'.charCodeAt(0);
@@ -76,10 +77,6 @@ export class BuildLiteralToken extends ParsableToken {
   }
 
   public endOfLine(): ParseTokenResult {
-    if (this.lastMemberAccessor)
-      return newParseTokenInvalidResult(
-        "Unexpected end of line. Member accessor should be followed by member name.");
-
     return newParseTokenFinishedResult(true, this.sealLiteral());
   }
 
@@ -91,8 +88,11 @@ export class BuildLiteralToken extends ParsableToken {
     if (BooleanLiteralToken.isValid(value)) {
       return BooleanLiteralToken.parse(value, this.firstCharacter);
     }
+    if (this.lastMemberAccessor) {
+      return new IncompleteMemberAccessToken(value, this.firstCharacter);
+    }
     if (this.hasMemberAccessor) {
-      return new MemberAccessLiteralToken(value, this.firstCharacter);
+      return new MemberAccessToken(value, this.firstCharacter);
     }
 
     return new StringLiteralToken(value, this.firstCharacter);

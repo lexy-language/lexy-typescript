@@ -1,4 +1,4 @@
-import {IParserLogger} from "./parserLogger";
+import {IParserLogger} from "./logging/parserLogger";
 import {Line} from "./line";
 import {TokenList} from "./tokens/tokenList";
 import {BooleanLiteralToken} from "./tokens/booleanLiteralToken";
@@ -10,7 +10,7 @@ import {Token} from "./tokens/token";
 import {OperatorToken} from "./tokens/operatorToken";
 import {NumberLiteralToken} from "./tokens/numberLiteralToken";
 import {TokenType} from "./tokens/tokenType";
-import {SourceReference} from "./sourceReference";
+import {SourceReference} from "../language/sourceReference";
 
 export class TokenValidator {
 
@@ -79,7 +79,13 @@ export class TokenValidator {
   }
 
   public memberAccess(index: number, value: string | null): TokenValidator {
-    this.type(index, TokenType.MemberAccessLiteralToken);
+    this.type(index, TokenType.MemberAccessToken);
+    if (value != null) this.value(index, value);
+    return this;
+  }
+
+  public incompleteMemberAccess(index: number, value: string | null): TokenValidator {
+    this.type(index, TokenType.IncompleteMemberAccessToken);
     if (value != null) this.value(index, value);
     return this;
   }
@@ -188,10 +194,12 @@ export class TokenValidator {
   }
 
   private fail(index: number, error: string) {
-    this.logger.fail(this.line.tokenReference(index), `(${this.parserName}) ${error}`);
+    this.logger.fail(this.line.tokens.reference(index, 1), `(${this.parserName}) ${error}`);
   }
 
   public assert() {
-    if (!this.isValid) throw new Error(this.logger.formatMessages());
+    if (!this.isValid) {
+      throw new Error(this.logger.formatMessages());
+    }
   }
 }

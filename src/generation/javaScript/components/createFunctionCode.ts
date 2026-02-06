@@ -47,7 +47,7 @@ function renderRunFunction(functionNode: Function, codeWriter: CodeWriter) {
 
   renderResults(codeWriter)
 
-  codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.setFileName("${functionNode.reference.file.fileName}");`)
+  codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.setFileName("${functionNode.reference.fileName}");`)
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.openScope("Execute: ${functionNode.name}", ${functionNode.reference.lineNumber});`)
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Parameters", ${functionNode.parameters?.reference.lineNumber}, ${LexyCodeConstants.parameterVariable});`)
   codeWriter.writeLine();
@@ -102,15 +102,21 @@ function renderRunInlineFunction(functionNode: Function, codeWriter: CodeWriter)
 function renderCreateParameterObject(codeWriter: CodeWriter, functionNode: Function) {
   codeWriter.writeLine(`const ${LexyCodeConstants.parameterVariable} = new ${LexyCodeConstants.runMethod}.${LexyCodeConstants.parametersType}();`);
 
-  for (let index = 0; index < functionNode.parameters.variables.length; index++) {
-    const parameter = functionNode.parameters.variables[index];
+  let variables = functionNode.parameters?.variables;
+  if (!variables) return;
+
+  for (let index = 0; index < variables.length; index++) {
+    const parameter = variables[index];
     codeWriter.writeLine(`${LexyCodeConstants.parameterVariable}.${parameter.name} = ${parameter.name};`);
   }
 }
 
 function renderParameterNames(functionNode: Function, codeWriter: CodeWriter) {
-  for (let index = 0; index < functionNode.parameters.variables.length; index++) {
-    const parameter = functionNode.parameters.variables[index];
+  let variables = functionNode.parameters?.variables;
+  if (!variables) return;
+
+  for (let index = 0; index < variables.length; index++) {
+    const parameter = variables[index];
     codeWriter.write(parameter.name);
     codeWriter.write(", ");
   }

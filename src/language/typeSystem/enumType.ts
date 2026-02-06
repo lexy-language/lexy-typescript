@@ -8,6 +8,9 @@ import {firstOrDefault} from "../../infrastructure/arrayFunctions";
 import {TypeKind} from "./typeKind";
 import {ObjectVariable} from "./objects/objectVariable";
 import {IObjectMember} from "./objects/objectMember";
+import {SourceReference} from "../sourceReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfEnumType(object: any): object is EnumType {
   return object?.typeKind == TypeKind.EnumType;
@@ -46,5 +49,13 @@ export class EnumType extends ObjectType {
 
   protected override createMembers(): IObjectMember[] {
     return this.enum.members.map(member => new ObjectVariable(member.name, this));
+  }
+
+  public override toString(): string  {
+    return this.name;
+  }
+
+  public override getSymbol(reference: SourceReference): Symbol {
+    return new Symbol(reference, `enum: ${this.name}`, "", SymbolKind.Enum);
   }
 }

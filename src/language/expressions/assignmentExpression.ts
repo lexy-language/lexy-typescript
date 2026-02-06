@@ -1,9 +1,9 @@
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {ExpressionSource} from "./expressionSource";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
@@ -15,6 +15,8 @@ import {asHasVariableReference} from "./IHasVariableReference";
 import {VariableAccess} from "./variableAccess";
 import {getReadVariableUsage} from "./getReadVariableUsage";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfAssignmentExpression(object: any): object is AssignmentExpression {
   return object?.nodeType == NodeType.AssignmentExpression;
@@ -25,30 +27,35 @@ export function asAssignmentExpression(object: any): AssignmentExpression | null
 }
 
 export class AssignmentExpression extends Expression {
+
   public nodeType = NodeType.AssignmentExpression;
   public variable: Expression
   public assignment: Expression
 
   private constructor(variable: Expression, assignment: Expression, source: ExpressionSource,
+                      parentReference: NodeReference,
                       reference: SourceReference) {
-    super(source, reference);
+    super(source, parentReference, reference);
     this.variable = variable;
     this.assignment = assignment;
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-    let tokens = source.tokens;
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+
+    const expressionReference = new NodeReference();
+    const tokens = source.tokens;
     if (!AssignmentExpression.isValid(tokens)) return newParseExpressionFailed("AssignmentExpression", `Invalid expression.`);
 
-    let variableExpression = factory.parse(tokens.tokensFromStart(1), source.line);
+    let variableExpression = factory.parse(expressionReference, tokens.tokensFromStart(1), source.line);
     if (variableExpression.state != 'success') return variableExpression;
 
-    let assignment = factory.parse(tokens.tokensFrom(2), source.line);
+    let assignment = factory.parse(expressionReference, tokens.tokensFrom(2), source.line);
     if (assignment.state != 'success') return assignment;
 
     let reference = source.createReference();
 
-    let expression = new AssignmentExpression(variableExpression.result, assignment.result, source, reference);
+    let expression = new AssignmentExpression(variableExpression.result, assignment.result, source, parentReference, reference);
+    expressionReference.setNode(expression);
 
     return newParseExpressionSuccess(expression);
   }
@@ -56,14 +63,14 @@ export class AssignmentExpression extends Expression {
   public static isValid(tokens: TokenList): boolean {
     return tokens.length >= 3
       && (tokens.isTokenType(0, TokenType.StringLiteralToken)
-        || tokens.isTokenType(0, TokenType.MemberAccessLiteralToken))
+        || tokens.isTokenType(0, TokenType.MemberAccessToken))
       && tokens.isOperatorToken(1, OperatorType.Assignment);
   }
 
   public override getChildren(): Array<INode> {
     return [
-      this.assignment,
-      this.variable
+      this.variable,
+      this.assignment
     ]
   }
 
@@ -71,7 +78,8 @@ export class AssignmentExpression extends Expression {
 
     const hasVariableReference = asHasVariableReference(this.variable);
     if (hasVariableReference == null || hasVariableReference.variable == null) {
-      context.logger.fail(this.reference, `Unknown variable name: '${this.variable}'.`);
+      const path = hasVariableReference?.path ?? this.variable.toString();
+      context.logger.fail(this.reference, `Unknown variable name: '${path}'.`);
       return;
     }
 
@@ -95,11 +103,16 @@ export class AssignmentExpression extends Expression {
 
     const assignmentVariable = hasVariableReference.variable;
     const writeVariableUsage = new VariableUsage(
+      this.reference,
       assignmentVariable.path, assignmentVariable.componentType,
       assignmentVariable.type,
       assignmentVariable.source,
       VariableAccess.Write);
 
     return [writeVariableUsage, ...getReadVariableUsage(this.assignment)];
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

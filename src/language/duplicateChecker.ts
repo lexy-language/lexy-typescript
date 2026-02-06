@@ -1,7 +1,7 @@
-import type {IValidationContext} from "../parser/validationContext";
+import type {IValidationContext} from "../parser/context/validationContext";
 
 import {contains} from "../infrastructure/arrayFunctions";
-import {SourceReference} from "../parser/sourceReference";
+import {SourceReference} from "./sourceReference";
 
 export class DuplicateChecker {
 

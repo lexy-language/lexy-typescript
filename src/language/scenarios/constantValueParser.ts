@@ -27,6 +27,6 @@ export class ConstantValueParser {
   }
 
   private static parseMemberAccessExpression(literalExpression: MemberAccessExpression): ConstantValueParseResult {
-    return newConstantValueParseSuccess(new ConstantValue(literalExpression.memberAccessLiteral.value));
+    return newConstantValueParseSuccess(new ConstantValue(literalExpression.memberAccessToken.value));
   }
 }

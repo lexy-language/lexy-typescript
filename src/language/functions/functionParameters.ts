@@ -1,12 +1,24 @@
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 
 import {IParsableNode, ParsableNode} from "../parsableNode";
 import {VariableDefinition} from "../variableDefinition";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {VariableSource} from "../variableSource";
 import {NodeType} from "../nodeType";
+import {NodeReference} from "../nodeReference";
+import {Function} from "./function";
+import {Symbol} from "../symbols/symbol";
+import {FunctionCode} from "./functionCode";
+
+export function instanceOfFunctionParameters(object: any) {
+  return object?.nodeType == NodeType.FunctionParameters;
+}
+
+export function asFunctionParameters(object: any): FunctionParameters | null {
+  return instanceOfFunctionParameters(object) ? object as FunctionParameters : null;
+}
 
 export class FunctionParameters extends ParsableNode {
 
@@ -14,16 +26,16 @@ export class FunctionParameters extends ParsableNode {
 
   public readonly nodeType = NodeType.FunctionParameters;
 
-  public get variables(): ReadonlyArray<VariableDefinition> {
+  public get variables(): readonly VariableDefinition[] {
     return this.variablesValue;
   }
 
-  constructor(reference: SourceReference) {
-    super(reference);
+  constructor(parent: Function, reference: SourceReference) {
+    super(new NodeReference(parent), reference);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
-    let variableDefinition = VariableDefinition.parse(VariableSource.Parameters, context);
+    const variableDefinition = VariableDefinition.parse(VariableSource.Parameters, context, new NodeReference(this));
     if (variableDefinition != null) {
       this.variablesValue.push(variableDefinition);
     }
@@ -35,5 +47,9 @@ export class FunctionParameters extends ParsableNode {
   }
 
   protected override validate(context: IValidationContext): void {
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

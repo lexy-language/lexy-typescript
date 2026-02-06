@@ -1,5 +1,5 @@
 import type {ILexyCompiler} from "../generation/lexyCompiler";
-import type {IParserLogger} from "../parser/parserLogger";
+import type {IParserLogger} from "../parser/logging/parserLogger";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
 import type {IComponentNode} from "../language/componentNode";
 import type {IComponentNodeList} from "../language/componentNodeList";
@@ -168,7 +168,7 @@ export class ScenarioRunner implements IScenarioRunner {
 
   private static validateResult(expected: AssignmentDefinition, result: FunctionResult, validationResult: Array<string>) {
     const assignmentDefinition = Assert.notNull(asAssignmentDefinition(expected), "assignmentDefinition");
-    if (assignmentDefinition.type == null) throw new Error("expected.type is null")
+    if (assignmentDefinition.state.type == null) throw new Error("expected.type is null")
     const actual = result.getValue(assignmentDefinition.variable, validationResult);
     const expectedValue = assignmentDefinition.constantValue.value;
 

@@ -7,6 +7,7 @@ import {getReadVariableUsageNodes} from "../getReadVariableUsage";
 import {TokenType} from "../../../parser/tokens/tokenType";
 import {whereSelect} from "../../../infrastructure/arrayFunctions";
 import {INodeWithName} from "../../nodeWithName";
+import {NodeReference} from "../../nodeReference";
 
 export function instanceOfFunctionCallExpression(object: any): object is FunctionCallExpression {
   return object?.isFunctionCallExpression == true;
@@ -23,8 +24,8 @@ export abstract class FunctionCallExpression extends Expression implements INode
 
   public readonly abstract name: string
 
-  protected constructor(source: ExpressionSource) {
-    super(source, source.createReference());
+  protected constructor(parent: NodeReference, source: ExpressionSource) {
+    super(source, parent, source.createReference());
   }
 
   public equals(other: FunctionCallExpression): boolean {
@@ -33,8 +34,8 @@ export abstract class FunctionCallExpression extends Expression implements INode
 
   public static isValid(tokens: TokenList): boolean {
     return (tokens.isTokenType(0, TokenType.StringLiteralToken)
-         || tokens.isTokenType(0, TokenType.MemberAccessLiteralToken))
-      && tokens.isOperatorToken(1, OperatorType.OpenParentheses);
+         || tokens.isTokenType(0, TokenType.MemberAccessToken))
+         && tokens.isOperatorToken(1, OperatorType.OpenParentheses);
   }
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {

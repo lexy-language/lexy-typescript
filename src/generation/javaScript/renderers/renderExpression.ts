@@ -221,25 +221,25 @@ function renderNumberOperationExpression(expression: BinaryExpression, codeWrite
 }
 
 function renderBinaryExpression(expression: BinaryExpression, codeWriter: CodeWriter) {
-  if (expression.leftType?.equals(ValueType.number) && expression.rightType?.equals(ValueType.number)) {
+  if (expression.state.leftType?.equals(ValueType.number) && expression.state.rightType?.equals(ValueType.number)) {
     if (renderNumberOperationExpression(expression, codeWriter)) {
       return;
     }
   }
   renderExpression(expression.left, codeWriter);
-  if (expression.leftType?.equals(ValueType.date)) {
+  if (expression.state.leftType?.equals(ValueType.date)) {
     codeWriter.write(".getTime()");
   }
 
   codeWriter.write(operatorString(expression.operator));
 
-  if (expression.leftType?.equals(ValueType.string) &&  expression.rightType?.equals(ValueType.date)) {
+  if (expression.state.leftType?.equals(ValueType.string) &&  expression.state.rightType?.equals(ValueType.date)) {
     codeWriter.write(`${LexyCodeConstants.environmentVariable}.libraries.Date.functions.Format(`);
     renderExpression(expression.right, codeWriter);
     codeWriter.write(`)`);
   } else {
     renderExpression(expression.right, codeWriter);
-    if (expression.rightType?.equals(ValueType.date)) {
+    if (expression.state.rightType?.equals(ValueType.date)) {
       codeWriter.write(".getTime()");
     }
   }

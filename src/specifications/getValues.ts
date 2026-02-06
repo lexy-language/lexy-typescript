@@ -43,7 +43,7 @@ function setParameter(functionNode: Function,
     throw new Error(`Function '${functionNode?.name}' parameter '${assignmentDefinition.variable.rootIdentifier}' not found.`);
   }
 
-  if (assignmentDefinition.type == null) throw new Error("parameter.type is null")
+  if (assignmentDefinition.state.type == null) throw new Error("parameter.type is null")
   const value = getValue(assignmentDefinition);
 
   setValueObjectProperty(result, assignmentDefinition.variable, value);
@@ -90,7 +90,7 @@ function setValueObjectProperty(result: any, variableReference: IdentifierPath, 
       valueObject[variableReference.rootIdentifier] = {};
     }
     valueObject = valueObject[variableReference.rootIdentifier];
-    variableReference = variableReference.childrenReference();
+    variableReference = variableReference.childrenPath();
   }
   valueObject[variableReference.rootIdentifier] = value;
 }

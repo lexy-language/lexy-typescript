@@ -31,15 +31,15 @@ describe('SwitchExpressionTests', () => {
 
       expect(expression.cases[0].value?.toString()).toBe("6");
       expect(expression.cases[0].expressions.length).toBe(1);
-      expect(expression.cases[0].expressions[0].toString()).toBe("temp=666");
+      expect(expression.cases[0].expressions[0].toString()).toBe("(AssignmentExpression) temp = 666");
 
       expect(expression.cases[1].value?.toString()).toBe("7");
       expect(expression.cases[1].expressions.length).toBe(1);
-      expect(expression.cases[1].expressions[0].toString()).toBe("temp=777");
+      expect(expression.cases[1].expressions[0].toString()).toBe("(AssignmentExpression) temp = 777");
 
       expect(expression.cases[2].value).toBeNull();
       expect(expression.cases[2].expressions.length).toBe(1);
-      expect(expression.cases[2].expressions[0].toString()).toBe("temp=888");
+      expect(expression.cases[2].expressions[0].toString()).toBe("(AssignmentExpression) temp = 888");
     });
   });
 });

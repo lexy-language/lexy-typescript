@@ -1,19 +1,22 @@
-import type {IParseLineContext} from "../parser/ParseLineContext";
-import type {IValidationContext} from "../parser/validationContext";
+import type {IParseLineContext} from "../parser/context/parseLineContext";
+import type {IValidationContext} from "../parser/context/validationContext";
+import type {INode} from "./node";
 
 import {IParsableNode, ParsableNode} from "./parsableNode";
-import {SourceReference} from "../parser/sourceReference";
-import {INode} from "./node";
+import {SourceReference} from "./sourceReference";
 import {NodeType} from "./nodeType";
+import {NodeReference} from "./nodeReference";
+import {SymbolKind} from "./symbols/symbolKind";
+import {Symbol} from "./symbols/symbol";
 
 export class Comments extends ParsableNode {
 
-  private readonly lines: Array<string> = [];
+  private readonly content: Array<string> = [];
 
   public nodeType = NodeType.Comments;
 
-   constructor(sourceReference: SourceReference) {
-     super(sourceReference);
+   constructor(parentReference: NodeReference, sourceReference: SourceReference) {
+     super(parentReference, sourceReference);
    }
 
    public override parse(context: IParseLineContext): IParsableNode {
@@ -26,7 +29,7 @@ export class Comments extends ParsableNode {
 
      let comment = context.line.tokens.tokenValue(0);
      if (comment != null) {
-       this.lines.push(comment);
+       this.content.push(comment);
      }
      return this;
    }
@@ -38,4 +41,7 @@ export class Comments extends ParsableNode {
    protected override validate(context: IValidationContext): void {
    }
 
+  public override getSymbol(): Symbol {
+    return new Symbol(this.reference, "Comments", `//${this.content.join("\n")}`, SymbolKind.Comments);
+  }
 }

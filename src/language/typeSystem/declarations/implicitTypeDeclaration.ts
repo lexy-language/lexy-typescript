@@ -1,10 +1,13 @@
-import type {IValidationContext} from "../../../parser/validationContext";
+import type {IValidationContext} from "../../../parser/context/validationContext";
 
 import {TypeDeclaration} from "./typeDeclaration";
 import {Type} from "../type";
-import {SourceReference} from "../../../parser/sourceReference";
+import {SourceReference} from "../../sourceReference";
 import {INode} from "../../node";
 import {NodeType} from "../../nodeType";
+import {NodeReference} from "../../nodeReference";
+import {Symbol} from "../../symbols/symbol";
+import {SymbolKind} from "../../symbols/symbolKind";
 
 export function instanceOfImplicitTypeDeclaration(object: any): boolean {
   return object?.nodeType == NodeType.ImplicitTypeDeclaration;
@@ -18,15 +21,8 @@ export class ImplicitTypeDeclaration extends TypeDeclaration {
 
   public nodeType = NodeType.ImplicitTypeDeclaration;
 
-  constructor(reference: SourceReference) {
-    super(reference);
-  }
-
-  protected override validateType(context: IValidationContext): Type {
-    if (this.type == null) {
-      throw new Error(`Not supported. Nodes should be Validated first.`)
-    }
-    return this.type;
+  constructor(parentReference: NodeReference, reference: SourceReference) {
+    super(parentReference, reference);
   }
 
   public define(type: Type): void {
@@ -41,7 +37,7 @@ export class ImplicitTypeDeclaration extends TypeDeclaration {
     //suppress base validator
   }
 
-  public override toString() {
-    return "(implicit) " + this.type?.toString();
+  public override getSymbol(): Symbol | null {
+    return this.type ? this.type.getSymbol(this.reference) : null;
   }
 }

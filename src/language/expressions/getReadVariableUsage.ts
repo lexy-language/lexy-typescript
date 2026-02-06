@@ -13,7 +13,9 @@ function addVariableExpression(expression: Expression | null, results: Array<Var
 
   const reference = hasVariableReference.variable;
   if (reference != null) {
-    const usage = new VariableUsage(reference.path, reference.componentType, reference.type, reference.source, VariableAccess.Read);
+    const usage = new VariableUsage(reference.reference, reference.path,
+      reference.componentType, reference.type,
+      reference.source, VariableAccess.Read);
     results.push(usage);
   }
 }

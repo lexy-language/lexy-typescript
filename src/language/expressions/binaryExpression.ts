@@ -1,11 +1,11 @@
 import type {INode} from "../node";
 import type {IExpressionFactory} from "./expressionFactory";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {Expression} from "./expression";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {ExpressionOperator} from "./expressionOperator";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {ExpressionSource} from "./expressionSource";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
@@ -16,7 +16,8 @@ import {ValueType} from "../typeSystem/valueType";
 import {any} from "../../infrastructure/arrayFunctions";
 import {EnumType, instanceOfEnumType} from "../typeSystem/enumType";
 import {EnumDefinition} from "../enums/enumDefinition";
-import {SourceFile} from "../../parser/sourceFile";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 type OperatorCombination = {
   leftType: Type,
@@ -54,6 +55,17 @@ export function asBinaryExpression(object: any): BinaryExpression | null {
   return instanceOfBinaryExpression(object) ? object as BinaryExpression : null;
 }
 
+export class BinaryState {
+
+  public readonly leftType: Type | null = null;
+  public readonly rightType: Type | null = null;
+
+  constructor(leftType: Type | null, rightType: Type | null) {
+    this.leftType = leftType;
+    this.rightType = rightType;
+  }
+}
+
 export class BinaryExpression extends Expression {
 
   private static readonly ComparisonOperators: Array<ExpressionOperator> = [
@@ -66,7 +78,7 @@ export class BinaryExpression extends Expression {
   ];
 
   static EnumType() {
-    let definition = new EnumDefinition("*", false, new SourceReference(new SourceFile("*"), 1, 1));
+    let definition = new EnumDefinition("*", false, new NodeReference(null, true), new SourceReference("*", 1, 1, 1));
     return new EnumType(definition);
   }
 
@@ -134,51 +146,59 @@ export class BinaryExpression extends Expression {
     new OperatorEntry(OperatorType.Or, ExpressionOperator.Or)
   ];
 
-  public nodeType = NodeType.BinaryExpression;
-  public left: Expression;
-  public right: Expression;
-  public operator: ExpressionOperator;
-  public leftType: Type | null = null;
-  public rightType: Type | null = null;
+  private stateValue: BinaryState | null = null;
+
+  public readonly nodeType = NodeType.BinaryExpression;
+  public readonly left: Expression;
+  public readonly right: Expression;
+  public readonly operator: ExpressionOperator;
+
+  public get state(): BinaryState {
+    if (this.stateValue == null) throw new Error("State not set.")
+    return this.stateValue;
+  }
 
   constructor(left: Expression, right: Expression, operatorValue: ExpressionOperator,
-              source: ExpressionSource, reference: SourceReference) {
-    super(source, reference);
+              source: ExpressionSource, parentReference: NodeReference, reference: SourceReference) {
+    super(source, parentReference, reference);
     this.left = left;
     this.right = right;
     this.operator = operatorValue;
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-    let tokens = source.tokens;
-    let supportedTokens = BinaryExpression.getCurrentLevelSupportedTokens(tokens);
-    let lowestPriorityOperation = BinaryExpression.getLowestPriorityOperation(supportedTokens);
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+    const tokens = source.tokens;
+    const supportedTokens = BinaryExpression.getCurrentLevelSupportedTokens(tokens);
+    const lowestPriorityOperation = BinaryExpression.getLowestPriorityOperation(supportedTokens);
     if (lowestPriorityOperation == null) {
       return newParseExpressionFailed("BinaryExpression", `No valid Operator token found.`);
     }
 
-    let leftTokens = tokens.tokensRange(0, lowestPriorityOperation.index - 1);
+    const leftTokens = tokens.tokensRange(0, lowestPriorityOperation.index - 1);
     if (leftTokens.length == 0) {
       return newParseExpressionFailed("BinaryExpression",
         `No tokens left from: ${lowestPriorityOperation.index} (${tokens})`);
     }
 
-    let rightTokens = tokens.tokensFrom(lowestPriorityOperation.index + 1);
+    const rightTokens = tokens.tokensFrom(lowestPriorityOperation.index + 1);
     if (rightTokens.length == 0) {
       return newParseExpressionFailed("BinaryExpression",
         `No tokens right from: ${lowestPriorityOperation.index} (${tokens})`);
     }
 
-    let left = factory.parse(leftTokens, source.line);
+    const expressionReference = new NodeReference();
+    const left = factory.parse(expressionReference, leftTokens, source.line);
     if (left.state != 'success') return left;
 
-    let right = factory.parse(rightTokens, source.line);
+    const right = factory.parse(expressionReference, rightTokens, source.line);
     if (right.state != 'success') return right;
 
-    let operatorValue = lowestPriorityOperation.expressionOperator;
-    let reference = source.createReference(lowestPriorityOperation.index);
+    const operatorValue = lowestPriorityOperation.expressionOperator;
+    const reference = source.createReference(lowestPriorityOperation.index);
 
-    let binaryExpression = new BinaryExpression(left.result, right.result, operatorValue, source, reference);
+    const binaryExpression = new BinaryExpression(left.result, right.result, operatorValue, source, parentReference, reference);
+    expressionReference.setNode(binaryExpression);
+
     return newParseExpressionSuccess(binaryExpression);
   }
 
@@ -253,17 +273,21 @@ export class BinaryExpression extends Expression {
   }
 
   protected override validate(context: IValidationContext): void {
-    this.leftType = this.left.deriveType(context);
-    this.rightType = this.right.deriveType(context);
-    if (this.leftType == null || this.rightType == null) {
+
+    const leftType = this.left.deriveType(context);
+    const rightType = this.right.deriveType(context);
+
+    this.stateValue = new BinaryState(leftType, rightType);
+
+    if (leftType == null || rightType == null) {
       context.logger.fail(this.reference,
         `Invalid operator '${this.operator}'. Can't derive type.`);
       return;
     }
 
-    if (!this.isAllowedOperation(this.leftType, this.rightType)) {
+    if (!this.isAllowedOperation(leftType, rightType)) {
       context.logger.fail(this.reference,
-        `Invalid operator '${this.operator}'. Left type: '${this.leftType}' and right type '${this.rightType}' not supported.`);
+        `Invalid operator '${this.operator}'. Left type: '${leftType}' and right type '${rightType}' not supported.`);
     }
   }
 
@@ -277,7 +301,7 @@ export class BinaryExpression extends Expression {
       let allowedRightEnum = instanceOfEnumType(allowed.rightType);
 
       if (allowedLeftEnum && allowedRightEnum) {
-        //if left and right is enum, the enum should be of the same typeDeclaration
+        //if left and right is enumDefintion, the enumDefintion should be of the same typeDeclaration
         return leftEnum && rightEnum && left != null && left.equals(right);
       } else if (allowedLeftEnum) {
         return leftEnum && allowed.rightType.equals(right);
@@ -294,9 +318,13 @@ export class BinaryExpression extends Expression {
       return ValueType.boolean;
     }
 
-    let left = this.left.deriveType(context);
-    let right = this.right.deriveType(context);
+    const left = this.left.deriveType(context);
+    const right = this.right.deriveType(context);
 
     return left?.equals(right) ? left : null;
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

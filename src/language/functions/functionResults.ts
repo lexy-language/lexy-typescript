@@ -1,12 +1,23 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {VariableDefinition} from "../variableDefinition";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {IParsableNode, ParsableNode} from "../parsableNode";
 import {VariableSource} from "../variableSource";
 import {NodeType} from "../nodeType";
+import {Symbol} from "../symbols/symbol";
+import {Function} from "./function";
+import {NodeReference} from "../nodeReference";
+
+export function instanceOfFunctionResults(object: any) {
+  return object?.nodeType == NodeType.FunctionResults;
+}
+
+export function asFunctionResults(object: any): FunctionResults | null {
+  return instanceOfFunctionResults(object) ? object as FunctionResults : null;
+}
 
 export class FunctionResults extends ParsableNode {
 
@@ -18,12 +29,12 @@ export class FunctionResults extends ParsableNode {
     return this.variablesValue;
   }
 
-  constructor(reference: SourceReference) {
-    super(reference);
+  constructor(parent: Function, reference: SourceReference) {
+    super(new NodeReference(parent), reference);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
-    let variableDefinition = VariableDefinition.parse(VariableSource.Results, context);
+    const variableDefinition = VariableDefinition.parse(VariableSource.Results, context, new NodeReference(this));
     if (variableDefinition == null) return this;
 
     if (variableDefinition.defaultExpression != null) {
@@ -42,5 +53,9 @@ export class FunctionResults extends ParsableNode {
   }
 
   protected override validate(context: IValidationContext): void {
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

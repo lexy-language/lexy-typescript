@@ -1,11 +1,14 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {IParsableNode, ParsableNode} from "../parsableNode";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {NodeType} from "../nodeType";
 import {ExecutionLog} from "./executionLog";
+import {Scenario} from "./scenario";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export class ExecutionLogging extends ParsableNode {
 
@@ -17,8 +20,8 @@ export class ExecutionLogging extends ParsableNode {
     return this.entriesValue;
   }
 
-  constructor(reference: SourceReference) {
-    super(reference);
+  constructor(parent: Scenario, reference: SourceReference) {
+    super(new NodeReference(parent), reference);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
@@ -26,7 +29,7 @@ export class ExecutionLogging extends ParsableNode {
   }
 
   private parseEntry(context: IParseLineContext) {
-    let entry = ExecutionLog.parse(context);
+    let entry = ExecutionLog.parse(new NodeReference(this), context);
     if (entry == null) return this;
 
     this.entriesValue.push(entry);
@@ -39,5 +42,9 @@ export class ExecutionLogging extends ParsableNode {
   }
 
   protected override validate(context: IValidationContext): void {
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

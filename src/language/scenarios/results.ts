@@ -1,14 +1,18 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IAssignmentDefinition} from "./assignmentDefinition";
 
 import {instanceOfParsableNode, IParsableNode, ParsableNode} from "../parsableNode";
 import {AssignmentDefinition} from "./assignmentDefinition";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {NodeType} from "../nodeType";
 import {flattenAssignments} from "./flattenAssignments";
 import {AssignmentDefinitionParser} from "./assignmentDefinitionParser";
+import {Scenario} from "./scenario";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export class Results extends ParsableNode {
 
@@ -16,12 +20,12 @@ export class Results extends ParsableNode {
 
   public nodeType = NodeType.ScenarioResults;
 
-  constructor(reference: SourceReference) {
-    super(reference);
+  constructor(parent: Scenario, reference: SourceReference) {
+    super(new NodeReference(parent), reference);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
-    let assignment = AssignmentDefinitionParser.parse(context);
+    const assignment = AssignmentDefinitionParser.parse(context, this);
     if (assignment == null) return this;
 
     this.assignmentsValue.push(assignment);
@@ -41,5 +45,9 @@ export class Results extends ParsableNode {
 
   public allAssignments(): Array<AssignmentDefinition> {
     return flattenAssignments(this.assignmentsValue);
+  }
+
+  public override getSymbol(): Symbol {
+    return new Symbol(this.reference, "results", "Scenario results variables used to validate the function result.", SymbolKind.Keyword);
   }
 }

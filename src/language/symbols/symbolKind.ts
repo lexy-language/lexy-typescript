@@ -1,0 +1,22 @@
+export enum SymbolKind {
+  Scenario,
+  Keyword,
+  Type,
+  ParameterVariable,
+  ValueType,
+  ResultVariable,
+  Operator,
+  Function,
+  Enum,
+  EnumMember,
+  Constant,
+  Variable,
+  SystemFunction,
+  GeneratedType,
+  Table,
+  TableFunction,
+  ObjectVariable,
+  Comments,
+  LibraryFunction,
+  TableColumn
+}

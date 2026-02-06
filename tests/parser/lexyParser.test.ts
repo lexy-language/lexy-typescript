@@ -21,7 +21,7 @@ describe('LexyParserTests', () => {
       functionNode.results.variables[0].typeDeclaration, type =>
         expect(type.typeName).toBe(`number`));
     expect(functionNode.code.expressions.length).toBe(1);
-    expect(functionNode.code.expressions[0].toString()).toBe(`Result=777`);
+    expect(functionNode.code.expressions[0].toString()).toBe(`(AssignmentExpression) Result = 777`);
   });
 
   it('testFunctionKeywords', async () => {

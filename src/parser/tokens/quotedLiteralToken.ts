@@ -1,4 +1,4 @@
-import type {IValidationContext} from "../validationContext";
+import type {IValidationContext} from "../context/validationContext";
 import type {ILiteralToken} from "./ILiteralToken";
 
 import {ParsableToken} from "./parsableToken";

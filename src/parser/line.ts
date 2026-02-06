@@ -1,11 +1,12 @@
 import type {ITokenizer} from "./tokens/tokenizer";
-import type {IParserLogger} from "./parserLogger";
+import type {IParserLogger} from "./logging/parserLogger";
 
-import {SourceFile} from "./sourceFile";
-import {SourceReference} from "./sourceReference";
+import {SourceReference} from "../language/sourceReference";
 import {TokenizeResult} from "./tokens/tokenizeResult";
 import {TokenList} from "./tokens/tokenList";
 import {TokenCharacter} from "./tokens/tokenCharacter";
+import {Position} from "../language/position";
+import {Assert} from "../infrastructure/assert";
 
 export class Line {
 
@@ -13,7 +14,7 @@ export class Line {
 
   public index: number;
   public content: string;
-  public file: SourceFile;
+  public fileName: string;
 
   public get tokens(): TokenList {
     if (!this.tokensValues) {
@@ -22,10 +23,13 @@ export class Line {
     return this.tokensValues;
   }
 
-  constructor(index: number, content: string, file: SourceFile) {
+  public endPosition: Position;
+
+  constructor(index: number, line: string, fileName: string) {
     this.index = index;
-    this.content = content;
-    this.file = file;
+    this.content = Assert.notNull(line, "line");
+    this.fileName = Assert.notNull(fileName, "fileName");
+    this.endPosition = new Position(index + 1, line.length);
   }
 
   public indent(logger: IParserLogger): number | null {
@@ -69,46 +73,26 @@ export class Line {
     return this.tokens != null && this.tokens.length == 0;
   }
 
-  public firstCharacter(): number {
-
-    for (let index = 0; index < this.content.length; index++) {
-      if (this.content[index] != ' ' && this.content[index] != '\\') {
-        return index;
-      }
-    }
-
-    return 0;
-  }
-
-  public tokenReference(tokenIndex: number): SourceReference {
+  public lineReference(characterIndex: number): SourceReference {
     return new SourceReference(
-      this.file,
+      this.fileName ?? "runtime",
       this.index + 1,
-      this.tokens != null
-        ? (this.tokens.characterPosition(tokenIndex) ?? 0) + 1
-        : 1);
+      characterIndex + 1,
+      characterIndex + 1);
   }
 
   public lineEndReference(): SourceReference {
-    return new SourceReference(
-      this.file,
-      this.index + 1,
-      this.content.length);
-  }
 
-  public lineStartReference(): SourceReference {
-    let lineStart = this.firstCharacter();
-    return new SourceReference(
-      this.file,
-      this.index + 1,
-      lineStart + 1);
-  }
+    if (this.tokensValues == null || this.tokensValues.length == 0) {
+      return new SourceReference(this.fileName ?? "runtime", this.index + 1, 1, this.content.length + 1);
+    }
 
-  public lineReference(characterIndex: number): SourceReference {
+    const columnEnd = this.tokens.lastColumn();
     return new SourceReference(
-      this.file ?? new SourceFile('runtime'),
+      this.fileName ?? "runtime",
       this.index + 1,
-      characterIndex + 1);
+      columnEnd - 1,
+      columnEnd);
   }
 
   public tokenize(tokenizer: ITokenizer): TokenizeResult {

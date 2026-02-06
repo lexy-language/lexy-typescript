@@ -1,12 +1,15 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {asNumberLiteralToken, NumberLiteralToken} from "../../parser/tokens/numberLiteralToken";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {INode, Node} from "../node";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {isValidIdentifier} from "../../parser/tokens/character";
 import {NodeType} from "../nodeType";
+import {EnumDefinition} from "./enumDefinition";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfEnumMember(object: any) {
   return object?.nodeType == NodeType.EnumMember;
@@ -23,14 +26,15 @@ export class EnumMember extends Node {
   public valueLiteral: NumberLiteralToken | null;
   public numberValue: number;
 
-  constructor(name: string, reference: SourceReference, valueLiteral: NumberLiteralToken | null, value: number) {
-     super(reference);
+  constructor(name: string, valueLiteral: NumberLiteralToken | null, value: number, enumDefinition: EnumDefinition, reference: SourceReference) {
+     super(enumDefinition, reference);
      this.numberValue = value;
      this.name = name;
      this.valueLiteral = valueLiteral;
    }
 
-   public static parse(context: IParseLineContext, lastIndex: number): EnumMember | null {
+   public static parse(context: IParseLineContext, enumDefinition: EnumDefinition, lastIndex: number): EnumMember | null {
+
      let valid = context.validateTokens("EnumMember")
        .countMinimum(1)
        .stringLiteral(0)
@@ -38,17 +42,17 @@ export class EnumMember extends Node {
 
      if (!valid) return null;
 
-     let line = context.line;
-     let tokens = line.tokens;
-     let name = tokens.tokenValue(0);
+     const line = context.line;
+     const tokens = line.tokens;
+     const name = tokens.tokenValue(0);
      if (!name) return null;
 
-     let reference = line.lineStartReference();
-
-     if (tokens.length == 1) return new EnumMember(name, reference, null, lastIndex + 1);
+     if (tokens.length == 1) {
+       return new EnumMember(name, null, lastIndex + 1, enumDefinition, tokens.reference(0, 1));
+     }
 
      if (tokens.length != 3) {
-       context.logger.fail(line.lineEndReference(), `Invalid number of tokens: ${tokens.length}. Should be 1 or 3.`);
+       context.logger.fail(tokens.allReference(), `Invalid number of tokens: ${tokens.length}. Should be 1 or 3.`);
        return null;
      }
 
@@ -60,8 +64,9 @@ export class EnumMember extends Node {
 
      let value = tokens.token<NumberLiteralToken>(2, asNumberLiteralToken);
      if (value == null )return null;
+     const reference = tokens.allReference();
 
-     return new EnumMember(name, reference, value, value.numberValue);
+     return new EnumMember(name, value, value.numberValue, enumDefinition, reference);
    }
 
    public override getChildren(): Array<INode> {
@@ -81,15 +86,26 @@ export class EnumMember extends Node {
      }
    }
 
-   private validateMemberValues(context: IValidationContext): void {
-     if (this.valueLiteral == null) return;
+  private validateMemberValues(context: IValidationContext): void {
+    if (this.valueLiteral == null) return;
 
-     if (this.valueLiteral.numberValue < 0) {
-       context.logger.fail(this.reference, `Enum member value should not be < 0: ${this.valueLiteral}`);
-     }
+    if (this.valueLiteral.numberValue < 0) {
+      context.logger.fail(this.reference, `Enum member value should not be < 0: ${this.valueLiteral}`);
+    }
 
-     if (this.valueLiteral.isDecimal()) {
-       context.logger.fail(this.reference, `Enum member value should not be decimal: ${this.valueLiteral}`);
-     }
-   }
+    if (this.valueLiteral.isDecimal()) {
+      context.logger.fail(this.reference, `Enum member value should not be decimal: ${this.valueLiteral}`);
+    }
+  }
+
+  public override getSymbol(): Symbol {
+    const parentEnum = this.parent as EnumDefinition;
+    return this.valueLiteral != null
+      ? new Symbol(this.reference, `enum member: ${parentEnum?.name}.${this.name} = ${this.valueLiteral}`, "", SymbolKind.EnumMember)
+      : new Symbol(this.reference, `enum member: ${parentEnum?.name}.${this.name}`, "", SymbolKind.EnumMember);
+  }
+
+  public override toString(): string {
+    return this.name;
+  }
 }

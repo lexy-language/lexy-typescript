@@ -1,3 +1,5 @@
+import {IncompleteMemberAccessToken} from "./incompleteMemberAccessToken";
+
 export enum TokenType {
   BooleanLiteralToken = 'BooleanLiteralToken',
   BuildLiteralToken = 'BuildLiteralToken',
@@ -5,11 +7,12 @@ export enum TokenType {
   CommentToken = 'CommentToken',
   DateTimeLiteralToken = 'DateTimeLiteralToken',
   KeywordToken = 'KeywordToken',
-  MemberAccessLiteralToken = 'MemberAccessLiteralToken',
+  MemberAccessToken = 'MemberAccessToken',
   NumberLiteralToken = 'NumberLiteralToken',
   OperatorToken = 'OperatorToken',
   QuotedLiteralToken = 'QuotedLiteralToken',
   StringLiteralToken = 'StringLiteralToken',
   TableSeparatorToken = 'TableSeparatorToken',
   WhitespaceToken = 'WhitespaceToken',
+  IncompleteMemberAccessToken = "IncompleteMemberAccessToken"
 }

@@ -1,4 +1,4 @@
-import type {IParserLogger} from "../src/parser/parserLogger";
+import type {IParserLogger} from "../src/parser/logging/parserLogger";
 
 import {NodeType} from "../src/language/nodeType";
 import {ScenarioRunner} from "../src/specifications/scenarioRunner";

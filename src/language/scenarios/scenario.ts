@@ -1,7 +1,7 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
 import type {IComponentNodeList} from "../componentNodeList";
 
@@ -14,12 +14,9 @@ import {ExpectComponentErrors} from "./expectComponentErrors";
 import {Results} from "./results";
 import {Parameters} from "./parameters";
 import {functionName} from "./functionName";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {NodeName} from "../../parser/nodeName";
-import {KeywordToken} from "../../parser/tokens/keywordToken";
 import {Keywords} from "../../parser/Keywords";
-import {VariableSource} from "../variableSource";
-import {VariableDefinition} from "../variableDefinition";
 import {NodeType} from "../nodeType";
 import {ExpectExecutionErrors} from "./expectExecutionErrors";
 import {ExecutionLogging} from "./executionLogging";
@@ -27,6 +24,12 @@ import {TokenType} from "../../parser/tokens/tokenType";
 import {ValidationTable} from "./validationTable";
 import {isNullOrEmpty} from "../../infrastructure/validationFunctions";
 import {isValidIdentifier} from "../../parser/tokens/character";
+import {LexyScriptNode} from "../lexyScriptNode";
+import {NodeReference} from "../nodeReference";
+import {SuggestionEdit} from "../symbols/suggestionEdit";
+import {Suggestions} from "../symbols/suggestions";
+import {SymbolKind} from "../symbols/symbolKind";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfScenario(object: any) {
   return object?.nodeType == NodeType.Scenario;
@@ -54,7 +57,6 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
 
   public readonly nodeType = NodeType.Scenario;
   public readonly hasNodeDependencies = true;
-  public override readonly name: string;
 
   public get functionName(): functionName | null {
     return this.functionNameValue;
@@ -100,19 +102,18 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     return this.expectExecutionErrorsValue;
   }
 
-  constructor(name: string, reference: SourceReference) {
-    super(reference);
-    this.name = name;
+  constructor(name: string, parentReference: LexyScriptNode, reference: SourceReference) {
+    super(name, new NodeReference(parentReference), reference);
   }
 
-  public static parse(name: string, reference: SourceReference): Scenario {
-    return new Scenario(name, reference);
+  public static parse(name: string, parent: LexyScriptNode, reference: SourceReference): Scenario {
+    return new Scenario(name, parent, reference);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
     let line = context.line;
     let name = line.tokens.tokenValue(0);
-    let reference = line.lineStartReference();
+    let reference = line.tokens.allReference();
     if (!line.tokens.isTokenType(0, TokenType.KeywordToken)) {
       context.logger.fail(reference, `Invalid token '${name}'. Keyword expected.`);
       return this;
@@ -127,21 +128,21 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
         return this.parseTable(context, reference);
 
       case Keywords.Parameters:
-        return this.parametersValue = new Parameters(reference);
+        return this.parametersValue = new Parameters(this, reference);
       case Keywords.Results:
-        return this.resultsValue = new Results(reference);
+        return this.resultsValue = new Results(this, reference);
       case Keywords.ValidationTable:
-        return this.validationTableValue = new ValidationTable(`${this.name}Table`, reference);
+        return this.validationTableValue = new ValidationTable(`${this.name}Table`, this, reference);
 
       case Keywords.ExecutionLogging:
-        return this.executionLoggingValue = new ExecutionLogging(reference);
+        return this.executionLoggingValue = new ExecutionLogging(this, reference);
 
       case Keywords.ExpectErrors:
-        return this.expectErrorsValue = new ExpectErrors(reference);
+        return this.expectErrorsValue = new ExpectErrors(this, reference);
       case Keywords.ExpectComponentErrors:
-        return this.expectComponentErrorsValue = new ExpectComponentErrors(reference);
+        return this.expectComponentErrorsValue = new ExpectComponentErrors(this, reference);
       case Keywords.ExpectExecutionErrors:
-        return this.expectExecutionErrorsValue = new ExpectExecutionErrors(reference);
+        return this.expectExecutionErrorsValue = new ExpectExecutionErrors(this, reference);
       default:
         return this.invalidToken(context, name, reference);
     }
@@ -158,13 +159,13 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
       return this.parseFunctionName(context, reference);
     }
 
-    this.functionNodeValue = Function.create(`${this.name}Function`, true, reference, context.expressionFactory);
+    this.functionNodeValue = Function.create(`${this.name}Function`, true, new NodeReference(this), reference, context.expressionFactory);
     context.logger.setCurrentNode(this.functionNodeValue);
     return this.functionNodeValue;
   }
 
   private parseFunctionName(context: IParseLineContext, reference: SourceReference) {
-    this.functionNameValue = functionName.parse(context, reference)
+    this.functionNameValue = functionName.parse(context, this, reference)
     return this;
   }
 
@@ -177,7 +178,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     let tokenName = NodeName.parse(context);
     if (tokenName == null || tokenName.name == null) return this;
 
-    this.enumValue = EnumDefinition.parse(tokenName.name, true, reference);
+    this.enumValue = EnumDefinition.parse(tokenName.name, true, this, reference);
     context.logger.setCurrentNode(this.enumValue);
     return this.enumValue;
   }
@@ -191,7 +192,7 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     let tokenName = NodeName.parse(context);
     if (tokenName == null || tokenName.name == null) return this;
 
-    this.tableValue = new Table(tokenName.name, reference);
+    this.tableValue = new Table(tokenName.name, new NodeReference(this), reference);
     context.logger.setCurrentNode(this.tableValue);
     return this.tableValue;
   }
@@ -224,33 +225,18 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
   }
 
   private validateWithFunctionVariables(context: IValidationContext, child: INode): void {
-    const scope = context.createVariableScope();
-    try {
+    context.inNodeVariableScope(this, (_ =>
+    {
       this.addFunctionParametersAndResultsForValidation(context);
       super.validateChild(context, child);
-    } finally {
-      scope[Symbol.dispose]();
-    }
+    })); //todo.bind(this));
   }
 
   private addFunctionParametersAndResultsForValidation(context: IValidationContext): void {
     let functionNode = this.functionNode ?? (this.functionName?.hasValue ? context.componentNodes.getFunction(this.functionName.value) : null);
     if (functionNode == null) return;
 
-    Scenario.addVariablesForValidation(context, functionNode.parameters?.variables, VariableSource.Parameters);
-    Scenario.addVariablesForValidation(context, functionNode.results?.variables, VariableSource.Results);
-  }
-
-  private static addVariablesForValidation(context: IValidationContext,
-                                           definitions: ReadonlyArray<VariableDefinition> | undefined,
-                                           source: VariableSource) {
-
-    if (definitions == null) return;
-    for (const definition of definitions) {
-      let type = definition.typeDeclaration.type;
-      if (type == null) continue;
-      context.variableContext.addVariable(definition.name, type, source);
-    }
+    functionNode.addParametersAndResultsForVariables(context);
   }
 
   protected override validate(context: IValidationContext): void {
@@ -282,5 +268,18 @@ export class Scenario extends ComponentNode implements IHasNodeDependencies {
     if (this.enum != null) result.push(this.enum);
     if (this.tableValue != null) result.push(this.tableValue);
     return result;
+  }
+
+  public override getSymbol(): Symbol | null {
+    return new Symbol(this.reference, "scenario: " + this.name, "Test scenario", SymbolKind.Scenario);
+  }
+
+  public override getSuggestions(): readonly SuggestionEdit[] {
+    return Suggestions.edit(withSuggestions => withSuggestions
+      .keyword(Keywords.Parameters)
+      .keyword(Keywords.Results)
+      .keyword(Keywords.ValidationTable)
+      //Omit system language keywords (Expect..., Execute...)
+    );
   }
 }

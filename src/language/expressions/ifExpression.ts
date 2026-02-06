@@ -1,7 +1,7 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
 import type {IExpressionFactory} from "./expressionFactory";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IChildExpression, IParentExpression} from "./IChildExpression";
 
 import {Expression} from "./expression";
@@ -9,7 +9,7 @@ import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
 import {instanceOfElseExpression} from "./elseExpression";
 import {ExpressionSource} from "./expressionSource";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
@@ -20,6 +20,10 @@ import {VariableUsage} from "./variableUsage";
 import {getReadVariableUsage} from "./getReadVariableUsage";
 import {instanceOfElseifExpression} from "./elseifExpression";
 import {lastOrDefault} from "../../infrastructure/arrayFunctions";
+import {NodeReference} from "../nodeReference";
+import {SuggestionEdit} from "../symbols/suggestionEdit";
+import {Suggestions} from "../symbols/suggestions";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfIfExpression(object: any): boolean {
   return object?.nodeType == NodeType.IfExpression;
@@ -48,10 +52,10 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
     return this.elseExpressionsValues;
   }
 
-  constructor(condition: Expression, source: ExpressionSource, reference: SourceReference, factory: IExpressionFactory) {
-    super(source, reference);
+  constructor(condition: Expression, source: ExpressionSource, parentReference: NodeReference, reference: SourceReference, factory: IExpressionFactory) {
+    super(source, parentReference, reference);
     this.condition = condition;
-    this.trueExpressionsValues = new ExpressionList(reference, factory);
+    this.trueExpressionsValues = new ExpressionList(this, reference, factory);
   }
 
   public parse(context: IParseLineContext): IParsableNode {
@@ -65,19 +69,22 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
     return [this.condition, this.trueExpressionsValues, ...this.elseExpressions];
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-    let tokens = source.tokens;
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+
+    const tokens = source.tokens;
     if (!IfExpression.isValid(tokens)) return newParseExpressionFailed("IfExpression", `Not valid.`);
 
     if (tokens.length == 1) return newParseExpressionFailed("IfExpression", `No condition found`);
 
-    let condition = tokens.tokensFrom(1);
-    let conditionExpression = factory.parse(condition, source.line);
+    const expressionReference = new NodeReference();
+    const condition = tokens.tokensFrom(1);
+    const conditionExpression = factory.parse(expressionReference, condition, source.line);
     if (conditionExpression.state != 'success') return conditionExpression;
 
-    let reference = source.createReference();
+    const reference = source.createReference();
 
-    let expression = new IfExpression(conditionExpression.result, source, reference, factory);
+    const expression = new IfExpression(conditionExpression.result, source, parentReference, reference, factory);
+    expressionReference.setNode(expression);
 
     return newParseExpressionSuccess(expression);
   }
@@ -110,5 +117,16 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
 
   override usedVariables(): ReadonlyArray<VariableUsage> {
     return getReadVariableUsage(this.condition);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
+  }
+
+  public override getSuggestions(): readonly SuggestionEdit[] {
+    return Suggestions.edit(withSuggestions => withSuggestions
+      .keyword(Keywords.Else)
+      .keyword(Keywords.Elseif)
+    );
   }
 }

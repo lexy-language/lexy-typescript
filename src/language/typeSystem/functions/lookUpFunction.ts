@@ -1,36 +1,36 @@
-import type {IValidationContext} from "../../../parser/validationContext";
+import type {IValidationContext} from "../../../parser/context/validationContext";
 
 import {TableFunction} from "./tableFunction";
 import {Table} from "../../tables/table";
 import {Expression} from "../../expressions/expression";
 import {Type} from "../type";
 import {asMemberAccessExpression, instanceOfMemberAccessExpression} from "../../expressions/memberAccessExpression";
-import {SourceReference} from "../../../parser/sourceReference";
+import {SourceReference} from "../../sourceReference";
 import {
     newValidateMemberFunctionArgumentsFailed,
     newValidateMemberFunctionArgumentsSuccess,
     ValidateMemberFunctionArgumentsResult
 } from "./validateMemberFunctionArgumentsResult";
-import {LookUpFunctionCall} from "./lookUpFunctionCall";
+import {LookUpFunctionCallState} from "./lookUpFunctionCallState";
 
 class OverloadArguments {
-    public discriminator: number | null;
-    public lookUpValue: number;
-    public discriminatorColumnArgument: number | null;
-    public defaultDiscriminatorColumn: number | null;
-    public searchColumnArgument: number | null;
-    public defaultSearchColumn: number;
-    public resultColumnArgument: number;
+  public discriminator: number | null;
+  public lookUpValue: number;
+  public discriminatorColumnArgument: number | null;
+  public defaultDiscriminatorColumn: number | null;
+  public searchColumnArgument: number | null;
+  public defaultSearchColumn: number;
+  public resultColumnArgument: number;
 
-    constructor(Discriminator: number | null, LookUpValue: number, DiscriminatorColumnArgument: number | null, DefaultDiscriminatorColumn: number | null, SearchColumnArgument: number | null, DefaultSearchColumn: number, ResultColumnArgument: number) {
-        this.discriminator = Discriminator;
-        this.lookUpValue = LookUpValue;
-        this.discriminatorColumnArgument = DiscriminatorColumnArgument;
-        this.defaultDiscriminatorColumn = DefaultDiscriminatorColumn;
-        this.searchColumnArgument = SearchColumnArgument;
-        this.defaultSearchColumn = DefaultSearchColumn;
-        this.resultColumnArgument = ResultColumnArgument;
-    }
+  constructor(Discriminator: number | null, LookUpValue: number, DiscriminatorColumnArgument: number | null, DefaultDiscriminatorColumn: number | null, SearchColumnArgument: number | null, DefaultSearchColumn: number, ResultColumnArgument: number) {
+    this.discriminator = Discriminator;
+    this.lookUpValue = LookUpValue;
+    this.discriminatorColumnArgument = DiscriminatorColumnArgument;
+    this.defaultDiscriminatorColumn = DefaultDiscriminatorColumn;
+    this.searchColumnArgument = SearchColumnArgument;
+    this.defaultSearchColumn = DefaultSearchColumn;
+    this.resultColumnArgument = ResultColumnArgument;
+  }
 }
 
 export class LookUpFunction extends TableFunction {
@@ -84,13 +84,15 @@ export class LookUpFunction extends TableFunction {
         const discriminatorColumnHeader = this.validateDiscriminator(context, args, reference, overloadArguments);
         const discriminatorExpression = overloadArguments.discriminator != null ? args[overloadArguments.discriminator] : null;
 
-        const result = new LookUpFunctionCall(
-            this.table.name,
-            args[overloadArguments.lookUpValue],
-            discriminatorExpression,
-            resultColumnHeader.name,
-            searchColumnHeader.name,
-            discriminatorColumnHeader ? discriminatorColumnHeader.name : null);
+        const result = new LookUpFunctionCallState(
+          reference,
+          this.table.name,
+          args[overloadArguments.lookUpValue],
+          discriminatorExpression,
+          resultColumnHeader.name,
+          this.getResultsType(args),
+          searchColumnHeader.name,
+          discriminatorColumnHeader ? discriminatorColumnHeader.name : null);
 
         return newValidateMemberFunctionArgumentsSuccess(result);
     }

@@ -1,7 +1,7 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
 import type {IExpressionFactory} from "./expressionFactory";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IChildExpression, IParentExpression} from "./IChildExpression";
 
 import {Expression} from "./expression";
@@ -9,7 +9,7 @@ import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
 import {asElseExpression, ElseExpression} from "./elseExpression";
 import {ExpressionSource} from "./expressionSource";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
@@ -18,6 +18,8 @@ import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {VariableUsage} from "./variableUsage";
 import {getReadVariableUsage} from "./getReadVariableUsage";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfElseifExpression(object: any): object is ElseifExpression {
   return object?.nodeType == NodeType.ElseifExpression;
@@ -41,10 +43,12 @@ export class ElseifExpression extends Expression implements IParsableNode, IChil
     return this.trueExpressionsValues.asArray();
   }
 
-  constructor(condition: Expression, source: ExpressionSource, reference: SourceReference, factory: IExpressionFactory) {
-    super(source, reference);
+  constructor(condition: Expression, source: ExpressionSource,
+              parentReference: NodeReference, reference: SourceReference,
+              factory: IExpressionFactory) {
+    super(source, parentReference, reference);
     this.condition = condition;
-    this.trueExpressionsValues = new ExpressionList(reference, factory);
+    this.trueExpressionsValues = new ExpressionList(this, reference, factory);
   }
 
   public parse(context: IParseLineContext): IParsableNode {
@@ -58,19 +62,21 @@ export class ElseifExpression extends Expression implements IParsableNode, IChil
     return [this.condition, this.trueExpressionsValues];
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
     let tokens = source.tokens;
     if (!ElseifExpression.isValid(tokens)) return newParseExpressionFailed("ElseifExpression", `Not valid.`);
 
     if (tokens.length == 1) return newParseExpressionFailed("ElseifExpression", `No condition found`);
 
-    let condition = tokens.tokensFrom(1);
-    let conditionExpression = factory.parse(condition, source.line);
+    const expressionReference = new NodeReference();
+    const condition = tokens.tokensFrom(1);
+    const  conditionExpression = factory.parse(expressionReference, condition, source.line);
     if (conditionExpression.state != 'success') return conditionExpression;
 
-    let reference = source.createReference();
+    const reference = source.createReference();
 
-    let expression = new ElseifExpression(conditionExpression.result, source, reference, factory);
+    const expression = new ElseifExpression(conditionExpression.result, source, parentReference, reference, factory);
+    expressionReference.setNode(expression);
 
     return newParseExpressionSuccess(expression);
   }
@@ -98,7 +104,11 @@ export class ElseifExpression extends Expression implements IParsableNode, IChil
     return true;
   }
 
-  override usedVariables(): ReadonlyArray<VariableUsage> {
+  public override usedVariables(): ReadonlyArray<VariableUsage> {
     return getReadVariableUsage(this.condition);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

@@ -1,6 +1,6 @@
 export class Assert {
   public static notNull<TValue>(value: TValue | null | undefined, name: string): TValue {
-    if (!value) {
+    if (value == null) {
       throw new Error(`Value '${name}' is null.`);
     }
     return value;
@@ -13,4 +13,19 @@ export class Assert {
       throw new Error(`Value '${name}' is not of correct type.`);
     }
     return value;
-  }}
+  }
+
+  public static false(value: boolean, name: string) {
+    if (value) {
+      throw new Error(`Value '${name}' is false.`);
+    }
+    return value;
+  }
+
+  static true(value: boolean, name: string) {
+    if (!value) {
+      throw new Error(`Value '${name}' is true.`);
+    }
+    return value;
+  }
+}

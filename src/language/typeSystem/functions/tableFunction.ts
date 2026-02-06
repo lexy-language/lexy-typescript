@@ -1,4 +1,4 @@
-import type {IValidationContext} from "../../../parser/validationContext";
+import type {IValidationContext} from "../../../parser/context/validationContext";
 
 import {Table} from "../../tables/table";
 import {Assert} from "../../../infrastructure/assert";
@@ -7,7 +7,7 @@ import {Type} from "../type";
 import {ColumnHeader} from "../../tables/columnHeader";
 import {asMemberAccessExpression, MemberAccessExpression} from "../../expressions/memberAccessExpression";
 import {IdentifierPath} from "../../identifierPath";
-import {SourceReference} from "../../../parser/sourceReference";
+import {SourceReference} from "../../sourceReference";
 import {ObjectFunction} from "../objects/objectFunction";
 import {ValidateMemberFunctionArgumentsResult} from "./validateMemberFunctionArgumentsResult";
 

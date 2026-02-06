@@ -11,6 +11,9 @@ import {ObjectNestedType} from "./objects/objectNestedType";
 import {ValueType} from "./valueType";
 import {LookUpFunction} from "./functions/lookUpFunction";
 import {LookUpRowFunction} from "./functions/lookUpRowFunction";
+import {SourceReference} from "../sourceReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfTableType(object: any): object is TableType {
   return object?.typeKind == TypeKind.TableType;
@@ -46,16 +49,30 @@ export class TableType extends ObjectType {
       new ObjectNestedType(Table.rowName, this.table.getRowType())
     ];
 
-    if (!!this.table.header?.columns) {
-      for (let column of this.table.header?.columns) {
-        let columnType = new GeneratedType(column.name, this.table, GeneratedTypeSource.TableColumn, []);
-        members.push(new ObjectVariable(column.name, columnType ));
-      }
-    }
+    this.addColumns(members);
 
     members.push(new LookUpFunction(this.table));
     members.push(new LookUpRowFunction(this.table));
 
     return members;
+  }
+
+  private addColumns(members: IObjectMember[]) {
+    if (!this.table.header?.columns) {
+      return;
+    }
+
+    for (let column of this.table.header?.columns) {
+      let columnType = new GeneratedType(this.name, column.name, this.table, GeneratedTypeSource.TableColumn, []);
+      members.push(new ObjectVariable(column.name, columnType));
+    }
+  }
+
+  public override toString(): string  {
+    return this.name;
+  }
+
+  public override getSymbol(reference: SourceReference): Symbol {
+    return new Symbol(reference, `table: ${this.name}`, "", SymbolKind.Table);
   }
 }

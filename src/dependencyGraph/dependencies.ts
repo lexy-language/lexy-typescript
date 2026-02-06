@@ -77,6 +77,7 @@ export class Dependencies {
   private processNode(componentNode: IComponentNode): void {
 
     const nodeDependencies = this.getOrCreateNodeDependencies(componentNode);
+    if (nodeDependencies == null) return;
 
     const nodeDependenciesNodes = this.getDependencies(componentNode);
     for (let dependency of nodeDependenciesNodes.values())
@@ -87,13 +88,17 @@ export class Dependencies {
       }
 
       let dependencyNodeDependencies = this.getOrCreateNodeDependencies(dependency);
-      dependencyNodeDependencies.addDependant(componentNode);
+      if (dependencyNodeDependencies) {
+        dependencyNodeDependencies.addDependant(componentNode);
+      }
     }
 
     nodeDependencies.addDependencies(nodeDependenciesNodes.values());
   }
 
-  private getOrCreateNodeDependencies(node: IComponentNode): NodeDependencies {
+  private getOrCreateNodeDependencies(node: IComponentNode): NodeDependencies | null {
+
+    if (node.name == null) return null;
 
     let value = this.nodeDependencies.get(node.name);
     if (value != undefined) return value;
@@ -165,7 +170,9 @@ export class Dependencies {
       result.push(node);
 
       const dependencies = this.getOrCreateNodeDependencies(node);
-      this.flattenNodes(result, dependencies.dependencies.values());
+      if (dependencies) {
+        this.flattenNodes(result, dependencies.dependencies.values());
+      }
     }
   }
 
@@ -186,6 +193,7 @@ export class Dependencies {
 
       dependencyNode.dependencies.forEach(dependency => {
         const dependant = this.getOrCreateNodeDependencies(dependency);
+        if (!dependant) throw new Error("Invalid dependency: " + dependency);
         const occurrence = dependant.decreaseOccurrence();
         if (occurrence == 1) {
           processing.push(dependency.name);

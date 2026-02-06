@@ -39,8 +39,8 @@ export class FillFunctionStatement {
 
      FillFunctionStatement.renderFill(
        assignmentExpression.name,
-       fillParametersFunctionExpression.type,
-       Assert.notNull(fillParametersFunctionExpression.mapping, "fillParametersFunctionExpression.mapping"),
+       fillParametersFunctionExpression.state.type,
+       Assert.notNull(fillParametersFunctionExpression.state.mapping, "fillParametersFunctionExpression.mapping"),
        codeWriter);
    }
 

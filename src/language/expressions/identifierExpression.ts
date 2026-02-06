@@ -1,9 +1,9 @@
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 import {Expression} from "./expression";
 import {ExpressionSource} from "./expressionSource";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Type} from "../typeSystem/type";
@@ -13,6 +13,8 @@ import {VariableReference} from "../variableReference";
 import {VariableUsage} from "./variableUsage";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {IdentifierPath} from "../identifierPath";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfIdentifierExpression(object: any): boolean {
   return object?.nodeType == NodeType.IdentifierExpression;
@@ -34,28 +36,40 @@ export class IdentifierExpression extends Expression implements IHasVariableRefe
     return this.variableValue;
   }
 
-  constructor(identifier: string, source: ExpressionSource, reference: SourceReference) {
-    super(source, reference);
+  public get path(): string {
+    return this.identifier;
+  }
+
+  constructor(identifier: string, source: ExpressionSource, parentReference: NodeReference, reference: SourceReference) {
+    super(source, parentReference, reference);
     this.identifier = identifier;
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
     let tokens = source.tokens;
-    if (!IdentifierExpression.isValid(tokens)) return newParseExpressionFailed("IdentifierExpression", `Invalid expression`);
+    if (!IdentifierExpression.isValid(tokens)) {
+      return newParseExpressionFailed("IdentifierExpression", `Invalid expression`);
+    }
 
+    const expression = IdentifierExpression.parseExpression(parentReference, source, tokens);
+    if (expression == null) {
+      return newParseExpressionFailed("IdentifierExpression",`Invalid token`)
+    }
+    return newParseExpressionSuccess(expression);
+  }
+
+  private static parseExpression(parentReference: NodeReference, source: ExpressionSource, tokens: TokenList): IdentifierExpression | null {
     let variableName = tokens.tokenValue(0);
-    if (!variableName) return newParseExpressionFailed("IdentifierExpression",`Invalid token`);
+    if (!variableName) return null;
 
     let reference = source.createReference();
 
-    let expression = new IdentifierExpression(variableName, source, reference);
-
-    return newParseExpressionSuccess(expression);
+    return  new IdentifierExpression(variableName, source, parentReference, reference);
   }
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length == 1
-      && tokens.isTokenType(0, TokenType.StringLiteralToken);
+        && tokens.isTokenType(0, TokenType.StringLiteralToken);
   }
 
   public override getChildren(): Array<INode> {
@@ -80,5 +94,9 @@ export class IdentifierExpression extends Expression implements IHasVariableRefe
 
   public override usedVariables(): Array<VariableUsage> {
     return this.variableValue != null ? [VariableUsage.read(this.variableValue)] : [];
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

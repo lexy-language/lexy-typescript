@@ -1,4 +1,4 @@
-import {IMemberFunctionCall} from "./memberFunctionCall";
+import {IFunctionCallState} from "./functionCallState";
 
 type ValidateMemberFunctionArgumentsFailed = {
   state: "failed";
@@ -12,13 +12,13 @@ export function newValidateMemberFunctionArgumentsFailed(): ValidateMemberFuncti
 
 type ValidateMemberFunctionArgumentsSuccess = {
   state: "success";
-  functionCall: IMemberFunctionCall;
+  functionCallState: IFunctionCallState;
 }
 
-export function newValidateMemberFunctionArgumentsSuccess(functionCall: IMemberFunctionCall): ValidateMemberFunctionArgumentsSuccess {
+export function newValidateMemberFunctionArgumentsSuccess(functionCall: IFunctionCallState): ValidateMemberFunctionArgumentsSuccess {
   return {
     state: "success",
-    functionCall: functionCall
+    functionCallState: functionCall
   } as const;
 }
 

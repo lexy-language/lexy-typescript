@@ -1,19 +1,23 @@
 import type {INode} from "../node";
-import type {IParseLineContext} from "../../parser/ParseLineContext";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IParsableNode} from "../parsableNode";
 import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {asCaseExpression, CaseExpression} from "./caseExpression";
 import {ExpressionSource} from "./expressionSource";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Keywords} from "../../parser/Keywords";
 import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {TypeKind} from "../typeSystem/typeKind";
+import {NodeReference} from "../nodeReference";
+import {Suggestions} from "../symbols/suggestions";
+import {SuggestionEdit} from "../symbols/suggestionEdit";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfSwitchExpression(object: any): boolean {
   return object?.nodeType == NodeType.SwitchExpression;
@@ -34,17 +38,19 @@ export class SwitchExpression extends Expression implements IParsableNode {
   public readonly condition: Expression;
   public readonly cases: Array<CaseExpression> = [];
 
-  constructor(condition: Expression, source: ExpressionSource, reference: SourceReference, factory: IExpressionFactory) {
-    super(source, reference);
+  constructor(condition: Expression, source: ExpressionSource,
+              reference: SourceReference, parentReference: NodeReference,
+              factory: IExpressionFactory) {
+    super(source, parentReference, reference);
     this.condition = condition;
     this.factory = factory;
   }
 
    public parse(context: IParseLineContext): IParsableNode {
      let line = context.line;
-     let expression = this.factory.parse(line.tokens, line);
+     let expression = this.factory.parse(this, line.tokens, line);
      if (expression.state != 'success') {
-       context.logger.fail(line.lineStartReference(), expression.errorMessage);
+       context.logger.fail(line.tokens.allReference(), expression.errorMessage);
        return this;
      }
 
@@ -64,19 +70,21 @@ export class SwitchExpression extends Expression implements IParsableNode {
     return result;
   }
 
-   public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-     let tokens = source.tokens;
+   public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+     const tokens = source.tokens;
      if (!SwitchExpression.isValid(tokens)) return newParseExpressionFailed("SwitchExpression", `Not valid.`);
 
      if (tokens.length == 1) return newParseExpressionFailed("SwitchExpression", `No condition found`);
 
-     let condition = tokens.tokensFrom(1);
-     let conditionExpression = factory.parse(condition, source.line);
+     const expressionReference = new NodeReference();
+     const condition = tokens.tokensFrom(1);
+     const conditionExpression = factory.parse(expressionReference, condition, source.line);
      if (conditionExpression.state != 'success') return conditionExpression;
 
-     let reference = source.createReference();
+     const reference = source.createReference();
 
-     let expression = new SwitchExpression(conditionExpression.result, source, reference, factory);
+     const expression = new SwitchExpression(conditionExpression.result, source, reference, parentReference, factory);
+     expressionReference.setNode(expression);
 
      return newParseExpressionSuccess(expression);
    }
@@ -108,4 +116,15 @@ export class SwitchExpression extends Expression implements IParsableNode {
    public override deriveType(context: IValidationContext): Type | null {
      return null;
    }
+
+  public override getSymbol(): Symbol | null {
+    return null;
+  }
+
+  public override getSuggestions(): readonly SuggestionEdit[] {
+    return Suggestions.edit(withSuggestions => withSuggestions
+      .keyword(Keywords.Case)
+      .keyword(Keywords.Default)
+    );
+  }
 }

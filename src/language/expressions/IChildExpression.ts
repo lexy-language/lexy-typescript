@@ -1,4 +1,4 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
 
 export function instanceOfChildExpression(object: any): object is IChildExpression {

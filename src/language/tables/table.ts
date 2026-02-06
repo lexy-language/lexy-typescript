@@ -1,18 +1,21 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
+import type {INodeWithType} from "../nodeWithType";
 
 import {ComponentNode} from "../componentNode";
 import {TableHeader} from "./tableHeader";
 import {TableRow} from "./tableRow";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {GeneratedType} from "../typeSystem/objects/generatedType";
 import {NodeType} from "../nodeType";
 import {GeneratedTypeSource} from "../typeSystem/objects/generatedTypeSource";
 import {ObjectVariable} from "../typeSystem/objects/objectVariable";
-import {INodeWithType} from "../nodeWithType";
 import {TableType} from "../typeSystem/tableType";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfTable(object: any) {
   return object?.nodeType == NodeType.Table;
@@ -34,7 +37,6 @@ export class Table extends ComponentNode implements INodeWithType {
 
   public readonly nodeType = NodeType.Table;
   public readonly isNodeWithType = true;
-  public override readonly name: string;
 
   public get header(): TableHeader | null {
     return this.headerValue;
@@ -44,9 +46,8 @@ export class Table extends ComponentNode implements INodeWithType {
     return this.rowsValue;
   }
 
-  constructor(name: string, reference: SourceReference) {
-    super(reference);
-    this.name = name;
+  constructor(name: string, parentReference: NodeReference, reference: SourceReference) {
+    super(name, parentReference, reference);
   }
 
   public createType() {
@@ -57,14 +58,14 @@ export class Table extends ComponentNode implements INodeWithType {
     if (this.invalidHeader) return this;
 
     if (this.headerValue == null) {
-      this.headerValue = TableHeader.parse(context);
+      this.headerValue = TableHeader.parse(context, this);
       if (this.headerValue == null){
         this.invalidHeader = true;
       }
       return this;
     }
 
-    const tableRow = TableRow.parse(context, this.headerValue);
+    const tableRow = TableRow.parse(context, this.headerValue, this);
     if (tableRow != null) {
       this.rows.push(tableRow);
     }
@@ -86,12 +87,7 @@ export class Table extends ComponentNode implements INodeWithType {
   }
 
   public override validateTree(context: IValidationContext): void {
-    const scope = context.createVariableScope();
-    try {
-      super.validateTree(context);
-    } finally {
-      scope[Symbol.dispose]();
-    }
+    context.inNodeVariableScope(this, super.validateTree.bind(this));
   }
 
   public getRowType(): GeneratedType {
@@ -101,6 +97,18 @@ export class Table extends ComponentNode implements INodeWithType {
       return new ObjectVariable(column.name, type)
     });
 
-    return new GeneratedType(this.name, this, GeneratedTypeSource.TableRow, members);
+    return new GeneratedType(this.name, Table.rowName, this, GeneratedTypeSource.TableRow, members);
+  }
+
+  public override getSymbol(): Symbol | null {
+
+    if (this.header == null) return null;
+
+    const builder: string[] = [];
+    for (const column of this.header.columns) {
+      builder.push(`- ${column.typeDeclaration} ${column.name}`);
+    }
+    const variablesString = builder.join("");
+    return new Symbol(this.reference, `table: ${this.name}`, variablesString, SymbolKind.Table);
   }
 }

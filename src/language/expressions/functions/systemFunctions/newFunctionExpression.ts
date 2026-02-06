@@ -1,18 +1,20 @@
 import type {IComponentNode} from "../../../componentNode";
 import type {INode} from "../../../node";
-import type {IValidationContext} from "../../../../parser/validationContext";
+import type {IValidationContext} from "../../../../parser/context/validationContext";
 import type {IHasNodeDependencies} from "../../../IHasNodeDependencies";
 import type {IComponentNodeList} from "../../../componentNodeList";
 
 import {Expression} from "../../expression";
-import {MemberAccessLiteralToken} from "../../../../parser/tokens/memberAccessLiteralToken";
+import {MemberAccessToken} from "../../../../parser/tokens/memberAccessToken";
 import {asMemberAccessExpression} from "../../memberAccessExpression";
 import {Type} from "../../../typeSystem/type";
 import {NodeType} from "../../../nodeType";
 import {asGeneratedType, GeneratedType} from "../../../typeSystem/objects/generatedType";
-import {Assert} from "../../../../infrastructure/assert";
 import {FunctionCallExpression} from "../functionCallExpression";
 import {ExpressionSource} from "../../expressionSource";
+import {SymbolKind} from "../../../symbols/symbolKind";
+import {Symbol} from "../../../symbols/symbol";
+import {NodeReference} from "../../../nodeReference";
 
 export function instanceOfNewFunctionExpression(object: any): object is NewFunctionExpression {
   return object?.nodeType == NodeType.NewFunctionExpression;
@@ -22,12 +24,22 @@ export function asNewFunctionExpression(object: any): NewFunctionExpression | nu
   return instanceOfNewFunctionExpression(object) ? object as NewFunctionExpression : null;
 }
 
+export class NewFunctionState {
+
+  public type: GeneratedType;
+
+  constructor(type: GeneratedType) {
+    this.type = type;
+  }
+}
+
 export class NewFunctionExpression extends FunctionCallExpression implements IHasNodeDependencies {
 
   public static readonly functionName: string = `new`;
 
-  private typeValue: GeneratedType | null = null;
-  private typeLiteralToken: MemberAccessLiteralToken | null;
+  private readonly typeToken: MemberAccessToken | null;
+
+  private stateValue: NewFunctionState | null = null;
 
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.NewFunctionExpression;
@@ -40,25 +52,25 @@ export class NewFunctionExpression extends FunctionCallExpression implements IHa
 
   public valueExpression: Expression;
 
-  public get type(): GeneratedType {
-    return Assert.notNull(this.typeValue, "type");
+  public get state(): NewFunctionState | null {
+    return this.stateValue;
   }
 
-  constructor(valueExpression: Expression, source: ExpressionSource) {
-    super(source);
+  constructor(valueExpression: Expression, parentReference: NodeReference, source: ExpressionSource) {
+    super(parentReference, source);
     this.valueExpression = valueExpression;
 
     const memberAccessExpression = asMemberAccessExpression(valueExpression);
-    this.typeLiteralToken = memberAccessExpression ? memberAccessExpression.memberAccessLiteral : null;
+    this.typeToken = memberAccessExpression ? memberAccessExpression.memberAccessToken : null;
   }
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
-    let componentNode = this.typeValue ? componentNodes.getNode(this.typeValue.name) : null;
+    let componentNode = this.state?.type ? componentNodes.getNode(this.state.type.name) : null;
     return componentNode != null ? [componentNode] : [];
   }
 
-  public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
-    return new NewFunctionExpression(expression, source);
+  public static create(expression: Expression, parent: NodeReference, source: ExpressionSource): FunctionCallExpression {
+    return new NewFunctionExpression(expression, parent, source);
   }
 
   public override getChildren(): Array<INode> {
@@ -73,12 +85,16 @@ export class NewFunctionExpression extends FunctionCallExpression implements IHa
         `Invalid argument 1 'Value' should be of type 'GeneratedType' but is '${valueType?.typeKind}'. ${this.functionHelp}`);
       return;
     }
-    this.typeValue = generatedType;
+    this.stateValue = new NewFunctionState(generatedType);
   }
 
   public override deriveType(context: IValidationContext): Type | null {
-    if (this.typeLiteralToken == null) return null;
-    let nodeType = context.componentNodes.getType(this.typeLiteralToken.parent);
-    return nodeType?.memberType(this.typeLiteralToken.member) as GeneratedType;
+    if (this.typeToken == null) return null;
+    let nodeType = context.componentNodes.getType(this.typeToken.parent);
+    return nodeType?.memberType(this.typeToken.member) as GeneratedType;
+  }
+
+  public override getSymbol(): Symbol {
+    return new Symbol(this.reference, NewFunctionExpression.functionName, this.functionHelp, SymbolKind.SystemFunction);
   }
 }

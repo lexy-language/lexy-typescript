@@ -1,16 +1,14 @@
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {Expression} from "../expressions/expression";
 import {INode, Node} from "../node";
 import {ConstantValue} from "./constantValue";
 import {IdentifierPath} from "../identifierPath";
 import {Type} from "../typeSystem/type";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {NodeType} from "../nodeType";
-import {TokenList} from "../../parser/tokens/tokenList";
-import {asMemberAccessLiteralToken, MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
-import {asStringLiteralToken} from "../../parser/tokens/stringLiteralToken";
-import {TokenCharacter} from "../../parser/tokens/tokenCharacter";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfAssignmentDefinition(object: any): object is AssignmentDefinition {
   return object?.nodeType == NodeType.AssignmentDefinition;
@@ -24,6 +22,15 @@ export interface IAssignmentDefinition extends INode {
   flatten(result: Array<AssignmentDefinition>): void;
 }
 
+export class AssignmentDefinitionState
+{
+  public type: Type;
+
+  constructor(type: Type) {
+    this.type = type;
+  }
+}
+
 export class AssignmentDefinition extends Node implements IAssignmentDefinition {
 
   public readonly nodeType = NodeType.AssignmentDefinition;
@@ -31,48 +38,24 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
   private readonly valueExpression: Expression;
   private readonly variableExpression: Expression;
 
-  private typeValue: Type | null = null;
+  private stateValue: AssignmentDefinitionState | null = null;
 
   public readonly constantValue: ConstantValue;
   public readonly variable: IdentifierPath;
 
-  public get type(): Type | null {
-    return this.typeValue;
+  public get state(): AssignmentDefinitionState | null{
+    return this.stateValue;
   }
 
   constructor(variable: IdentifierPath, constantValue: ConstantValue, variableExpression: Expression,
-              valueExpression: Expression, reference: SourceReference) {
-    super(reference);
+              valueExpression: Expression, parentReference: NodeReference, reference: SourceReference) {
+    super(parentReference, reference);
 
     this.variable = variable;
     this.constantValue = constantValue;
 
     this.variableExpression = variableExpression;
     this.valueExpression = valueExpression;
-  }
-
-  static addParentVariableAccessor(parentVariable: IdentifierPath, targetTokens: TokenList): TokenList {
-    if (targetTokens.length != 1) return targetTokens;
-    const identifierPath = AssignmentDefinition.getIdentifierPath(targetTokens);
-    if (identifierPath == null) {
-      return targetTokens;
-    }
-
-    const newPath = parentVariable.append(identifierPath.parts).fullPath();
-    const newToken = new MemberAccessLiteralToken(newPath, identifierPath.firstCharacter);
-    return new TokenList([newToken]);
-  }
-
-  private static getIdentifierPath(targetTokens: TokenList): {parts: Array<string>, firstCharacter: TokenCharacter} | null {
-    const memberAccess = asMemberAccessLiteralToken(targetTokens.get(0));
-    if (memberAccess != null) {
-      return {parts: memberAccess.parts, firstCharacter: memberAccess.firstCharacter};
-    }
-    const literal = asStringLiteralToken(targetTokens.get(0));
-    if (literal != null) {
-      return {parts: [literal.value], firstCharacter: literal.firstCharacter};
-    }
-    return null;
   }
 
   public override getChildren(): Array<INode> {
@@ -93,14 +76,18 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
       return;
     }
 
-    this.typeValue = typeValue;
+    this.stateValue = new AssignmentDefinitionState(typeValue);
     if (expressionType != null && !expressionType.equals(typeValue)) {
       context.logger.fail(this.reference,
-        `Variable '${this.variable}' of type '${this.type}' is not assignable from expression of type '${expressionType}'.`);
+        `Variable '${this.variable}' of type '${this.state?.type}' is not assignable from expression of type '${expressionType}'.`);
     }
   }
 
   flatten(result: Array<AssignmentDefinition>) {
     result.push(this);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

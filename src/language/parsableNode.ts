@@ -1,8 +1,9 @@
 import type {INode} from "./node";
-import type {IParseLineContext} from "../parser/ParseLineContext";
+import type {IParseLineContext} from "../parser/context/parseLineContext";
 
 import {Node} from "./node";
-import {SourceReference} from "../parser/sourceReference";
+import {SourceReference} from "./sourceReference";
+import {NodeReference} from "./nodeReference";
 
 export function instanceOfParsableNode(object: any): object is IParsableNode {
    return object?.isParsableNode == true;
@@ -19,8 +20,8 @@ export interface IParsableNode extends INode {
 
 export abstract class ParsableNode extends Node implements IParsableNode {
 
-   protected constructor(reference: SourceReference) {
-      super(reference);
+   protected constructor(parentReference: NodeReference, reference: SourceReference) {
+      super(parentReference, reference);
    }
 
    public readonly isParsableNode = true;

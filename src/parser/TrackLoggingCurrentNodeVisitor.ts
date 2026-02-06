@@ -1,7 +1,7 @@
 import type {ITreeValidationVisitor} from "./ITreeValidationVisitor";
 import type {IComponentNode} from "../language/componentNode";
 import type {INode} from "../language/node";
-import type {IParserLogger} from "./parserLogger";
+import type {IParserLogger} from "./logging/parserLogger";
 import {Stack} from "../infrastructure/stack";
 import {Assert} from "../infrastructure/assert";
 import {asComponentNode, instanceOfComponentNode} from "../language/componentNode";

@@ -1,17 +1,17 @@
-import type {IValidationContext} from "../parser/validationContext";
+import type {IValidationContext} from "../parser/context/validationContext";
 import type {IObjectFunction} from "../language/typeSystem/objects/objectFunction";
 
-import {SourceReference} from "../parser/sourceReference";
+import {SourceReference} from "../language/sourceReference";
 import {Expression} from "../language/expressions/expression";
 
 import {Type} from "../language/typeSystem/type";
 import {ValueType} from "../language/typeSystem/valueType";
 import {LibraryFunctionInfo} from "../runTime/libraries/libraryRuntime";
-import {LibraryFunctionCall} from "./libraryFunctionCall";
 import {
   newValidateMemberFunctionArgumentsFailed,
   newValidateMemberFunctionArgumentsSuccess, ValidateMemberFunctionArgumentsResult
 } from "../language/typeSystem/functions/validateMemberFunctionArgumentsResult";
+import {LibraryFunctionCallState} from "./libraryFunctionCallState";
 
 export class LibraryFunction implements IObjectFunction {
 
@@ -43,7 +43,7 @@ export class LibraryFunction implements IObjectFunction {
 
     return failed
       ? newValidateMemberFunctionArgumentsFailed()
-      : newValidateMemberFunctionArgumentsSuccess(new LibraryFunctionCall(this.libraryName, this.name, this.returnType));
+      : newValidateMemberFunctionArgumentsSuccess(new LibraryFunctionCallState(reference, this.libraryName, this.name, this.returnType));
   }
 
   public getResultsType(args: ReadonlyArray<Expression>): Type {

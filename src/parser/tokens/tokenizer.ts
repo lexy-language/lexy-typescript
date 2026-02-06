@@ -115,7 +115,7 @@ export class Tokenizer implements ITokenizer {
       tokens.push(result.newToken ?? current);
     }
 
-    return newTokenizeSuccess(Tokenizer.discardWhitespaceAndComments(tokens));
+    return newTokenizeSuccess(Tokenizer.discardWhitespaceAndComments(line, tokens));
   }
 
   private startToken(character: TokenCharacter, index: number, line: Line): ParsableTokenResult {
@@ -136,12 +136,12 @@ export class Tokenizer implements ITokenizer {
     return newParsableTokenFailed(line.lineReference(index), `Invalid character at ${index} '${String.fromCharCode(value)}'`);
   }
 
-  private static discardWhitespaceAndComments(tokens: Array<Token>): TokenList {
+  private static discardWhitespaceAndComments(line: Line, tokens: Array<Token>): TokenList {
 
     function notWhitespaceOrComment(token: Token): boolean {
       return !instanceOfCommentToken(token) && !instanceOfWhitespaceToken(token);
     }
 
-    return new TokenList(where(tokens, notWhitespaceOrComment));
+    return new TokenList(line, where(tokens, notWhitespaceOrComment));
   }
 }

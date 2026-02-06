@@ -28,7 +28,7 @@ describe('OperatorsTests', () => {
 
   it('TestOperatorAtEndOfLineTokens', () => {
 
-    const builder = [];
+    const builder: string[] = [];
     operators.forEach(entry => validateOperatorToken(entry, builder));
 
     if (builder.length > 0) {
@@ -38,7 +38,7 @@ describe('OperatorsTests', () => {
 
   it('TestOperatorWithWhitespaceSuffixTokens', () => {
 
-    const builder = [];
+    const builder: string[] = [];
     operators.forEach(entry => validateOperatorToken(entry, builder, value => value += " "));
 
     if (builder.length > 0) {

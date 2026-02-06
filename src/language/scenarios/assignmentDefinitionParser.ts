@@ -1,4 +1,4 @@
-import {IParseLineContext} from "../../parser/ParseLineContext";
+import {IParseLineContext} from "../../parser/context/parseLineContext";
 import {IdentifierPath} from "../identifierPath";
 import {ObjectAssignmentDefinition} from "./objectAssignmentDefinition";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
@@ -7,14 +7,23 @@ import {TokenType} from "../../parser/tokens/tokenType";
 import {IdentifierPathExpressionParser} from "./identifierPathExpressionParser";
 import {ConstantValueParser} from "./constantValueParser";
 import {AssignmentDefinition} from "./assignmentDefinition";
+import {TokenCharacter} from "../../parser/tokens/tokenCharacter";
+import {INode} from "../node";
+import {NodeReference} from "../nodeReference";
+import {TokenList} from "../../parser/tokens/tokenList";
+import {Line} from "../../parser/line";
+import {asMemberAccessToken, MemberAccessToken} from "../../parser/tokens/memberAccessToken";
+import {asStringLiteralToken} from "../../parser/tokens/stringLiteralToken";
 
-export type AssignmentDefinitionParserHandler = (context: IParseLineContext, parentVariable: IdentifierPath | null) => AssignmentDefinition | ObjectAssignmentDefinition | null;
+export type AssignmentDefinitionParserHandler = (context: IParseLineContext, parent: INode, parentVariable: IdentifierPath | null) => AssignmentDefinition | ObjectAssignmentDefinition | null;
+export type TokenIdentifierPath = {parts: string[], firstCharacter: TokenCharacter};
 
 export class AssignmentDefinitionParser {
-  public static parse(context: IParseLineContext, parentVariable: IdentifierPath | null = null): AssignmentDefinition | ObjectAssignmentDefinition | null {
+  public static parse(context: IParseLineContext, parent: INode, parentVariable: IdentifierPath | null = null): AssignmentDefinition | ObjectAssignmentDefinition | null {
+
     const line = context.line;
     const tokens = line.tokens;
-    const reference = line.lineStartReference();
+    const reference = line.tokens.allReference();
 
     const assignmentIndex = tokens.find<OperatorToken>(token => token.type == OperatorType.Assignment, TokenType.OperatorToken);
     if (assignmentIndex <= 0) {
@@ -22,11 +31,8 @@ export class AssignmentDefinitionParser {
       return null;
     }
 
-    let targetTokens = tokens.tokensFromStart(assignmentIndex);
-    if (parentVariable != null) {
-      targetTokens = AssignmentDefinition.addParentVariableAccessor(parentVariable, targetTokens);
-    }
-    const targetExpression = context.expressionFactory.parse(targetTokens, line);
+    const expressionReference = new NodeReference();
+    const targetExpression = this.parseTargetExpression(context, parentVariable, tokens, assignmentIndex, expressionReference, line);
     if (targetExpression.state == "failed") {
       context.logger.fail(reference, targetExpression.errorMessage);
       return null;
@@ -39,10 +45,12 @@ export class AssignmentDefinitionParser {
     }
 
     if (assignmentIndex == tokens.length - 1) {
-      return new ObjectAssignmentDefinition(identifierPath.result, reference, AssignmentDefinitionParser.parse);
+      const definition = new ObjectAssignmentDefinition(identifierPath.result, new NodeReference(parent), reference);
+      expressionReference.setNode(definition);
+      return definition;
     }
 
-    const valueExpression = context.expressionFactory.parse(tokens.tokensFrom(assignmentIndex + 1), line);
+    const valueExpression = context.expressionFactory.parse(expressionReference, tokens.tokensFrom(assignmentIndex + 1), line);
     if (valueExpression.state == "failed") {
       context.logger.fail(reference, valueExpression.errorMessage);
       return null;
@@ -54,7 +62,46 @@ export class AssignmentDefinitionParser {
       return null;
     }
 
-    return new AssignmentDefinition(identifierPath.result, constantValue.result, targetExpression.result,
-      valueExpression.result, reference);
+    const assignmentDefinition = new AssignmentDefinition(identifierPath.result, constantValue.result, targetExpression.result,
+      valueExpression.result, new NodeReference(parent), reference);
+    expressionReference.setNode(assignmentDefinition);
+    return assignmentDefinition;
+  }
+
+  private static parseTargetExpression(context: IParseLineContext,
+                                       parentVariable: IdentifierPath | null,
+                                       tokens: TokenList,
+                                       assignmentIndex: number,
+                                       expressionReference: NodeReference,
+                                       line: Line) {
+    let targetTokens = tokens.tokensFromStart(assignmentIndex);
+    if (parentVariable != null) {
+      targetTokens = AssignmentDefinitionParser.addParentVariableAccessor(parentVariable, targetTokens);
+    }
+    return  context.expressionFactory.parse(expressionReference, targetTokens, line);
+  }
+
+  private static addParentVariableAccessor(parentVariable: IdentifierPath, targetTokens: TokenList): TokenList {
+    if (targetTokens.length != 1) return targetTokens;
+    const identifierPath = AssignmentDefinitionParser.getIdentifierPath(targetTokens);
+    if (identifierPath == null) {
+      return targetTokens;
+    }
+
+    const newPath = parentVariable.append(identifierPath.parts).fullPath();
+    const newToken = new MemberAccessToken(newPath, identifierPath.firstCharacter);
+    return new TokenList(targetTokens.line, [newToken]);
+  }
+
+  private static getIdentifierPath(targetTokens: TokenList): TokenIdentifierPath | null {
+    const memberAccess = asMemberAccessToken(targetTokens.get(0));
+    if (memberAccess != null) {
+      return {parts: memberAccess.parts, firstCharacter: memberAccess.firstCharacter};
+    }
+    const literal = asStringLiteralToken(targetTokens.get(0));
+    if (literal != null) {
+      return {parts: [literal.value], firstCharacter: literal.firstCharacter};
+    }
+    return null;
   }
 }

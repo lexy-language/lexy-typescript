@@ -30,20 +30,17 @@ export class TypeConverter {
   }
 
   private static convertValue(valueType: ValueType, value: object) {
-    switch (valueType.type) {
+    switch (valueType.name) {
       case TypeNames.number:
         return parseFloat(value.toString());
-
       case TypeNames.date:
         return value.constructor == Date ? value : new Date(value.toString());
-
       case TypeNames.boolean:
         return value.toString() === 'true';
-
       case TypeNames.string:
         return value;
       default:
-        throw new Error(`Invalid type: '${valueType.type}'`)
+        throw new Error(`Invalid type: '${valueType.name}'`)
     }
   }
 }

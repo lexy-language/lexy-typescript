@@ -1,5 +1,5 @@
-import type {IValidationContext} from "../../parser/validationContext";
-import type {SourceReference} from "../../parser/sourceReference";
+import type {IValidationContext} from "../../parser/context/validationContext";
+import type {SourceReference} from "../sourceReference";
 
 import {Expression} from "../expressions/expression";
 import {TypeDeclaration} from "./declarations/typeDeclaration";

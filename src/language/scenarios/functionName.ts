@@ -1,11 +1,13 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import {INode, Node} from "../node";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {isNullOrEmpty} from "../../infrastructure/validationFunctions";
 import {isValidIdentifier} from "../../parser/tokens/character";
 import {NodeType} from "../nodeType";
 import {Assert} from "../../infrastructure/assert";
+import {Scenario} from "./scenario";
+import {Symbol} from "../symbols/symbol";
 
 export class functionName extends Node {
 
@@ -21,18 +23,18 @@ export class functionName extends Node {
     return Assert.notNull(this.valueValue, "value");
   }
 
-  constructor(name: string, reference: SourceReference) {
-    super(reference);
+  constructor(name: string, parent: Scenario, reference: SourceReference) {
+    super(parent, reference);
     this.valueValue = name;
   }
 
-  public static parse(context: IParseLineContext, reference: SourceReference): functionName | null {
+  public static parse(context: IParseLineContext, parent: Scenario, reference: SourceReference): functionName | null {
     const name = context.line.tokens.tokenValue(1);
     if (!name) {
       context.logger.fail(reference, "No function functionName found.")
       return null;
     }
-    return new functionName(name, reference);
+    return new functionName(name, parent, reference);
   }
 
   public override getChildren(): Array<INode> {
@@ -51,5 +53,9 @@ export class functionName extends Node {
 
   public toString() {
     return this.valueValue;
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

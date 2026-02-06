@@ -29,7 +29,7 @@ export class ExtractFunctionStatement {
     const extractResultsFunction = Assert.is<ExtractResultsFunctionExpression>(asExtractResultsFunctionExpression, functionCallExpression, "functionCallExpression");
 
     return ExtractFunctionStatement.renderExtract(
-      Assert.notNull(extractResultsFunction.mapping, "extractResultsFunction.mapping"),
+      Assert.notNull(extractResultsFunction.state.mapping, "extractResultsFunction.mapping"),
       Assert.notNull(extractResultsFunction.functionResultVariable, "extractResultsFunction.functionResultVariable"),
       codeWriter);
   }

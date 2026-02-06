@@ -1,9 +1,9 @@
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {ExpressionSource} from "./expressionSource";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
@@ -15,6 +15,8 @@ import {getReadVariableUsage} from "./getReadVariableUsage";
 import {VariablesMapping} from "./mapping";
 import {asGeneratedType} from "../typeSystem/objects/generatedType";
 import {ExtractResultsFunctionExpression} from "./functions/systemFunctions/extractResultsFunctionExpression";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfSpreadAssignmentExpression(object: any): object is SpreadAssignmentExpression {
   return object?.nodeType == NodeType.SpreadAssignmentExpression;
@@ -24,30 +26,48 @@ export function asSpreadAssignmentExpression(object: any): SpreadAssignmentExpre
   return instanceOfSpreadAssignmentExpression(object) ? object as SpreadAssignmentExpression : null;
 }
 
+export class SpreadAssignmentState {
+
+  public mapping: VariablesMapping | null;
+
+  constructor(mapping: VariablesMapping | null) {
+    this.mapping = mapping;
+  }
+}
+
 export class SpreadAssignmentExpression extends Expression {
 
+  private stateValue: SpreadAssignmentState | null = null;
+
   public nodeType = NodeType.SpreadAssignmentExpression;
-  public mapping: VariablesMapping | null;
   public assignment: Expression;
+
+  public get state(): SpreadAssignmentState {
+    if (this.stateValue == null) throw new Error("State not set.")
+    return this.stateValue;
+  }
 
   private constructor(assignment: Expression,
                       source: ExpressionSource,
+                      parentReference: NodeReference,
                       reference: SourceReference) {
-    super(source, reference);
+    super(source, parentReference, reference);
     this.assignment = assignment;
-    this.mapping = null;
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-    let tokens = source.tokens;
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+
+    const tokens = source.tokens;
     if (!SpreadAssignmentExpression.isValid(tokens)) return newParseExpressionFailed("AssignmentExpression", `Invalid expression.`);
 
-    let assignment = factory.parse(tokens.tokensFrom(2), source.line);
+    const expressionReference = new NodeReference();
+    const assignment = factory.parse(expressionReference, tokens.tokensFrom(2), source.line);
     if (assignment.state != 'success') return assignment;
 
-    let reference = source.createReference();
+    const reference = source.createReference();
 
-    let expression = new SpreadAssignmentExpression(assignment.result, source, reference);
+    const expression = new SpreadAssignmentExpression(assignment.result, source, parentReference, reference);
+    expressionReference.setNode(expression);
 
     return newParseExpressionSuccess(expression);
   }
@@ -67,11 +87,13 @@ export class SpreadAssignmentExpression extends Expression {
     const expressionType = this.assignment.deriveType(context);
 
     const objectResultsType = asGeneratedType(expressionType);
-    if (objectResultsType != null) {
-      this.mapping = ExtractResultsFunctionExpression.getMapping(this.reference, context, objectResultsType);
-    } else {
+    if (objectResultsType == null) {
       context.logger.fail(this.reference, "Couldn't determine typeDeclaration of assignment.");
+      return;
     }
+
+    const mapping = ExtractResultsFunctionExpression.getMapping(this.reference, context, objectResultsType);
+    this.stateValue = new SpreadAssignmentState(mapping);
   }
 
   public override deriveType(context: IValidationContext): Type | null {
@@ -80,5 +102,9 @@ export class SpreadAssignmentExpression extends Expression {
 
   override usedVariables(): ReadonlyArray<VariableUsage> {
     return getReadVariableUsage(this.assignment);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

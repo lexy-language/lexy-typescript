@@ -21,7 +21,7 @@ export function newValidateFunctionArgumentsSuccessAutoMap(parameterType: Type):
   return {
     state: "success",
     autoMap: true,
-    parameterType: parameterType
+    parameterType: parameterType,
   } as const;
 }
 

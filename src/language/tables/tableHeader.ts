@@ -1,16 +1,17 @@
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {INode, Node} from "../node";
 import {ColumnHeader} from "./columnHeader";
-import {SourceReference} from "../../parser/sourceReference";
-import {IParseLineContext} from "../../parser/ParseLineContext";
+import {SourceReference} from "../sourceReference";
+import {IParseLineContext} from "../../parser/context/parseLineContext";
 import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
-import {StringLiteralToken} from "../../parser/tokens/stringLiteralToken";
-import {MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
 import {firstOrDefault} from "../../infrastructure/arrayFunctions";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {IdentifierPath} from "../identifierPath";
+import {Table} from "./table";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export class TableHeader extends Node {
 
@@ -22,48 +23,41 @@ export class TableHeader extends Node {
     return this.columnsValue;
   }
 
-  constructor(columns: ColumnHeader[], reference: SourceReference) {
-    super(reference);
+  constructor(columns: ColumnHeader[], table: Table, reference: SourceReference) {
+    super(table, reference);
     this.columnsValue = columns;
   }
 
-  public static parse(context: IParseLineContext): TableHeader | null {
+  public static parse(context: IParseLineContext, table: Table): TableHeader | null {
 
-    let startsWithTableSeparator = context.validateTokens("TableHeader")
+    const startsWithTableSeparator = context.validateTokens("TableHeader")
       .type<TableSeparatorToken>(0, TokenType.TableSeparatorToken)
       .isValid;
 
     if (!startsWithTableSeparator) return null;
 
-    return TableHeader.parseWithColumnType(context);
+    return TableHeader.parseWithColumnType(context, table);
   }
 
-  private static parseWithColumnType(context: IParseLineContext): TableHeader | null {
-    let index = 0;
-    let headers = new Array<ColumnHeader>();
-    let tokens = context.line.tokens;
-    while (++index < tokens.length) {
-      if (!context.validateTokens("TableHeader")
-        .type<StringLiteralToken>(index, TokenType.StringLiteralToken)
-        .type<StringLiteralToken>(index + 1, TokenType.StringLiteralToken)
-        .type<TableSeparatorToken>(index + 2, TokenType.TableSeparatorToken)
-        .isValid) {
-        return null;
-      }
+  private static parseWithColumnType(context: IParseLineContext, table: Table): TableHeader | null {
 
-      let typeName = tokens.tokenValue(index)
-      let name = tokens.tokenValue(++index);
-      let reference = context.line.tokenReference(index);
+    const headerReference = new NodeReference();
+    const headers = new Array<ColumnHeader>();
+    const tokens = context.line.tokens;
+    let index = 1;
+    while (index < tokens.length) {
 
-      if (typeName == null || name == null) return null;
+      const header = ColumnHeader.parse(context, headerReference, index);
+      if (header == null) return null;
 
-      let header = ColumnHeader.parse(name, typeName, reference);
       headers.push(header);
 
-      ++index;
+      index += 3;
     }
 
-    return new TableHeader(headers, context.line.lineStartReference());
+    let tableHeader = new TableHeader(headers, table, context.line.tokens.allReference());
+    headerReference.setNode(tableHeader);
+    return tableHeader;
   }
 
   public override getChildren(): Array<INode> {
@@ -85,5 +79,9 @@ export class TableHeader extends Node {
 
   public getColumn(name: string): ColumnHeader | null {
     return firstOrDefault(this.columnsValue, value => value.name == name);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

@@ -134,25 +134,25 @@ function renderValidationFunction(name: string, variables: ReadonlyArray<Variabl
 
 function renderResultValidation(variable: VariableDefinition, codeWriter: CodeWriter) {
   const optional = variable.defaultExpression != null;
-  switch (variable.type?.typeKind) {
+  switch (variable.state?.type?.typeKind) {
     case TypeKind.DeclaredType:
-      const declaredType = Assert.notNull(asDeclaredType(variable.type), "declaredType");
+      const declaredType = Assert.notNull(asDeclaredType(variable.state?.type), "declaredType");
       codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${typeClassName(declaredType.name)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.identifierPath(name, "${variable.name}"), value["${variable.name}"], validationErrors);`)
       break;
     case TypeKind.EnumType:
-      const enumType = Assert.notNull(asEnumType(variable.type), "enumType");
+      const enumType = Assert.notNull(asEnumType(variable.state?.type), "enumType");
       codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${enumClassName(enumType.name)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.identifierPath(name, "${variable.name}"), value["${variable.name}"], ${optional}, validationErrors);`)
       break;
     case TypeKind.ValueType:
-      const valueType = Assert.notNull(asValueType(variable.type), "valueType");
+      const valueType = Assert.notNull(asValueType(variable.state?.type), "valueType");
       renderResultsValueTypeValidation(variable.name, optional, valueType, codeWriter);
       break;
     case TypeKind.GeneratedType:
-      const generatedType = Assert.notNull(asGeneratedType(variable.type), "generatedType");
+      const generatedType = Assert.notNull(asGeneratedType(variable.state?.type), "generatedType");
       codeWriter.writeLine(`${LexyCodeConstants.environmentVariable}.${translateGeneratedType(generatedType)}.${LexyCodeConstants.validateMethod}(${LexyCodeConstants.environmentVariable}.systemFunctions.identifierPath(name, "${variable.name}"), value["${variable.name}"], validationErrors);`)
       break;
     default:
-      throw new Error(`Unexpected variable type: '${variable.type?.typeKind}'`)
+      throw new Error(`Unexpected variable type: '${variable.state?.type?.typeKind}'`)
   }
 }
 
@@ -162,13 +162,13 @@ function renderResultsValueTypeValidation(variableName: string, optional: boolea
 }
 
 function validateValueTypeMethodName(valueType: ValueType): string {
-  switch (valueType.type) {
+  switch (valueType.name) {
     case TypeNames.string:
     case TypeNames.boolean:
     case TypeNames.date:
     case TypeNames.number:
-      return valueType.type;
+      return valueType.name;
     default:
-      throw new Error(`Invalid value type: '${valueType.type}'`)
+      throw new Error(`Invalid value type: '${valueType.name}'`)
   }
 }

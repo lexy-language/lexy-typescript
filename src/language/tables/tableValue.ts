@@ -1,10 +1,17 @@
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {INode, Node} from "../node";
 import {TableHeader} from "./tableHeader";
 import {Expression} from "../expressions/expression";
 import {NodeType} from "../nodeType";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
+import {IParseLineContext} from "../../parser/context/parseLineContext";
+import {TokenList} from "../../parser/tokens/tokenList";
+import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
+import {TokenType} from "../../parser/tokens/tokenType";
+import {asToken, Token} from "../../parser/tokens/token";
 
 export class TableValue extends Node {
 
@@ -15,8 +22,8 @@ export class TableValue extends Node {
 
   public readonly nodeType = NodeType.TableValue;
 
-  constructor(index: number, expression: Expression, tableHeader: TableHeader, reference: SourceReference) {
-    super(reference);
+  constructor(index: number, expression: Expression, tableHeader: TableHeader, parentReference: NodeReference, reference: SourceReference) {
+    super(parentReference, reference);
     this.expression = expression;
     this.index = index;
     this.tableHeader = tableHeader;
@@ -34,5 +41,36 @@ export class TableValue extends Node {
     if (!expectedType?.equals(actualType)) {
       context.logger.fail(this.reference, `Invalid value type '${actualType}'. Expected '${expectedType}'.`);
     }
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
+  }
+
+  public static parse(context: IParseLineContext, tableHeader: TableHeader,
+                      currentLineTokens: TokenList, parentReference: NodeReference,
+                      tokenIndex: number, valueIndex: number) {
+
+    let notValid = !context.validateTokens("TableRow")
+      .isLiteralToken(tokenIndex)
+      .type<TableSeparatorToken>(tokenIndex + 1, TokenType.TableSeparatorToken)
+      .isValid;
+
+    if (notValid) return null;
+
+    const valueReference = new NodeReference();
+    const reference = context.line.tokens.reference(tokenIndex);
+    const token = currentLineTokens.token<Token>(tokenIndex++, asToken);
+    if (token == null) return null;
+
+    const expression = context.expressionFactory.parse(valueReference, new TokenList(context.line, [token]), context.line);
+    if (expression.state == "failed") {
+      context.logger.fail(reference, expression.errorMessage);
+      return null;
+    }
+
+    let tableValue = new TableValue(valueIndex, expression.result, tableHeader, parentReference, reference);
+    valueReference.setNode(tableValue);
+    return tableValue;
   }
 }

@@ -1,9 +1,9 @@
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {ExpressionSource} from "./expressionSource";
 import {TypeDeclaration} from "../typeSystem/declarations/typeDeclaration";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
@@ -21,6 +21,11 @@ import {TokenType} from "../../parser/tokens/tokenType";
 import {TypeDeclarationParser} from "../typeSystem/declarations/typeDeclarationParser";
 import {IdentifierPath} from "../identifierPath";
 import {Assert} from "../../infrastructure/assert";
+import {NodeReference} from "../nodeReference";
+import {SymbolKind} from "../symbols/symbolKind";
+import {ParseVariableNameExpressionResult} from "./parseVariableNameExpressionResult";
+import {Symbol} from "../symbols/symbol";
+import {VariableNameExpression} from "./variableNameExpression";
 
 export function instanceOfVariableDeclarationExpression(object: any): object is VariableDeclarationExpression {
   return object?.nodeType == NodeType.VariableDeclarationExpression;
@@ -30,52 +35,73 @@ export function asVariableDeclarationExpression(object: any): VariableDeclaratio
   return instanceOfVariableDeclarationExpression(object) ? object as VariableDeclarationExpression : null;
 }
 
+export class VariableDeclarationState {
+  public type: Type;
+
+  constructor(type: Type) {
+    this.type = type;
+  }
+}
+
 export class VariableDeclarationExpression extends Expression {
 
-  private type: Type | null = null;
+  private stateValue: VariableDeclarationState | null = null;
 
   public readonly nodeType = NodeType.VariableDeclarationExpression;
 
   public typeDeclaration: TypeDeclaration;
   public name: string;
   public assignment: Expression | null;
+  public nameExpression: VariableNameExpression;
 
-  constructor(type: TypeDeclaration, variableName: string, assignment: Expression | null, source: ExpressionSource, reference: SourceReference) {
-    super(source, reference)
+  public get state(): VariableDeclarationState {
+    if (this.stateValue == null) throw new Error("State not set.")
+    return this.stateValue;
+  }
+
+  constructor(type: TypeDeclaration, nameExpression: VariableNameExpression, assignment: Expression | null,
+              source: ExpressionSource, parentReference: NodeReference, reference: SourceReference) {
+    super(source, parentReference, reference)
     this.typeDeclaration = Assert.notNull(type, "type");
-    this.name = variableName;
+    this.nameExpression = Assert.notNull(nameExpression, "nameExpression");
+    this.name = nameExpression.name;
     this.assignment = assignment;
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-    let tokens = source.tokens;
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+
+    const tokens = source.tokens;
     if (!VariableDeclarationExpression.isValid(tokens)) {
       return newParseExpressionFailed("VariableDeclarationExpression", `Invalid expression.`);
     }
-
-    const typeName = tokens.tokenValue(0)
-    if (typeName == null) {
-      return newParseExpressionFailed("VariableDeclarationExpression", `Invalid type name.`);
-    }
-
-    let type = TypeDeclarationParser.parse(typeName, source.createReference());
-    let name = tokens.tokenValue(1);
-    if (name == null) {
-      return newParseExpressionFailed("VariableDeclarationExpression", `Invalid name.`);
-    }
-
-    let assignment = tokens.length > 3
-      ? factory.parse(tokens.tokensFrom(3), source.line)
+    const expressionReference = new NodeReference();
+    const typeValue = Assert.notNull(tokens.tokenValue(0), "type");
+    const type = TypeDeclarationParser.parseString(typeValue, expressionReference, tokens.reference(0, 1));
+    const assignment = tokens.length > 3
+      ? factory.parse(expressionReference, tokens.tokensFrom(3), source.line)
       : null;
 
     if (assignment?.state == "failed") return assignment;
 
-    let reference = source.createReference();
+    const name = VariableDeclarationExpression.getNameExpression(expressionReference, tokens);
+    if (name.state == "failed") {
+      return newParseExpressionFailed("VariableDeclarationExpression", `Invalid expression.`);
+    }
 
-    let expression = new VariableDeclarationExpression(type, name, assignment?.result
-      ?? null, source, reference);
+    const reference = source.createReference();
+
+    const expression = new VariableDeclarationExpression(type, name.result, assignment?.result
+      ?? null, source, expressionReference, reference);
+    expressionReference.setNode(expression);
 
     return newParseExpressionSuccess(expression);
+  }
+
+  private static getNameExpression(expressionReference: NodeReference, tokens: TokenList): ParseVariableNameExpressionResult {
+    const nameToken = Assert.notNull(tokens.get(1), "nameToken");
+    const nameTokens = new TokenList(tokens.line, [nameToken]);
+    const expressionSource = new ExpressionSource(tokens.line, nameTokens);
+    return VariableNameExpression.parse(expressionSource, expressionReference, SymbolKind.Variable);
   }
 
   public static isValid(tokens: TokenList): boolean {
@@ -86,7 +112,7 @@ export class VariableDeclarationExpression extends Expression {
       && tokens.isTokenType(0, TokenType.StringLiteralToken)
       && tokens.isTokenType(1, TokenType.StringLiteralToken)
       || tokens.length == 2
-      && tokens.isTokenType(0, TokenType.MemberAccessLiteralToken)
+      && tokens.isTokenType(0, TokenType.MemberAccessToken)
       && tokens.isTokenType(1, TokenType.StringLiteralToken)
       || tokens.length >= 4
       && tokens.isKeyword(0, Keywords.ImplicitTypeDeclaration)
@@ -99,7 +125,7 @@ export class VariableDeclarationExpression extends Expression {
   }
 
   public override getChildren(): Array<INode> {
-    const result: Array<INode> = [this.typeDeclaration];
+    const result: Array<INode> = [this.typeDeclaration, this.nameExpression];
     if (this.assignment != null) result.push(this.assignment);
     return result;
   }
@@ -112,12 +138,15 @@ export class VariableDeclarationExpression extends Expression {
       context.logger.fail(this.reference, `Invalid expression. Could not derive type.`);
     }
 
-    this.type = this.getType(context, assignmentType);
-    if (this.type == null) {
+    const type = this.getType(context, assignmentType);
+    if (type == null) {
       context.logger.fail(this.reference, `Invalid variable type '${this.typeDeclaration.toString()}'`);
+      return;
     }
 
-    context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, this.type, VariableSource.Code);
+    context.variableContext.registerVariableAndVerifyUnique(this.reference, this.name, type, VariableSource.Code);
+
+    this.stateValue = new VariableDeclarationState(type);
   }
 
   private getType(context: IValidationContext, assignmentType: Type | null): Type | null {
@@ -129,11 +158,10 @@ export class VariableDeclarationExpression extends Expression {
       return assignmentType;
     }
 
-    let type = this.typeDeclaration.type;
+    const type = this.typeDeclaration.type;
     if (this.assignment != null && (assignmentType == null || !assignmentType?.equals(type))) {
       context.logger.fail(this.reference, `Invalid expression. Literal or enum value expression expected.`);
     }
-
     return type;
   }
 
@@ -142,7 +170,17 @@ export class VariableDeclarationExpression extends Expression {
   }
 
   override usedVariables(): ReadonlyArray<VariableUsage> {
-    const writeVariable = new VariableUsage(IdentifierPath.parseString(this.name), null, this.type, VariableSource.Code, VariableAccess.Write);
+    const writeVariable = new VariableUsage(
+      this.reference,
+      IdentifierPath.parseString(this.name),
+      null,
+      this.state.type,
+      VariableSource.Code,
+      VariableAccess.Write);
     return this.assignment != null ? [writeVariable, ...getReadVariableUsage(this.assignment)] : [writeVariable];
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

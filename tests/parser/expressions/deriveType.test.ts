@@ -1,15 +1,18 @@
 import {ValueType} from "../../../src/language/typeSystem/valueType";
 import {Type} from "../../../src/language/typeSystem/type";
-import {SourceReference} from "../../../src/parser/sourceReference";
+import {SourceReference} from "../../../src/language/sourceReference";
 import {SourceFile} from "../../../src/parser/sourceFile";
-import {IValidationContext, ValidationContext} from "../../../src/parser/validationContext";
+import {IValidationContext, ValidationContext} from "../../../src/parser/context/validationContext";
 import {VariableSource} from "../../../src/language/variableSource";
 import {parseExpression} from "../expressionParser/parseExpression";
 import {ComponentNodeList} from "../../../src/language/componentNodeList";
-import {ParserLogger} from "../../../src/parser/parserLogger";
+import {ParserLogger} from "../../../src/parser/logging/parserLogger";
 import {LoggingConfiguration} from "../../loggingConfiguration";
 import {TrackLoggingCurrentNodeVisitor} from "../../../src/parser/TrackLoggingCurrentNodeVisitor";
 import {Libraries} from "../../../src/functionLibraries/libraries";
+import {DocumentsSymbols} from "../../../src/parser/symbols/documentsSymbols";
+import {LexyScriptNode} from "../../../src/language/lexyScriptNode";
+import {ExpressionFactory} from "../../../src/language/expressions/expressionFactory";
 
 describe('DeriveTypeTests', () => {
   it('numberLiteral', async () => {
@@ -110,7 +113,7 @@ describe('DeriveTypeTests', () => {
   });
 
   function newReference() {
-    return new SourceReference(new SourceFile(`tests.lexy`), 1, 1);
+    return new SourceReference(`tests.lexy`, 1, 1, 1);
   }
 
   function deriveType(expressionValue: string,
@@ -118,17 +121,17 @@ describe('DeriveTypeTests', () => {
 
     const componentNodes = new ComponentNodeList();
     const logger = new ParserLogger(LoggingConfiguration.getParserLogger());
+    const lexyScriptNode = new LexyScriptNode(new ExpressionFactory());
+    const symbols = new DocumentsSymbols(lexyScriptNode);
     const visitor = new TrackLoggingCurrentNodeVisitor(logger);
-    const validationContext = new ValidationContext(logger, componentNodes, visitor, new Libraries([]));
+    const validationContext = new ValidationContext(logger, componentNodes, visitor, new Libraries([]), symbols);
 
-    const scope = validationContext.createVariableScope();
-    try {
+    let returnValue: Type | null = null;
+    validationContext.inNodeVariableScope(lexyScriptNode, () => {
       if (validationContextHandler) validationContextHandler(validationContext);
-
       let expression = parseExpression(expressionValue);
-      return expression.deriveType(validationContext);
-    } finally {
-      scope[Symbol.dispose]();
-    }
+      returnValue = expression.deriveType(validationContext);
+    });
+    return returnValue;
   }
 });

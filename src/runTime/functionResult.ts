@@ -59,7 +59,7 @@ export class FunctionResult {
     let currentValue: ResultsValue = this.valueObject[reference.rootIdentifier];
 
     while (currentReference.hasChildIdentifiers) {
-      currentReference = currentReference.childrenReference();
+      currentReference = currentReference.childrenPath();
       if (currentValue == null) {
         validationResult.push(`Can't get variable: '${reference}'. Values: '${JSON.stringify(this.valueObject, null,  4)}'`);
         return null;

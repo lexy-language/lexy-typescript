@@ -48,7 +48,10 @@ describe('KeywordTests', () => {
   });
 
   it('TestAssignmentWithMemberAccessWithoutLastMember', async () => {
-    let result = tokenizeExpectError("  Value = ValidateEnumKeyword.")
-    expect(result.errorMessage).toBe("Invalid token at end of line. Unexpected end of line. Member accessor should be followed by member name.");
+    tokenize("  Value = ValidateEnumKeyword.").count(3)
+      .stringLiteral(0, "Value")
+      .operator(1, OperatorType.Assignment)
+      .incompleteMemberAccess(2, "ValidateEnumKeyword.")
+      .assert();
   });
 });

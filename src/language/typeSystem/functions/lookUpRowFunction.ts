@@ -1,17 +1,17 @@
-import type {IValidationContext} from "../../../parser/validationContext";
+import type {IValidationContext} from "../../../parser/context/validationContext";
 
 import {TableFunction} from "./tableFunction";
 import {Table} from "../../tables/table";
 import {Expression} from "../../expressions/expression";
 import {Type} from "../type";
 import {instanceOfMemberAccessExpression} from "../../expressions/memberAccessExpression";
-import {SourceReference} from "../../../parser/sourceReference";
-import {LookUpRowFunctionCall} from "./lookUpRowFunctionCall";
+import {SourceReference} from "../../sourceReference";
 import {
     newValidateMemberFunctionArgumentsSuccess,
     newValidateMemberFunctionArgumentsFailed,
     ValidateMemberFunctionArgumentsResult
 } from "./validateMemberFunctionArgumentsResult";
+import {LookUpRowFunctionCallState} from "./lookUpRowFunctionCallState";
 
 class OverloadArguments {
     public discriminator: number | null;
@@ -72,12 +72,14 @@ export class LookUpRowFunction extends TableFunction {
         const discriminatorColumnHeader = this.validateDiscriminator(context, args, reference, overloadArguments);
         const discriminatorExpression = overloadArguments.discriminator != null ? args[overloadArguments.discriminator] : null;
 
-        const result = new LookUpRowFunctionCall(
+        const result = new LookUpRowFunctionCallState(
+          reference,
           this.table.name,
           args[overloadArguments.lookUpValue],
           discriminatorExpression,
           searchColumnHeader.name,
-          discriminatorColumnHeader ? discriminatorColumnHeader.name : null);
+          discriminatorColumnHeader ? discriminatorColumnHeader.name : null,
+          this.getResultsType(args));
 
         return newValidateMemberFunctionArgumentsSuccess(result);
     }

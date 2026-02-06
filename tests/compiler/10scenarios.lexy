@@ -1,0 +1,289 @@
+table StringTable0
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow0
+  function
+    results
+      string StringResult
+    StringTable0.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget0
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType0
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable1
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow1
+  function
+    results
+      string StringResult
+    StringTable1.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget1
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType1
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable2
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow2
+  function
+    results
+      string StringResult
+    StringTable2.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget2
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType2
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable3
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow3
+  function
+    results
+      string StringResult
+    StringTable3.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget3
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType3
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable4
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow4
+  function
+    results
+      string StringResult
+    StringTable4.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget4
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType4
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable5
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow5
+  function
+    results
+      string StringResult
+    StringTable5.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget5
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType5
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable6
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow6
+  function
+    results
+      string StringResult
+    StringTable6.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget6
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType6
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable7
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow7
+  function
+    results
+      string StringResult
+    StringTable7.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget7
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType7
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable8
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow8
+  function
+    results
+      string StringResult
+    StringTable8.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget8
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType8
+  number NumberValue = 123
+  string StringValue = "abc"
+
+table StringTable9
+  | string SearchValue | number ResultNumber | string ResultString | boolean ResultBoolean | date ResultDate          |
+  | "a"                | 222                 | "222"               | false                 | d"2024-12-24T23:22:22"   |
+  | "b"                | 333                 | "333"               | true                  | d"2024-12-24T23:33:33"   |
+  | "c"                | 444                 | "444"               | false                 | d"2024-12-24T23:44:44"   |
+  | "d"                | 555                 | "555"               | true                  | d"2024-12-24T23:55:55"   |
+
+scenario NewTableRow9
+  function
+    results
+      string StringResult
+    StringTable9.Row row
+    StringResult = row.SearchValue
+  results
+    StringResult = ""
+
+function SimpleTarget9
+  parameters
+    string StringValue = "333"
+  results
+    number NumberResult
+    string StringResult
+  NumberResult = 666
+  StringResult = StringValue
+
+type DeclaredType9
+  number NumberValue = 123
+  string StringValue = "abc"

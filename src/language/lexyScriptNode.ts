@@ -1,17 +1,17 @@
 import type {IComponentNode} from "./componentNode";
-import type {IParseLineContext} from "../parser/ParseLineContext";
+import type {IParseLineContext} from "../parser/context/parseLineContext";
 import type {IParsableNode} from "./parsableNode";
 import type {INode} from "./node";
-import type {IValidationContext} from "../parser/validationContext";
+import type {IValidationContext} from "../parser/context/validationContext";
 import type {IExpressionFactory} from "./expressions/expressionFactory";
 
-import {asFunction, Function} from "./functions/function";
+import {Function} from "./functions/function";
 import {ComponentNode} from "./componentNode";
 import {Comments} from "./comments";
 import {Include} from "./include";
 import {ComponentNodeList} from "./componentNodeList";
-import {SourceReference} from "../parser/sourceReference";
-import {SourceFile} from "../parser/sourceFile";
+import {SourceReference} from "./sourceReference";
+import {Symbol} from "./symbols/symbol";
 import {NodeName} from "../parser/nodeName";
 import {Keywords} from "../parser/Keywords";
 import {EnumDefinition} from "./enums/enumDefinition";
@@ -22,6 +22,10 @@ import {DuplicateChecker} from "./duplicateChecker";
 import {where} from "../infrastructure/arrayFunctions";
 import {NodeType} from "./nodeType";
 import {asNestedNode} from "./nestedNode";
+import {NodeReference} from "./nodeReference";
+import {Suggestions} from "./symbols/suggestions";
+import {SuggestionsScope} from "./symbols/suggestionsScope";
+import {SuggestionEdit} from "./symbols/suggestionEdit";
 
 export function instanceOfLexyScriptNode(object: any) {
   return object?.nodeType == NodeType.LexyScriptNode;
@@ -38,14 +42,13 @@ export class LexyScriptNode extends ComponentNode {
   private sortedNodes: Array<IComponentNode> | null = null;
 
   public readonly nodeType = NodeType.LexyScriptNode;
-  public override readonly name = "LexyScriptNode";
 
   public readonly comments: Comments;
   public componentNodes: ComponentNodeList = new ComponentNodeList();
 
   constructor(expressionFactory: IExpressionFactory) {
-    super(new SourceReference(new SourceFile(`LexyScriptNode`), 1, 1));
-    this.comments = new Comments(this.reference);
+    super("LexyScriptNode", new NodeReference(null, true), new SourceReference(`LexyScript`, 1, 1, 1));
+    this.comments = new Comments(new NodeReference(this), this.reference);
     this.expressionFactory = expressionFactory;
   }
 
@@ -58,6 +61,7 @@ export class LexyScriptNode extends ComponentNode {
     if (componentNode == null) return this;
 
     this.componentNodes.add(componentNode);
+    context.symbols.addNode(componentNode);
 
     return componentNode;
   }
@@ -71,7 +75,7 @@ export class LexyScriptNode extends ComponentNode {
       }
     }
 
-    let reference = context.line.lineStartReference();
+    let reference = context.line.tokens.allReference();
 
     let tokenName = NodeName.parse(context);
     if (tokenName == null || tokenName.name == null) {
@@ -82,15 +86,15 @@ export class LexyScriptNode extends ComponentNode {
 
     switch (tokenName.keyword) {
       case Keywords.Function:
-        return Function.create(tokenName.name, false, reference, this.expressionFactory);
+        return Function.create(tokenName.name, false, new NodeReference(this), reference, this.expressionFactory);
       case Keywords.EnumKeyword:
-        return EnumDefinition.parse(tokenName.name, false, reference);
+        return EnumDefinition.parse(tokenName.name, false, this, reference);
       case Keywords.ScenarioKeyword:
-        return Scenario.parse(tokenName.name, reference);
+        return Scenario.parse(tokenName.name, this, reference);
       case Keywords.TableKeyword:
-        return new Table(tokenName.name, reference);
+        return new Table(tokenName.name, new NodeReference(this), reference);
       case Keywords.TypeKeyword:
-        return TypeDefinition.parse(tokenName.name, reference);
+        return TypeDefinition.parse(tokenName.name, this, reference);
       default:
         return this.invalidNode(tokenName, context, reference)
     }
@@ -115,7 +119,7 @@ export class LexyScriptNode extends ComponentNode {
   }
 
   public getDueIncludes(): ReadonlyArray<Include> {
-    return where(this.includes, include => !include.isProcessed);
+    return where(this.includes, include => include.state?.isProcessed != true);
   }
 
   public sortByDependency(sortedNodes: readonly IComponentNode[]) {
@@ -124,5 +128,20 @@ export class LexyScriptNode extends ComponentNode {
 
   private withoutScenarioInlineNode(sortedNodes: readonly IComponentNode[]) {
     return sortedNodes.filter(where => asNestedNode(where)?.nested != true);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
+  }
+
+  public override getSuggestions(): readonly SuggestionEdit[] {
+    return Suggestions.editScope(SuggestionsScope.CurrentLevel, withSuggestions => withSuggestions
+      .keyword(Keywords.Function)
+      .keyword(Keywords.EnumKeyword)
+      .keyword(Keywords.TypeKeyword)
+      .keyword(Keywords.TableKeyword)
+      .keyword(Keywords.ScenarioKeyword)
+      .keyword(Keywords.Include)
+    );
   }
 }

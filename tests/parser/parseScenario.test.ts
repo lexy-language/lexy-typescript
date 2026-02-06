@@ -5,6 +5,7 @@ import {
 } from "../../src/language/typeSystem/declarations/valueTypeDeclaration";
 import {validateOfType} from "../validateOfType";
 import {format} from "../../src/infrastructure/formatting";
+import {Verify} from "../verify";
 
 describe('ParseScenarioTests', () => {
   it('testValidScenarioKeyword', async () => {
@@ -55,10 +56,13 @@ describe('ParseScenarioTests', () => {
 
     if (errors.length != 4) throw new Error(format(logger.errorNodeMessages(scenario), 2));
 
-    expect(errors[0]).toBe(`tests.lexy(1, 1): ERROR - Scenario has no function, enum, table or expect errors.`);
-    expect(errors[1]).toBe(`tests.lexy(2, 3): ERROR - Invalid token 'Functtion'. Keyword expected.`);
-    expect(errors[2]).toBe(`tests.lexy(4, 5): ERROR - Invalid identifier: 'value'`);
-    expect(errors[3]).toBe(`tests.lexy(6, 5): ERROR - Invalid identifier: 'Result'`);
+    Verify.comparableCollection<string>(errors, _ => _
+      .length(4, format(logger.errorMessages(), 2))
+      .valueAtEquals(0, "tests.lexy (1:1-21): ERROR - Scenario has no function, enum, table or expect errors.")
+      .valueAtEquals(1, "tests.lexy (2:3-32): ERROR - Invalid token 'Functtion'. Keyword expected.")
+      .valueAtEquals(2, "tests.lexy (4:5-9): ERROR - Invalid identifier: 'Value'")
+      .valueAtEquals(3, "tests.lexy (6:5-10): ERROR - Invalid identifier: 'Result'")
+    );
   });
 
   it('testInvalidNumberValueScenario', async () => {
@@ -74,7 +78,7 @@ describe('ParseScenarioTests', () => {
     let {scenario, logger} = await parseScenario(code);
 
     let errors = logger.errorNodeMessages(scenario);
-    expect(errors).toStrictEqual([`tests.lexy(6, 15): ERROR - Invalid number token character: 'd'`]);
+    expect(errors).toStrictEqual([`tests.lexy(6:15): ERROR - Invalid number token character: 'd'`]);
   });
 
   it('testScenarioWithInlineFunction', async () => {
@@ -123,8 +127,8 @@ describe('ParseScenarioTests', () => {
 
     expect(scenario.functionNode.results.variables[1].defaultExpression).toBeNull();
     expect(scenario.functionNode.code.expressions.length).toBe(2);
-    expect(scenario.functionNode.code.expressions[0].toString()).toBe(`Result1=Value1`);
-    expect(scenario.functionNode.code.expressions[1].toString()).toBe(`Result2=Value2`);
+    expect(scenario.functionNode.code.expressions[0].toString()).toBe(`(AssignmentExpression) Result1 = Value1`);
+    expect(scenario.functionNode.code.expressions[1].toString()).toBe(`(AssignmentExpression) Result2 = Value2`);
 
     const parametersAssignments = scenario.parameters.allAssignments();
     expect(parametersAssignments.length).toBe(2);

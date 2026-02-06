@@ -8,19 +8,19 @@ import {
 } from "../../../language/expressions/functions/memberFunctionCallExpression";
 import {Assert} from "../../../infrastructure/assert";
 import {
-  asLookUpRowFunctionCall,
-  instanceOfLookUpRowFunctionCall
-} from "../../../language/typeSystem/functions/lookUpRowFunctionCall";
+  asLookUpRowFunctionCallState,
+  instanceOfLookUpRowFunctionCallState
+} from "../../../language/typeSystem/functions/lookUpRowFunctionCallState";
 
 export class TableLookUpRowFunctionCallRenderer {
 
   public static matches(expression: Expression) {
     return instanceOfMemberFunctionCallExpression(expression)
-        && instanceOfLookUpRowFunctionCall(expression.functionCall);
+        && instanceOfLookUpRowFunctionCallState(expression.state);
   }
 
   public static render(expression: MemberFunctionCallExpression, codeWriter: CodeWriter) {
-    const functionCall = Assert.notNull(asLookUpRowFunctionCall(expression.functionCall), "expression.functionCall as LookUpRowFunction")
+    const functionCall = Assert.notNull(asLookUpRowFunctionCallState(expression.state), "expression.functionCallState as LookUpRowFunction")
 
     codeWriter.writeEnvironment();
     if (functionCall.discriminatorColumn && functionCall.discriminatorExpression) {

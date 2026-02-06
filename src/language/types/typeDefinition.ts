@@ -1,5 +1,5 @@
-import type {IValidationContext} from "../../parser/validationContext";
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {INode} from "../node";
 import type {IComponentNode} from "../componentNode";
@@ -8,13 +8,17 @@ import type {INodeWithType} from "../nodeWithType";
 
 import {ComponentNode} from "../componentNode";
 import {VariableDefinition} from "../variableDefinition";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {VariableSource} from "../variableSource";
 import {NodeType} from "../nodeType";
 import {asHasNodeDependencies, IHasNodeDependencies} from "../IHasNodeDependencies";
 import {selectMany} from "../../infrastructure/arrayFunctions";
 import {DeclaredType} from "../typeSystem/objects/declaredType";
 import {Type} from "../typeSystem/type";
+import {LexyScriptNode} from "../lexyScriptNode";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfTypeDefinition(object: any) {
   return object?.nodeType == NodeType.TypeDefinition;
@@ -42,20 +46,21 @@ export class TypeDefinition extends ComponentNode implements ITypeDefinition, IH
     return this.variablesValue;
   }
 
-  constructor(name: string, reference: SourceReference) {
-    super(reference);
+  constructor(name: string, parentReference: LexyScriptNode, reference: SourceReference) {
+    super(name, new NodeReference(parentReference), reference);
     this.name = name;
   }
+
   public createType(): Type {
     return new DeclaredType(this);
   }
 
-  public static parse(name: string, reference: SourceReference): TypeDefinition {
-    return new TypeDefinition(name, reference);
+  public static parse(name: string, parent: LexyScriptNode, reference: SourceReference): TypeDefinition {
+    return new TypeDefinition(name, parent, reference);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
-    let variableDefinition = VariableDefinition.parse(VariableSource.Parameters, context);
+    const variableDefinition = VariableDefinition.parse(VariableSource.Parameters, context, new NodeReference(this));
     if (variableDefinition != null) this.variablesValue.push(variableDefinition);
     return this;
   }
@@ -76,11 +81,15 @@ export class TypeDefinition extends ComponentNode implements ITypeDefinition, IH
   }
 
   public override validateTree(context: IValidationContext): void {
-    const scope = context.createVariableScope();
-    try {
-      super.validateTree(context);
-    } finally {
-      scope[Symbol.dispose]();
+    context.inNodeVariableScope(this, super.validateTree.bind(this));
+  }
+
+  public override getSymbol(): Symbol | null {
+    const builder: string[] = [];
+    for (const variable of this.variables) {
+      builder.push(`- ${variable.typeDeclaration} ${variable.name}`);
     }
+    const variablesString = builder.join("");
+    return new Symbol(this.reference, `type: ${this.name}`, variablesString, SymbolKind.Type);
   }
 }

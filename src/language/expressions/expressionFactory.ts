@@ -19,43 +19,53 @@ import {FunctionCallExpression} from "./functions/functionCallExpression";
 import {FunctionCallExpressionParser} from "./functions/functionCallExpressionParser";
 import {ElseifExpression} from "./elseifExpression";
 import {SpreadExpression} from "./spreadExpression";
+import {NodeReference} from "../nodeReference";
+import {INode} from "../node";
 
 export interface IExpressionFactory {
-  parse(tokens: TokenList, currentLine: Line): ParseExpressionResult;
+  parse(parentReference: NodeReference | INode, tokens: TokenList, currentLine: Line): ParseExpressionResult;
 }
 
 export class ExpressionFactory implements IExpressionFactory {
 
-   private static factories: {
-      criteria: (tokens: TokenList) => boolean,
-      parse: ((source: ExpressionSource, factory: IExpressionFactory) => ParseExpressionResult) }[] = [
-         { criteria: IfExpression.isValid, parse: IfExpression.parse },
-         { criteria: ElseExpression.isValid, parse: ElseExpression.parse },
-         { criteria: ElseifExpression.isValid, parse: ElseifExpression.parse },
-         { criteria: SwitchExpression.isValid, parse: SwitchExpression.parse },
-         { criteria: CaseExpression.isValid, parse: CaseExpression.parse },
-         { criteria: VariableDeclarationExpression.isValid, parse: VariableDeclarationExpression.parse },
-         { criteria: SpreadExpression.isValid, parse: SpreadExpression.parse },
-         { criteria: SpreadAssignmentExpression.isValid, parse: SpreadAssignmentExpression.parse },
-         { criteria: AssignmentExpression.isValid, parse: AssignmentExpression.parse },
-         { criteria: ParenthesizedExpression.isValid, parse: ParenthesizedExpression.parse },
-         { criteria: BracketedExpression.isValid, parse: BracketedExpression.parse },
-         { criteria: IdentifierExpression.isValid, parse: IdentifierExpression.parse },
-         { criteria: MemberAccessExpression.isValid, parse: MemberAccessExpression.parse },
-         { criteria: LiteralExpression.isValid, parse: LiteralExpression.parse },
-         { criteria: BinaryExpression.isValid, parse: BinaryExpression.parse },
-         { criteria: FunctionCallExpression.isValid, parse: FunctionCallExpressionParser.parse }
-       ];
+  private static factories: {
+    criteria: (tokens: TokenList) => boolean,
+    parse: ((source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory) => ParseExpressionResult)
+  }[] = [
+    {criteria: IfExpression.isValid, parse: IfExpression.parse},
+    {criteria: ElseExpression.isValid, parse: ElseExpression.parse},
+    {criteria: ElseifExpression.isValid, parse: ElseifExpression.parse},
+    {criteria: SwitchExpression.isValid, parse: SwitchExpression.parse},
+    {criteria: CaseExpression.isValid, parse: CaseExpression.parse},
+    {criteria: VariableDeclarationExpression.isValid, parse: VariableDeclarationExpression.parse},
+    {criteria: SpreadExpression.isValid, parse: SpreadExpression.parse},
+    {criteria: SpreadAssignmentExpression.isValid, parse: SpreadAssignmentExpression.parse},
+    {criteria: AssignmentExpression.isValid, parse: AssignmentExpression.parse},
+    {criteria: ParenthesizedExpression.isValid, parse: ParenthesizedExpression.parse},
+    {criteria: BracketedExpression.isValid, parse: BracketedExpression.parse},
+    {criteria: IdentifierExpression.isValid, parse: IdentifierExpression.parse},
+    {criteria: MemberAccessExpression.isValid, parse: MemberAccessExpression.parse},
+    {criteria: LiteralExpression.isValid, parse: LiteralExpression.parse},
+    {criteria: BinaryExpression.isValid, parse: BinaryExpression.parse},
+    {criteria: FunctionCallExpression.isValid, parse: FunctionCallExpressionParser.parse}
+  ];
 
-   public parse(tokens: TokenList, currentLine: Line): ParseExpressionResult {
-     let source = new ExpressionSource(currentLine, tokens);
-     for (let index = 0 ; index < ExpressionFactory.factories.length ; index++) {
-       const factory = ExpressionFactory.factories[index];
-       if (factory.criteria(tokens)) {
-         return factory.parse(source, this);
-       }
-     }
+  public parse(parent: NodeReference | INode, tokens: TokenList, currentLine: Line): ParseExpressionResult {
 
-     return newParseExpressionFailed("ExpressionFactory", `Invalid expression: ${tokens}`);
-   }
+    const parentReference = parent == null
+      ? new NodeReference(null, true)
+      : (parent as any).nodeType != undefined
+        ? new NodeReference(parent as INode)
+      : parent as NodeReference;
+
+    const source = new ExpressionSource(currentLine, tokens);
+    for (let index = 0; index < ExpressionFactory.factories.length; index++) {
+      const factory = ExpressionFactory.factories[index];
+      if (factory.criteria(tokens)) {
+        return factory.parse(source, parentReference, this);
+      }
+    }
+
+    return newParseExpressionFailed("ExpressionFactory", `Invalid expression: ${tokens}`);
+  }
 }

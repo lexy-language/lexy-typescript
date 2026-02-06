@@ -57,4 +57,5 @@ export enum NodeType {
   ValidationTableHeader = "ValidationTableHeader",
   ValidationTableRow = "ValidationTableRow",
   ValidationTableValue = "ValidationTableValue",
+  VariableNameExpression = "VariableNameExpression",
 }

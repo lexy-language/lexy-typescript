@@ -1,18 +1,20 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
 import type {IExpressionFactory} from "./expressionFactory";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {Expression} from "./expression";
 import {Type} from "../typeSystem/type";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
 import {ExpressionSource} from "./expressionSource";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {Keywords} from "../../parser/Keywords";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {NodeType} from "../nodeType";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfCaseExpression(object: any): object is CaseExpression {
   return object?.nodeType == NodeType.CaseExpression;
@@ -38,12 +40,13 @@ export class CaseExpression extends Expression implements IParsableNode {
     return this.expressionsValues.asArray();
    }
 
-  constructor(value: Expression | null, isDefault: boolean, source: ExpressionSource, reference: SourceReference,
+  constructor(value: Expression | null, isDefault: boolean, source: ExpressionSource,
+              parentReference: NodeReference, reference: SourceReference,
               factory: IExpressionFactory) {
-    super(source, reference);
+    super(source, parentReference, reference);
      this.value = value;
      this.isDefault = isDefault;
-     this.expressionsValues = new ExpressionList(reference, factory);
+     this.expressionsValues = new ExpressionList(this, reference, factory);
    }
 
    public parse(context: IParseLineContext): IParsableNode {
@@ -57,34 +60,39 @@ export class CaseExpression extends Expression implements IParsableNode {
     return this.value != null ? [this.value, this.expressionsValues] : [this.expressionsValues];
    }
 
-   public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-     let tokens = source.tokens;
-     if (!CaseExpression.isValid(tokens)) return newParseExpressionFailed("CaseExpression", `Not valid.`);
+   public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+     const tokens = source.tokens;
+     if (!CaseExpression.isValid(tokens)) {
+       return newParseExpressionFailed("CaseExpression", `Not valid.`);
+     }
 
-     if (tokens.isKeyword(0, Keywords.Default)) return CaseExpression.parseDefaultCase(source, tokens, factory);
+     if (tokens.isKeyword(0, Keywords.Default)) {
+       return CaseExpression.parseDefaultCase(parentReference, source, tokens, factory);
+     }
 
      if (tokens.length == 1) {
        return newParseExpressionFailed("CaseExpression", `Invalid 'case'. No parameters found.`);
      }
 
-     let value = tokens.tokensFrom(1);
-     let valueExpression = factory.parse(value, source.line);
+     const expressionReference = new NodeReference();
+     const value = tokens.tokensFrom(1);
+     const valueExpression = factory.parse(expressionReference, value, source.line);
      if (valueExpression.state != 'success') return valueExpression;
 
-     let reference = source.createReference();
+     const reference = source.createReference();
 
-     let expression = new CaseExpression(valueExpression.result, false, source, reference, factory);
-
+     const expression = new CaseExpression(valueExpression.result, false, source, parentReference, reference, factory);
+     expressionReference.setNode(expression);
      return newParseExpressionSuccess(expression);
    }
 
-   private static parseDefaultCase(source: ExpressionSource, tokens: TokenList, factory: IExpressionFactory): ParseExpressionResult {
+   private static parseDefaultCase(parentReference: NodeReference, source: ExpressionSource, tokens: TokenList, factory: IExpressionFactory): ParseExpressionResult {
      if (tokens.length != 1) {
        return newParseExpressionFailed("CaseExpression", `Invalid 'default' case. No parameters expected.`);
      }
 
-     let reference = source.createReference();
-     let expression = new CaseExpression(null, true, source, reference, factory);
+     const reference = source.createReference();
+     const expression = new CaseExpression(null, true, source, parentReference, reference, factory);
      return newParseExpressionSuccess(expression);
    }
 
@@ -99,5 +107,9 @@ export class CaseExpression extends Expression implements IParsableNode {
 
    public override deriveType(context: IValidationContext): Type | null {
      return this.value != null ? this.value.deriveType(context) : null;
+   }
+
+   public override getSymbol(): Symbol | null {
+     return null;
    }
 }

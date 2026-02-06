@@ -19,58 +19,61 @@ import {newParseFunctionCallExpressionsFailed} from "../parseFunctionCallExpress
 import {newParseExpressionsFailed, newParseExpressionsSuccess, ParseExpressionsResult} from "../parseExpressionsResult";
 import {Token} from "../../../parser/tokens/token";
 import {asStringLiteralToken, StringLiteralToken} from "../../../parser/tokens/stringLiteralToken";
-import {asMemberAccessLiteralToken, MemberAccessLiteralToken} from "../../../parser/tokens/memberAccessLiteralToken";
+import {asMemberAccessToken, MemberAccessToken} from "../../../parser/tokens/memberAccessToken";
 import {IdentifierPath} from "../../identifierPath";
 import {LexyFunctionCallExpression} from "./lexyFunctionCallExpression";
 import {MemberFunctionCallExpression} from "./memberFunctionCallExpression";
+import {NodeReference} from "../../nodeReference";
 
 export class FunctionCallExpressionParser {
 
   private static SystemFunctions = {
-    [NewFunctionExpression.functionName]: FunctionCallExpressionParser.forFirstArgument(NewFunctionExpression.create),
-    [FillParametersFunctionExpression.functionName]: FunctionCallExpressionParser.forFirstArgument(FillParametersFunctionExpression.create),
-    [ExtractResultsFunctionExpression.functionName]: FunctionCallExpressionParser.forFirstArgument(ExtractResultsFunctionExpression.create),
+    [NewFunctionExpression.functionName]: NewFunctionExpression.create,
+    [FillParametersFunctionExpression.functionName]: FillParametersFunctionExpression.create,
+    [ExtractResultsFunctionExpression.functionName]: ExtractResultsFunctionExpression.create,
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-    let tokens = source.tokens;
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+    const tokens = source.tokens;
     if (!FunctionCallExpression.isValid(tokens)) {
       return newParseExpressionFailed("FunctionCallExpression", `Not valid.`);
     }
 
-    let matchingClosingParenthesis = ParenthesizedExpression.findMatchingClosingParenthesis(tokens);
+    const matchingClosingParenthesis = ParenthesizedExpression.findMatchingClosingParenthesis(tokens);
     if (matchingClosingParenthesis == -1) {
       return newParseExpressionFailed("FunctionCallExpression", `No closing parentheses found.`);
     }
 
-    let functionNameExpression = tokens.get(0);
-    if (!functionNameExpression) return newParseExpressionFailed("FunctionCallExpression", "Invalid token.");
-
-    let argumentsTokenListResult = FunctionCallExpressionParser.getArgumentTokens(source, factory, tokens, matchingClosingParenthesis);
+    const functionCallReference = new NodeReference();
+    const argumentsTokenListResult = FunctionCallExpressionParser.getArgumentTokens(functionCallReference, source, factory, tokens, matchingClosingParenthesis);
     if (argumentsTokenListResult.state != "success") {
       return newParseExpressionFailed("FunctionCallExpression", argumentsTokenListResult.errorMessage);
     }
 
-    let functionCallResult = FunctionCallExpressionParser.parseToken(functionNameExpression, source, argumentsTokenListResult.result);
-    if (functionCallResult.state != "success") {
-      return newParseExpressionFailed("FunctionCallExpression", functionCallResult.errorMessage);
+    const functionNameToken = tokens.get(0);
+    const functionCall = FunctionCallExpressionParser.parseToken(functionNameToken, source, parentReference, argumentsTokenListResult.result);
+    if (functionCall.state != "success") {
+      return newParseExpressionFailed("FunctionCallExpression", functionCall.errorMessage);
     }
 
-    return newParseExpressionSuccess(functionCallResult.result);
+    functionCallReference.setNode(functionCall.result);
+
+    return newParseExpressionSuccess(functionCall.result);
   }
 
   private static getArgumentTokens(
+    functionCallReference: NodeReference,
     source: ExpressionSource, factory: IExpressionFactory,
     tokens: TokenList, matchingClosingParenthesis: number): ParseExpressionsResult  {
-    let innerExpressionTokens = tokens.tokensRange(2, matchingClosingParenthesis - 1);
-    let argumentsTokenList = ArgumentList.parse(innerExpressionTokens);
+    const innerExpressionTokens = tokens.tokensRange(2, matchingClosingParenthesis - 1);
+    const argumentsTokenList = ArgumentList.parse(innerExpressionTokens);
     if (argumentsTokenList.state != 'success') {
       return newParseExpressionsFailed("FunctionCallExpression", argumentsTokenList.errorMessage);
     }
 
-    let argumentValues = new Array<Expression>();
+    const argumentValues = new Array<Expression>();
     argumentsTokenList.result.forEach(argumentTokens => {
-      let argumentExpression = factory.parse(argumentTokens, source.line);
+      const argumentExpression = factory.parse(functionCallReference, argumentTokens, source.line);
       if (argumentExpression.state != 'success') return newParseFunctionCallExpressionsFailed(argumentExpression.errorMessage);
 
       argumentValues.push(argumentExpression.result);
@@ -80,53 +83,59 @@ export class FunctionCallExpressionParser {
   }
 
   private static parseToken(functionNameToken: Token, source: ExpressionSource,
-                       argumentValues: ReadonlyArray<Expression>): ParseExpressionFunctionsResult {
+                            parentReference: NodeReference,
+                            argumentValues: ReadonlyArray<Expression>): ParseExpressionFunctionsResult {
     let stringLiteralToken = asStringLiteralToken(functionNameToken);
     if (stringLiteralToken != null) {
-      return FunctionCallExpressionParser.parseStringLiteralFunctionCall(source, argumentValues, stringLiteralToken);
+      return FunctionCallExpressionParser.parseStringLiteralFunctionCall(stringLiteralToken, argumentValues, parentReference, source);
     }
-    const memberAccessLiteralToken = asMemberAccessLiteralToken(functionNameToken);
-    if (memberAccessLiteralToken != null) {
-      return FunctionCallExpressionParser.createMemberFunctionCallExpression(source, argumentValues, memberAccessLiteralToken);
+    const memberAccessToken = asMemberAccessToken(functionNameToken);
+    if (memberAccessToken != null) {
+      return FunctionCallExpressionParser.createMemberFunctionCallExpression(memberAccessToken, argumentValues, parentReference, source);
     }
     throw new Error(`Invalid token type: ${functionNameToken.tokenType}`)
   }
 
-    private static parseStringLiteralFunctionCall(source: ExpressionSource,
+  private static parseStringLiteralFunctionCall(stringLiteralToken: StringLiteralToken,
+                                                argumentValues: ReadonlyArray<Expression>,
+                                                parentReference: NodeReference,
+                                                source: ExpressionSource): ParseExpressionFunctionsResult {
+    const functionName = stringLiteralToken.value;
+    const value = FunctionCallExpressionParser.SystemFunctions[functionName];
+    if (value != null) {
+      return FunctionCallExpressionParser.parseSystemFunctionCall(argumentValues, parentReference, source, value);
+    }
+
+    const expression = FunctionCallExpressionParser.createLexyFunctionCallExpression(functionName, argumentValues, parentReference, source);
+    return newParseExpressionFunctionsSuccess(expression);
+  }
+
+  private static parseSystemFunctionCall(args: readonly Expression[],
+                                         parentReference: NodeReference,
+                                         source: ExpressionSource, value: (expression: Expression, parent: NodeReference, source: ExpressionSource) => FunctionCallExpression): ParseExpressionFunctionsResult {
+
+    if (args.length != 1) {
+      return newParseExpressionFunctionsFailed("Invalid number of arguments. 1 argument expected.");
+    }
+
+    const expression = value(args[0], parentReference, source);
+    return newParseExpressionFunctionsSuccess(expression);
+  }
+
+  private static createMemberFunctionCallExpression(memberAccessToken: MemberAccessToken,
+                                                    argumentValues: ReadonlyArray<Expression>,
+                                                    parentReference: NodeReference,
+                                                    source: ExpressionSource): ParseExpressionFunctionsResult {
+    const path = new IdentifierPath(memberAccessToken.parts);
+    const expression = new MemberFunctionCallExpression(path, argumentValues, parentReference, source);
+    return newParseExpressionFunctionsSuccess(expression);
+  }
+
+  private static createLexyFunctionCallExpression(functionName: string,
                                                   argumentValues: ReadonlyArray<Expression>,
-                                                  stringLiteralToken: StringLiteralToken): ParseExpressionFunctionsResult {
-      const functionName = stringLiteralToken.value;
-      const value = FunctionCallExpressionParser.SystemFunctions[functionName];
-      if (value != null) {
-        return value(source, argumentValues);
-      }
+                                                  parentReference: NodeReference,
+                                                  source: ExpressionSource): LexyFunctionCallExpression {
 
-      const expression = FunctionCallExpressionParser.createLexyFunctionCallExpression(functionName, source, argumentValues);
-      return newParseExpressionFunctionsSuccess(expression);
-    }
-
-    private static createMemberFunctionCallExpression(source: ExpressionSource,
-                                                      argumentValues: ReadonlyArray<Expression>,
-                                                      memberAccessLiteralToken: MemberAccessLiteralToken): ParseExpressionFunctionsResult {
-      const path = new IdentifierPath(memberAccessLiteralToken.parts);
-      const expression = new MemberFunctionCallExpression(path, argumentValues, source);
-        return newParseExpressionFunctionsSuccess(expression);
-    }
-
-    private static createLexyFunctionCallExpression(functionName: string, source: ExpressionSource,
-                                                    argumentValues: ReadonlyArray<Expression>): LexyFunctionCallExpression {
-        return new LexyFunctionCallExpression(functionName, argumentValues, source);
-    }
-
-    private static forFirstArgument(factory: (source: ExpressionSource, expression: Expression) => FunctionCallExpression):
-      (source: ExpressionSource, expressions: ReadonlyArray<Expression>) => ParseExpressionFunctionsResult {
-        return (reference, argumentValues) => {
-            if (argumentValues.length != 1) {
-                return newParseExpressionFunctionsFailed("Invalid number of args. 1 argument expected.");
-            }
-
-            var functionValue = factory(reference, argumentValues[0]);
-            return newParseExpressionFunctionsSuccess(functionValue);
-        };
-    }
+    return new LexyFunctionCallExpression(functionName, argumentValues, parentReference, source);
+  }
 }

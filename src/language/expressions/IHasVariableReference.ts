@@ -10,5 +10,6 @@ export function asHasVariableReference(object: any): IHasVariableReference | nul
 
 export interface IHasVariableReference {
    hasVariableReference: true;
+   path: string;
    variable: VariableReference | null;
 }

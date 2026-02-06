@@ -1,6 +1,9 @@
 import {TypeNames} from "./typeNames";
 import {Type} from "./type";
 import {TypeKind} from "./typeKind";
+import {SourceReference} from "../sourceReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfValueType(object: any): object is ValueType {
   return object?.typeKind == TypeKind.ValueType;
@@ -19,11 +22,11 @@ export class ValueType extends Type
 
   public readonly typeKind = TypeKind.ValueType;
 
-  public type: string;
+  public name: string;
 
-  private constructor(type: string) {
+  private constructor(name: string) {
     super();
-    this.type = type;
+    this.name = name;
   }
 
   public override isAssignableFrom(type: Type): boolean {
@@ -33,11 +36,7 @@ export class ValueType extends Type
   public override equals(other: Type | null): boolean {
     return other != null
         && instanceOfValueType(other)
-        && this.type == other.type;
-  }
-
-  public toString() {
-    return this.type;
+        && this.name == other.name;
   }
 
   public static parse(type: string): ValueType {
@@ -53,5 +52,13 @@ export class ValueType extends Type
       default:
         throw new Error(`Invalid value type: '${type}'`)
     }
+  }
+
+  public override toString(): string  {
+    return this.name;
+  }
+
+  public override getSymbol(reference: SourceReference): Symbol {
+    return new Symbol(reference, `value type: ${this.name}`, "", SymbolKind.ValueType);
   }
 }

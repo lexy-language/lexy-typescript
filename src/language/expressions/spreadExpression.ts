@@ -1,17 +1,18 @@
 import type {ILiteralToken} from "../../parser/tokens/ILiteralToken";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {ExpressionSource} from "./expressionSource";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
-import {instanceOfNumberLiteralToken, NumberLiteralToken} from "../../parser/tokens/numberLiteralToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
 import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfSpreadExpression(object: any): boolean {
   return object?.nodeType == NodeType.SpreadExpression;
@@ -25,18 +26,18 @@ export class SpreadExpression extends Expression {
 
   public nodeType = NodeType.SpreadExpression;
 
-  constructor(source: ExpressionSource, reference: SourceReference) {
-    super(source, reference);
+  constructor(source: ExpressionSource, parentReference: NodeReference, reference: SourceReference) {
+    super(source, parentReference, reference);
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
 
     let tokens = source.tokens;
     if (!SpreadExpression.isValid(tokens)) return newParseExpressionFailed("SpreadExpression", `Invalid expression.`);
 
     let reference = source.createReference();
 
-    let expression = new SpreadExpression(source, reference);
+    let expression = new SpreadExpression(source, parentReference, reference);
     return newParseExpressionSuccess(expression);
   }
 
@@ -54,6 +55,10 @@ export class SpreadExpression extends Expression {
 
   public override deriveType(context: IValidationContext): Type | null {
     context.logger.fail(this.reference, "Invalid spread operator. The spread operator '...' can only be used in an Lexy function call with as a single argument.");
+    return null;
+  }
+
+  public override getSymbol(): Symbol | null {
     return null;
   }
 }

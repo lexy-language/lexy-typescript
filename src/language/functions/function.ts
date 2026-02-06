@@ -1,9 +1,9 @@
 import type {IComponentNode} from "../componentNode";
 import type {INode} from "../node";
 import type {IExpressionFactory} from "../expressions/expressionFactory";
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {IParsableNode} from "../parsableNode";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IComponentNodeList} from "../componentNodeList";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
 import type {INestedNode} from "../nestedNode";
@@ -12,7 +12,7 @@ import {ComponentNode} from "../componentNode";
 import {FunctionParameters} from "./functionParameters";
 import {FunctionResults} from "./functionResults";
 import {FunctionCode} from "./functionCode";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {Keywords} from "../../parser/Keywords";
 import {VariableDefinition} from "../variableDefinition";
 import {asObjectTypeDeclaration} from "../typeSystem/declarations/objectTypeDeclaration";
@@ -35,6 +35,12 @@ import {INodeWithType} from "../nodeWithType";
 import {FunctionType} from "../typeSystem/functionType";
 import {isNullOrEmpty} from "../../infrastructure/validationFunctions";
 import {isValidIdentifier} from "../../parser/tokens/character";
+import {NodeReference} from "../nodeReference";
+import {SuggestionEdit} from "../symbols/suggestionEdit";
+import {Suggestions} from "../symbols/suggestions";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
+import {VariableSource} from "../variableSource";
 
 export function instanceOfFunction(object: any) {
   return object?.nodeType == NodeType.Function;
@@ -46,10 +52,8 @@ export function asFunction(object: any): Function | null {
 
 export class Function extends ComponentNode implements IHasNodeDependencies, INestedNode, INodeWithType {
 
-  private readonly factory: IExpressionFactory;
-
-  private readonly parametersValue: FunctionParameters;
-  private readonly resultsValue: FunctionResults;
+  private parametersValue: FunctionParameters | null = null;
+  private resultsValue: FunctionResults | null = null;
   private readonly codeValue: FunctionCode;
 
   public static readonly parameterName = `Parameters`;
@@ -63,13 +67,11 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
 
   public readonly nested: boolean
 
-  public override readonly name: string;
-
-  public get parameters(): FunctionParameters {
+  public get parameters(): FunctionParameters | null {
     return this.parametersValue;
   };
 
-  public get results(): FunctionResults {
+  public get results(): FunctionResults | null {
     return this.resultsValue;
   };
 
@@ -77,14 +79,10 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
     return this.codeValue;
   };
 
-  constructor(name: string, nested: boolean, reference: SourceReference, factory: IExpressionFactory) {
-    super(reference);
+  constructor(name: string, nested: boolean, parentReference: NodeReference, reference: SourceReference, factory: IExpressionFactory) {
+    super(name, parentReference, reference);
     this.nested = nested;
-    this.factory = factory;
-    this.parametersValue = new FunctionParameters(reference);
-    this.resultsValue = new FunctionResults(reference);
-    this.codeValue = new FunctionCode(reference, this.factory);
-    this.name = name;
+    this.codeValue = new FunctionCode(this, reference, factory);
   }
 
   public createType(): Type {
@@ -92,50 +90,61 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
   }
 
   public getParametersType(): GeneratedType {
-    let members = this.parameters.variables
-      .map(parameter => new ObjectVariable(parameter.name, parameter.typeDeclaration.type));
-
-    return new GeneratedType(this.name, this, GeneratedTypeSource.FunctionParameters, members);
+    const members = this.getMembers(this.parameters?.variables) ;
+    return new GeneratedType(this.name, Function.parameterName, this, GeneratedTypeSource.FunctionParameters, members);
   }
 
   public getResultsType(): GeneratedType {
-    let members = this.results.variables
-      .map(parameter => new ObjectVariable(parameter.name, parameter.typeDeclaration.type));
+    const members = this.getMembers(this.results?.variables) ;
+    return new GeneratedType(this.name, Function.resultsName, this, GeneratedTypeSource.FunctionResults, members);
+  }
 
-    return new GeneratedType(this.name, this, GeneratedTypeSource.FunctionResults, members);
+  private getMembers(variables: readonly VariableDefinition[] | undefined) {
+    if (!variables) {
+      return [];
+    }
+    return variables.map(parameter => new ObjectVariable(parameter.name, parameter.typeDeclaration.type));
   }
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
     let result = new Array<IComponentNode>();
-    Function.addObjectTypes(componentNodes, this.parameters.variables, result);
-    Function.addObjectTypes(componentNodes, this.results.variables, result);
+    Function.addObjectTypes(componentNodes, this.parameters?.variables, result);
+    Function.addObjectTypes(componentNodes, this.results?.variables, result);
     return result;
   }
 
-  public static create(name: string, nested: boolean, reference: SourceReference, factory: IExpressionFactory): Function {
-    return new Function(name, nested, reference, factory);
+  public static create(name: string, nested: boolean, parentReference: NodeReference, reference: SourceReference, factory: IExpressionFactory): Function {
+    return new Function(name, nested, parentReference, reference, factory);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
     let line = context.line;
     if (!line.tokens.isTokenType(0, TokenType.KeywordToken)) {
-      return this.codeValue.parse(context);
+      return this.parseCode(context);
     }
 
+    var reference = line.tokens.allReference();
     let name = line.tokens.tokenValue(0);
     switch (name) {
       case Keywords.Parameters:
-        return this.parametersValue;
+        return this.parametersValue = new FunctionParameters(this, reference);
       case Keywords.Results:
-        return this.resultsValue;
+        return this.resultsValue = new FunctionResults(this, reference);
       default:
-        return this.codeValue.parse(context);
+        return this.parseCode(context);
     }
   }
 
+  private parseCode(context: IParseLineContext) {
+    this.code.expandArea(context.line.endPosition);
+    return this.code.parse(context);
+  }
+
   private static addObjectTypes(componentNodes: IComponentNodeList,
-                                variableDefinitions: readonly VariableDefinition[],
+                                variableDefinitions: readonly VariableDefinition[] | undefined,
                                 result: Array<IComponentNode>) {
+
+    if (!variableDefinitions) return;
 
     for (const parameter of variableDefinitions) {
       const objectType = asObjectTypeDeclaration(parameter.typeDeclaration);
@@ -149,19 +158,14 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
   }
 
   public override validateTree(context: IValidationContext): void {
-    const scope = context.createVariableScope();
-    try {
-      super.validateTree(context);
-    } finally {
-      scope[Symbol.dispose]();
-    }
+    context.inNodeVariableScope(this, super.validateTree.bind(this));
   }
 
   public override getChildren(): Array<INode> {
     const result: Array<INode> = [];
     if (this.parameters != null) result.push(this.parameters);
     if (this.results != null) result.push(this.results);
-    if (this.code != null) result.push(this.code);
+    result.push(this.code);
     return result;
   }
 
@@ -182,8 +186,7 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
 
   private validateAutoMap(): ValidateFunctionArgumentsResult {
 
-    let parametersType = this.getParametersType();
-    let resultsType = this.getResultsType();
+    const parametersType = this.getParametersType();
 
     return newValidateFunctionArgumentsSuccessAutoMap(parametersType);
   }
@@ -249,8 +252,10 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
     return new FunctionSignature(parameters,  resultsType);
   }
 
-  private getParametersTypes(): ReadonlyArray<Type | null> {
-    return this.parametersValue.variables.map(parameter => parameter.type);
+  private getParametersTypes(): readonly (Type | null)[] {
+    return this.parametersValue == null
+      ? []
+      : this.parametersValue.variables.map(parameter => parameter.state ? parameter.state.type : null);
   }
 
   private getArgumentTypes(args: ReadonlyArray<Expression>, context: IValidationContext):
@@ -263,5 +268,37 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
 
   private hasSpreadArgument(args: ReadonlyArray<Expression>): boolean {
     return args.length == 1 && instanceOfSpreadExpression(args[0]);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return new Symbol(this.reference, `function: ${this.name}`, "", SymbolKind.Function);
+  }
+
+  public override getSuggestions(): readonly SuggestionEdit[] {
+    return Suggestions.edit(withSuggestions => withSuggestions
+      .keyword(Keywords.Parameters)
+      .keyword(Keywords.Results)
+      .keyword(Keywords.If)
+      .keyword(Keywords.Switch)
+    );
+  }
+
+  public addParametersAndResultsForVariables(context: IValidationContext): void {
+    this.addVariablesForValidation(context, this.parameters?.variables, VariableSource.Parameters);
+    this.addVariablesForValidation(context, this.results?.variables, VariableSource.Results);
+  }
+
+  private addVariablesForValidation(context: IValidationContext,
+                                    definitions: readonly VariableDefinition[] | undefined,
+                                    source: VariableSource): void {
+
+    if (!definitions) return;
+
+    for (const definition of definitions) {
+      const type = definition.typeDeclaration.type;
+      if (type) {
+        context.variableContext.addVariable(definition.name, type, source);
+      }
+    }
   }
 }

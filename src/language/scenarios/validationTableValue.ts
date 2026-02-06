@@ -1,28 +1,25 @@
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {INode, Node} from "../node";
 import {Expression} from "../expressions/expression";
 import {NodeType} from "../nodeType";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {asLiteralExpression} from "../expressions/literalExpression";
 import {ValidationTableHeader} from "./validationTableHeader";
-import {asMemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
+import {asMemberAccessToken} from "../../parser/tokens/memberAccessToken";
 import {asMemberAccessExpression} from "../expressions/memberAccessExpression";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export class ValidationTableValue extends Node {
-
-  private readonly index: number;
-  private readonly tableHeader: ValidationTableHeader;
 
   public readonly expression: Expression
 
   public readonly nodeType = NodeType.ValidationTableValue;
 
-  constructor(index: number, expression: Expression, tableHeader: ValidationTableHeader, reference: SourceReference) {
-    super(reference);
+  constructor(expression: Expression, parentReference: NodeReference, reference: SourceReference) {
+    super(parentReference, reference);
     this.expression = expression;
-    this.index = index;
-    this.tableHeader = tableHeader;
   }
 
   public override getChildren(): Array<INode> {
@@ -33,13 +30,17 @@ export class ValidationTableValue extends Node {
   }
 
   public getValue(): any | null {
-    const enumValue = asMemberAccessExpression(this.expression);
-    if (enumValue != null) {
-      return enumValue.toString();
+    const memberAccessExpression = asMemberAccessExpression(this.expression);
+    if (memberAccessExpression != null) {
+      return memberAccessExpression.identifierPath.toString();
     }
 
     const literal = asLiteralExpression(this.expression);
     const value = literal?.literal.typedValue;
     return value == undefined ? null : value;
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

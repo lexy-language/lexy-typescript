@@ -6,6 +6,9 @@ import {GeneratedTypeSource} from "./generatedTypeSource";
 import {TypeKind} from "../typeKind";
 import {ObjectType} from "./objectType";
 import {ObjectVariable} from "./objectVariable";
+import {SourceReference} from "../../sourceReference";
+import {Symbol} from "../../symbols/symbol";
+import {SymbolKind} from "../../symbols/symbolKind";
 
 export function instanceOfGeneratedType(object: any): object is GeneratedType {
   return object?.typeKind == TypeKind.GeneratedType;
@@ -21,9 +24,11 @@ export class GeneratedType extends ObjectType {
   public objectType = true;
   public source: GeneratedTypeSource;
   public node: IComponentNode;
+  public typeName: string;
 
-  constructor(name: string, node: IComponentNode, source: GeneratedTypeSource, members: Array<ObjectVariable>) {
-    super(name, members);
+  constructor(typeName: string, memberName: string, node: IComponentNode, source: GeneratedTypeSource, members: Array<ObjectVariable>) {
+    super(`${typeName}.${memberName}`, members);
+    this.typeName = typeName;
     this.node = node;
     this.source = source;
   }
@@ -34,5 +39,13 @@ export class GeneratedType extends ObjectType {
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
     return [this.node];
+  }
+
+  public override toString(): string  {
+    return this.name;
+  }
+
+  public override getSymbol(reference: SourceReference): Symbol {
+    return new Symbol(reference, `type: ${this.name}`, "", SymbolKind.GeneratedType);
   }
 }

@@ -1,5 +1,5 @@
 import {IComponentNode} from "../language/componentNode";
-import {SourceReference} from "../parser/sourceReference";
+import {SourceReference} from "../language/sourceReference";
 import {ExecutionLogEntry} from "../runTime/executionLogEntry";
 
 export class SpecificationsLogEntry {

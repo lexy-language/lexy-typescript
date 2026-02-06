@@ -15,7 +15,7 @@ export function translateType(type: Type): string {
     case TypeKind.ValueType: {
       const valueType = asValueType(type);
       if (valueType == null) throw new Error("Is not valueType");
-      return valueType.type;
+      return valueType.name;
     }
     case TypeKind.EnumType: {
       const enumType = asEnumType(type);
@@ -45,13 +45,13 @@ export function translateType(type: Type): string {
 export function translateGeneratedType(objectType: GeneratedType) {
   switch (objectType.source) {
     case GeneratedTypeSource.FunctionParameters: {
-      return `${functionClassName(objectType.name)}.${LexyCodeConstants.parametersType}`;
+      return `${functionClassName(objectType.typeName)}.${LexyCodeConstants.parametersType}`;
     }
     case GeneratedTypeSource.FunctionResults: {
-      return `${functionClassName(objectType.name)}.${LexyCodeConstants.resultsType}`;
+      return `${functionClassName(objectType.typeName)}.${LexyCodeConstants.resultsType}`;
     }
     case GeneratedTypeSource.TableRow: {
-      return `${tableClassName(objectType.name)}.${LexyCodeConstants.rowType}`;
+      return `${tableClassName(objectType.typeName)}.${LexyCodeConstants.rowType}`;
     }
     default: {
       throw new Error(`Invalid type: ${objectType.source}`)

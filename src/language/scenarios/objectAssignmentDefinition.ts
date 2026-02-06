@@ -1,16 +1,19 @@
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IAssignmentDefinition} from "./assignmentDefinition";
 import type {AssignmentDefinitionParserHandler} from "./assignmentDefinitionParser";
 
 import {IdentifierPath} from "../identifierPath";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {instanceOfParsableNode, IParsableNode, ParsableNode} from "../parsableNode";
 import {AssignmentDefinition} from "./assignmentDefinition";
 import {NodeType} from "../nodeType";
 import {instanceOfGeneratedType} from "../typeSystem/objects/generatedType";
 import {instanceOfDeclaredType} from "../typeSystem/objects/declaredType";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
+import {AssignmentDefinitionParser} from "./assignmentDefinitionParser";
 
 export function instanceOfObjectAssignmentDefinition(object: any): object is ObjectAssignmentDefinition {
   return object?.nodeType == NodeType.ObjectAssignmentDefinition;
@@ -27,20 +30,18 @@ export class ObjectAssignmentDefinition extends ParsableNode implements IAssignm
   public readonly variable: IdentifierPath;
 
   public nodeType = NodeType.ObjectAssignmentDefinition;
-  private assignmentDefinitionParser: AssignmentDefinitionParserHandler;
 
   public get assignments(): ReadonlyArray<IAssignmentDefinition> {
     return this.assignmentsValue;
   }
 
-  constructor(variable: IdentifierPath, reference: SourceReference, assignmentDefinitionParser: AssignmentDefinitionParserHandler) {
-    super(reference);
+  constructor(variable: IdentifierPath, parentReference: NodeReference, reference: SourceReference) {
+    super(parentReference, reference);
     this.variable = variable;
-    this.assignmentDefinitionParser = assignmentDefinitionParser;
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
-    let assignment = this.assignmentDefinitionParser(context, this.variable);
+    let assignment = AssignmentDefinitionParser.parse(context, this, this.variable);
     if (assignment == null) return this;
 
     this.assignmentsValue.push(assignment);
@@ -70,5 +71,9 @@ export class ObjectAssignmentDefinition extends ParsableNode implements IAssignm
     for (const assignment of this.assignmentsValue) {
       assignment.flatten(result);
     }
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

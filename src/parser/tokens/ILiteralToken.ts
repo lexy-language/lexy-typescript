@@ -1,7 +1,7 @@
 import {IToken} from "./token";
 import {Type} from "../../language/typeSystem/type";
 
-import type {IValidationContext} from "../validationContext";
+import type {IValidationContext} from "../context/validationContext";
 
 export interface ILiteralToken extends IToken {
 

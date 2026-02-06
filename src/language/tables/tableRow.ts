@@ -1,15 +1,18 @@
-import type {IValidationContext} from "../../parser/validationContext";
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
+
 import {Node} from "../node";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
-import {asToken, Token} from "../../parser/tokens/token";
-import {TokenList} from "../../parser/tokens/tokenList";
 import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {TableHeader} from "./tableHeader";
 import {TableValue} from "./tableValue";
+import {Table} from "./table";
+import {Assert} from "../../infrastructure/assert";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export class TableRow extends Node {
 
@@ -22,13 +25,13 @@ export class TableRow extends Node {
     return this.valuesValue;
   }
 
-  constructor(tableHeader: TableHeader, values: TableValue[], reference: SourceReference) {
-    super(reference);
-    this.valuesValue = values;
-    this.tableHeader = tableHeader;
+  constructor(table: Table, values: TableValue[], reference: SourceReference) {
+    super(table, reference);
+    this.valuesValue = Assert.notNull(values, "values");
+    this.tableHeader = Assert.notNull(table.header, "header");
   }
 
-  public static parse(context: IParseLineContext, tableHeader: TableHeader): TableRow | null {
+  public static parse(context: IParseLineContext, tableHeader: TableHeader, table: Table): TableRow | null {
     let tokenIndex = 0;
 
     if (!context.validateTokens("TableRow")
@@ -37,38 +40,20 @@ export class TableRow extends Node {
       return null;
     }
 
-    let values = new Array<TableValue>();
-    let currentLineTokens = context.line.tokens;
+    const rowReference = new NodeReference();
+    const values = new Array<TableValue>();
+    const currentLineTokens = context.line.tokens;
     while (++tokenIndex < currentLineTokens.length) {
-      const value = TableRow.parseValue(context, tableHeader, currentLineTokens, tokenIndex++, values.length);
+      const value = TableValue.parse(context, tableHeader, currentLineTokens, rowReference, tokenIndex++, values.length);
       if (value == null) {
         return null;
       }
       values.push(value);
     }
 
-    return new TableRow(tableHeader, values, context.line.lineStartReference());
-  }
-
-  private static parseValue(context: IParseLineContext, tableHeader: TableHeader, currentLineTokens: TokenList, tokenIndex: number, valueIndex: number) {
-    let notValid = !context.validateTokens("TableRow")
-      .isLiteralToken(tokenIndex)
-      .type<TableSeparatorToken>(tokenIndex + 1, TokenType.TableSeparatorToken)
-      .isValid;
-
-    if (notValid) return null;
-
-    var reference = context.line.tokenReference(tokenIndex);
-    let token = currentLineTokens.token<Token>(tokenIndex++, asToken);
-    if (token == null) return null;
-
-    let expression = context.expressionFactory.parse(new TokenList([token]), context.line);
-    if (expression.state == "failed") {
-      context.logger.fail(reference, expression.errorMessage);
-      return null;
-    }
-
-    return new TableValue(valueIndex, expression.result, tableHeader, reference);
+    const tableRow = new TableRow(table, values, context.line.tokens.allReference());
+    rowReference.setNode(tableRow);
+    return tableRow;
   }
 
   public override getChildren(): Array<INode> {
@@ -80,6 +65,10 @@ export class TableRow extends Node {
       context.logger.fail(this.reference,
         `Invalid number of values ${this.values.length}. Expected ${this.tableHeader.columns.length}.`);
     }
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }
 

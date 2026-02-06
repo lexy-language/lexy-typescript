@@ -1,6 +1,6 @@
 import type {IComponentNode} from "../../componentNode";
 import type {INode} from "../../node";
-import type {IValidationContext} from "../../../parser/validationContext";
+import type {IValidationContext} from "../../../parser/context/validationContext";
 import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import type {IComponentNodeList} from "../../componentNodeList";
 
@@ -22,6 +22,9 @@ import {VariableAccess} from "../variableAccess";
 import {instanceOfSpreadAssignmentExpression} from "../spreadAssignmentExpression";
 import {VariableDefinition} from "../../variableDefinition";
 import {castType} from "../../../infrastructure/arrayFunctions";
+import {NodeReference} from "../../nodeReference";
+import {SymbolKind} from "../../symbols/symbolKind";
+import {Symbol} from "../../symbols/symbol";
 
 export function instanceOfLexyFunctionCallExpression(object: any): object is LexyFunctionCallExpression {
   return object?.nodeType == NodeType.LexyFunctionCallExpression;
@@ -64,8 +67,8 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
    return this.functionName;
   };
 
-  constructor(functionName: string, argumentValues: ReadonlyArray<Expression>, source: ExpressionSource) {
-    super(source);
+  constructor(functionName: string, argumentValues: ReadonlyArray<Expression>, parentReference: NodeReference, source: ExpressionSource) {
+    super(parentReference, source);
     this.functionName = functionName;
     this.args = argumentValues;
     this.state = null;
@@ -122,7 +125,7 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
     const functionNode = context.componentNodes.getFunction(this.functionName);
     if (!functionNode) return null;
     const variable = this.returnSingleResultsVariable(functionNode);
-    return variable != null && variable.type ? variable.type : functionNode.getResultsType();
+    return variable != null && variable.state?.type ? variable.state.type : functionNode.getResultsType();
   }
 
   private returnSingleResultsVariablesName(functionNode: Function): string | null {
@@ -132,7 +135,7 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
 
   private returnSingleResultsVariable(functionNode: Function): VariableDefinition | null {
     const parentIsSpreadExpression = instanceOfSpreadAssignmentExpression(this.parent);
-    return !parentIsSpreadExpression && functionNode.results.variables.length == 1
+    return !parentIsSpreadExpression && functionNode.results && functionNode.results.variables.length == 1
       ? functionNode.results.variables[0]
       : null;
   }
@@ -147,5 +150,9 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
       ...super.usedVariables(),
       ...this.state.parametersMapping.values.map(usedVariable)
     ];
+  }
+
+  public override getSymbol(): Symbol {
+    return new Symbol(this.reference, `function: ${this.name}`, "", SymbolKind.Function);
   }
 }

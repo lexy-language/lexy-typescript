@@ -1,5 +1,5 @@
 import type {ILexyParser} from "../parser/lexyParser";
-import type {IParserLogger} from "../parser/parserLogger";
+import type {IParserLogger} from "../parser/logging/parserLogger";
 import type {ILexyCompiler} from "../generation/lexyCompiler";
 import type {ISpecificationRunnerContext} from "./specificationRunnerContext";
 
@@ -9,7 +9,7 @@ import {format} from "../infrastructure/formatting";
 import {Scenario} from "../language/scenarios/scenario";
 import {ComponentNodeList} from "../language/componentNodeList";
 import {ParserResult} from "../parser/parserResult";
-import {SourceReference} from "../parser/sourceReference";
+import {SourceReference} from "../language/sourceReference";
 import {Dependencies} from "../dependencyGraph/dependencies";
 import {Assert} from "../infrastructure/assert";
 

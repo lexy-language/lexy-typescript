@@ -1,8 +1,9 @@
-import type {IValidationContext} from "../../../parser/validationContext";
+import type {IValidationContext} from "../../../parser/context/validationContext";
 
 import {Type} from "../type";
-import {SourceReference} from "../../../parser/sourceReference";
+import {SourceReference} from "../../sourceReference";
 import {Node} from "../../node"
+import {NodeReference} from "../../nodeReference";
   
 export abstract class TypeDeclaration extends Node {
 
@@ -12,18 +13,12 @@ export abstract class TypeDeclaration extends Node {
     return this.typeValue;
   }
 
-  protected constructor(reference: SourceReference) {
-    super(reference);
+  protected constructor(parentReference: NodeReference, reference: SourceReference) {
+    super(parentReference, reference);
   }
 
   protected setType(value: Type | null) {
     this.typeValue = value;
-  }
-
-  protected abstract validateType(context: IValidationContext): Type | null;
-
-  protected override validate(context: IValidationContext): void {
-    this.typeValue = this.validateType(context);
   }
 
   public toString(): string {

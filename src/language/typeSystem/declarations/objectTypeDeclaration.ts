@@ -1,14 +1,17 @@
 import type {IComponentNodeList} from "../../componentNodeList";
-import type {IValidationContext} from "../../../parser/validationContext";
+import type {IValidationContext} from "../../../parser/context/validationContext";
 import type {INode} from "../../node";
 import type {IHasNodeDependencies} from "../../IHasNodeDependencies";
 import type {IComponentNode} from "../../componentNode";
 
 import {TypeDeclaration} from "./typeDeclaration";
-import {SourceReference} from "../../../parser/sourceReference";
+import {SourceReference} from "../../sourceReference";
 import {Type} from "../type";
 import {NodeType} from "../../nodeType";
 import {asObjectType} from "../objects/objectType";
+import {NodeReference} from "../../nodeReference";
+import {Symbol} from "../../symbols/symbol";
+import {SymbolKind} from "../../symbols/symbolKind";
 
 export function instanceOfObjectTypeDeclaration(object: any): boolean {
   return object?.nodeType == NodeType.ObjectTypeDeclaration;
@@ -24,10 +27,11 @@ export class ObjectTypeDeclaration extends TypeDeclaration implements IHasNodeDe
 
   public readonly nodeType = NodeType.ObjectTypeDeclaration;
   public readonly hasNodeDependencies = true;
+
   public typeName: string;
 
-  constructor(typeName: string, reference: SourceReference) {
-    super(reference);
+  constructor(typeName: string, parentReference: NodeReference, reference: SourceReference) {
+    super(parentReference, reference);
     this.typeName = typeName;
   }
 
@@ -43,12 +47,12 @@ export class ObjectTypeDeclaration extends TypeDeclaration implements IHasNodeDe
     return [];
   }
 
-  public override validateType(context: IValidationContext): Type | null {
+  public override validate(context: IValidationContext): void {
     const type = this.getType(context.componentNodes);
     if (type == null) {
       context.logger.fail(this.reference, `Invalid type: '${this.typeName}'`);
     }
-    return type;
+    this.setType(type);
   }
 
   private getType(componentNodes: IComponentNodeList): Type | null {
@@ -78,5 +82,10 @@ export class ObjectTypeDeclaration extends TypeDeclaration implements IHasNodeDe
 
   public override getChildren(): Array<INode> {
     return [];
+  }
+
+  public override getSymbol(): Symbol | null {
+    return this.type?.getSymbol(this.reference)
+      ?? new Symbol(this.reference, "unknown", "", SymbolKind.Keyword);
   }
 }

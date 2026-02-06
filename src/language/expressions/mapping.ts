@@ -5,13 +5,18 @@ import {VariableUsage} from "./variableUsage";
 import {IdentifierPath} from "../identifierPath";
 import {GeneratedType} from "../typeSystem/objects/generatedType";
 import {Assert} from "../../infrastructure/assert";
+import {SourceReference} from "../sourceReference";
 
 export class Mapping {
-   public variableName: string
-   public type: Type
-   public variableSource: VariableSource
 
-   constructor(variableName: string, type: Type, variableSource: VariableSource) {
+  public reference: SourceReference;
+
+  public variableName: string;
+   public type: Type;
+   public variableSource: VariableSource;
+
+   constructor(reference: SourceReference, variableName: string, type: Type, variableSource: VariableSource) {
+     this.reference = reference;
      this.variableName = variableName;
      this.type = type;
      this.variableSource = variableSource;
@@ -21,7 +26,7 @@ export class Mapping {
 export function mapToUsedVariable(access: VariableAccess): (mapping: Mapping) => VariableUsage {
   return mapping => {
     const identifierPath = IdentifierPath.parseString(mapping.variableName);
-    return new VariableUsage(identifierPath, null, mapping.type, mapping.variableSource, access);
+    return new VariableUsage(mapping.reference, identifierPath, null, mapping.type, mapping.variableSource, access);
   };
 }
 

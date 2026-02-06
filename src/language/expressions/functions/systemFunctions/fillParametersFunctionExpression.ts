@@ -1,23 +1,25 @@
 import type {IComponentNode} from "../../../componentNode";
 import type {INode} from "../../../node";
-import type {IValidationContext} from "../../../../parser/validationContext";
+import type {IValidationContext} from "../../../../parser/context/validationContext";
 import type {IHasNodeDependencies} from "../../../IHasNodeDependencies";
 import type {IComponentNodeList} from "../../../componentNodeList";
 
 import {Mapping, mapToUsedVariable, VariablesMapping} from "../../mapping";
-import {MemberAccessLiteralToken} from "../../../../parser/tokens/memberAccessLiteralToken";
+import {MemberAccessToken} from "../../../../parser/tokens/memberAccessToken";
 import {Expression} from "../../expression";
-import {SourceReference} from "../../../../parser/sourceReference";
+import {SourceReference} from "../../../sourceReference";
 import {asMemberAccessExpression} from "../../memberAccessExpression";
 import {asGeneratedType, GeneratedType} from "../../../typeSystem/objects/generatedType";
 import {Type} from "../../../typeSystem/type";
 import {Function} from "../../../functions/function";
 import {NodeType} from "../../../nodeType";
-import {Assert} from "../../../../infrastructure/assert";
 import {VariableUsage} from "../../variableUsage";
 import {VariableAccess} from "../../variableAccess";
 import {FunctionCallExpression} from "../functionCallExpression";
 import {ExpressionSource} from "../../expressionSource";
+import {NodeReference} from "../../../nodeReference";
+import {SymbolKind} from "../../../symbols/symbolKind";
+import {Symbol} from "../../../symbols/symbol";
 
 export function instanceOfFillParametersFunctionExpression(object: any): object is FillParametersFunctionExpression {
   return object?.nodeType == NodeType.FillParametersFunctionExpression;
@@ -27,46 +29,55 @@ export function asFillParametersFunctionExpression(object: any): FillParametersF
   return instanceOfFillParametersFunctionExpression(object) ? object as FillParametersFunctionExpression : null;
 }
 
+export class FillParametersFunctionState {
+
+  public mapping: VariablesMapping;
+  public type: GeneratedType;
+
+  constructor(type: GeneratedType, mapping: VariablesMapping) {
+    this.type = type;
+    this.mapping = mapping;
+  }
+}
+
 export class FillParametersFunctionExpression extends FunctionCallExpression implements IHasNodeDependencies {
 
   public static readonly functionName: string = `fill`;
-
-  private typeValue: GeneratedType | null = null;
-
-  public readonly hasNodeDependencies = true;
-  public readonly nodeType = NodeType.FillParametersFunctionExpression;
-
-  public readonly typeLiteralToken: MemberAccessLiteralToken | null;
-  public readonly valueExpression: Expression;
-
-  public get type() {
-    return Assert.notNull(this.typeValue, "type");
-  }
-
-  public mapping: VariablesMapping | null;
 
   private get functionHelp() {
     return `${FillParametersFunctionExpression.functionName} expects 1 argument (Function.Parameters)`;
   }
 
+  private stateValue: FillParametersFunctionState | null = null;
+
+  public readonly hasNodeDependencies = true;
+  public readonly nodeType = NodeType.FillParametersFunctionExpression;
+
+  public readonly typeToken: MemberAccessToken | null;
+  public readonly valueExpression: Expression;
+
   public readonly name: string = FillParametersFunctionExpression.functionName;
 
-  constructor(valueExpression: Expression, source: ExpressionSource) {
-    super(source);
-    this.valueExpression = valueExpression;
+  public get state(): FillParametersFunctionState {
+    if (this.stateValue == null) throw new Error("State not set.")
+    return this.stateValue;
+  }
 
+  constructor(valueExpression: Expression, parentReference: NodeReference, source: ExpressionSource) {
+    super(parentReference, source);
+
+    this.valueExpression = valueExpression;
     const memberAccessExpression = asMemberAccessExpression(valueExpression);
-    this.typeLiteralToken = memberAccessExpression ? memberAccessExpression.memberAccessLiteral : null;
-    this.mapping = null;
+    this.typeToken = memberAccessExpression ? memberAccessExpression.memberAccessToken : null;
   }
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
-    const componentNode = this.typeLiteralToken ? componentNodes.getNode(this.typeLiteralToken.toString()) : null;
+    const componentNode = this.typeToken ? componentNodes.getNode(this.typeToken.toString()) : null;
     return componentNode != null ? [componentNode] : [];
   }
 
-  public static create(source: ExpressionSource, expression: Expression): FunctionCallExpression {
-    return new FillParametersFunctionExpression(expression, source);
+  public static create(expression: Expression, parent: NodeReference, source: ExpressionSource): FunctionCallExpression {
+    return new FillParametersFunctionExpression(expression, parent, source);
   }
 
   public override getChildren(): Array<INode> {
@@ -82,13 +93,12 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
       return;
     }
 
-    this.typeValue = generatedType;
-
-    this.mapping = FillParametersFunctionExpression.getMapping(this.reference, context, generatedType);
+    const mapping = FillParametersFunctionExpression.getMapping(this.reference, context, generatedType);
+    this.stateValue = new FillParametersFunctionState(generatedType, mapping);
   }
 
-  public static getMapping(reference: SourceReference, context: IValidationContext, generatedType: GeneratedType):
-    VariablesMapping {
+  public static getMapping(reference: SourceReference,
+                           context: IValidationContext, generatedType: GeneratedType): VariablesMapping {
 
     const mapping = new Array<Mapping>();
     for (const member of generatedType.members) {
@@ -99,7 +109,7 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
         context.logger.fail(reference,
           `Invalid parameter mapping. Variable '${member.name}' of type '${variable.type}' can't be mapped to parameter '${member.name}' of type '${member.type}'.`);
       } else {
-        mapping.push(new Mapping(member.name, variable.type, variable.variableSource));
+        mapping.push(new Mapping(reference, member.name, variable.type, variable.variableSource));
       }
     }
 
@@ -113,24 +123,28 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
 
   public override deriveType(context: IValidationContext): Type | null {
 
-    if (this.typeLiteralToken == undefined) return null;
-    let functionValue = context.componentNodes.getFunction(this.typeLiteralToken.parent);
+    if (this.typeToken == undefined) return null;
+    let functionValue = context.componentNodes.getFunction(this.typeToken.parent);
     if (functionValue == null) return null;
 
-    if (this.typeLiteralToken.member == Function.parameterName) {
+    if (this.typeToken.member == Function.parameterName) {
       return functionValue.getParametersType();
     }
-    if (this.typeLiteralToken.member == Function.resultsName) {
+    if (this.typeToken.member == Function.resultsName) {
       return functionValue.getResultsType();
     }
     return null;
   }
 
   public override usedVariables(): ReadonlyArray<VariableUsage> {
-    if (this.mapping == null) return super.usedVariables();
+    if (!this.stateValue?.mapping) return super.usedVariables();
     return [
       ...super.usedVariables(),
-      ...this.mapping.values.map(mapToUsedVariable(VariableAccess.Read)),
+      ...this.stateValue.mapping.values.map(mapToUsedVariable(VariableAccess.Read)),
     ];
+  }
+
+  public override getSymbol(): Symbol {
+    return new Symbol(this.reference, FillParametersFunctionExpression.functionName, this.functionHelp, SymbolKind.SystemFunction);
   }
 }

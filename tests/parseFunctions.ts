@@ -1,4 +1,4 @@
-import {IParserLogger} from "../src/parser/parserLogger";
+import {IParserLogger} from "../src/parser/logging/parserLogger";
 
 import {ComponentNodeList} from "../src/language/componentNodeList";
 import {LexyParser} from "../src";
@@ -15,7 +15,11 @@ import {Dependencies} from "../src/dependencyGraph/dependencies";
 import {firstOrDefault} from "../src/infrastructure/arrayFunctions";
 import {LoggingConfiguration} from "./loggingConfiguration";
 
-export function createParser(libraries: ILibraries) {
+export function createParser(libraries: ILibraries | null = null) {
+
+  if (libraries == null) {
+    libraries = new Libraries([]);
+  }
 
   const logger = LoggingConfiguration.getParserLogger();
   const expressionFactory = new ExpressionFactory();
@@ -25,14 +29,18 @@ export function createParser(libraries: ILibraries) {
   return new LexyParser(logger, tokenizer, fileSystem, expressionFactory, libraries);
 }
 
-export async function parseLines(lines: string[], libraries: ILibraries | null = null): Promise<{nodes: ComponentNodeList, logger: IParserLogger, dependencies: Dependencies}> {
-
-  if (libraries == null) {
-    libraries = new Libraries([]);
-  }
+export async function parseFile(fileName: string, libraries: ILibraries | null = null): Promise<{nodes: ComponentNodeList, logger: IParserLogger, dependencies: Dependencies}> {
 
   const parser = createParser(libraries);
-  const result = await parser.parse(lines, `tests.lexy`, {suppressException: true});
+  const result = await parser.parseFile(fileName, {suppressException: true});
+
+  return {nodes: result.componentNodes, logger: result.logger, dependencies: result.dependencies};
+}
+
+export async function parseLines(lines: string[], libraries: ILibraries | null = null): Promise<{nodes: ComponentNodeList, logger: IParserLogger, dependencies: Dependencies}> {
+
+  const parser = createParser(libraries);
+  const result = await parser.parseCode(`tests.lexy`, lines, {suppressException: true});
 
   return {nodes: result.componentNodes, logger: result.logger, dependencies: result.dependencies};
 }

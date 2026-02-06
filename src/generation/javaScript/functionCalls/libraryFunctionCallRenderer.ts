@@ -1,25 +1,27 @@
 import {CodeWriter} from "../codeWriter";
-import {functionClassName} from "../classNames";
 import {LexyCodeConstants} from "../lexyCodeConstants";
 import {Expression} from "../../../language/expressions/expression";
 import {
   instanceOfMemberFunctionCallExpression,
   MemberFunctionCallExpression
 } from "../../../language/expressions/functions/memberFunctionCallExpression";
-import {asLibraryFunctionCall, instanceOfLibraryFunctionCall} from "../../../functionLibraries/libraryFunctionCall";
 import {Assert} from "../../../infrastructure/assert";
+import {
+  asLibraryFunctionCallState,
+  instanceOfLibraryFunctionCallState
+} from "../../../functionLibraries/libraryFunctionCallState";
 
 //Syntax: "LexyFunction(variable)"
 export class LibraryFunctionCallRenderer {
 
   public static matches(expression: Expression) {
     return instanceOfMemberFunctionCallExpression(expression)
-        && instanceOfLibraryFunctionCall(expression.functionCall);
+        && instanceOfLibraryFunctionCallState(expression.state);
   }
 
   public static render(expression: MemberFunctionCallExpression, codeWriter: CodeWriter) {
 
-    const functionCall = Assert.notNull(asLibraryFunctionCall(expression.functionCall), "functionCall as LibraryFunctionCall")
+    const functionCall = Assert.notNull(asLibraryFunctionCallState(expression.state), "functionCallState as LibraryFunctionCall")
     return LibraryFunctionCallRenderer.renderFunctionCall(
       functionCall.libraryName,
       functionCall.functionName,

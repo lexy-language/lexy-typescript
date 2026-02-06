@@ -1,4 +1,4 @@
-import {IParseLineContext} from "./ParseLineContext";
+import {IParseLineContext} from "./context/parseLineContext";
 
 export class NodeName {
    public readonly name: string | null;

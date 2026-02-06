@@ -33,7 +33,7 @@ export class IdentifierPath {
     return this.fullPath();
   }
 
-  public childrenReference(): IdentifierPath {
+  public childrenPath(): IdentifierPath {
     const parts = this.path.slice(1);
     return new IdentifierPath(parts);
   }

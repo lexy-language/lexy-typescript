@@ -5,13 +5,17 @@ import type {IParsableToken} from "./parsableToken";
 type ParseTokenInvalidResult = {
   state: "invalid";
   validationError: string;
+  charProcessed?: boolean;
+  newToken?: Token | null;
 }
 
 export function newParseTokenInvalidResult(validationError: string)
   : ParseTokenInvalidResult {
   return {
     state: "invalid",
-    validationError: validationError
+    validationError: validationError,
+    charProcessed: false,
+    newToken: null
   }
 }
 
@@ -21,8 +25,17 @@ type ParseTokenFinishedResult = {
   newToken: Token | null;
 }
 
-export function newParseTokenFinishedResult(charProcessed: boolean = false, newToken: Token | null = null)
-  : ParseTokenFinishedResult {
+export function newParseTokenFinishedResult(charProcessed: boolean = false, newToken: Token | null = null, error: string | null = null)
+  : ParseTokenResult {
+
+  if (error != null) {
+    return {
+      state: "invalid",
+      charProcessed: charProcessed,
+      newToken: newToken,
+      validationError: error
+    };
+  }
   return {
     state: "finished",
     charProcessed: charProcessed,

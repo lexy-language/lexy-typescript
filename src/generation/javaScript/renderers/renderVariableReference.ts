@@ -14,7 +14,7 @@ export function renderVariableReference(variableReference: VariableReference, co
 
   let childReference = variableReference.path;
   while (childReference.hasChildIdentifiers) {
-    childReference = childReference.childrenReference();
+    childReference = childReference.childrenPath();
     codeWriter.write(".")
     codeWriter.write(childReference.rootIdentifier)
   }

@@ -25,7 +25,7 @@ describe('IfExpressionTests', () => {
     validateOfType<IfExpression>(asIfExpression, functionNode?.code.expressions[1], expression => {
       expect(expression.trueExpressions.length).toBe(1);
       validateOfType<AssignmentExpression>(asAssignmentExpression, expression.trueExpressions[0], assgnment =>
-        expect(assgnment.toString()).toBe("temp=666"));
+        expect(assgnment.toString()).toBe("(AssignmentExpression) temp = 666"));
     });
   });
 });

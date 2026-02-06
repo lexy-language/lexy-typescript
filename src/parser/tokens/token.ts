@@ -23,6 +23,10 @@ export abstract class Token implements IToken {
 
   public firstCharacter: TokenCharacter;
 
+  public get endColumn(): number {
+    return this.firstCharacter.position + (this.value != null ? this.value.length - 1 : 0);
+  }
+
   protected constructor(firstCharacter: TokenCharacter) {
     this.firstCharacter = firstCharacter;
   }

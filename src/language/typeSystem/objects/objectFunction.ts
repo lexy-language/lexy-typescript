@@ -1,11 +1,10 @@
-import type {IValidationContext} from "../../../parser/validationContext";
+import type {IValidationContext} from "../../../parser/context/validationContext";
 
 import {Expression} from "../../expressions/expression";
-import {SourceReference} from "../../../parser/sourceReference";
+import {SourceReference} from "../../sourceReference";
 import {Type} from "../type";
 import {ValidateMemberFunctionArgumentsResult} from "../functions/validateMemberFunctionArgumentsResult";
 import {IObjectMember, ObjectMemberKind} from "./objectMember";
-import {ObjectNestedType} from "./objectNestedType";
 
 export function instanceOfObjectFunction(object: any): object is ObjectFunction {
   return object?.kind == ObjectMemberKind.Function;

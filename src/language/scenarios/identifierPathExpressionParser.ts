@@ -40,12 +40,12 @@ export class IdentifierPathExpressionParser {
   }
 
   private static parseMemberAccessExpression(memberAccessExpression: MemberAccessExpression): IdentifierPathParseResult {
-    if (memberAccessExpression.memberAccessLiteral.parts.length == 0) {
+    if (memberAccessExpression.memberAccessToken.parts.length == 0) {
       return newIdentifierPathParseFailed(
-        `Invalid number of variable reference parts: ${memberAccessExpression.memberAccessLiteral.parts.length}`);
+        `Invalid number of variable reference parts: ${memberAccessExpression.memberAccessToken.parts.length}`);
     }
 
-    let identifierPath = new IdentifierPath(memberAccessExpression.memberAccessLiteral.parts);
+    const identifierPath = new IdentifierPath(memberAccessExpression.memberAccessToken.parts);
     return newIdentifierPathParseSuccess(identifierPath);
   }
 }

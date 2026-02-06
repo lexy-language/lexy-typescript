@@ -1,6 +1,6 @@
 import type {IComponentNode} from "../componentNode";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
 import type {IHasVariableReference} from "./IHasVariableReference";
@@ -9,14 +9,17 @@ import type {IComponentNodeList} from "../componentNodeList";
 import {Expression} from "./expression";
 import {IdentifierPath} from "../identifierPath";
 import {Type} from "../typeSystem/type";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {ExpressionSource} from "./expressionSource";
-import {asMemberAccessLiteralToken, MemberAccessLiteralToken} from "../../parser/tokens/memberAccessLiteralToken";
+import {asMemberAccessToken, MemberAccessToken} from "../../parser/tokens/memberAccessToken";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {NodeType} from "../nodeType";
 import {VariableReference} from "../variableReference";
 import {TokenType} from "../../parser/tokens/tokenType";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfMemberAccessExpression(object: any): boolean {
   return object?.nodeType == NodeType.MemberAccessExpression;
@@ -35,41 +38,47 @@ export class MemberAccessExpression extends Expression
   public readonly hasNodeDependencies = true;
   public readonly nodeType = NodeType.MemberAccessExpression;
 
-  public readonly memberAccessLiteral: MemberAccessLiteralToken;
+  public readonly memberAccessToken: MemberAccessToken;
   public readonly identifierPath: IdentifierPath;
 
   public get variable(): VariableReference | null {
     return this.variableValue;
   }
 
-  constructor(identifierPath: IdentifierPath, literal: MemberAccessLiteralToken, source: ExpressionSource, reference: SourceReference) {
-    super(source, reference);
-    this.memberAccessLiteral = literal;
+  public get path(): string {
+    return this.memberAccessToken.value;
+  }
+
+  constructor(identifierPath: IdentifierPath, token: MemberAccessToken,
+              source: ExpressionSource, parentReference: NodeReference,
+              reference: SourceReference) {
+    super(source, parentReference, reference);
+    this.memberAccessToken = token;
     this.identifierPath = identifierPath;
   }
 
   public getDependencies(componentNodes: IComponentNodeList): Array<IComponentNode> {
-    let componentNode = componentNodes.getNode(this.memberAccessLiteral.parent);
+    let componentNode = componentNodes.getNode(this.memberAccessToken.parent);
     return componentNode != null ? [componentNode] : [];
   }
 
-  public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
     let tokens = source.tokens;
     if (!MemberAccessExpression.isValid(tokens)) return newParseExpressionFailed("MemberAccessExpression", `Invalid expression.`);
 
-    let literal = tokens.token<MemberAccessLiteralToken>(0, asMemberAccessLiteralToken);
+    let literal = tokens.token<MemberAccessToken>(0, asMemberAccessToken);
     if (!literal) return newParseExpressionFailed("MemberAccessExpression", `Invalid expression.`);
 
     let variable = new IdentifierPath(literal.parts);
     let reference = source.createReference();
 
-    let accessExpression = new MemberAccessExpression(variable, literal, source, reference);
+    let accessExpression = new MemberAccessExpression(variable, literal, source, parentReference, reference);
     return newParseExpressionSuccess(accessExpression);
   }
 
   public static isValid(tokens: TokenList): boolean {
     return tokens.length == 1
-      && tokens.isTokenType(0, TokenType.MemberAccessLiteralToken);
+        && tokens.isTokenType(0, TokenType.MemberAccessToken);
   }
 
   public override getChildren(): Array<INode> {
@@ -88,6 +97,12 @@ export class MemberAccessExpression extends Expression
   }
 
   public override deriveType(context: IValidationContext): Type | null {
-    return this.memberAccessLiteral.deriveType(context);
+    return this.memberAccessToken.deriveType(context);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return this.variable != null
+      ? this.variable.getSymbol()
+      : new Symbol(this.reference, this.memberAccessToken.toString(), "", SymbolKind.Variable);
   }
 }

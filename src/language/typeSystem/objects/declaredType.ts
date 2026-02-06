@@ -4,9 +4,11 @@ import type {ITypeDefinition} from "../../types/typeDefinition";
 
 import {ObjectType} from "./objectType";
 import {Type} from "../type";
-import {firstOrDefault} from "../../../infrastructure/arrayFunctions";
 import {TypeKind} from "../typeKind";
 import {ObjectVariable} from "./objectVariable";
+import {SourceReference} from "../../sourceReference";
+import {SymbolKind} from "../../symbols/symbolKind";
+import {Symbol} from "../../symbols/symbol";
 
 export function instanceOfDeclaredType(object: any): object is DeclaredType {
   return object?.typeKind == TypeKind.DeclaredType;
@@ -38,5 +40,13 @@ export class DeclaredType extends ObjectType {
   public override createMembers() {
     return this.typeDefinition.variables
       .map(variable => new ObjectVariable(variable.name, variable.typeDeclaration.type))
+  }
+
+  public override toString(): string  {
+    return this.name;
+  }
+
+  public override getSymbol(reference: SourceReference): Symbol {
+    return new Symbol(reference, `type: ${this.name}`, "", SymbolKind.Type);
   }
 }

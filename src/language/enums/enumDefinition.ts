@@ -1,13 +1,13 @@
 import type {IParsableNode} from "../parsableNode";
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {INestedNode} from "../nestedNode";
 import type {INodeWithType} from "../nodeWithType";
 
 import {ComponentNode} from "../componentNode";
 import {EnumMember} from "./enumMember";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {any, lastOrDefault} from "../../infrastructure/arrayFunctions";
 import {DuplicateChecker} from "../duplicateChecker";
 import {NodeType} from "../nodeType";
@@ -15,6 +15,9 @@ import {EnumType} from "../typeSystem/enumType";
 import {Type} from "../typeSystem/type";
 import {isNullOrEmpty} from "../../infrastructure/validationFunctions";
 import {isValidIdentifier} from "../../parser/tokens/character";
+import {NodeReference} from "../nodeReference";
+import {SymbolKind} from "../symbols/symbolKind";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfEnumDefinition(object: any) {
   return object?.nodeType == NodeType.EnumDefinition;
@@ -34,16 +37,13 @@ export class EnumDefinition extends ComponentNode implements INestedNode, INodeW
 
   public readonly members: Array<EnumMember> = [];
 
-  public override readonly name;
-
-  constructor(name: string, nested: boolean, reference: SourceReference) {
-    super(reference);
-    this.name = name;
+  constructor(name: string, nested: boolean, parentReference: NodeReference, reference: SourceReference) {
+    super(name, parentReference, reference);
     this.nested = nested;
   }
 
-  public static parse(name: string, nested: boolean, reference: SourceReference): EnumDefinition {
-    return new EnumDefinition(name, nested, reference);
+  public static parse(name: string, nested: boolean, parent: INode, reference: SourceReference): EnumDefinition {
+    return new EnumDefinition(name, nested, new NodeReference(parent), reference);
   }
 
   public createType(): Type {
@@ -52,7 +52,7 @@ export class EnumDefinition extends ComponentNode implements INestedNode, INodeW
 
   public override parse(context: IParseLineContext): IParsableNode {
     let lastIndex = lastOrDefault(this.members)?.numberValue ?? -1;
-    let member = EnumMember.parse(context, lastIndex);
+    let member = EnumMember.parse(context, this, lastIndex);
     if (member != null) this.members.push(member);
     return this;
   }
@@ -83,5 +83,13 @@ export class EnumDefinition extends ComponentNode implements INestedNode, INodeW
 
   public containsMember(name: string): boolean {
     return any(this.members, member => member.name == name);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return new Symbol(this.reference, `enum: ${this.name}`, "", SymbolKind.Enum);
+  }
+
+  public override toString(): string {
+    return this.name;
   }
 }

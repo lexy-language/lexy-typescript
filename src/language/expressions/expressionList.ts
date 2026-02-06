@@ -1,17 +1,18 @@
 import type {IExpressionFactory} from "./expressionFactory";
-import type {IValidationContext} from "../../parser/validationContext";
-import type {IParseLineContext} from "../../parser/ParseLineContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
+import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
 import type {IChildExpression} from "./IChildExpression";
 
 import {Expression} from "./expression";
 import {Node} from "../node";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {ParseExpressionResult} from "./parseExpressionResult";
 import {asChildExpression, asParentExpression} from "./IChildExpression";
 import {lastOrDefault} from "../../infrastructure/arrayFunctions";
 import {NodeType} from "../nodeType";
-import {Assert} from "../../infrastructure/assert";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export class ExpressionList extends Node {
 
@@ -24,8 +25,8 @@ export class ExpressionList extends Node {
      return this.values.length;
    }
 
-   constructor(reference: SourceReference, factory: IExpressionFactory) {
-     super(reference);
+   constructor(parent: INode, reference: SourceReference, factory: IExpressionFactory) {
+     super(new NodeReference(parent), reference);
      this.factory = factory;
    }
 
@@ -44,19 +45,14 @@ export class ExpressionList extends Node {
    }
 
    public override validateTree(context: IValidationContext): void {
-     const scope = context.createVariableScope();
-     try {
-       super.validateTree(context);
-     } finally {
-       scope[Symbol.dispose]();
-     }
+     context.inNodeVariableScope(this, super.validateTree.bind(this));
    }
 
    public parse(context: IParseLineContext): ParseExpressionResult {
      let line = context.line;
-     let expression = this.factory.parse(line.tokens, line);
+     let expression = this.factory.parse(new NodeReference(this), line.tokens, line);
      if (expression.state != 'success') {
-       context.logger.fail(line.lineStartReference(), expression.errorMessage);
+       context.logger.fail(line.tokens.allReference(), expression.errorMessage);
        return expression;
      }
 
@@ -78,5 +74,9 @@ export class ExpressionList extends Node {
     if (childExpression.validateParentExpression(parentExpression, context)) {
       parentExpression?.linkChildExpression(childExpression);
     }
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }

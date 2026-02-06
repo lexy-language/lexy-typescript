@@ -7,10 +7,6 @@ import {asEnumDefinition, EnumDefinition, instanceOfEnumDefinition} from "./enum
 import {where} from "../infrastructure/arrayFunctions";
 import {asTypeDefinition, TypeDefinition} from "./types/typeDefinition";
 import {asScenario, instanceOfScenario, Scenario} from "./scenarios/scenario";
-import {TableType} from "./typeSystem/tableType";
-import {FunctionType} from "./typeSystem/functionType";
-import {EnumType} from "./typeSystem/enumType";
-import {DeclaredType} from "./typeSystem/objects/declaredType";
 import {asNodeWithType} from "./nodeWithType";
 
 export interface IComponentNodeList {
@@ -56,7 +52,9 @@ export class ComponentNodeList implements IComponentNodeList {
 
   public add(componentNode: IComponentNode): void {
     this.valuesList.push(componentNode);
-    this.index.set(componentNode.name, componentNode);
+    if (componentNode.name != null) {
+      this.index.set(componentNode.name, componentNode);
+    }
   }
 
   public containsEnum(enumName: string): boolean {

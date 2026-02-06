@@ -1,17 +1,18 @@
 import type {INode} from "../node";
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
 import {OperatorType} from "../../parser/tokens/operatorType";
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {ExpressionSource} from "./expressionSource";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
 import {TokenList} from "../../parser/tokens/tokenList";
 import {Type} from "../typeSystem/type";
-import {ElseExpression} from "./elseExpression";
 import {NodeType} from "../nodeType";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
 
 export function instanceOfParenthesizedExpression(object: any): object is ParenthesizedExpression {
   return object?.nodeType == NodeType.ParenthesizedExpression;
@@ -27,60 +28,69 @@ export class ParenthesizedExpression extends Expression {
 
   public expression: Expression;
 
-  constructor(expression: Expression, source: ExpressionSource, reference: SourceReference)  {
-    super(source, reference);
-     this.expression = expression;
-   }
+  constructor(expression: Expression, source: ExpressionSource, parentReference: NodeReference, reference: SourceReference) {
+    super(source, parentReference, reference);
+    this.expression = expression;
+  }
 
-   public static parse(source: ExpressionSource, factory: IExpressionFactory): ParseExpressionResult {
-     let tokens = source.tokens;
-     if (!ParenthesizedExpression.isValid(tokens)) return newParseExpressionFailed("ParenthesizedExpression", `Not valid.`);
+  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+    const tokens = source.tokens;
+    if (!ParenthesizedExpression.isValid(tokens)) {
+      return newParseExpressionFailed("ParenthesizedExpression", `Not valid.`);
+    }
 
-     let matchingClosingParenthesis = ParenthesizedExpression.findMatchingClosingParenthesis(tokens);
-     if (matchingClosingParenthesis == -1)
-       return newParseExpressionFailed("ParenthesizedExpression", `No closing parentheses found.`);
+    const matchingClosingParenthesis = ParenthesizedExpression.findMatchingClosingParenthesis(tokens);
+    if (matchingClosingParenthesis == -1) {
+      return newParseExpressionFailed("ParenthesizedExpression", `No closing parentheses found.`);
+    }
 
-     let innerExpressionTokens = tokens.tokensRange(1, matchingClosingParenthesis - 1);
-     let innerExpression = factory.parse(innerExpressionTokens, source.line);
-     if (innerExpression.state != 'success') return innerExpression;
+    const expressionReference = new NodeReference();
+    const innerExpressionTokens = tokens.tokensRange(1, matchingClosingParenthesis - 1);
+    const innerExpression = factory.parse(expressionReference, innerExpressionTokens, source.line);
+    if (innerExpression.state != 'success') return innerExpression;
 
-     let reference = source.createReference();
+    const reference = source.createReference();
 
-     let expression = new ParenthesizedExpression(innerExpression.result, source, reference);
-     return newParseExpressionSuccess(expression);
-   }
+    const expression = new ParenthesizedExpression(innerExpression.result, source, expressionReference, reference);
+    expressionReference.setNode(expression);
 
-   public static findMatchingClosingParenthesis(tokens: TokenList): number {
-     let count = 0;
-     for (let index = 0; index < tokens.length; index++) {
-       let token = tokens.get(index);
-       if (token.tokenType != "OperatorToken") continue;
+    return newParseExpressionSuccess(expression);
+  }
 
-       const operatorToken = token as OperatorToken;
-       if (operatorToken.type == OperatorType.OpenParentheses) {
-         count++;
-       }
-       else if (operatorToken.type == OperatorType.CloseParentheses) {
-         count--;
-         if (count == 0) return index;
-       }
-     }
+  public static findMatchingClosingParenthesis(tokens: TokenList): number {
+    let count = 0;
+    for (let index = 0; index < tokens.length; index++) {
+      let token = tokens.get(index);
+      if (token.tokenType != "OperatorToken") continue;
 
-     return -1;
-   }
+      const operatorToken = token as OperatorToken;
+      if (operatorToken.type == OperatorType.OpenParentheses) {
+        count++;
+      } else if (operatorToken.type == OperatorType.CloseParentheses) {
+        count--;
+        if (count == 0) return index;
+      }
+    }
 
-   public static isValid(tokens: TokenList): boolean {
-     return tokens.isOperatorToken(0, OperatorType.OpenParentheses);
-   }
+    return -1;
+  }
 
-   public override getChildren(): Array<INode> {
-    return [ this.expression ];
-   }
+  public static isValid(tokens: TokenList): boolean {
+    return tokens.isOperatorToken(0, OperatorType.OpenParentheses);
+  }
 
-   protected override validate(context: IValidationContext): void {
-   }
+  public override getChildren(): Array<INode> {
+    return [this.expression];
+  }
 
-   public override deriveType(context: IValidationContext): Type | null {
-     return this.expression.deriveType(context);
-   }
+  protected override validate(context: IValidationContext): void {
+  }
+
+  public override deriveType(context: IValidationContext): Type | null {
+    return this.expression.deriveType(context);
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
+  }
 }

@@ -4,6 +4,9 @@ import {Function} from "../functions/function";
 import {TypeKind} from "./typeKind";
 import {IObjectMember} from "./objects/objectMember";
 import {ObjectNestedType} from "./objects/objectNestedType";
+import {SourceReference} from "../sourceReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfFunctionType(object: any): object is FunctionType {
   return object?.typeKind == TypeKind.EnumType;
@@ -32,14 +35,18 @@ export class FunctionType extends ObjectType {
     return other != null && instanceOfFunctionType(other) && this.name == other.name;
   }
 
-  public toString(): string {
-    return this.name;
-  }
-
   protected override createMembers(): IObjectMember[] {
     return [
       new ObjectNestedType(Function.parameterName, this.functionValue.getParametersType()),
       new ObjectNestedType(Function.resultsName, this.functionValue.getResultsType())
     ];
+  }
+
+  public override toString(): string  {
+    return this.name;
+  }
+
+  public override getSymbol(reference: SourceReference): Symbol {
+    return new Symbol(reference, `function: ${this.name}`, "", SymbolKind.Type);
   }
 }

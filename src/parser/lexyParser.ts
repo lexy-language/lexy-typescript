@@ -1,6 +1,5 @@
-import type {IParserContext} from "./parserContext";
+import type {IParserContext} from "./context/parserContext";
 import type {ITokenizer} from "./tokens/tokenizer";
-import type {ISourceCodeDocument} from "./sourceCodeDocument";
 import type {IParsableNode} from "../language/parsableNode";
 import type {IExpressionFactory} from "../language/expressions/expressionFactory";
 import type {IFileSystem} from "../infrastructure/IFileSystem";
@@ -8,12 +7,11 @@ import type {ILogger} from "../infrastructure/logger";
 
 import {ParserResult} from "./parserResult";
 import {ParsableNodeIndex} from "../language/parsableNodeIndex";
-import {ParseLineContext} from "./ParseLineContext";
+import {ParseLineContext} from "./context/parseLineContext";
 import {Include} from "../language/include";
-import {ValidationContext} from "./validationContext";
+import {ValidationContext} from "./context/validationContext";
 import {DependencyGraphFactory} from "../dependencyGraph/dependencyGraphFactory";
-import {SourceCodeDocument} from "./sourceCodeDocument";
-import {ParserContext} from "./parserContext";
+import {ParserContext} from "./context/parserContext";
 import {ParseOptions} from "./parseOptions";
 import {Dependencies} from "../dependencyGraph/dependencies";
 import {TrackLoggingCurrentNodeVisitor} from "./TrackLoggingCurrentNodeVisitor";
@@ -21,18 +19,23 @@ import {Line} from "./line";
 import {ILibraries} from "../functionLibraries/libraries";
 import {Assert} from "../infrastructure/assert";
 import {asComponentNode} from "../language/componentNode";
-import {NodesWalker} from "../language/nodesWalker";
-import {INode, INodeWithParent} from "../language/node";
+import {StringSourceCodeDocument} from "./documents/stringSourceCodeDocument";
+import {FileSourceDocument} from "./documents/fileSourceDocument";
+import {FileDocuments} from "./documents/fileDocuments";
+import {ISourceCodeDocument} from "./documents/ISourceCodeDocument";
+import {DocumentSymbols} from "./symbols/documentSymbols";
 
 export interface ILexyParser {
+  parseCode(fileName: string, content: string[], options: ParseOptions | null): Promise<ParserResult>;
   parseFile(fileName: string, options: ParseOptions | null): Promise<ParserResult>;
-  parse(code: string[], fileName: string, options: ParseOptions | null): Promise<ParserResult>;
+  parseFiles(fileNames: readonly string[], options: ParseOptions | null): Promise<ParserResult>;
+  parseDocuments(sourceCodeDocuments: readonly ISourceCodeDocument[], options: ParseOptions | null): Promise<ParserResult>;
 }
 
 export class LexyParser implements ILexyParser {
+
   private readonly tokenizer: ITokenizer;
   private readonly baseLogger: ILogger;
-  private readonly sourceCode: ISourceCodeDocument;
   private readonly fileSystem: IFileSystem;
   private readonly libraries: ILibraries;
   private readonly expressionFactory: IExpressionFactory;
@@ -44,69 +47,102 @@ export class LexyParser implements ILexyParser {
     this.tokenizer = tokenizer;
     this.fileSystem = fileSystem;
     this.expressionFactory = expressionFactory;
-    this.sourceCode = new SourceCodeDocument();
     this.libraries = Assert.notNull(libraries, "libraries");
+  }
+
+  public async parseCode(fileName: string, content: string[], options: ParseOptions | null): Promise<ParserResult> {
+
+    Assert.notNull(fileName, "fileName");
+    Assert.notNull(content, "content");
+
+    this.baseLogger.logInformation(`Parse code: ${fileName}`);
+
+    const document = new StringSourceCodeDocument(content, fileName);
+    return await this.parseDocuments([document], options);
   }
 
   public async parseFile(fileName: string, options: ParseOptions | null): Promise<ParserResult> {
 
-    const fullFileName = this.fileSystem.isPathRooted(fileName)
-      ? fileName
-      : this.fileSystem.getFullPath(fileName);
+    this.baseLogger.logInformation(`Parse file: ${fileName}`);
 
-    this.baseLogger.logInformation(`Parse file: ` + fullFileName);
-
-    const code = await this.fileSystem.readAllLines(fullFileName);
-    return await this.parse(code, fileName, options);
+    const fullPath = this.fileSystem.getFullPath(fileName);
+    const document = new FileSourceDocument(fullPath);
+    try {
+      return await this.parseDocuments([document], options);
+    } catch (error) {
+      document.dispose();
+      throw error;
+    }
   }
 
-  public async parse(code: string[], fullFileName: string, options: ParseOptions | null): Promise<ParserResult> {
+  public async parseFiles(fileNames: readonly string[], options: ParseOptions | null): Promise<ParserResult> {
+
+    this.baseLogger.logInformation(`Parse files: ${fileNames.join(", ")}`);
+
+    const documents = FileDocuments.create(this.fileSystem, fileNames)
+    try {
+      return await this.parseDocuments(documents.documents, options);
+    } catch (error) {
+      documents.dispose();
+      throw error;
+    }
+  }
+
+  public async parseDocuments(sourceCodeDocuments: ISourceCodeDocument[], options: ParseOptions | null): Promise<ParserResult> {
+
+    Assert.notNull(sourceCodeDocuments, "sourceCodeDocuments");
 
     const context = new ParserContext(this.baseLogger, this.fileSystem, this.expressionFactory, this.libraries, options);
-    context.addFileIncluded(fullFileName);
-    context.setFileLineFilter(fullFileName);
 
-    await this.parseDocument(context, code, fullFileName);
+    for (const sourceCodeDocument of sourceCodeDocuments) {
+      context.addFileIncluded(sourceCodeDocument.fullFileName);
+      context.setFileLineFilter(sourceCodeDocument.fullFileName);
+
+      await this.parseDocument(sourceCodeDocument, context);
+    }
+
     context.logger.logNodes(context.nodes.values);
 
     const dependencies = this.sortByDependencyAndCheckCircularDependencies(context);
     if (!dependencies.hasCircularReferences) {
       context.rootNode.sortByDependency(dependencies.sortedNodes);
-      this.validateNodesTree(context);
+      LexyParser.validateNodesTree(context);
     }
 
-    if (context.options.suppressException != true) {
+    if (context.options?.suppressException != true) {
       context.logger.assertNoErrors();
     }
 
-    return new ParserResult(context.rootNode, context.nodes, context.logger, dependencies);
+    return new ParserResult(context.rootNode, context.nodes, context.logger, dependencies, context.symbols);
   }
 
-  private async parseDocument(context: IParserContext, code: string[], fullFileName: string): Promise<void> {
-
-    this.sourceCode.setCode(code, this.fileSystem.getFileName(fullFileName));
+  private async parseDocument(sourceCodeDocument: ISourceCodeDocument, context: IParserContext): Promise<void> {
 
     let currentIndent = 0;
     let nodesPerIndent = new ParsableNodeIndex(context.rootNode);
+    const symbols = context.symbols.document(sourceCodeDocument.fullFileName);
 
-    while (this.sourceCode.hasMoreLines()) {
-      if (!this.tokenizeLine(context)) {
-        currentIndent = this.sourceCode.currentLine?.indent(context.logger) ?? currentIndent;
+    while (sourceCodeDocument.hasMoreLines()) {
+
+      const line = sourceCodeDocument.nextLine();
+      symbols.add(line);
+
+      if (!this.tokenizeLine(line, context)) {
+        currentIndent = line?.indent(context.logger) ?? currentIndent;
         continue;
       }
 
-      const line = this.sourceCode.currentLine;
       const indentResult = this.getIndent(context, line);
       if (!indentResult.success) continue;
       const indent = indentResult.value;
 
       if (indent > currentIndent) {
-        context.logger.fail(line.lineStartReference(), `Invalid indent: ${indent}`);
+        context.logger.fail(line.tokens.allReference(), `Invalid indent: ${indent}`);
         continue;
       }
 
       let node = nodesPerIndent.getCurrentOrDescend(indent);
-      node = this.parseLine(context, node, nodesPerIndent, indent);
+      node = this.parseLine(line, context, node, symbols, nodesPerIndent, indent);
 
       currentIndent = indent + 1;
 
@@ -115,7 +151,7 @@ export class LexyParser implements ILexyParser {
 
     this.reset(context);
 
-    await this.loadIncludedFiles(context, fullFileName);
+    await this.loadIncludedFiles(context, sourceCodeDocument.fullFileName);
   }
 
   private getIndent(context: IParserContext, line: Line): {success: boolean, value: number} {
@@ -128,27 +164,28 @@ export class LexyParser implements ILexyParser {
       : {success: true, value: indent as number};
   }
 
-  private tokenizeLine(context: IParserContext): boolean {
+  private tokenizeLine(line: Line, context: IParserContext): boolean {
 
-    let line = this.sourceCode.nextLine();
+    const reference = line.lineReference(0);
     if (!context.lineFilter.useLine(line.content)) {
-      context.logger.log(line.lineStartReference(), `Skip line by filter: '${line.content}'`);
+      context.logger.log(reference, `Skip line by filter: '${line.content}'`);
       return false;
     }
 
-    context.logger.log(line.lineStartReference(), `'${line.content}'`);
+    context.logger.log(reference, `'${line.content}'`);
 
-    let tokens = line.tokenize(this.tokenizer);
+    const tokens = line.tokenize(this.tokenizer);
     if (tokens.state != 'success') {
       context.logger.fail(tokens.reference, tokens.errorMessage);
       return false;
     }
 
-    const tokenNames = this.sourceCode.currentLine.tokens.asArray()
+    const allTokensReference = line.tokens.allReference();
+    const tokenNames = line.tokens.asArray()
       .map(token => `${token.tokenType}(${token.value})`)
       .join(" ");
 
-    context.logger.log(line.lineStartReference(), ` Tokens: ` + tokenNames);
+    context.logger.log(allTokensReference, ` Tokens: ${tokenNames}`);
 
     return true;
   }
@@ -169,17 +206,15 @@ export class LexyParser implements ILexyParser {
 
     context.logger.logInfo(`Parse file: ` + fileName);
 
-    const code = await this.fileSystem.readAllLines(fileName);
-
     context.addFileIncluded(fileName);
 
-    await this.parseDocument(context, code, fileName);
+    const document = new FileSourceDocument(fileName);
+    await this.parseDocument(document, context);
   }
 
-  private validateNodesTree(context: IParserContext): void {
+  private static validateNodesTree(context: IParserContext): void {
     let visitor = new TrackLoggingCurrentNodeVisitor(context.logger);
-    let validationContext = new ValidationContext(context.logger, context.nodes, visitor, context.libraries);
-    this.setParents(context);
+    let validationContext = new ValidationContext(context.logger, context.nodes, visitor, context.libraries, context.symbols);
     context.rootNode.validateTree(validationContext);
   }
 
@@ -197,16 +232,19 @@ export class LexyParser implements ILexyParser {
   }
 
   private reset(context: IParserContext): void {
-    this.sourceCode.reset();
     context.logger.resetCurrentNode();
   }
 
-  private parseLine(context: IParserContext, currentNode: IParsableNode | null, nodesPerIndent: ParsableNodeIndex, indent: number): IParsableNode {
+  private parseLine(line: Line, context: IParserContext, currentNode: IParsableNode | null,
+                    documentSymbols: DocumentSymbols,
+                    nodesPerIndent: ParsableNodeIndex, indent: number): IParsableNode {
 
     if (currentNode == null) {
-      throw new Error(`Current node can't be null. Line: ${this.sourceCode.currentLine}`)
+      throw new Error(`Current node can't be null. Line: ${line}`)
     }
-    let parseLineContext = new ParseLineContext(this.sourceCode.currentLine, context.logger, this.expressionFactory);
+    let parseLineContext = new ParseLineContext(line, context.logger, documentSymbols, this.expressionFactory);
+    currentNode.expandArea(line.endPosition);
+
     let node = currentNode.parse(parseLineContext);
     if (!node) {
       throw new Error(`(${currentNode}) Parse should return child node or itself.`);
@@ -221,12 +259,5 @@ export class LexyParser implements ILexyParser {
     }
 
     return node;
-  }
-
-  private setParents(context: IParserContext) {
-    NodesWalker.walkWithParent(context.rootNode, (node: INode, parent: INode | null) => {
-      const nodeWithParent = node as unknown as INodeWithParent;
-      nodeWithParent.setParent(parent);
-    }, null);
   }
 }

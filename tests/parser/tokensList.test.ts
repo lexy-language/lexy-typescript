@@ -1,10 +1,14 @@
 import {TokenFactory} from "./tokenFactory";
 import {TokenList} from "../../src/parser/tokens/tokenList";
 import {validateStringLiteralToken} from "./tokenTestExtensions";
+import {Line} from "../../src/parser/line";
 
 describe('TokensListTests', () => {
+  
+  const dummyLine = new Line(0, "", "");
+
   it('tokensFrom', async () => {
-    let list = new TokenList([
+    let list = new TokenList(dummyLine, [
       TokenFactory.string(`123`),
       TokenFactory.string(`456`),
       TokenFactory.string(`789`)
@@ -17,7 +21,7 @@ describe('TokensListTests', () => {
   });
 
   it('tokensStart', async () => {
-    let list = new TokenList([
+    let list = new TokenList(dummyLine, [
       TokenFactory.string(`123`),
       TokenFactory.string(`456`),
       TokenFactory.string(`789`)
@@ -30,7 +34,7 @@ describe('TokensListTests', () => {
   });
 
   it('tokensRange', async () => {
-    let list = new TokenList([
+    let list = new TokenList(dummyLine, [
       TokenFactory.string(`1111`),
       TokenFactory.string(`2222`),
       TokenFactory.string(`3333`),

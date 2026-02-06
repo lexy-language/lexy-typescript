@@ -49,7 +49,7 @@ export class ExecutableFunction {
     let currentValue = parameters;
     while (currentReference.hasChildIdentifiers) {
       currentValue = parameters[currentReference.rootIdentifier];
-      currentReference = currentReference.childrenReference();
+      currentReference = currentReference.childrenPath();
     }
 
     return (value: any) => currentValue[currentReference.rootIdentifier] = value;

@@ -1,9 +1,12 @@
-import type {IValidationContext} from "../../parser/validationContext";
+import type {IValidationContext} from "../../parser/context/validationContext";
 
-import {SourceReference} from "../../parser/sourceReference";
+import {SourceReference} from "../sourceReference";
 import {INode, Node} from "../node";
 import {NodeType} from "../nodeType";
 import {IdentifierPath} from "../identifierPath";
+import {NodeReference} from "../nodeReference";
+import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfValidationColumnHeader(object: any) {
   return object?.nodeType == NodeType.ValidationColumnHeader;
@@ -18,13 +21,13 @@ export class ValidationColumnHeader extends Node {
   public nodeType = NodeType.ValidationColumnHeader;
   public name: string
 
-  public constructor(name: string, reference: SourceReference) {
-    super(reference);
+  public constructor(name: string, parentReference: NodeReference, reference: SourceReference) {
+    super(parentReference, reference);
     this.name = name;
   }
 
-  public static parse(name: string, reference: SourceReference): ValidationColumnHeader {
-    return new ValidationColumnHeader(name, reference);
+  public static parse(name: string, parentReference: NodeReference, reference: SourceReference): ValidationColumnHeader {
+    return new ValidationColumnHeader(name, parentReference, reference);
   }
 
   public override getChildren(): Array<INode> {
@@ -37,5 +40,9 @@ export class ValidationColumnHeader extends Node {
     if (variable == null) {
       context.logger.fail(this.reference, `Unknown variable: '${this.name}'`);
     }
+  }
+
+  public override getSymbol(): Symbol | null {
+    return null;
   }
 }
