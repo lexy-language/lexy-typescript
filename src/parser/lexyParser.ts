@@ -66,7 +66,7 @@ export class LexyParser implements ILexyParser {
     this.baseLogger.logInformation(`Parse file: ${fileName}`);
 
     const fullPath = this.fileSystem.getFullPath(fileName);
-    const document = new FileSourceDocument(fullPath);
+    const document = this.fileSystem.createFileSourceDocument(fullPath);
     try {
       return await this.parseDocuments([document], options);
     } catch (error) {
@@ -208,7 +208,7 @@ export class LexyParser implements ILexyParser {
 
     context.addFileIncluded(fileName);
 
-    const document = new FileSourceDocument(fileName);
+    const document = this.fileSystem.createFileSourceDocument(fileName);
     await this.parseDocument(document, context);
   }
 

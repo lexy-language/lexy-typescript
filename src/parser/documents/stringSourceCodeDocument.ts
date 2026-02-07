@@ -35,6 +35,9 @@ export class StringSourceCodeDocument implements ISourceCodeDocument {
     return this.currentLineValue;
   }
 
+  public dispose() {
+  }
+
   public toString(): string {
     const sourceCode = [];
     for (let lineIndex = 0; lineIndex < this.code.length; lineIndex++){

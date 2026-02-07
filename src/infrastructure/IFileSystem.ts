@@ -1,3 +1,5 @@
+import {ISourceCodeDocument} from "../parser/documents/ISourceCodeDocument";
+
 export interface IFileSystem {
 
   readAllLines(fileName: string): Promise<Array<string>>;
@@ -17,4 +19,6 @@ export interface IFileSystem {
   isPathRooted(folder: string): boolean;
 
   logFolders(): string;
+
+  createFileSourceDocument(fullPath: string): ISourceCodeDocument;
 }

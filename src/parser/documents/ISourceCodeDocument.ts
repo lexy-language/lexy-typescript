@@ -6,4 +6,6 @@ export interface ISourceCodeDocument {
 
   hasMoreLines(): boolean;
   nextLine(): Line;
+
+  dispose(): void;
 }

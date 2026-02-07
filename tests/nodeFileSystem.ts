@@ -2,6 +2,8 @@ import {IFileSystem} from "../src";
 import {any} from "../src/infrastructure/arrayFunctions"
 import path from "path";
 import fs from "fs";
+import {FileSourceDocument} from "../src/parser/documents/fileSourceDocument";
+import {ISourceCodeDocument} from "../src/parser/documents/ISourceCodeDocument";
 
 export class NodeFileSystem implements IFileSystem {
 
@@ -85,6 +87,10 @@ export class NodeFileSystem implements IFileSystem {
     const result = [];
     this.addFolder(this.currentFolder(), result);
     return result.join("\n");
+  }
+
+  createFileSourceDocument(fullPath: string): ISourceCodeDocument {
+    return new FileSourceDocument(fullPath);
   }
 
   private addFolder(folder: string, result: any[]) {
