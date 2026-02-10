@@ -89,7 +89,7 @@ export class NodeFileSystem implements IFileSystem {
     return result.join("\n");
   }
 
-  createFileSourceDocument(fullPath: string): ISourceCodeDocument {
+  async createFileSourceDocument(fullPath: string): Promise<ISourceCodeDocument> {
     return new FileSourceDocument(fullPath);
   }
 

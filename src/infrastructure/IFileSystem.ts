@@ -20,5 +20,5 @@ export interface IFileSystem {
 
   logFolders(): string;
 
-  createFileSourceDocument(fullPath: string): ISourceCodeDocument;
+  createFileSourceDocument(fullPath: string): Promise<ISourceCodeDocument>;
 }
