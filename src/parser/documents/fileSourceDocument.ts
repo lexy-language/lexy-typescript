@@ -1,7 +1,8 @@
+import type {ISourceCodeDocument} from "./ISourceCodeDocument";
+
 import {LineByLine} from "./lineByLine";
 import {Line} from "../line";
 import {Assert} from "../../infrastructure/assert";
-import {ISourceCodeDocument} from "./ISourceCodeDocument";
 
 export class FileSourceDocument implements ISourceCodeDocument {
 

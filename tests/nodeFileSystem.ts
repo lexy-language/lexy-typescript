@@ -1,9 +1,11 @@
-import {IFileSystem} from "../src";
+import type {ISourceCodeDocument} from "../src/parser/documents/ISourceCodeDocument";
+import type {ISourceCodeDocuments} from "../src/parser/documents/ISourceCodeDocuments";
+import type {IFileSystem} from "../src";
 import {any} from "../src/infrastructure/arrayFunctions"
 import path from "path";
 import fs from "fs";
 import {FileSourceDocument} from "../src/parser/documents/fileSourceDocument";
-import {ISourceCodeDocument} from "../src/parser/documents/ISourceCodeDocument";
+import {FileSourceDocuments} from "../src/parser/documents/fileSourceDocuments";
 
 export class NodeFileSystem implements IFileSystem {
 
@@ -91,6 +93,10 @@ export class NodeFileSystem implements IFileSystem {
 
   async createFileSourceDocument(fullPath: string): Promise<ISourceCodeDocument> {
     return new FileSourceDocument(fullPath);
+  }
+
+  async createFileSourceDocuments(fileNames: readonly string[]): Promise<ISourceCodeDocuments> {
+    return FileSourceDocuments
   }
 
   private addFolder(folder: string, result: any[]) {

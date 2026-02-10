@@ -1,4 +1,5 @@
 import {ISourceCodeDocument} from "../parser/documents/ISourceCodeDocument";
+import {ISourceCodeDocuments} from "../parser/documents/ISourceCodeDocuments";
 
 export interface IFileSystem {
 
@@ -21,4 +22,5 @@ export interface IFileSystem {
   logFolders(): string;
 
   createFileSourceDocument(fullPath: string): Promise<ISourceCodeDocument>;
+  createFileSourceDocuments(fileNames: readonly string[]): Promise<ISourceCodeDocuments>;
 }

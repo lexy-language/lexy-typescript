@@ -1,9 +1,11 @@
+import type {ISourceCodeDocument} from "./ISourceCodeDocument";
+import type {IFileSystem} from "../../infrastructure/IFileSystem";
+import type {ISourceCodeDocuments} from "./ISourceCodeDocuments";
+
 import {Assert} from "../../infrastructure/assert";
-import {IFileSystem} from "../../infrastructure/IFileSystem";
-import {ISourceCodeDocument} from "./ISourceCodeDocument";
 import {FileSourceDocument} from "./fileSourceDocument";
 
-export class FileDocuments {
+export class FileSourceDocuments implements ISourceCodeDocuments {
 
   private readonly documentsValue: FileSourceDocument[];
 
@@ -15,13 +17,13 @@ export class FileDocuments {
     this.documentsValue = Assert.notNull(documents, "documents");
   }
 
-  public static create(fileSystem: IFileSystem, fileNames: readonly string[]): FileDocuments {
+  public static create(fileSystem: IFileSystem, fileNames: readonly string[]): FileSourceDocuments {
     const documents = fileNames.map(fileName => {
       const fullPath = fileSystem.getFullPath(fileName);
       return new FileSourceDocument(fullPath);
     });
 
-    return new FileDocuments(documents);
+    return new FileSourceDocuments(documents);
   }
 
   public dispose() {

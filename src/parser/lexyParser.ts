@@ -20,8 +20,6 @@ import {ILibraries} from "../functionLibraries/libraries";
 import {Assert} from "../infrastructure/assert";
 import {asComponentNode} from "../language/componentNode";
 import {StringSourceCodeDocument} from "./documents/stringSourceCodeDocument";
-import {FileSourceDocument} from "./documents/fileSourceDocument";
-import {FileDocuments} from "./documents/fileDocuments";
 import {ISourceCodeDocument} from "./documents/ISourceCodeDocument";
 import {DocumentSymbols} from "./symbols/documentSymbols";
 
@@ -79,7 +77,7 @@ export class LexyParser implements ILexyParser {
 
     this.baseLogger.logInformation(`Parse files: ${fileNames.join(", ")}`);
 
-    const documents = FileDocuments.create(this.fileSystem, fileNames)
+    const documents = await this.fileSystem.createFileSourceDocuments(fileNames)
     try {
       return await this.parseDocuments(documents.documents, options);
     } catch (error) {
