@@ -96,7 +96,7 @@ export class NodeFileSystem implements IFileSystem {
   }
 
   async createFileSourceDocuments(fileNames: readonly string[]): Promise<ISourceCodeDocuments> {
-    return FileSourceDocuments
+    return await FileSourceDocuments.create(this, fileNames);
   }
 
   private addFolder(folder: string, result: any[]) {

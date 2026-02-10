@@ -3,25 +3,29 @@ import type {IFileSystem} from "../../infrastructure/IFileSystem";
 import type {ISourceCodeDocuments} from "./ISourceCodeDocuments";
 
 import {Assert} from "../../infrastructure/assert";
-import {FileSourceDocument} from "./fileSourceDocument";
 
 export class FileSourceDocuments implements ISourceCodeDocuments {
 
-  private readonly documentsValue: FileSourceDocument[];
+  private readonly documentsValue: ISourceCodeDocument[];
 
   public get documents(): ISourceCodeDocument[] {
     return this.documentsValue;
   }
 
-  constructor(documents: FileSourceDocument[]) {
+  constructor(documents: ISourceCodeDocument[]) {
     this.documentsValue = Assert.notNull(documents, "documents");
   }
 
-  public static create(fileSystem: IFileSystem, fileNames: readonly string[]): FileSourceDocuments {
-    const documents = fileNames.map(fileName => {
+  public static async create(fileSystem: IFileSystem, fileNames: readonly string[]): Promise<ISourceCodeDocuments> {
+
+    Assert.notNull(fileSystem, "fileSystem");
+    Assert.notNull(fileNames, "fileNames");
+
+    const documents = [];
+    for (const fileName of fileNames) {
       const fullPath = fileSystem.getFullPath(fileName);
-      return new FileSourceDocument(fullPath);
-    });
+      documents.push(await fileSystem.createFileSourceDocument(fullPath));
+    }
 
     return new FileSourceDocuments(documents);
   }
