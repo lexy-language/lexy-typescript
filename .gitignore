@@ -12,7 +12,7 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 
-coverage/lcov-report/
+coverage/
 
 
 node_modules/

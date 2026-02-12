@@ -74,7 +74,7 @@ export class DocumentsSymbols {
 
     const filter = DocumentsSymbols.filter(result, token);
 
-    return new SuggestionsResult(filter, result);
+    return new SuggestionsResult(filter, result, token.value);
   }
 
   private static filter(result: Suggestion[], token: Token): Suggestion[] {

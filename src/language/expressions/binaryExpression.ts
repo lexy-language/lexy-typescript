@@ -301,7 +301,7 @@ export class BinaryExpression extends Expression {
       let allowedRightEnum = instanceOfEnumType(allowed.rightType);
 
       if (allowedLeftEnum && allowedRightEnum) {
-        //if left and right is enumDefintion, the enumDefintion should be of the same typeDeclaration
+        //if left and right is enumDefinition, the enumDefinition should be of the same typeDeclaration
         return leftEnum && rightEnum && left != null && left.equals(right);
       } else if (allowedLeftEnum) {
         return leftEnum && allowed.rightType.equals(right);
