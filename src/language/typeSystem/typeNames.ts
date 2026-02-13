@@ -5,7 +5,7 @@ export class TypeNames
   public static readonly date: string = "date";
   public static readonly string: string = "string";
 
-  private static readonly existing = [
+  public static readonly values = [
     TypeNames.number,
     TypeNames.boolean,
     TypeNames.date,
@@ -13,6 +13,6 @@ export class TypeNames
   ];
 
   public static contains(parameterType: string): boolean {
-    return this.existing.indexOf(parameterType) > -1;
+    return this.values.indexOf(parameterType) > -1;
   }
 }
