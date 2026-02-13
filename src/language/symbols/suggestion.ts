@@ -19,6 +19,6 @@ export class Suggestion {
   public toString(): string {
     return this.type == null
       ? `${this.name} (${this.kind})`
-      : `${this.type?.typeKind} {Name} (${this.kind})`;
+      : `${this.type?.typeKind} ${this.name} (${this.kind})`;
   }
 }

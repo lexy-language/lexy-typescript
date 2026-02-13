@@ -27,13 +27,12 @@ export class Keywords {
 
   public static readonly ImplicitTypeDeclaration = "var";
 
-  private static readonly values = [
+  public static readonly values = [
     Keywords.Function,
     Keywords.EnumKeyword,
     Keywords.TableKeyword ,
     Keywords.TypeKeyword,
     Keywords.ScenarioKeyword,
-    Keywords.ValidationTable,
     Keywords.If,
     Keywords.Else,
     Keywords.Elseif,
@@ -43,11 +42,12 @@ export class Keywords {
     Keywords.Include,
     Keywords.Parameters,
     Keywords.Results,
-    Keywords.ExecutionLogging,
-    Keywords.ExecutionLog,
+    Keywords.ValidationTable,
     Keywords.ExpectErrors,
     Keywords.ExpectComponentErrors,
     Keywords.ExpectExecutionErrors,
+    Keywords.ExecutionLogging,
+    Keywords.ExecutionLog,
     Keywords.ImplicitTypeDeclaration
   ];
 
