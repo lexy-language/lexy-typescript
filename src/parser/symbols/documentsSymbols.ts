@@ -152,8 +152,8 @@ export class DocumentsSymbols {
 
   private static map(entry: VariableEntry): Suggestion {
     const kind = this.getKind(entry.variableSource);
-
-    return new Suggestion(entry.name, kind, entry.type);
+    const description = entry.toString();
+    return new Suggestion(entry.name, description, kind, entry.type);
   }
 
   private static getKind(source: VariableSource) {

@@ -61,8 +61,8 @@ export class DocumentSymbols {
   }
 
   private static getSymbol(position: Position, list: readonly INode[], previousSymbol: ReturnValue): ReturnValue | null {
-    for (const node of list) {
 
+    for (const node of list) {
       console.log(`Check: (${position}) between '${previousSymbol.value?.reference}' and '${node.reference}'`);
       if (node.reference.lineNumber > position.lineNumber) {
         return previousSymbol;
@@ -73,7 +73,7 @@ export class DocumentSymbols {
       }
 
       if (node.reference.includes(position)) {
-        var symbol = node.getSymbol();
+        const symbol = node.getSymbol();
         if (symbol != null) {
           previousSymbol.value = symbol;
         }
@@ -132,6 +132,7 @@ export class DocumentSymbols {
   }
 
   public getToken(position: Position): Token | null {
+
     Assert.notNull(position, "position");
     Assert.true(this.lines.length >= position.lineNumber, `Couldn't find line: ${position.lineNumber} Lines: ${this.lines.length}`);
 

@@ -8,10 +8,11 @@ import {SymbolKind} from "./symbolKind";
 export class AddSuggestion extends SuggestionEdit {
 
   public readonly name: string;
+  public readonly description: string | null;
   public readonly kind: SymbolKind;
   public readonly type: Type | null;
 
-  constructor(scope: SuggestionsScope, name: string, kind: SymbolKind, type: Type | null) {
+  constructor(scope: SuggestionsScope, name: string, description: string | null, kind: SymbolKind, type: Type | null) {
     super(scope)
     this.name = Assert.notNull(name, "name");
     this.kind = kind;
@@ -19,7 +20,7 @@ export class AddSuggestion extends SuggestionEdit {
   }
 
   public override update(suggestions: Suggestion[]): void {
-    suggestions.push(new Suggestion(this.name, this.kind, this.type));
+    suggestions.push(new Suggestion(this.name, this.description, this.kind, this.type));
   }
 
   public override toString(): string {

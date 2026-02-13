@@ -26,32 +26,32 @@ export class Suggestions {
     return builder.values;
   }
 
-  public keyword(name: string): Suggestions {
-    return this.add(name, SymbolKind.Keyword);
+  public keyword(name: string, description: string | null = null): Suggestions {
+    return this.add(name, "keyword", SymbolKind.Keyword);
   }
 
-  public parameter(name: string, type: Type): Suggestions {
-    return this.add(name, SymbolKind.ParameterVariable, type);
+  public parameter(name: string, type: Type, description: string | null = null): Suggestions {
+    return this.add(name, description, SymbolKind.ParameterVariable, type);
   }
 
-  public result(name: string, type: Type): Suggestions {
-    return this.add(name, SymbolKind.ResultVariable, type);
+  public result(name: string, type: Type, description: string | null = null): Suggestions {
+    return this.add(name, description, SymbolKind.ResultVariable, type);
   }
 
-  public variable(name: string, type: Type): Suggestions {
-    return this.add(name, SymbolKind.Variable, type);
+  public variable(name: string, type: Type, description: string | null = null): Suggestions {
+    return this.add(name, description, SymbolKind.Variable, type);
   }
 
-  public typeVariable(name: string, type: Type): Suggestions {
-    return this.add(name, SymbolKind.ObjectVariable, type);
+  public typeVariable(name: string, type: Type, description: string | null = null): Suggestions {
+    return this.add(name, description, SymbolKind.ObjectVariable, type);
   }
 
   public removeKeyword(name: string): Suggestions {
     return this.remove(name, SymbolKind.Keyword);
   }
 
-  private add(name: string, kind: SymbolKind, type: Type | null = null): Suggestions {
-    this.values.push(new AddSuggestion(this.scope, name, kind, type));
+  private add(name: string, description: string | null, kind: SymbolKind, type: Type | null = null): Suggestions {
+    this.values.push(new AddSuggestion(this.scope, name, description, kind, type));
     return this;
   }
 
