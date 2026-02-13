@@ -11,7 +11,7 @@ import {Token} from "../tokens/token";
 import {asMemberAccessToken} from "../tokens/memberAccessToken";
 import {firstOrDefault, where} from "../../infrastructure/arrayFunctions";
 import {SymbolKind} from "../../language/symbols/symbolKind";
-import {IObjectMember} from "../../language/typeSystem/objects/objectMember";
+import {IObjectMember, ObjectMemberKind} from "../../language/typeSystem/objects/objectMember";
 import {IdentifierPath} from "../../language/identifierPath";
 import {asObjectType} from "../../language/typeSystem/objects/objectType";
 import {NodeLevel} from "./nodeLevel";
@@ -95,7 +95,18 @@ export class DocumentsSymbols {
       return [];
     }
 
-    return members.map(member => new Suggestion(member.name, SymbolKind.ObjectVariable, member.type));
+    function mapDescription(member: IObjectMember) {
+      switch (member.kind) {
+        case ObjectMemberKind.Function:
+          return `function: ${member.type}`;
+        case ObjectMemberKind.Variable:
+          return `variable: ${member.type}`;
+        case ObjectMemberKind.NestedType:
+          return `type: ${member.type}`;
+      }
+    }
+
+    return members.map(member => new Suggestion(member.name, mapDescription(member), SymbolKind.ObjectVariable, member.type));
   }
 
   private static getMembers(result: Suggestion[], parts: string[]): IObjectMember[] | null {

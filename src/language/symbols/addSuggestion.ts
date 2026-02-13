@@ -15,6 +15,7 @@ export class AddSuggestion extends SuggestionEdit {
   constructor(scope: SuggestionsScope, name: string, description: string | null, kind: SymbolKind, type: Type | null) {
     super(scope)
     this.name = Assert.notNull(name, "name");
+    this.description = description;
     this.kind = kind;
     this.type = type;
   }
