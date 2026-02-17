@@ -1,18 +1,18 @@
 import type {IExpressionFactory} from "../../language/expressions/expressionFactory";
 import type {IParserLogger} from "../logging/parserLogger";
+import type {IDocumentSymbols} from "../symbols/documentSymbols";
 
 import {Line} from "../line";
 import {TokenValidator} from "../tokenValidator";
 import {SourceReference} from "../../language/sourceReference";
 import {Assert} from "../../infrastructure/assert";
-import {DocumentSymbols} from "../symbols/documentSymbols";
 
 export interface IParseLineContext {
   line: Line;
   logger: IParserLogger;
 
   expressionFactory: IExpressionFactory;
-  symbols: DocumentSymbols;
+  symbols: IDocumentSymbols;
 
   validateTokens(name: string): TokenValidator;
 
@@ -24,9 +24,9 @@ export class ParseLineContext implements IParseLineContext {
   public readonly line: Line;
   public readonly logger: IParserLogger;
   public readonly expressionFactory: IExpressionFactory;
-  public readonly symbols: DocumentSymbols;
+  public readonly symbols: IDocumentSymbols;
 
-  constructor(line: Line, logger: IParserLogger, symbols: DocumentSymbols, expressionFactory: IExpressionFactory) {
+  constructor(line: Line, logger: IParserLogger, symbols: IDocumentSymbols, expressionFactory: IExpressionFactory) {
     this.line = Assert.notNull(line, "line");
     this.logger = Assert.notNull(logger, "logger");
     this.symbols = Assert.notNull(symbols, "symbols");

@@ -14,14 +14,23 @@ import {SymbolKind} from "../../language/symbols/symbolKind";
 import {IObjectMember, ObjectMemberKind} from "../../language/typeSystem/objects/objectMember";
 import {IdentifierPath} from "../../language/identifierPath";
 import {asObjectType} from "../../language/typeSystem/objects/objectType";
-import {NodeLevel} from "./nodeLevel";
 import {VariableSource} from "../../language/variableSource";
 import {SuggestionEdit} from "../../language/symbols/suggestionEdit";
 import {SuggestionsScope} from "../../language/symbols/suggestionsScope";
-import {DocumentSymbols} from "./documentSymbols";
+import {DocumentSymbols, IDocumentSymbols} from "./documentSymbols";
 import {asIncompleteMemberAccessToken} from "../tokens/incompleteMemberAccessToken";
 
-export class DocumentsSymbols {
+export interface ISymbols {
+  getDescription(fileName: string, position: Position): SymbolDescription | null;
+  getSignatures(fileName: string, position: Position): Signatures | null;
+  getSuggestions(fileName: string, position: Position): SuggestionsResult;
+
+  document(fullFileName: string): IDocumentSymbols;
+
+  addNodeVariables(node: INode, result: readonly VariableEntry[]): void;
+}
+
+export class Symbols implements ISymbols {
 
   private readonly symbols: Map<string, DocumentSymbols> = new Map();
   private readonly nodeVariables: Map<INode, readonly VariableEntry[]> = new Map();
@@ -70,9 +79,9 @@ export class DocumentsSymbols {
     //        result.AddRange(AddComponentsAndMembers(document, position));
     //        result.AddRange(AddLibraryFunctions(document, position));
     this.addVariables(nodesInScope, result);
-    DocumentsSymbols.addNodesSuggestions(nodesInScope, result, position.addEndColumn(-1));
+    Symbols.addNodesSuggestions(nodesInScope, result, position.addEndColumn(-1));
 
-    const filter = DocumentsSymbols.filter(result, token);
+    const filter = Symbols.filter(result, token);
 
     return new SuggestionsResult(filter, result, token.value);
   }
@@ -150,14 +159,14 @@ export class DocumentsSymbols {
     throw new Error();
   }
 
-  private addVariables(nodesInScope: NodeLevel[], result: Suggestion[]): void {
+  private addVariables(nodesInScope: INode[], result: Suggestion[]): void {
+
     for (const node of nodesInScope) {
-      const variables = this.nodeVariables.get(node.value);
-      if (variables != undefined) {
-        const entries = variables.map(value => {
-          result.push(DocumentsSymbols.map(value));
-        });
-      }
+
+      const variables = this.nodeVariables.get(node);
+      if (variables == undefined) continue;
+
+      variables.forEach(value => result.push(Symbols.map(value)));
     }
   }
 
@@ -182,11 +191,11 @@ export class DocumentsSymbols {
     }
   }
 
-  private static addNodesSuggestions(nodes: NodeLevel[], suggestions: Suggestion[], position: Position): void {
+  private static addNodesSuggestions(nodes: INode[], suggestions: Suggestion[], position: Position): void {
     for (let index = nodes.length - 1; index >= 0; index--) {
       const node = nodes[index];
-      const nodeSuggestions = node.value.getSuggestions();
-      DocumentsSymbols.addSuggestions(suggestions, nodeSuggestions, node.value, position);
+      const nodeSuggestions = node.getSuggestions();
+      Symbols.addSuggestions(suggestions, nodeSuggestions, node, position);
     }
   }
 

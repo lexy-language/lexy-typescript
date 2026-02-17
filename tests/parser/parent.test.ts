@@ -17,7 +17,7 @@ function verifyParentChildrenAreSet(node: INode, context: VerifyContext) {
     const children = parent.getChildren();
     const contains = children.indexOf(node) >= 0;
 
-    context.isTrue(contains, `${node.nodeType} not found as child of ${parent.nodeType}`);
+    context.isTrue(contains, `'${node.nodeType}' not found as child of '${parent.nodeType}'`);
   }
 }
 

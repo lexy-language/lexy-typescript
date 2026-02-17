@@ -54,7 +54,11 @@ export class VariableDeclarationExpression extends Expression {
   public assignment: Expression | null;
   public nameExpression: VariableNameExpression;
 
-  public get state(): VariableDeclarationState {
+  public get state(): VariableDeclarationState | null {
+    return this.stateValue;
+  }
+
+  public get stateRequired(): VariableDeclarationState {
     if (this.stateValue == null) throw new Error("State not set.")
     return this.stateValue;
   }
@@ -91,7 +95,7 @@ export class VariableDeclarationExpression extends Expression {
     const reference = source.createReference();
 
     const expression = new VariableDeclarationExpression(type, name.result, assignment?.result
-      ?? null, source, expressionReference, reference);
+      ?? null, source, parentReference, reference);
     expressionReference.setNode(expression);
 
     return newParseExpressionSuccess(expression);
@@ -174,7 +178,7 @@ export class VariableDeclarationExpression extends Expression {
       this.reference,
       IdentifierPath.parseString(this.name),
       null,
-      this.state.type,
+      this.stateRequired.type,
       VariableSource.Code,
       VariableAccess.Write);
     return this.assignment != null ? [writeVariable, ...getReadVariableUsage(this.assignment)] : [writeVariable];

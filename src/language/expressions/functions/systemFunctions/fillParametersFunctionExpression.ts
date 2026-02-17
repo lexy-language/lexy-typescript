@@ -20,6 +20,7 @@ import {ExpressionSource} from "../../expressionSource";
 import {NodeReference} from "../../../nodeReference";
 import {SymbolKind} from "../../../symbols/symbolKind";
 import {Symbol} from "../../../symbols/symbol";
+import {ExtractResultsFunctionState} from "./extractResultsFunctionExpression";
 
 export function instanceOfFillParametersFunctionExpression(object: any): object is FillParametersFunctionExpression {
   return object?.nodeType == NodeType.FillParametersFunctionExpression;
@@ -58,7 +59,11 @@ export class FillParametersFunctionExpression extends FunctionCallExpression imp
 
   public readonly name: string = FillParametersFunctionExpression.functionName;
 
-  public get state(): FillParametersFunctionState {
+  public get state(): FillParametersFunctionState | null {
+    return this.stateValue;
+  }
+
+  public get stateRequired(): FillParametersFunctionState {
     if (this.stateValue == null) throw new Error("State not set.")
     return this.stateValue;
   }

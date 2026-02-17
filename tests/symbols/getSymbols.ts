@@ -1,4 +1,4 @@
-import {DocumentsSymbols} from "../../src/parser/symbols/documentsSymbols";
+import type {ISymbols} from "../../src/parser/symbols/symbols";
 import {ComponentNodeList} from "../../src/language/componentNodeList";
 import {StringSourceCodeDocument} from "../../src/parser/documents/stringSourceCodeDocument";
 import {ISourceCodeDocument} from "../../src/parser/documents/ISourceCodeDocument";
@@ -6,10 +6,10 @@ import {createParser} from "../parseFunctions";
 
 class SymbolsResult {
 
-  public readonly symbols: DocumentsSymbols;
+  public readonly symbols: ISymbols;
   public readonly nodes: ComponentNodeList;
 
-  constructor(symbols: DocumentsSymbols, nodes: ComponentNodeList) {
+  constructor(symbols: ISymbols, nodes: ComponentNodeList) {
     this.symbols = symbols;
     this.nodes = nodes;
   }
@@ -24,7 +24,7 @@ async function getDocumentsSymbols(documents: readonly ISourceCodeDocument[], su
     const context = await parser.parseDocuments(documents, options);
     return new SymbolsResult(context.documentsSymbols, context.componentNodes);
   } catch (error: Error) {
-    throw new Error("Parser error: " + logDocuments(documents) + "\n" + error.stack);
+    throw new Error("Parser error: \n" + logDocuments(documents) + "\n" + error.stack);
   }
 }
 

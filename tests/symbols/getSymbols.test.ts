@@ -3,9 +3,11 @@ import {getSymbols} from "./getSymbols";
 import {NodesLogger} from "../../src/parser/logging/nodesLogger";
 import {Verify} from "../verify";
 import {VerifySymbols} from "./verifySymbols";
+import {LoggingConfiguration} from "../loggingConfiguration";
 
 describe('GetSymbolsTests', () => {
 
+  //todo split in smaller tests, add spread mapping tests (I wasn't allowed)
   it('AllKeywords', async () => {
     let {symbols, nodes} = await getSymbols("test.lexy",
       `scenario TestSymbols                                                                               //  1
@@ -80,7 +82,9 @@ enum EnumExample                                                                
   Married                                                                                          // 70
   CivilPartnership                                                                                 // 71`);
 
-    NodesLogger.log(nodes.values, console.log);
+    const mainLogger = LoggingConfiguration.getMainLogger();
+
+    NodesLogger.log(nodes.values, value => mainLogger.logDebug(value));
 
     Verify.model(symbols, context => new VerifySymbols(context)
       .description(1, 1, "scenario: TestSymbols", SymbolKind.Scenario, "Test scenario")

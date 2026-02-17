@@ -1,21 +1,22 @@
-import {DocumentsSymbols} from "../../src/parser/symbols/documentsSymbols";
+import type {ISymbols} from "../../src/parser/symbols/symbols";
+
 import {VerifyModelContext} from "../verifyModelContext";
 import {SymbolKind} from "../../src/language/symbols/symbolKind";
 import {Position} from "../../src/language/position";
 
 export class VerifySymbols {
 
-  private symbols: VerifyModelContext<DocumentsSymbols>;
+  private symbols: VerifyModelContext<ISymbols>;
 
-  constructor(symbols: VerifyModelContext<DocumentsSymbols>) {
+  constructor(symbols: VerifyModelContext<ISymbols>) {
     this.symbols = symbols;
   }
 
   public description(lineNumber: number, column: number,
                      expectedName: string, expectedKind: SymbolKind, expectedDescription: string = null): VerifySymbols {
 
-    let extraMessage = `Symbol at (${lineNumber}:${column})`;
-    let position = new Position(lineNumber, column);
+    const extraMessage = `Symbol at (${lineNumber}:${column})`;
+    const position = new Position(lineNumber, column);
 
     this.symbols.isNotNull(model => model.getDescription("test.lexy", position), modelContext => modelContext
         .areEqual(description => description.name, expectedName, extraMessage)

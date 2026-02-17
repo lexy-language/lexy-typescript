@@ -35,8 +35,7 @@ export class MemberFunctionCallExpression extends FunctionCallExpression impleme
   public readonly functionPath: IdentifierPath;
   public readonly args: ReadonlyArray<Expression>;
 
-  get state(): IFunctionCallState {
-    if (this.stateValue == null) throw new Error("State not set.")
+  get state(): IFunctionCallState | null {
     return this.stateValue;
   }
 

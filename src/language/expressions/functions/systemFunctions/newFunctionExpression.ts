@@ -15,6 +15,7 @@ import {ExpressionSource} from "../../expressionSource";
 import {SymbolKind} from "../../../symbols/symbolKind";
 import {Symbol} from "../../../symbols/symbol";
 import {NodeReference} from "../../../nodeReference";
+import {FillParametersFunctionState} from "./fillParametersFunctionExpression";
 
 export function instanceOfNewFunctionExpression(object: any): object is NewFunctionExpression {
   return object?.nodeType == NodeType.NewFunctionExpression;
@@ -53,6 +54,11 @@ export class NewFunctionExpression extends FunctionCallExpression implements IHa
   public valueExpression: Expression;
 
   public get state(): NewFunctionState | null {
+    return this.stateValue;
+  }
+
+  public get stateRequired(): NewFunctionState {
+    if (this.stateValue == null) throw new Error("State not set.")
     return this.stateValue;
   }
 

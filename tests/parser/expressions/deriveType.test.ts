@@ -10,7 +10,7 @@ import {ParserLogger} from "../../../src/parser/logging/parserLogger";
 import {LoggingConfiguration} from "../../loggingConfiguration";
 import {TrackLoggingCurrentNodeVisitor} from "../../../src/parser/TrackLoggingCurrentNodeVisitor";
 import {Libraries} from "../../../src/functionLibraries/libraries";
-import {DocumentsSymbols} from "../../../src/parser/symbols/documentsSymbols";
+import {Symbols} from "../../../src/parser/symbols/symbols";
 import {LexyScriptNode} from "../../../src/language/lexyScriptNode";
 import {ExpressionFactory} from "../../../src/language/expressions/expressionFactory";
 
@@ -122,7 +122,7 @@ describe('DeriveTypeTests', () => {
     const componentNodes = new ComponentNodeList();
     const logger = new ParserLogger(LoggingConfiguration.getParserLogger());
     const lexyScriptNode = new LexyScriptNode(new ExpressionFactory());
-    const symbols = new DocumentsSymbols(lexyScriptNode);
+    const symbols = new Symbols(lexyScriptNode);
     const visitor = new TrackLoggingCurrentNodeVisitor(logger);
     const validationContext = new ValidationContext(logger, componentNodes, visitor, new Libraries([]), symbols);
 

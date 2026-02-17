@@ -51,7 +51,11 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
   public functionResultVariable: string | null;
   public valueExpression: Expression;
 
-  public get state(): ExtractResultsFunctionState {
+  public get state(): ExtractResultsFunctionState | null {
+    return this.stateValue;
+  }
+
+  public get stateRequired(): ExtractResultsFunctionState {
     if (this.stateValue == null) throw new Error("State not set.")
     return this.stateValue;
   }

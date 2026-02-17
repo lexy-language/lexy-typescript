@@ -27,9 +27,9 @@ export class NodesLogger {
 
     const nodeWithName = asNodeWithName(node)
     if (nodeWithName != null) {
-      logger(`${indentValue}${nodeWithName.nodeType}: ${nodeWithName.name}`);
+      logger(`${node.reference} - ${indentValue}${nodeWithName.nodeType}: ${nodeWithName.name}`);
     } else {
-      logger(`${indentValue}${node.nodeType}`);
+      logger(`${node.reference} - ${indentValue}${node.nodeType}`);
     }
 
     const children = node.getChildren();

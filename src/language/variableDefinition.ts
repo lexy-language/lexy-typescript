@@ -58,6 +58,10 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
   private stateValue: VariableDefinitionState | null = null;
 
   public get state(): VariableDefinitionState | null {
+    return this.stateValue;
+  }
+
+  public get stateRequired(): VariableDefinitionState {
     if (this.stateValue == null) throw new Error("State not set.")
     return this.stateValue;
   }
@@ -101,7 +105,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     const typeToken = tokens.tokenValue(0);
     if (name == null || typeToken == null) return null;
 
-    const typeDeclaration = TypeDeclarationParser.parseString(typeToken, definitionReference, tokens.reference(0));
+    const typeDeclaration = TypeDeclarationParser.parseString(typeToken, definitionReference, tokens.reference(0, 1));
     const variableDefinition = new VariableDefinition(name, typeDeclaration, source, parentReference, tokens.allReference(), defaultValue.result);
 
     definitionReference.setNode(variableDefinition);

@@ -42,7 +42,11 @@ export class SpreadAssignmentExpression extends Expression {
   public nodeType = NodeType.SpreadAssignmentExpression;
   public assignment: Expression;
 
-  public get state(): SpreadAssignmentState {
+  public get state(): SpreadAssignmentState | null {
+    return this.stateValue;
+  }
+
+  public get stateRequired(): SpreadAssignmentState {
     if (this.stateValue == null) throw new Error("State not set.")
     return this.stateValue;
   }

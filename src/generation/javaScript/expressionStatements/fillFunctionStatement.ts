@@ -37,10 +37,11 @@ export class FillFunctionStatement {
      const fillParametersFunctionExpression = asFillParametersFunctionExpression(functionCallExpression);
      if (fillParametersFunctionExpression == null) throw new Error("Expression not FillParametersFunctionExpression: " + functionCallExpression)
 
+     const fillParametersFunctionState = fillParametersFunctionExpression.stateRequired;
      FillFunctionStatement.renderFill(
        assignmentExpression.name,
-       fillParametersFunctionExpression.state.type,
-       Assert.notNull(fillParametersFunctionExpression.state.mapping, "fillParametersFunctionExpression.mapping"),
+       fillParametersFunctionState.type,
+       Assert.notNull(fillParametersFunctionState.mapping, "fillParametersFunctionExpression.mapping"),
        codeWriter);
    }
 

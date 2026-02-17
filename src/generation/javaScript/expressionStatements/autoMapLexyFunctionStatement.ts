@@ -26,7 +26,7 @@ export class AutoMapLexyFunctionStatement {
     AutoMapLexyFunctionStatement.renderRunFunction(expression, resultsVariable, codeWriter);
 
     ExtractFunctionStatement.renderExtract(
-      Assert.notNull(expression.state.mapping, "expression.mapping"),
+      Assert.notNull(expression.stateRequired.mapping, "expression.mapping"),
       resultsVariable, codeWriter);
   }
 

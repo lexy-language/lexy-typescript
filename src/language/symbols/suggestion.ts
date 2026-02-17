@@ -17,8 +17,9 @@ export class Suggestion {
   }
 
   public toString(): string {
+    const suffix = this.description ? `: ${this.description}` : "";
     return this.type == null
-      ? `${this.name} (${this.kind})`
-      : `${this.type?.typeKind} ${this.name} (${this.kind})`;
+      ? `${this.name} (${this.kind})${suffix}`
+      : `${this.type?.typeKind} ${this.name} (${this.kind})${suffix}`;
   }
 }

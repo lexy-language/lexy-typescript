@@ -15,7 +15,7 @@ export class VerifyCollectionContext<TItem>  extends VerifyModelContext<readonly
     }
 
     public valueAt(index: number , verify: (item: TItem) => boolean): VerifyCollectionContext<TItem> {
-        let value = index >= 0 && index < this.model.length ? this.model[index] : null;
+        const value = index >= 0 && index < this.model.length ? this.model[index] : null;
         if (value != null)
         {
             let valid = verify(value);

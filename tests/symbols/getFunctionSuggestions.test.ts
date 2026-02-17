@@ -64,7 +64,7 @@ describe('GetFunctionSuggestionsTests', () => {
 
     await verifySuggestions(async context => {
       await context.suggestion(code, 4, 16, context => context
-        .parameter("Value1")
+        .parameter("Value1", "parameter: number")
       );
     });
   });
@@ -78,7 +78,7 @@ describe('GetFunctionSuggestionsTests', () => {
 
     await verifySuggestions(async context => {
       await context.suggestion(code, 4, 7, context => context
-        .result("Result1")
+        .result("Result1", "result: number")
       );
     });
   });
@@ -90,7 +90,7 @@ describe('GetFunctionSuggestionsTests', () => {
 
     await verifySuggestions(async context => {
       await context.suggestion(code, 3, 5, context => context
-        .variable("value1")
+        .variable("value1", "variable: number")
       );
     });
   });
@@ -105,7 +105,7 @@ function Name
 
     await verifySuggestions(async context => {
       await context.suggestion(code, 6, 12, context => context
-        .objectVariable("Value")
+        .objectVariable("Value", "variable: number")
       );
     });
   });
@@ -121,8 +121,8 @@ function Name
 
     await verifySuggestions(async context => {
       await context.suggestion(code, 7, 9, context => context
-        .objectVariable("Value")
-        .objectVariable("Member")
+        .objectVariable("Value", "variable: number")
+        .objectVariable("Member", "variable: string")
       );
     });
   });

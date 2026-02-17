@@ -18,6 +18,7 @@ import {EnumType, instanceOfEnumType} from "../typeSystem/enumType";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {NewFunctionState} from "./functions/systemFunctions/newFunctionExpression";
 
 type OperatorCombination = {
   leftType: Type,
@@ -153,7 +154,11 @@ export class BinaryExpression extends Expression {
   public readonly right: Expression;
   public readonly operator: ExpressionOperator;
 
-  public get state(): BinaryState {
+  public get state(): BinaryState | null {
+    return this.stateValue;
+  }
+
+  public get stateRequired(): BinaryState {
     if (this.stateValue == null) throw new Error("State not set.")
     return this.stateValue;
   }

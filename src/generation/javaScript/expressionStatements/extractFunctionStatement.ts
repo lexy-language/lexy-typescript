@@ -4,8 +4,6 @@ import {
 } from "../../../language/expressions/functions/functionCallExpression";
 import {CodeWriter} from "../codeWriter";
 import {Mapping, VariablesMapping} from "../../../language/expressions/mapping";
-import {VariableSource} from "../../../language/variableSource";
-import {LexyCodeConstants} from "../lexyCodeConstants";
 import {
   asExtractResultsFunctionExpression, ExtractResultsFunctionExpression,
   instanceOfExtractResultsFunctionExpression
@@ -29,7 +27,7 @@ export class ExtractFunctionStatement {
     const extractResultsFunction = Assert.is<ExtractResultsFunctionExpression>(asExtractResultsFunctionExpression, functionCallExpression, "functionCallExpression");
 
     return ExtractFunctionStatement.renderExtract(
-      Assert.notNull(extractResultsFunction.state.mapping, "extractResultsFunction.mapping"),
+      Assert.notNull(extractResultsFunction.stateRequired.mapping, "extractResultsFunction.mapping"),
       Assert.notNull(extractResultsFunction.functionResultVariable, "extractResultsFunction.functionResultVariable"),
       codeWriter);
   }

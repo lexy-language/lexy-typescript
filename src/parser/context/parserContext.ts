@@ -1,16 +1,17 @@
 import type {IParserLogger} from "../logging/parserLogger";
-import {ParserLogger} from "../logging/parserLogger";
 import type {IExpressionFactory} from "../../language/expressions/expressionFactory";
 import type {IFileSystem} from "../../infrastructure/IFileSystem";
 import type {ILogger} from "../../infrastructure/logger";
+import type {ILibraries} from "../../functionLibraries/libraries";
+import type {ISymbols} from "../symbols/symbols";
 
 import {LexyScriptNode} from "../../language/lexyScriptNode";
 import {ComponentNodeList} from "../../language/componentNodeList";
 import {contains} from "../../infrastructure/arrayFunctions";
 import {ParseOptions} from "../parseOptions";
-import {ILibraries} from "../../functionLibraries/libraries";
 import {Assert} from "../../infrastructure/assert";
-import {DocumentsSymbols} from "../symbols/documentsSymbols";
+import {ParserLogger} from "../logging/parserLogger";
+import {Symbols} from "../symbols/symbols";
 
 export interface ILineFilter {
   useLine(content: string): boolean;
@@ -22,7 +23,7 @@ export interface IParserContext {
   logger: IParserLogger;
 
   fileSystem: IFileSystem;
-  symbols: DocumentsSymbols;
+  symbols: ISymbols;
 
   nodes: ComponentNodeList;
   rootNode: LexyScriptNode;
@@ -52,7 +53,7 @@ export class ParserContext implements IParserContext {
   public readonly logger: IParserLogger;
   public readonly fileSystem: IFileSystem;
   public readonly options: ParseOptions;
-  public readonly symbols: DocumentsSymbols;
+  public readonly symbols: ISymbols;
 
   constructor(logger: ILogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory, libraries: ILibraries, options: ParseOptions | null) {
     this.options = options ?? {suppressException: false};
@@ -61,7 +62,7 @@ export class ParserContext implements IParserContext {
     this.fileSystem = fileSystem;
     this.rootNode = new LexyScriptNode(expressionFactory);
     this.lineFilterValue = this.defaultLexyLineFilter;
-    this.symbols = new DocumentsSymbols(this.rootNode);
+    this.symbols = new Symbols(this.rootNode);
   }
 
   public addFileIncluded(fileName: string): void {

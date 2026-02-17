@@ -40,20 +40,14 @@ describe('GetDocumentNodesInScopeTests', () => {
     Verify.collection(nodes, _ => _
       .length(6, "nodes.length")
       .valueAt(0, node => {
-        const functionNode = asFunction(node.value);
+        const functionNode = asFunction(node);
         return functionNode != null && functionNode.name == "Example";
       })
-      .valueAt(1, node => instanceOfFunctionParameters(node.value))
-      .valueAt(2, node => instanceOfFunctionResults(node.value))
-      .valueAt(3, node => instanceOfFunctionCode(node.value))
-      .valueAt(4, node => instanceOfVariableDeclarationExpression(node.value))
-      .valueAt(5, node => instanceOfImplicitTypeDeclaration(node.value))
-      .valueAt(0, node => node.level == 0)
-      .valueAt(1, node => node.level == 1)
-      .valueAt(2, node => node.level == 1)
-      .valueAt(3, node => node.level == 1)
-      .valueAt(4, node => node.level == 2)
-      .valueAt(5, node => node.level == 3)
+      .valueAt(1, node => instanceOfFunctionParameters(node))
+      .valueAt(2, node => instanceOfFunctionResults(node))
+      .valueAt(3, node => instanceOfFunctionCode(node))
+      .valueAt(4, node => instanceOfVariableDeclarationExpression(node))
+      .valueAt(5, node => instanceOfImplicitTypeDeclaration(node))
     );
   });
 
@@ -65,22 +59,15 @@ describe('GetDocumentNodesInScopeTests', () => {
     Verify.collection(nodes, _ => _
       .length(7, "nodes.length")
       .valueAt(0, node => {
-        const functionNode = asFunction(node.value);
+        const functionNode = asFunction(node);
         return functionNode != null && functionNode.name == "Example2";
       })
-      .valueAt(1, node => instanceOfFunctionParameters(node.value))
-      .valueAt(2, node => instanceOfFunctionResults(node.value))
-      .valueAt(3, node => instanceOfFunctionCode(node.value))
-      .valueAt(4, node => instanceOfVariableDeclarationExpression(node.value))
-      .valueAt(5, node => instanceOfVariableDeclarationExpression(node.value))
-      .valueAt(6, node => instanceOfImplicitTypeDeclaration(node.value))
-      .valueAt(0, node => node.level == 0)
-      .valueAt(1, node => node.level == 1)
-      .valueAt(2, node => node.level == 1)
-      .valueAt(3, node => node.level == 1)
-      .valueAt(4, node => node.level == 2)
-      .valueAt(5, node => node.level == 2)
-      .valueAt(6, node => node.level == 3)
+      .valueAt(1, node => instanceOfFunctionParameters(node))
+      .valueAt(2, node => instanceOfFunctionResults(node))
+      .valueAt(3, node => instanceOfFunctionCode(node))
+      .valueAt(4, node => instanceOfVariableDeclarationExpression(node))
+      .valueAt(5, node => instanceOfVariableDeclarationExpression(node))
+      .valueAt(6, node => instanceOfImplicitTypeDeclaration(node))
     );
   });
 });

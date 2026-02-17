@@ -44,7 +44,7 @@ describe('ParseScenarioTests', () => {
     const code = `scenario TestScenario
   Functtion TestScenarioFunction
   parameters
-    value = 123
+    Value = 123
   results
     Result = 456`;
 
@@ -78,7 +78,7 @@ describe('ParseScenarioTests', () => {
     let {scenario, logger} = await parseScenario(code);
 
     let errors = logger.errorNodeMessages(scenario);
-    expect(errors).toStrictEqual([`tests.lexy(6:15): ERROR - Invalid number token character: 'd'`]);
+    expect(errors).toStrictEqual([`tests.lexy (6:15): ERROR - Invalid number token character: 'd'`]);
   });
 
   it('testScenarioWithInlineFunction', async () => {

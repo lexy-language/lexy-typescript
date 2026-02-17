@@ -10,6 +10,7 @@ import {NodeType} from "../nodeType";
 import {Symbol} from "../symbols/symbol";
 import {Function} from "./function";
 import {NodeReference} from "../nodeReference";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfFunctionResults(object: any) {
   return object?.nodeType == NodeType.FunctionResults;
@@ -56,6 +57,6 @@ export class FunctionResults extends ParsableNode {
   }
 
   public override getSymbol(): Symbol | null {
-    return null;
+    return new Symbol(this.reference, "results", "function result variables", SymbolKind.Keyword);
   }
 }

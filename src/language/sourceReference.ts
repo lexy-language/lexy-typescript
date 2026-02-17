@@ -22,7 +22,7 @@ export class SourceReference {
 
   public toString(): string {
     const suffix = this.column != this.endColumn ? `-${this.endColumn}`: '';
-    return `${this.fileName}(${this.lineNumber}:${this.column}${suffix})`;
+    return `${this.fileName} (${this.lineNumber}:${this.column}${suffix})`;
   }
 
   public includes(position: Position): boolean {

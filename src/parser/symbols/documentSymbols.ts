@@ -1,5 +1,7 @@
 import type {IParsableNode} from "../../language/parsableNode";
 import type {INode} from "../../language/node";
+import type {IComponentNode} from "../../language/componentNode";
+
 import {Assert} from "../../infrastructure/assert";
 import {Line} from "../line";
 import {Position} from "../../language/position";
@@ -7,11 +9,15 @@ import {Signatures} from "../../language/symbols/signatures";
 import {Symbol} from "../../language/symbols/symbol";
 import {Token} from "../tokens/token";
 import {SymbolDescription} from "./SymbolDescription";
-import {NodeLevel} from "./nodeLevel";
 
 type ReturnValue = {value: Symbol | null};
 
-export class DocumentSymbols {
+export interface IDocumentSymbols {
+  add(line: Line): void;
+  addNode(componentNode: IComponentNode): void;
+}
+
+export class DocumentSymbols implements IDocumentSymbols {
 
   private readonly lexyScriptNode: INode;
   private readonly nodes: INode[] = [];
@@ -54,8 +60,8 @@ export class DocumentSymbols {
   }
 
   private getNode(position: Position): Symbol | null {
-    let previous: ReturnValue | null = {value: null};
-    let symbol = DocumentSymbols.getSymbol(position, this.nodes, previous);
+    const previous: ReturnValue | null = {value: null};
+    const symbol = DocumentSymbols.getSymbol(position, this.nodes, previous);
     console.log(`>>>>>: (${position}) - ${symbol}`);
     return symbol?.value ?? previous.value;
   }
@@ -63,7 +69,7 @@ export class DocumentSymbols {
   private static getSymbol(position: Position, list: readonly INode[], previousSymbol: ReturnValue): ReturnValue | null {
 
     for (const node of list) {
-      console.log(`Check: (${position}) between '${previousSymbol.value?.reference}' and '${node.reference}'`);
+      //console.log(`Check: (${position}) between '${previousSymbol.value?.reference}' and '${node.reference}'`);
       if (node.reference.lineNumber > position.lineNumber) {
         return previousSymbol;
       }
@@ -86,20 +92,20 @@ export class DocumentSymbols {
     return null;
   }
 
-  public getNodesInScope(position: Position ): NodeLevel[] {
+  public getNodesInScope(position: Position ): INode[] {
     const nodesInScope: (INode[])[] = [];
     DocumentSymbols.getNodesInScopeNodes(position, this.nodes, nodesInScope);
 
     return nodesInScope.length == 0
-      ? [new NodeLevel(this.lexyScriptNode, 0)]
+      ? [this.lexyScriptNode]
       : DocumentSymbols.flatten(nodesInScope);
   }
 
-  private static flatten(nodesInScope: (INode[])[]): NodeLevel[] {
-    const result: NodeLevel[] = [];
+  private static flatten(nodesInScope: (INode[])[]): INode[] {
+    const result: INode[] = [];
     for (let level = 0; level < nodesInScope.length; level++) {
       for (const node of nodesInScope[level]) {
-        result.push(new NodeLevel(node, level));
+        result.push(node);
       }
     }
     return result;
@@ -142,4 +148,3 @@ export class DocumentSymbols {
     return line.tokens.tokenAt(position.column);
   }
 }
-

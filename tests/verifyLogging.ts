@@ -1,6 +1,6 @@
 export class VerifyLogging {
   private readonly stringBuilder: string[] = ["\n"];
-  private errorsValue: number;
+  private errorsValue: number = 0;
 
   private indention: number;
 
@@ -9,8 +9,7 @@ export class VerifyLogging {
   }
 
   public toString() {
-    return `Errors: ${this.errorsValue}
-${this.stringBuilder.join("")}`;
+    return `Errors: ${this.errorsValue}\n${this.stringBuilder.join("\n")}`;
   }
 
   public errorOccurred(): void {

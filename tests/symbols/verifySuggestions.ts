@@ -7,6 +7,7 @@ import {Suggestion} from "../../src/language/symbols/suggestion";
 import {VerifyMultipleSuggestion} from "./verifyMultipleSuggestion";
 import {Verify} from "../verify";
 import {getSymbols} from "./getSymbols";
+import {firstOrDefault} from "../../src/infrastructure/arrayFunctions";
 
 export async function verifySuggestions(handler: (context: VerifySuggestions) => Promise<void>): Promise<void> {
   await Verify.allAsync(async context => await handler(new VerifySuggestions(context)));
@@ -15,22 +16,22 @@ export async function verifySuggestions(handler: (context: VerifySuggestions) =>
 export class VerifySuggestions {
 
   private readonly context: VerifyContext;
-  private index: number;
+  private index: number = 0;
 
   constructor(context: VerifyContext) {
     this.context = Assert.notNull(context, "context");
   }
 
   public async keyword(code: string, lineNumber: number, column: number, name: string): Promise<void> {
-    await this.checkSuggestion(code, lineNumber, column, SymbolKind.Keyword, name);
+    await this.checkSuggestion(code, lineNumber, column, SymbolKind.Keyword, name, "keyword");
   }
 
-  public async parameter(code: string, lineNumber: number, column: number, name: string): Promise<void> {
-    await this.checkSuggestion(code, lineNumber, column, SymbolKind.ParameterVariable, name);
+  public async parameter(code: string, lineNumber: number, column: number, name: string, description: string): Promise<void> {
+    await this.checkSuggestion(code, lineNumber, column, SymbolKind.ParameterVariable, name, description);
   }
 
-  public async result(code: string, lineNumber: number, column: number, name: string): Promise<void> {
-    await this.checkSuggestion(code, lineNumber, column, SymbolKind.ResultVariable, name);
+  public async result(code: string, lineNumber: number, column: number, name: string, description: string): Promise<void> {
+    await this.checkSuggestion(code, lineNumber, column, SymbolKind.ResultVariable, name, description);
   }
 
   public async suggestion(code: string, lineNumber: number, column: number, testHandler: (suggestions: VerifyMultipleSuggestion) => void): Promise<void> {
@@ -43,26 +44,33 @@ export class VerifySuggestions {
 
   private async getSuggestions(code: string, lineNumber: number, column: number): Promise<SuggestionsResult> {
 
-    const symbols = await getSymbols("test.{index}.lexy", code, true);
-    return symbols.symbols.getSuggestions("test.{index}.lexy", new Position(lineNumber, column));
+    const symbols = await getSymbols(`test.${this.index}.lexy`, code, true);
+    return symbols.symbols.getSuggestions(`test.${this.index}.lexy`, new Position(lineNumber, column));
   }
 
-  private async checkSuggestion(code: string, lineNumber: number, column: number, kind: SymbolKind, name: string) {
+  private async checkSuggestion(code: string, lineNumber: number, column: number, kind: SymbolKind, name: string, description: string | null) {
 
-    let result = await this.getSuggestions(code, lineNumber, column);
+    const result = await this.getSuggestions(code, lineNumber, column);
 
-    let message = `All:\n${VerifySuggestions.format(result.all)}\nFiltered:\n${VerifySuggestions.format(result.filtered)}`;
-    let assertionMessage = `${this.index++}: ${name} - ${kind}\n\n${message}`;
+    const message = `All:\n${VerifySuggestions.format(result.all)}\nFiltered:\n${VerifySuggestions.format(result.filtered)}`;
+    const assertionMessage = `${this.index++}: ${name} - ${kind} (${description})\n\n${message}`;
+    const element = firstOrDefault(result.filtered, value => value.name == name);
 
-    this.context.collection(result.filtered, verifySuggestions => verifySuggestions
-      .any(value => value.name == name && value.kind == kind, assertionMessage));
+    if (element == null) {
+      this.context.fail("Element not found: " + assertionMessage);
+      return this;
+    }
+
+    this.context
+      .isTrue(element.kind == kind, "Suggestion: " + element + "\n" + assertionMessage)
+      .isTrue(element.description == description, "Suggestion: " + element + "\n" + assertionMessage);
 
     return this;
   }
 
   private static format(suggestions: Suggestion[]): string {
 
-    let writer = [];
+    const writer = [];
     for (const suggestion of suggestions) {
       writer.push("  - " + suggestion + "\n");
     }

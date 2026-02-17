@@ -1,6 +1,8 @@
 import type {IParserLogger} from "../logging/parserLogger";
 import type {IVariableContext} from "./variableContext"
 import type {ITreeValidationVisitor} from "../ITreeValidationVisitor";
+import type {ISymbols} from "../symbols/symbols";
+import type {ILibraries} from "../../functionLibraries/libraries";
 
 import {VariableContext} from "./variableContext";
 import {Stack} from "../../infrastructure/stack";
@@ -9,9 +11,7 @@ import {Expression} from "../../language/expressions/expression";
 import {Type} from "../../language/typeSystem/type";
 import {SourceReference} from "../../language/sourceReference";
 import {Assert} from "../../infrastructure/assert";
-import {ILibraries} from "../../functionLibraries/libraries";
 import {INode} from "../../language/node";
-import {DocumentsSymbols} from "../symbols/documentsSymbols";
 
 export interface IValidationContext {
 
@@ -35,7 +35,7 @@ export class ValidationContext implements IValidationContext {
 
   public libraries: ILibraries;
   public logger: IParserLogger;
-  public symbols: DocumentsSymbols;
+  public symbols: ISymbols;
   public componentNodes: ComponentNodeList;
 
   public get variableContext(): IVariableContext {
@@ -49,7 +49,7 @@ export class ValidationContext implements IValidationContext {
 
   constructor(logger: IParserLogger, componentNodes: ComponentNodeList,
               visitor: ITreeValidationVisitor, libraries: ILibraries,
-              symbols: DocumentsSymbols) {
+              symbols: ISymbols) {
     this.logger = Assert.notNull(logger, "logger");
     this.componentNodes = Assert.notNull(componentNodes, "componentNodes");
     this.visitorValue = Assert.notNull(visitor, "visitor");

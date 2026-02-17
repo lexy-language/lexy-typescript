@@ -9,6 +9,7 @@ import {SourceReference} from "../sourceReference";
 import {NodeType} from "../nodeType";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {SpreadAssignmentState} from "../expressions/spreadAssignmentExpression";
 
 export function instanceOfAssignmentDefinition(object: any): object is AssignmentDefinition {
   return object?.nodeType == NodeType.AssignmentDefinition;
@@ -44,6 +45,11 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
   public readonly variable: IdentifierPath;
 
   public get state(): AssignmentDefinitionState | null{
+    return this.stateValue;
+  }
+
+  public get stateRequired(): AssignmentDefinitionState {
+    if (this.stateValue == null) throw new Error("State not set.")
     return this.stateValue;
   }
 

@@ -21,7 +21,7 @@ import {Assert} from "../infrastructure/assert";
 import {asComponentNode} from "../language/componentNode";
 import {StringSourceCodeDocument} from "./documents/stringSourceCodeDocument";
 import {ISourceCodeDocument} from "./documents/ISourceCodeDocument";
-import {DocumentSymbols} from "./symbols/documentSymbols";
+import {DocumentSymbols, IDocumentSymbols} from "./symbols/documentSymbols";
 
 export interface ILexyParser {
   parseCode(fileName: string, content: string[], options: ParseOptions | null): Promise<ParserResult>;
@@ -234,7 +234,7 @@ export class LexyParser implements ILexyParser {
   }
 
   private parseLine(line: Line, context: IParserContext, currentNode: IParsableNode | null,
-                    documentSymbols: DocumentSymbols,
+                    documentSymbols: IDocumentSymbols,
                     nodesPerIndent: ParsableNodeIndex, indent: number): IParsableNode {
 
     if (currentNode == null) {
