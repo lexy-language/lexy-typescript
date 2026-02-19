@@ -1,6 +1,5 @@
 import type {INode} from "../node";
 import type {IChildExpression, IParentExpression} from "./IChildExpression";
-import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IParseLineContext} from "../../parser/context/parseLineContext";
 
@@ -39,9 +38,9 @@ export class ElseExpression extends Expression implements IParsableNode, IChildE
     return this.falseExpressionsValue.asArray();
   }
 
-  constructor(source: ExpressionSource, parentReference: NodeReference, reference: SourceReference, factory: IExpressionFactory) {
+  constructor(source: ExpressionSource, parentReference: NodeReference, reference: SourceReference) {
     super(source, parentReference, reference);
-    this.falseExpressionsValue = new ExpressionList(this, reference, factory);
+    this.falseExpressionsValue = new ExpressionList(this, reference);
   }
 
   public validateParentExpression(expression: IParentExpression | null, context: IParseLineContext): boolean {
@@ -63,7 +62,7 @@ export class ElseExpression extends Expression implements IParsableNode, IChildE
     return node != null ? node : this;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     let tokens = source.tokens;
     if (!ElseExpression.isValid(tokens)) return newParseExpressionFailed("ElseExpression", `Not valid.`);
 
@@ -71,7 +70,7 @@ export class ElseExpression extends Expression implements IParsableNode, IChildE
 
     let reference = source.createReference();
 
-    let expression = new ElseExpression(source, parentReference, reference, factory);
+    let expression = new ElseExpression(source, parentReference, reference);
 
     return newParseExpressionSuccess(expression);
   }

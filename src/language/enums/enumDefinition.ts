@@ -88,8 +88,4 @@ export class EnumDefinition extends ComponentNode implements INestedNode, INodeW
   public override getSymbol(): Symbol | null {
     return new Symbol(this.reference, `enum: ${this.name}`, "", SymbolKind.Enum);
   }
-
-  public override toString(): string {
-    return this.name;
-  }
 }

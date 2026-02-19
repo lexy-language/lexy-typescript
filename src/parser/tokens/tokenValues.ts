@@ -41,5 +41,5 @@ export class TokenValues {
   public static Slash = charOf('/');
   public static Colon = charOf(':');
   public static Space = charOf(' ');
-
+  public static Backslash = charOf('\\');
 }

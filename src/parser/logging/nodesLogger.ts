@@ -1,5 +1,4 @@
 import type {INode} from "../../language/node";
-import {asNodeWithName} from "../../language/nodeWithName";
 
 export class NodesLogger {
 
@@ -25,14 +24,13 @@ export class NodesLogger {
       throw new Error("node.getChildren should never return null.")
     }
 
-    const nodeWithName = asNodeWithName(node)
-    if (nodeWithName != null) {
-      logger(`${node.reference} - ${indentValue}${nodeWithName.nodeType}: ${nodeWithName.name}`);
-    } else {
-      logger(`${node.reference} - ${indentValue}${node.nodeType}`);
-    }
+    logger(`${this.pad(node.reference.toString(), 70)} ${indentValue}${node.nodeType}: ${node.toString()}`);
 
     const children = node.getChildren();
     NodesLogger.logNodes(node, children, logger, indent + 2);
+  }
+
+  private static pad(value: string, number: number) {
+    return value + ' '.repeat(number - value.toString().length);
   }
 }

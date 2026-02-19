@@ -1,5 +1,6 @@
 import type {ITokenizer} from "./tokens/tokenizer";
 import type {IParserLogger} from "./logging/parserLogger";
+import type {IFile} from "../infrastructure/file";
 
 import {SourceReference} from "../language/sourceReference";
 import {TokenizeResult} from "./tokens/tokenizeResult";
@@ -10,11 +11,11 @@ import {Assert} from "../infrastructure/assert";
 
 export class Line {
 
-  public tokensValues: TokenList | null = null;
+  private tokensValues: TokenList | null = null;
 
-  public index: number;
-  public content: string;
-  public fileName: string;
+  public readonly index: number;
+  public readonly content: string;
+  public readonly file: IFile;
 
   public get tokens(): TokenList {
     if (!this.tokensValues) {
@@ -25,10 +26,10 @@ export class Line {
 
   public endPosition: Position;
 
-  constructor(index: number, line: string, fileName: string) {
+  constructor(index: number, line: string, file: IFile) {
     this.index = index;
     this.content = Assert.notNull(line, "line");
-    this.fileName = Assert.notNull(fileName, "fileName");
+    this.file = Assert.notNull(file, "file");
     this.endPosition = new Position(index + 1, line.length);
   }
 
@@ -75,7 +76,7 @@ export class Line {
 
   public lineReference(characterIndex: number): SourceReference {
     return new SourceReference(
-      this.fileName ?? "runtime",
+      this.file,
       this.index + 1,
       characterIndex + 1,
       characterIndex + 1);
@@ -84,12 +85,12 @@ export class Line {
   public lineEndReference(): SourceReference {
 
     if (this.tokensValues == null || this.tokensValues.length == 0) {
-      return new SourceReference(this.fileName ?? "runtime", this.index + 1, 1, this.content.length + 1);
+      return new SourceReference(this.file, this.index + 1, 1, this.content.length + 1);
     }
 
     const columnEnd = this.tokens.lastColumn();
     return new SourceReference(
-      this.fileName ?? "runtime",
+      this.file,
       this.index + 1,
       columnEnd - 1,
       columnEnd);

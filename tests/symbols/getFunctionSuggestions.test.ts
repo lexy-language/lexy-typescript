@@ -85,7 +85,7 @@ describe('GetFunctionSuggestionsTests', () => {
 
   it('variable', async () => {
     const code: string = `function Name
-  let value1 = 5
+  var value1 = 5
   val`;
 
     await verifySuggestions(async context => {

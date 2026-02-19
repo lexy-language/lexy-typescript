@@ -1,7 +1,6 @@
 import {ValueType} from "../../../src/language/typeSystem/valueType";
 import {Type} from "../../../src/language/typeSystem/type";
 import {SourceReference} from "../../../src/language/sourceReference";
-import {SourceFile} from "../../../src/parser/sourceFile";
 import {IValidationContext, ValidationContext} from "../../../src/parser/context/validationContext";
 import {VariableSource} from "../../../src/language/variableSource";
 import {parseExpression} from "../expressionParser/parseExpression";
@@ -9,10 +8,11 @@ import {ComponentNodeList} from "../../../src/language/componentNodeList";
 import {ParserLogger} from "../../../src/parser/logging/parserLogger";
 import {LoggingConfiguration} from "../../loggingConfiguration";
 import {TrackLoggingCurrentNodeVisitor} from "../../../src/parser/TrackLoggingCurrentNodeVisitor";
-import {Libraries} from "../../../src/functionLibraries/libraries";
 import {Symbols} from "../../../src/parser/symbols/symbols";
 import {LexyScriptNode} from "../../../src/language/lexyScriptNode";
 import {ExpressionFactory} from "../../../src/language/expressions/expressionFactory";
+import {Libraries} from "../../../src/functionLibraries/libraries";
+import {TestFile} from "../../testFile";
 
 describe('DeriveTypeTests', () => {
   it('numberLiteral', async () => {
@@ -113,7 +113,7 @@ describe('DeriveTypeTests', () => {
   });
 
   function newReference() {
-    return new SourceReference(`tests.lexy`, 1, 1, 1);
+    return new SourceReference(TestFile.instance, 1, 1, 1);
   }
 
   function deriveType(expressionValue: string,
@@ -121,7 +121,7 @@ describe('DeriveTypeTests', () => {
 
     const componentNodes = new ComponentNodeList();
     const logger = new ParserLogger(LoggingConfiguration.getParserLogger());
-    const lexyScriptNode = new LexyScriptNode(new ExpressionFactory());
+    const lexyScriptNode = new LexyScriptNode(TestFile.instance.project);
     const symbols = new Symbols(lexyScriptNode);
     const visitor = new TrackLoggingCurrentNodeVisitor(logger);
     const validationContext = new ValidationContext(logger, componentNodes, visitor, new Libraries([]), symbols);

@@ -1,6 +1,5 @@
 import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
-import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IChildExpression, IParentExpression} from "./IChildExpression";
 
@@ -24,6 +23,7 @@ import {NodeReference} from "../nodeReference";
 import {SuggestionEdit} from "../symbols/suggestionEdit";
 import {Suggestions} from "../symbols/suggestions";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfIfExpression(object: any): boolean {
   return object?.nodeType == NodeType.IfExpression;
@@ -44,18 +44,18 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
 
   public condition: Expression
 
-  public get trueExpressions(): ReadonlyArray<Expression> {
+  public get trueExpressions(): readonly Expression[] {
     return this.trueExpressionsValues.asArray();
   }
 
-  public get elseExpressions(): ReadonlyArray<Expression> {
+  public get elseExpressions(): readonly Expression[] {
     return this.elseExpressionsValues;
   }
 
-  constructor(condition: Expression, source: ExpressionSource, parentReference: NodeReference, reference: SourceReference, factory: IExpressionFactory) {
+  constructor(condition: Expression, source: ExpressionSource, parentReference: NodeReference, reference: SourceReference) {
     super(source, parentReference, reference);
     this.condition = condition;
-    this.trueExpressionsValues = new ExpressionList(this, reference, factory);
+    this.trueExpressionsValues = new ExpressionList(this, reference);
   }
 
   public parse(context: IParseLineContext): IParsableNode {
@@ -69,7 +69,7 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
     return [this.condition, this.trueExpressionsValues, ...this.elseExpressions];
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
 
     const tokens = source.tokens;
     if (!IfExpression.isValid(tokens)) return newParseExpressionFailed("IfExpression", `Not valid.`);
@@ -78,12 +78,12 @@ export class IfExpression extends Expression implements IParsableNode, IParentEx
 
     const expressionReference = new NodeReference();
     const condition = tokens.tokensFrom(1);
-    const conditionExpression = factory.parse(expressionReference, condition, source.line);
+    const conditionExpression = ExpressionFactory.parse(expressionReference, condition, source.line);
     if (conditionExpression.state != 'success') return conditionExpression;
 
     const reference = source.createReference();
 
-    const expression = new IfExpression(conditionExpression.result, source, parentReference, reference, factory);
+    const expression = new IfExpression(conditionExpression.result, source, parentReference, reference);
     expressionReference.setNode(expression);
 
     return newParseExpressionSuccess(expression);

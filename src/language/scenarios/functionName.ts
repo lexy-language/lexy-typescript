@@ -11,9 +11,9 @@ import {Symbol} from "../symbols/symbol";
 
 export class functionName extends Node {
 
-  private valueValue: string | null = null;
+  private readonly valueValue: string | null = null;
 
-  public readonly nodeType = NodeType.ScenarioFunctionName;
+  public readonly nodeType = NodeType.FunctionName;
 
   public get hasValue() {
     return this.valueValue != null;
@@ -51,11 +51,11 @@ export class functionName extends Node {
     return isNullOrEmpty(this.valueValue);
   }
 
-  public toString() {
-    return this.valueValue;
-  }
-
   public override getSymbol(): Symbol | null {
     return null;
+  }
+
+  public toString() {
+    return this.valueValue;
   }
 }

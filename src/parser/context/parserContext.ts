@@ -1,5 +1,4 @@
 import type {IParserLogger} from "../logging/parserLogger";
-import type {IExpressionFactory} from "../../language/expressions/expressionFactory";
 import type {IFileSystem} from "../../infrastructure/IFileSystem";
 import type {ILogger} from "../../infrastructure/logger";
 import type {ILibraries} from "../../functionLibraries/libraries";
@@ -12,6 +11,9 @@ import {ParseOptions} from "../parseOptions";
 import {Assert} from "../../infrastructure/assert";
 import {ParserLogger} from "../logging/parserLogger";
 import {Symbols} from "../symbols/symbols";
+import {IFile} from "../../infrastructure/file";
+import {IProject} from "../../infrastructure/project";
+import {LexySourceDocument} from "../lexySourceDocument";
 
 export interface ILineFilter {
   useLine(content: string): boolean;
@@ -27,17 +29,19 @@ export interface IParserContext {
 
   nodes: ComponentNodeList;
   rootNode: LexyScriptNode;
+
   lineFilter: ILineFilter;
+  project: IProject;
 
-  addFileIncluded(fileName: string): void;
-
-  isFileIncluded(fileName: string): boolean;
+  addFileIncluded(file: IFile): void;
+  isFileIncluded(file: IFile): boolean;
 }
 
 export class ParserContext implements IParserContext {
 
   private readonly includedFiles: Array<string> = [];
   private defaultLexyLineFilter = {useLine: () => true};
+  private markdownLineFilter = ParserContext.newMarkdownLineFilter();
   private lineFilterValue: ILineFilter;
 
   public get nodes(): ComponentNodeList {
@@ -55,35 +59,34 @@ export class ParserContext implements IParserContext {
   public readonly options: ParseOptions;
   public readonly symbols: ISymbols;
 
-  constructor(logger: ILogger, fileSystem: IFileSystem, expressionFactory: IExpressionFactory, libraries: ILibraries, options: ParseOptions | null) {
+  public readonly project: IProject;
+
+  constructor(project: IProject, logger: ILogger, fileSystem: IFileSystem, libraries: ILibraries, options: ParseOptions | null) {
+    this.project = Assert.notNull(project, "project");
     this.options = options ?? {suppressException: false};
     this.logger = new ParserLogger(logger);
     this.libraries = Assert.notNull(libraries, "libraries")
     this.fileSystem = fileSystem;
-    this.rootNode = new LexyScriptNode(expressionFactory);
+    this.rootNode = new LexyScriptNode(project);
     this.lineFilterValue = this.defaultLexyLineFilter;
     this.symbols = new Symbols(this.rootNode);
   }
 
-  public addFileIncluded(fileName: string): void {
-    let path = this.normalizePath(fileName);
-
-    this.includedFiles.push(path);
+  public addFileIncluded(file: IFile): void {
+    this.includedFiles.push(file.fullPath);
   }
 
-  public isFileIncluded(fileName: string): boolean {
-    return contains(this.includedFiles, this.normalizePath(fileName));
+  public isFileIncluded(file: IFile): boolean {
+    return contains(this.includedFiles, file.fullPath);
   }
 
-  private normalizePath(fileName: string): string {
-    return this.fileSystem.getFullPath(fileName);
+  public setFileLineFilter(file: IFile) {
+    this.lineFilterValue = file.name.endsWith(LexySourceDocument.markdownExtension)
+      ? this.markdownLineFilter
+      : this.defaultLexyLineFilter;
   }
 
-  public setFileLineFilter(fileName: string) {
-    this.lineFilterValue = fileName.endsWith('md') ? this.newMarkdownLineFilter() : this.defaultLexyLineFilter;
-  }
-
-  private newMarkdownLineFilter() {
+  private static newMarkdownLineFilter() {
     let inCodeBlock = false;
     const useLine = (line: string) => {
       if (line.trim() === '```') {

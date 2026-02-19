@@ -28,6 +28,7 @@ import {
   newParseDefaultExpressionSuccess,
   ParseDefaultExpressionResult
 } from "./expressions/parseDefaultExpressionResult";
+import {ExpressionFactory} from "./expressions/expressionFactory";
 
 export function instanceOfVariableDefinition(object: any): object is VariableDefinition {
   return object?.nodeType == NodeType.VariableDefinition;
@@ -91,8 +92,9 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
 
     if (!result) return null;
 
+    const typeReference = tokens.reference(0, 1);
     if (!tokens.isTokenType(0, TokenType.StringLiteralToken) && !tokens.isTokenType(0, TokenType.MemberAccessToken)) {
-      context.logger.fail(tokens.reference(0, 1), `Unexpected token.`);
+      context.logger.fail(typeReference, `Unexpected token.`);
       return null;
     }
 
@@ -105,7 +107,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     const typeToken = tokens.tokenValue(0);
     if (name == null || typeToken == null) return null;
 
-    const typeDeclaration = TypeDeclarationParser.parseString(typeToken, definitionReference, tokens.reference(0, 1));
+    const typeDeclaration = TypeDeclarationParser.parseString(typeToken, definitionReference, typeReference);
     const variableDefinition = new VariableDefinition(name, typeDeclaration, source, parentReference, tokens.allReference(), defaultValue.result);
 
     definitionReference.setNode(variableDefinition);
@@ -130,7 +132,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
       return newParseDefaultExpressionFailed("variableDefinition", "failed");
     }
 
-    const defaultValue = context.expressionFactory.parse(definitionReference, tokens.tokensFrom(3), line);
+    const defaultValue = ExpressionFactory.parse(definitionReference, tokens.tokensFrom(3), line);
     if (defaultValue.state == "failed") {
       context.logger.fail(tokens.reference(3), defaultValue.errorMessage);
       return newParseDefaultExpressionFailed("variableDefinition", "failed");
@@ -157,8 +159,13 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
 
   public override getSymbol(): Symbol | null {
     const kind = this.source == VariableSource.Parameters ? SymbolKind.ParameterVariable : SymbolKind.ResultVariable;
+    const label = this.label();
+    return new Symbol(this.reference, label, "", kind);
+  }
+
+  private label(): string {
     const prefix = this.getPrefix();
-    return new Symbol(this.reference, `${prefix}: ${this.typeDeclaration} ${this.name}`, "", kind);
+    return `${prefix}: ${this.typeDeclaration} ${this.name}`;
   }
 
   private getPrefix(): string {
@@ -174,5 +181,9 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
       default:
         throw new Error("Invalid source: " + this.source)
     }
+  }
+
+  public toString(): string {
+    return this.label();
   }
 }

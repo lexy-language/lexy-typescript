@@ -35,92 +35,96 @@ class OverloadArguments {
 
 export class LookUpFunction extends TableFunction {
 
-    public static readonly functionHelpValue: string = "Arguments: " +
-        "TableName.LookUp(lookUpValue, Table.ResultColumn) " +
-        "or TableName.LookUp(lookUpValue, Table.SearchColumn, Table.ResultColumn) " +
-        "or TableName.LookUp(discriminator, lookUpValue, Table.ResultColumn) " +
-        "or TableName.LookUp(discriminator, lookUpValue, Table.DiscriminatorColumn, Table.SearchColumn, Table.ResultColumn)";
+  public static readonly functionHelpValue: string = "Arguments: " +
+    "TableName.LookUp(lookUpValue, Table.ResultColumn) " +
+    "or TableName.LookUp(lookUpValue, Table.SearchColumn, Table.ResultColumn) " +
+    "or TableName.LookUp(discriminator, lookUpValue, Table.ResultColumn) " +
+    "or TableName.LookUp(discriminator, lookUpValue, Table.DiscriminatorColumn, Table.SearchColumn, Table.ResultColumn)";
 
-    public static readonly functionName = `LookUp`;
+  public static readonly functionName = `LookUp`;
 
-    protected override get functionHelp(): string {
-        return LookUpFunction.functionHelpValue;
+  protected override get functionHelp(): string {
+    return LookUpFunction.functionHelpValue;
+  }
+
+  constructor(table: Table){
+    super(LookUpFunction.functionName, table);
+  }
+
+  public override getResultsType(args: ReadonlyArray<Expression>): Type | null {
+
+    const overloadArguments = LookUpFunction.getArgumentColumns(null, args, null);
+    if (!overloadArguments) return null;
+
+    const argument = args[overloadArguments.resultColumnArgument];
+    const columnExpression = asMemberAccessExpression(argument);
+    if (columnExpression == null) return null;
+
+    const column = this.table.header?.get(columnExpression.identifierPath);
+    return column ? column.typeDeclaration.type : null;
+  }
+
+  public override validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>,
+      reference: SourceReference): ValidateMemberFunctionArgumentsResult {
+
+    if (!this.validateTable(context, reference)) return newValidateMemberFunctionArgumentsFailed();
+
+    const overloadArguments = LookUpFunction.getArgumentColumns(context, args, reference);
+    if (!overloadArguments) return newValidateMemberFunctionArgumentsFailed()
+
+    const searchColumnHeader = this.getColumn(context, args, overloadArguments.searchColumnArgument, overloadArguments.defaultSearchColumn, reference) ;
+    const resultColumnHeader = this.getColumn(context, args, overloadArguments.resultColumnArgument, null, reference) ;
+
+    if (searchColumnHeader == null || resultColumnHeader == null) {
+        return newValidateMemberFunctionArgumentsFailed();
     }
 
-    constructor(table: Table){
-        super(LookUpFunction.functionName, table);
-    }
+    this.validateColumnValueType(context, args, overloadArguments.lookUpValue, "Search", searchColumnHeader, reference);
 
-    public override getResultsType(args: ReadonlyArray<Expression>): Type | null {
+    const discriminatorColumnHeader = this.validateDiscriminator(context, args, reference, overloadArguments);
+    const discriminatorExpression = overloadArguments.discriminator != null ? args[overloadArguments.discriminator] : null;
 
-        const overloadArguments = LookUpFunction.getArgumentColumns(null, args, null);
-        if (!overloadArguments) return null;
+    const result = new LookUpFunctionCallState(
+      reference,
+      this.table.name,
+      args[overloadArguments.lookUpValue],
+      discriminatorExpression,
+      resultColumnHeader.name,
+      this.getResultsType(args),
+      searchColumnHeader.name,
+      discriminatorColumnHeader ? discriminatorColumnHeader.name : null);
 
-        const argument = args[overloadArguments.resultColumnArgument];
-        const columnExpression = asMemberAccessExpression(argument);
-        if (columnExpression == null) return null;
+    return newValidateMemberFunctionArgumentsSuccess(result);
+  }
 
-        const column = this.table.header?.get(columnExpression.identifierPath);
-        return column ? column.typeDeclaration.type : null;
-    }
+  private static getArgumentColumns(context: IValidationContext | null, args: ReadonlyArray<Expression>, reference: SourceReference | null):
+    OverloadArguments | null {
+    switch (args.length){
+      case 2:
+        //"table.LookUp(lookUpValue, Table.ResultColumn) " +
+        return new OverloadArguments(null, 0, null, null, null, 0, 1);
 
-    public override validateArguments(context: IValidationContext, args: ReadonlyArray<Expression>,
-        reference: SourceReference): ValidateMemberFunctionArgumentsResult {
-
-        if (!this.validateTable(context, reference)) return newValidateMemberFunctionArgumentsFailed();
-
-        const overloadArguments = LookUpFunction.getArgumentColumns(context, args, reference);
-        if (!overloadArguments) return newValidateMemberFunctionArgumentsFailed()
-
-        const searchColumnHeader = this.getColumn(context, args, overloadArguments.searchColumnArgument, overloadArguments.defaultSearchColumn, reference) ;
-        const resultColumnHeader = this.getColumn(context, args, overloadArguments.resultColumnArgument, null, reference) ;
-
-        if (searchColumnHeader == null || resultColumnHeader == null) {
-            return newValidateMemberFunctionArgumentsFailed();
+      case 3:
+        //"table.LookUp(lookUpValue, Table.SearchColumn, Table.ResultColumn)"
+        if (instanceOfMemberAccessExpression(args[1])) {
+          return new OverloadArguments(null, 0, null, null, 1, 0, 2);
         }
+        //"table.LookUp(discriminator, lookUpValue, Table.ResultColumn)"
+        return new OverloadArguments(0, 1, null, 0, null, 1, 2);
 
-        this.validateColumnValueType(context, args, overloadArguments.lookUpValue, "Search", searchColumnHeader, reference);
+      case 5:
+        //"table.LookUp(discriminator, lookUpValue, Table.DiscriminatorColumn, Table.SearchColumn, Table.ResultColumn)";
+        return new OverloadArguments(0, 1, 2, 0, 3, 1, 4);
 
-        const discriminatorColumnHeader = this.validateDiscriminator(context, args, reference, overloadArguments);
-        const discriminatorExpression = overloadArguments.discriminator != null ? args[overloadArguments.discriminator] : null;
-
-        const result = new LookUpFunctionCallState(
-          reference,
-          this.table.name,
-          args[overloadArguments.lookUpValue],
-          discriminatorExpression,
-          resultColumnHeader.name,
-          this.getResultsType(args),
-          searchColumnHeader.name,
-          discriminatorColumnHeader ? discriminatorColumnHeader.name : null);
-
-        return newValidateMemberFunctionArgumentsSuccess(result);
-    }
-
-    private static getArgumentColumns(context: IValidationContext | null, args: ReadonlyArray<Expression>, reference: SourceReference | null):
-      OverloadArguments | null {
-        switch (args.length){
-            case 2:
-                //"table.LookUp(lookUpValue, Table.ResultColumn) " +
-                return new OverloadArguments(null, 0, null, null, null, 0, 1);
-
-            case 3:
-                //"table.LookUp(lookUpValue, Table.SearchColumn, Table.ResultColumn)"
-                if (instanceOfMemberAccessExpression(args[1])) {
-                    return new OverloadArguments(null, 0, null, null, 1, 0, 2);
-                }
-                //"table.LookUp(discriminator, lookUpValue, Table.ResultColumn)"
-                return new OverloadArguments(0, 1, null, 0, null, 1, 2);
-
-            case 5:
-                //"table.LookUp(discriminator, lookUpValue, Table.DiscriminatorColumn, Table.SearchColumn, Table.ResultColumn)";
-                return new OverloadArguments(0, 1, 2, 0, 3, 1, 4);
-
-            default:
-                if (context && reference) {
-                    context.logger.fail(reference, `Invalid number of arguments. ${LookUpFunction.functionHelpValue}`);
-                }
-                return null;
+      default:
+        if (context && reference) {
+          context.logger.fail(reference, `Invalid number of arguments. ${LookUpFunction.functionHelpValue}`);
         }
+        return null;
     }
+  }
+
+  public description(): string | null {
+    return LookUpFunction.functionHelpValue;
+  }
 }

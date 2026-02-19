@@ -1,4 +1,3 @@
-import type {IExpressionFactory} from "../expressions/expressionFactory";
 import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {IValidationContext} from "../../parser/context/validationContext";
 import type {INode} from "../node";
@@ -28,30 +27,34 @@ export class FunctionCode extends ParsableNode {
 
   public get expressions(): ReadonlyArray<Expression> {
     return this.expressionsValue.asArray();
-   }
+  }
 
-   constructor(parent: Function, reference: SourceReference, factory: IExpressionFactory) {
-     super(new NodeReference(parent), reference);
-     this.expressionsValue = new ExpressionList(this, reference, factory);
-   }
+  constructor(parent: Function, reference: SourceReference) {
+    super(new NodeReference(parent), reference);
+    this.expressionsValue = new ExpressionList(this, reference);
+  }
 
-   public override parse(context: IParseLineContext): IParsableNode {
-     const expression = this.expressionsValue.parse(context);
-     if (expression.state != "success") return this;
+  public override parse(context: IParseLineContext): IParsableNode {
+    const expression = this.expressionsValue.parse(context);
+    if (expression.state != "success") return this;
 
-     const parsableNode = asParsableNode(expression.result)
+    const parsableNode = asParsableNode(expression.result)
 
-     return parsableNode != null ? parsableNode : this;
-   }
+    return parsableNode != null ? parsableNode : this;
+    }
 
-   public override getChildren(): Array<INode> {
-     return this.expressionsValue.asArray();
-   }
+    public override getChildren(): Array<INode> {
+    return this.expressionsValue.asArray();
+  }
 
-   protected override validate(context: IValidationContext): void {
-   }
+  protected override validate(context: IValidationContext): void {
+  }
 
   public override getSymbol(): Symbol | null {
     return null;
+  }
+
+  public override toString(): string {
+    return this.expressions.length.toString();
   }
 }

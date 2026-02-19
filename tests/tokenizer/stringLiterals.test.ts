@@ -1,10 +1,18 @@
 import {tokenize, tokenizeExpectError} from "./tokenize";
 
 describe('StringLiteralsTests', () => {
+
   it('TestQuotedLiteral', async () => {
     tokenize("   \"This is a quoted literal\"")
       .count(1)
       .quotedString(0, "This is a quoted literal")
+      .assert();
+  });
+
+  it('TestQuotedLiteralWithEscapedQuote', async () => {
+    tokenize("   \"This is \\\\a quoted \\\"literal\\\"\"")
+      .count(1)
+      .quotedString(0, "This is \\a quoted \"literal\"")
       .assert();
   });
 

@@ -84,4 +84,8 @@ export class ColumnHeader extends Node {
   public override getSymbol(): Symbol {
     return new Symbol(this.reference, `${this.typeDeclaration} ${this.nameExpression}`, "", SymbolKind.TableColumn);
   }
+
+  public toString(): string {
+    return this.name;
+  }
 }

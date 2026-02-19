@@ -1,26 +1,24 @@
 import {Line} from "../line";
 import {ISourceCodeDocument} from "./ISourceCodeDocument";
+import {IFile} from "../../infrastructure/file";
 
 export class StringSourceCodeDocument implements ISourceCodeDocument {
 
   private readonly code: string[];
-  private readonly fileName: string;
   private currentLineValue: Line | null = null;
 
   private index: number;
 
-  public get fullFileName(): string {
-    return this.fileName;
-  }
+  public readonly file: IFile;
 
   public get currentLine(): Line {
     if (this.currentLineValue == null) throw new Error("Current line not set.")
     return this.currentLineValue;
   }
 
-  constructor(code: string[], fileName: string) {
+  constructor(code: string[], file: IFile) {
     this.index = 0;
-    this.fileName = fileName;
+    this.file = file;
     this.code = code;
   }
 
@@ -49,6 +47,6 @@ export class StringSourceCodeDocument implements ISourceCodeDocument {
 
   private createLine(lineIndex: number): Line {
     let lineContents = this.code[lineIndex];
-    return new Line(lineIndex, lineContents, this.fileName);
+    return new Line(lineIndex, lineContents, this.file);
   }
 }

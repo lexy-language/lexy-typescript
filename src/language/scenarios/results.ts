@@ -18,7 +18,7 @@ export class Results extends ParsableNode {
 
   private assignmentsValue: Array<IAssignmentDefinition> = [];
 
-  public nodeType = NodeType.ScenarioResults;
+  public nodeType = NodeType.Results;
 
   constructor(parent: Scenario, reference: SourceReference) {
     super(new NodeReference(parent), reference);
@@ -49,5 +49,9 @@ export class Results extends ParsableNode {
 
   public override getSymbol(): Symbol {
     return new Symbol(this.reference, "results", "Scenario results variables used to validate the function result.", SymbolKind.Keyword);
+  }
+
+  public override toString(): string {
+    return this.assignmentsValue.length.toString();
   }
 }

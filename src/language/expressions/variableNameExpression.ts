@@ -77,6 +77,6 @@ export class VariableNameExpression extends Expression {
   }
 
   public override getSymbol(): Symbol | null {
-    return null;
+    return new Symbol(this.reference, this.name, "", this.kind);;
   }
 }

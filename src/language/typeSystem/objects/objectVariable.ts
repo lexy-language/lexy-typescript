@@ -19,4 +19,8 @@ export class ObjectVariable implements IObjectMember {
     this.name = name;
     this.type = type;
   }
+
+  public description() {
+    return `variable: ${this.type}`;
+  }
 }

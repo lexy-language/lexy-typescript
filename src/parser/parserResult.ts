@@ -10,7 +10,7 @@ export class ParserResult {
   public readonly componentNodes: ComponentNodeList;
   public readonly logger: IParserLogger;
   public readonly dependencies: Dependencies;
-  public readonly documentsSymbols: ISymbols;
+  public readonly symbols: ISymbols;
 
    constructor(rootNode: LexyScriptNode, componentNodes: ComponentNodeList,
                logger: IParserLogger, dependencies: Dependencies,
@@ -19,6 +19,6 @@ export class ParserResult {
      this.componentNodes = componentNodes;
      this.logger = logger;
      this.dependencies = dependencies;
-     this.documentsSymbols = documentsSymbols;
+     this.symbols = documentsSymbols;
    }
 }

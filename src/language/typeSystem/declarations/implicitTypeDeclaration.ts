@@ -7,7 +7,6 @@ import {INode} from "../../node";
 import {NodeType} from "../../nodeType";
 import {NodeReference} from "../../nodeReference";
 import {Symbol} from "../../symbols/symbol";
-import {SymbolKind} from "../../symbols/symbolKind";
 
 export function instanceOfImplicitTypeDeclaration(object: any): boolean {
   return object?.nodeType == NodeType.ImplicitTypeDeclaration;
@@ -39,5 +38,9 @@ export class ImplicitTypeDeclaration extends TypeDeclaration {
 
   public override getSymbol(): Symbol | null {
     return this.type ? this.type.getSymbol(this.reference) : null;
+  }
+
+  public override label(): string {
+    return "var";
   }
 }

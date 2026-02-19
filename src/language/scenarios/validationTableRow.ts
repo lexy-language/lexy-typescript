@@ -14,6 +14,7 @@ import {ValidationTableHeader} from "./validationTableHeader";
 import {NodeReference} from "../nodeReference";
 import {ValidationTable} from "./validationTable";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "../expressions/expressionFactory";
 
 export class ValidationTableRow extends Node {
 
@@ -52,7 +53,7 @@ export class ValidationTableRow extends Node {
     let values = new Array<ValidationTableValue>();
     let currentLineTokens = context.line.tokens;
     while (++tokenIndex < currentLineTokens.length) {
-      const value = this.parseValue(context, tableRowReference, currentLineTokens, tokenIndex++);
+      const value = this.parseValue(context, values.length, tableRowReference, currentLineTokens, tokenIndex++);
       if (value == null) {
         return null;
       }
@@ -66,6 +67,7 @@ export class ValidationTableRow extends Node {
   }
 
   private static parseValue(context: IParseLineContext,
+                            index: number,
                             tableRowReference: NodeReference,
                             currentLineTokens: TokenList, tokenIndex: number) {
     const notValid = !context.validateTokens("ValidationTableRow")
@@ -81,13 +83,13 @@ export class ValidationTableRow extends Node {
 
     const tokens = new TokenList(context.line, [token]);
     const tableValueReference = new NodeReference();
-    const expression = context.expressionFactory.parse(tableValueReference, tokens, context.line);
+    const expression = ExpressionFactory.parse(tableValueReference, tokens, context.line);
     if (expression.state == "failed") {
       context.logger.fail(reference, expression.errorMessage);
       return null;
     }
 
-    const validationTableValue = new ValidationTableValue(expression.result, tableRowReference, reference);
+    const validationTableValue = new ValidationTableValue(index, expression.result, tableRowReference, reference);
     tableValueReference.setNode(validationTableValue);
     return validationTableValue;
   }
@@ -105,6 +107,10 @@ export class ValidationTableRow extends Node {
 
   public override getSymbol(): Symbol | null {
     return null;
+  }
+
+  public override toString(): string {
+    return `[${this.index}]`;
   }
 }
 

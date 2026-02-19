@@ -3,7 +3,6 @@ import type {IParseLineContext} from "../parser/context/parseLineContext";
 import type {IParsableNode} from "./parsableNode";
 import type {INode} from "./node";
 import type {IValidationContext} from "../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressions/expressionFactory";
 
 import {Function} from "./functions/function";
 import {ComponentNode} from "./componentNode";
@@ -26,6 +25,7 @@ import {NodeReference} from "./nodeReference";
 import {Suggestions} from "./symbols/suggestions";
 import {SuggestionsScope} from "./symbols/suggestionsScope";
 import {SuggestionEdit} from "./symbols/suggestionEdit";
+import {IProject} from "../infrastructure/project";
 
 export function instanceOfLexyScriptNode(object: any) {
   return object?.nodeType == NodeType.LexyScriptNode;
@@ -38,7 +38,6 @@ export function asLexyScriptNode(object: any): Table | null {
 export class LexyScriptNode extends ComponentNode {
 
   private readonly includes: Array<Include> = [];
-  private readonly expressionFactory: IExpressionFactory;
   private sortedNodes: Array<IComponentNode> | null = null;
 
   public readonly nodeType = NodeType.LexyScriptNode;
@@ -46,10 +45,9 @@ export class LexyScriptNode extends ComponentNode {
   public readonly comments: Comments;
   public componentNodes: ComponentNodeList = new ComponentNodeList();
 
-  constructor(expressionFactory: IExpressionFactory) {
-    super("LexyScriptNode", new NodeReference(null, true), new SourceReference(`LexyScript`, 1, 1, 1));
+  constructor(project: IProject) {
+    super("LexyScriptNode", new NodeReference(null, true), new SourceReference(project.file(`LexyScript`), 1, 1, 1));
     this.comments = new Comments(new NodeReference(this), this.reference);
-    this.expressionFactory = expressionFactory;
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
@@ -86,7 +84,7 @@ export class LexyScriptNode extends ComponentNode {
 
     switch (tokenName.keyword) {
       case Keywords.Function:
-        return Function.create(tokenName.name, false, new NodeReference(this), reference, this.expressionFactory);
+        return Function.create(tokenName.name, false, new NodeReference(this), reference);
       case Keywords.EnumKeyword:
         return EnumDefinition.parse(tokenName.name, false, this, reference);
       case Keywords.ScenarioKeyword:

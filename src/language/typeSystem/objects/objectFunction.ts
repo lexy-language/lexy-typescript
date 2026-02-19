@@ -25,7 +25,7 @@ export abstract class ObjectFunction implements IObjectMember, IObjectFunction {
   public name: string;
   public type: Type;
 
-  public constructor(name: string, type: Type) {
+  protected constructor(name: string, type: Type) {
     this.name = name;
     this.type = type;
   }
@@ -35,5 +35,9 @@ export abstract class ObjectFunction implements IObjectMember, IObjectFunction {
     reference: SourceReference): ValidateMemberFunctionArgumentsResult;
 
   public abstract getResultsType(args: ReadonlyArray<Expression>): Type | null;
+
+  public description(): string | null {
+    return `function: ${this.type}`;
+  }
 }
 

@@ -1,6 +1,5 @@
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {ExpressionSource} from "./expressionSource";
@@ -14,6 +13,7 @@ import {NodeType} from "../nodeType";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfBracketedExpression(object: any): object is BracketedExpression {
   return object?.nodeType == NodeType.BracketedExpression;
@@ -37,7 +37,7 @@ export class BracketedExpression extends Expression {
     this.expression = expression;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     const tokens = source.tokens;
     if (!BracketedExpression.isValid(tokens)) {
       return newParseExpressionFailed("BracketedExpression", `Not valid.`);
@@ -53,7 +53,7 @@ export class BracketedExpression extends Expression {
     if (functionName == null) return newParseExpressionFailed("BracketedExpression", `Invalid function name.`);
 
     const innerExpressionTokens = tokens.tokensRange(2, matchingClosingParenthesis - 1);
-    const innerExpression = factory.parse(expressionReference, innerExpressionTokens, source.line);
+    const innerExpression = ExpressionFactory.parse(expressionReference, innerExpressionTokens, source.line);
     if (innerExpression.state != 'success') return innerExpression;
 
     const reference = source.createReference();

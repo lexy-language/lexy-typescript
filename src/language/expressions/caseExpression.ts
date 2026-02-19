@@ -1,6 +1,5 @@
 import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
-import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {Expression} from "./expression";
@@ -15,6 +14,7 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {NodeType} from "../nodeType";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfCaseExpression(object: any): object is CaseExpression {
   return object?.nodeType == NodeType.CaseExpression;
@@ -36,17 +36,16 @@ export class CaseExpression extends Expression implements IParsableNode {
   public readonly value: Expression | null;
   public valueType: Type | null = null;
 
-   public get expressions(): Array<Expression>  {
+   public get expressions(): readonly Expression[]  {
     return this.expressionsValues.asArray();
    }
 
   constructor(value: Expression | null, isDefault: boolean, source: ExpressionSource,
-              parentReference: NodeReference, reference: SourceReference,
-              factory: IExpressionFactory) {
+              parentReference: NodeReference, reference: SourceReference) {
     super(source, parentReference, reference);
      this.value = value;
      this.isDefault = isDefault;
-     this.expressionsValues = new ExpressionList(this, reference, factory);
+     this.expressionsValues = new ExpressionList(this, reference);
    }
 
    public parse(context: IParseLineContext): IParsableNode {
@@ -60,14 +59,14 @@ export class CaseExpression extends Expression implements IParsableNode {
     return this.value != null ? [this.value, this.expressionsValues] : [this.expressionsValues];
    }
 
-   public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+   public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
      const tokens = source.tokens;
      if (!CaseExpression.isValid(tokens)) {
        return newParseExpressionFailed("CaseExpression", `Not valid.`);
      }
 
      if (tokens.isKeyword(0, Keywords.Default)) {
-       return CaseExpression.parseDefaultCase(parentReference, source, tokens, factory);
+       return CaseExpression.parseDefaultCase(parentReference, source, tokens);
      }
 
      if (tokens.length == 1) {
@@ -76,23 +75,23 @@ export class CaseExpression extends Expression implements IParsableNode {
 
      const expressionReference = new NodeReference();
      const value = tokens.tokensFrom(1);
-     const valueExpression = factory.parse(expressionReference, value, source.line);
+     const valueExpression = ExpressionFactory.parse(expressionReference, value, source.line);
      if (valueExpression.state != 'success') return valueExpression;
 
      const reference = source.createReference();
 
-     const expression = new CaseExpression(valueExpression.result, false, source, parentReference, reference, factory);
+     const expression = new CaseExpression(valueExpression.result, false, source, parentReference, reference);
      expressionReference.setNode(expression);
      return newParseExpressionSuccess(expression);
    }
 
-   private static parseDefaultCase(parentReference: NodeReference, source: ExpressionSource, tokens: TokenList, factory: IExpressionFactory): ParseExpressionResult {
+   private static parseDefaultCase(parentReference: NodeReference, source: ExpressionSource, tokens: TokenList): ParseExpressionResult {
      if (tokens.length != 1) {
        return newParseExpressionFailed("CaseExpression", `Invalid 'default' case. No parameters expected.`);
      }
 
      const reference = source.createReference();
-     const expression = new CaseExpression(null, true, source, parentReference, reference, factory);
+     const expression = new CaseExpression(null, true, source, parentReference, reference);
      return newParseExpressionSuccess(expression);
    }
 

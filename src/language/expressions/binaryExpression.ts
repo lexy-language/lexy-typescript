@@ -1,5 +1,4 @@
 import type {INode} from "../node";
-import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/context/validationContext";
 
 import {Expression} from "./expression";
@@ -18,12 +17,67 @@ import {EnumType, instanceOfEnumType} from "../typeSystem/enumType";
 import {EnumDefinition} from "../enums/enumDefinition";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
-import {NewFunctionState} from "./functions/systemFunctions/newFunctionExpression";
+import {ExpressionFactory} from "./expressionFactory";
 
-type OperatorCombination = {
-  leftType: Type,
-  rightType: Type
-  operator: ExpressionOperator,
+class OperatorCombination {
+  private readonly leftTypeValue: Type | null;
+  private readonly rightTypeValue: Type | null;
+  private readonly leftTypeEnum: boolean
+  private readonly rightTypeEnum: boolean;
+  private readonly expressionOperator: ExpressionOperator;
+
+  private get leftType(): Type {
+    if (this.leftTypeEnum || !this.leftTypeValue) throw new Error("Left type is enum");
+    return this.leftTypeValue;
+  }
+
+  private get rightType(): Type {
+    if (this.rightTypeEnum || !this.rightTypeValue) throw new Error("Right type is enum");
+    return this.rightTypeValue;
+  }
+
+  constructor(leftTypeEnum: boolean, leftType: Type | null, rightTypeEnum: boolean, rightType: Type | null, expressionOperator: ExpressionOperator) {
+    this.leftTypeEnum = leftTypeEnum;
+    this.leftTypeValue = leftType;
+    this.rightTypeEnum = rightTypeEnum;
+    this.rightTypeValue = rightType;
+    this.expressionOperator = expressionOperator;
+  }
+
+  public static new(leftType: Type, rightType: Type | null, expressionOperator: ExpressionOperator): OperatorCombination {
+    return new OperatorCombination(false, leftType, false, rightType, expressionOperator);
+  }
+
+  public static enums(expressionOperator: ExpressionOperator): OperatorCombination {
+    return new OperatorCombination(true, null, true, null, expressionOperator);
+  }
+
+  public static rightEnum(leftType: Type, expressionOperator: ExpressionOperator): OperatorCombination {
+    return new OperatorCombination(false, leftType, true, null, expressionOperator);
+  }
+
+  public allowed(operator: ExpressionOperator, left: Type | null, right: Type | null): boolean {
+
+    if (operator != this.expressionOperator) return false;
+
+    const leftEnum = instanceOfEnumType(left);
+    const rightEnum = instanceOfEnumType(right);
+
+    if (this.leftTypeEnum && this.rightTypeEnum)
+    {
+      //if left and right is enum, the enum should be of the same type
+      return leftEnum && rightEnum && left != null && left.equals(right);
+    }
+    if (this.leftTypeEnum)
+    {
+      return leftEnum && this.rightType.equals(right);
+    }
+    if (this.rightTypeEnum)
+    {
+      return this.leftType && this.leftType.equals(left) && rightEnum;
+    }
+    return this.leftType && this.leftType.equals(left) && this.rightType && this.rightType.equals(right);
+  }
 }
 
 class OperatorEntry {
@@ -78,53 +132,48 @@ export class BinaryExpression extends Expression {
     ExpressionOperator.NotEqual
   ];
 
-  static EnumType() {
-    let definition = new EnumDefinition("*", false, new NodeReference(null, true), new SourceReference("*", 1, 1, 1));
-    return new EnumType(definition);
-  }
-
   private static AllowedOperationCombinations: Array<OperatorCombination> = [
-    { leftType: ValueType.string, rightType: ValueType.string, operator: ExpressionOperator.Equals},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.Equals},
-    { leftType: ValueType.boolean, rightType: ValueType.boolean, operator: ExpressionOperator.Equals},
-    { leftType: ValueType.date, rightType: ValueType.date, operator: ExpressionOperator.Equals},
-    { leftType: BinaryExpression.EnumType(), rightType: BinaryExpression.EnumType(), operator: ExpressionOperator.Equals},
+    OperatorCombination.new(ValueType.string, ValueType.string, ExpressionOperator.Equals),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.Equals),
+    OperatorCombination.new(ValueType.boolean, ValueType.boolean, ExpressionOperator.Equals),
+    OperatorCombination.new(ValueType.date, ValueType.date, ExpressionOperator.Equals),
+    OperatorCombination.enums(ExpressionOperator.Equals),
 
-    { leftType: ValueType.string, rightType: ValueType.string, operator: ExpressionOperator.NotEqual},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.NotEqual},
-    { leftType: ValueType.boolean, rightType: ValueType.boolean, operator: ExpressionOperator.NotEqual},
-    { leftType: ValueType.date, rightType: ValueType.date, operator: ExpressionOperator.NotEqual},
-    { leftType: BinaryExpression.EnumType(), rightType: BinaryExpression.EnumType(), operator: ExpressionOperator.NotEqual},
+    OperatorCombination.new(ValueType.string, ValueType.string, ExpressionOperator.NotEqual),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.NotEqual),
+    OperatorCombination.new(ValueType.boolean, ValueType.boolean, ExpressionOperator.NotEqual),
+    OperatorCombination.new(ValueType.date, ValueType.date, ExpressionOperator.NotEqual),
+    OperatorCombination.enums(ExpressionOperator.NotEqual),
 
-    { leftType: ValueType.string, rightType: ValueType.string, operator: ExpressionOperator.Addition},
-    { leftType: ValueType.string, rightType: ValueType.number, operator: ExpressionOperator.Addition},
-    { leftType: ValueType.string, rightType: ValueType.boolean, operator: ExpressionOperator.Addition},
-    { leftType: ValueType.string, rightType: ValueType.date, operator: ExpressionOperator.Addition},
-    { leftType: ValueType.string, rightType: BinaryExpression.EnumType(), operator: ExpressionOperator.Addition},
+    OperatorCombination.new(ValueType.string, ValueType.string, ExpressionOperator.Addition),
+    OperatorCombination.new(ValueType.string, ValueType.number, ExpressionOperator.Addition),
+    OperatorCombination.new(ValueType.string, ValueType.boolean, ExpressionOperator.Addition),
+    OperatorCombination.new(ValueType.string, ValueType.date, ExpressionOperator.Addition),
+    OperatorCombination.rightEnum(ValueType.string, ExpressionOperator.Addition),
 
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.Addition},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.Subtraction},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.Multiplication},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.Division},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.Modulus},
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.Addition),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.Subtraction),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.Multiplication),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.Division),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.Modulus),
 
-    { leftType: ValueType.string, rightType: ValueType.string, operator: ExpressionOperator.GreaterThan},
-    { leftType: ValueType.string, rightType: ValueType.string, operator: ExpressionOperator.GreaterThanOrEqual},
-    { leftType: ValueType.string, rightType: ValueType.string, operator: ExpressionOperator.LessThan},
-    { leftType: ValueType.string, rightType: ValueType.string, operator: ExpressionOperator.LessThanOrEqual},
+    OperatorCombination.new(ValueType.string, ValueType.string, ExpressionOperator.GreaterThan),
+    OperatorCombination.new(ValueType.string, ValueType.string, ExpressionOperator.GreaterThanOrEqual),
+    OperatorCombination.new(ValueType.string, ValueType.string, ExpressionOperator.LessThan),
+    OperatorCombination.new(ValueType.string, ValueType.string, ExpressionOperator.LessThanOrEqual),
 
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.GreaterThan},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.GreaterThanOrEqual},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.LessThan},
-    { leftType: ValueType.number, rightType: ValueType.number, operator: ExpressionOperator.LessThanOrEqual},
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.GreaterThan),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.GreaterThanOrEqual),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.LessThan),
+    OperatorCombination.new(ValueType.number, ValueType.number, ExpressionOperator.LessThanOrEqual),
 
-    { leftType: ValueType.date, rightType: ValueType.date, operator: ExpressionOperator.GreaterThan},
-    { leftType: ValueType.date, rightType: ValueType.date, operator: ExpressionOperator.GreaterThanOrEqual},
-    { leftType: ValueType.date, rightType: ValueType.date, operator: ExpressionOperator.LessThan},
-    { leftType: ValueType.date, rightType: ValueType.date, operator: ExpressionOperator.LessThanOrEqual},
+    OperatorCombination.new(ValueType.date, ValueType.date, ExpressionOperator.GreaterThan),
+    OperatorCombination.new(ValueType.date, ValueType.date, ExpressionOperator.GreaterThanOrEqual),
+    OperatorCombination.new(ValueType.date, ValueType.date, ExpressionOperator.LessThan),
+    OperatorCombination.new(ValueType.date, ValueType.date, ExpressionOperator.LessThanOrEqual),
 
-    { leftType: ValueType.boolean, rightType: ValueType.boolean, operator: ExpressionOperator.And},
-    { leftType: ValueType.boolean, rightType: ValueType.boolean, operator: ExpressionOperator.Or},
+    OperatorCombination.new(ValueType.boolean, ValueType.boolean, ExpressionOperator.And),
+    OperatorCombination.new(ValueType.boolean, ValueType.boolean, ExpressionOperator.Or),
   ];
 
   private static readonly SupportedOperatorsByPriority: Array<OperatorEntry> = [
@@ -171,7 +220,7 @@ export class BinaryExpression extends Expression {
     this.operator = operatorValue;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     const tokens = source.tokens;
     const supportedTokens = BinaryExpression.getCurrentLevelSupportedTokens(tokens);
     const lowestPriorityOperation = BinaryExpression.getLowestPriorityOperation(supportedTokens);
@@ -192,14 +241,14 @@ export class BinaryExpression extends Expression {
     }
 
     const expressionReference = new NodeReference();
-    const left = factory.parse(expressionReference, leftTokens, source.line);
+    const left = ExpressionFactory.parse(expressionReference, leftTokens, source.line);
     if (left.state != 'success') return left;
 
-    const right = factory.parse(expressionReference, rightTokens, source.line);
+    const right = ExpressionFactory.parse(expressionReference, rightTokens, source.line);
     if (right.state != 'success') return right;
 
     const operatorValue = lowestPriorityOperation.expressionOperator;
-    const reference = source.createReference(lowestPriorityOperation.index);
+    const reference = source.createReference();
 
     const binaryExpression = new BinaryExpression(left.result, right.result, operatorValue, source, parentReference, reference);
     expressionReference.setNode(binaryExpression);
@@ -297,25 +346,8 @@ export class BinaryExpression extends Expression {
   }
 
   private isAllowedOperation(left: Type | null, right: Type | null) {
-    return any(BinaryExpression.AllowedOperationCombinations, allowed => {
-      if (allowed.operator != this.operator) return false;
-
-      let leftEnum = instanceOfEnumType(left);
-      let rightEnum = instanceOfEnumType(right);
-      let allowedLeftEnum = instanceOfEnumType(allowed.leftType);
-      let allowedRightEnum = instanceOfEnumType(allowed.rightType);
-
-      if (allowedLeftEnum && allowedRightEnum) {
-        //if left and right is enumDefinition, the enumDefinition should be of the same typeDeclaration
-        return leftEnum && rightEnum && left != null && left.equals(right);
-      } else if (allowedLeftEnum) {
-        return leftEnum && allowed.rightType.equals(right);
-      } else if (allowedRightEnum) {
-        return allowed.leftType.equals(left) && rightEnum;
-      } else {
-        return allowed.leftType.equals(left) && allowed.rightType.equals(right);
-      }
-    });
+    return any(BinaryExpression.AllowedOperationCombinations, combination =>
+      combination.allowed(this.operator, left, right));
   }
 
   public override deriveType(context: IValidationContext): Type | null {

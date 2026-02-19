@@ -39,6 +39,6 @@ export class VariableEntry {
     }
     return instanceOfGeneratedType(this.type)
       ? `type: ${this.type}`
-      : `variable: ${this.type} ${this.type}`;
+      : `variable: ${this.type}`;
   }
 }

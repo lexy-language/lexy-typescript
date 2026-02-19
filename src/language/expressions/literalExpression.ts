@@ -1,7 +1,6 @@
 import type {ILiteralToken} from "../../parser/tokens/ILiteralToken";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {ExpressionSource} from "./expressionSource";
@@ -35,7 +34,7 @@ export class LiteralExpression extends Expression {
     this.literal = literal;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     const expression = LiteralExpression.createExpression(parentReference, source, source.tokens);
     return expression == null
       ? newParseExpressionFailed("LiteralExpression", "Invalid expression")
@@ -93,6 +92,6 @@ export class LiteralExpression extends Expression {
   }
 
   override toString(): string {
-    return this.literal.value;
+    return this.literal.toString();
   }
 }

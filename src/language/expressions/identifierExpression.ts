@@ -1,6 +1,5 @@
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 import {Expression} from "./expression";
 import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../sourceReference";
@@ -15,6 +14,7 @@ import {TokenType} from "../../parser/tokens/tokenType";
 import {IdentifierPath} from "../identifierPath";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfIdentifierExpression(object: any): boolean {
   return object?.nodeType == NodeType.IdentifierExpression;
@@ -45,7 +45,7 @@ export class IdentifierExpression extends Expression implements IHasVariableRefe
     this.identifier = identifier;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     let tokens = source.tokens;
     if (!IdentifierExpression.isValid(tokens)) {
       return newParseExpressionFailed("IdentifierExpression", `Invalid expression`);
@@ -97,6 +97,8 @@ export class IdentifierExpression extends Expression implements IHasVariableRefe
   }
 
   public override getSymbol(): Symbol | null {
-    return null;
+    return this.variable != null
+      ? this.variable.getSymbol()
+      : new Symbol(this.reference, this.identifier, "", SymbolKind.Variable);
   }
 }

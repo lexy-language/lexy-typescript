@@ -1,6 +1,5 @@
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {SourceReference} from "../sourceReference";
@@ -26,6 +25,7 @@ import {SymbolKind} from "../symbols/symbolKind";
 import {ParseVariableNameExpressionResult} from "./parseVariableNameExpressionResult";
 import {Symbol} from "../symbols/symbol";
 import {VariableNameExpression} from "./variableNameExpression";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfVariableDeclarationExpression(object: any): object is VariableDeclarationExpression {
   return object?.nodeType == NodeType.VariableDeclarationExpression;
@@ -72,7 +72,7 @@ export class VariableDeclarationExpression extends Expression {
     this.assignment = assignment;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
 
     const tokens = source.tokens;
     if (!VariableDeclarationExpression.isValid(tokens)) {
@@ -80,9 +80,10 @@ export class VariableDeclarationExpression extends Expression {
     }
     const expressionReference = new NodeReference();
     const typeValue = Assert.notNull(tokens.tokenValue(0), "type");
-    const type = TypeDeclarationParser.parseString(typeValue, expressionReference, tokens.reference(0, 1));
+    const typeReference = tokens.reference(0, 1);
+    const type = TypeDeclarationParser.parseString(typeValue, expressionReference, typeReference);
     const assignment = tokens.length > 3
-      ? factory.parse(expressionReference, tokens.tokensFrom(3), source.line)
+      ? ExpressionFactory.parse(expressionReference, tokens.tokensFrom(3), source.line)
       : null;
 
     if (assignment?.state == "failed") return assignment;
@@ -144,7 +145,7 @@ export class VariableDeclarationExpression extends Expression {
 
     const type = this.getType(context, assignmentType);
     if (type == null) {
-      context.logger.fail(this.reference, `Invalid variable type '${this.typeDeclaration.toString()}'`);
+      context.logger.fail(this.reference, `Invalid variable type '${this.typeDeclaration.label()}'`);
       return;
     }
 

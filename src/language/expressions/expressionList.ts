@@ -1,4 +1,3 @@
-import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
@@ -13,10 +12,10 @@ import {lastOrDefault} from "../../infrastructure/arrayFunctions";
 import {NodeType} from "../nodeType";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "./expressionFactory";
 
 export class ExpressionList extends Node {
 
-  private factory: IExpressionFactory;
   private readonly values: Array<Expression> = [];
 
   public nodeType = NodeType.ExpressionList;
@@ -25,9 +24,8 @@ export class ExpressionList extends Node {
      return this.values.length;
    }
 
-   constructor(parent: INode, reference: SourceReference, factory: IExpressionFactory) {
+   constructor(parent: INode, reference: SourceReference) {
      super(new NodeReference(parent), reference);
-     this.factory = factory;
    }
 
   public asArray(): Array<Expression> {
@@ -50,7 +48,7 @@ export class ExpressionList extends Node {
 
    public parse(context: IParseLineContext): ParseExpressionResult {
      let line = context.line;
-     let expression = this.factory.parse(new NodeReference(this), line.tokens, line);
+     let expression = ExpressionFactory.parse(new NodeReference(this), line.tokens, line);
      if (expression.state != 'success') {
        context.logger.fail(line.tokens.allReference(), expression.errorMessage);
        return expression;
@@ -78,5 +76,9 @@ export class ExpressionList extends Node {
 
   public override getSymbol(): Symbol | null {
     return null;
+  }
+
+  public override toString(): string {
+    return this.values.length.toString();
   }
 }

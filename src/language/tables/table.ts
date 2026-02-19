@@ -65,7 +65,7 @@ export class Table extends ComponentNode implements INodeWithType {
       return this;
     }
 
-    const tableRow = TableRow.parse(context, this.headerValue, this);
+    const tableRow = TableRow.parse(context, this);
     if (tableRow != null) {
       this.rows.push(tableRow);
     }
@@ -106,6 +106,9 @@ export class Table extends ComponentNode implements INodeWithType {
 
     const builder: string[] = [];
     for (const column of this.header.columns) {
+      if (builder.length > 0) {
+        builder.push("\n");
+      }
       builder.push(`- ${column.typeDeclaration} ${column.name}`);
     }
     const variablesString = builder.join("");

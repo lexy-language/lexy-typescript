@@ -1,6 +1,9 @@
 import {parseNodes} from "../../parseFunctions";
 import {validateOfType} from "../../validateOfType";
 import {asSwitchExpression, SwitchExpression} from "../../../src/language/expressions/switchExpression";
+import {Verify} from "../../verify";
+import {CaseExpression} from "../../../src/language/expressions/caseExpression";
+import {VerifyModelContext} from "../../verifyModelContext";
 
 describe('SwitchExpressionTests', () => {
   it('checkSwitchStatement', async () => {
@@ -24,22 +27,27 @@ describe('SwitchExpressionTests', () => {
     logger.assertNoErrors();
 
     const functionNode = nodes.getFunction("NumberSwitch");
-    expect(functionNode).not.toBeNull();
-    expect(functionNode?.code.expressions.length).toBe(3);
-    validateOfType<SwitchExpression>(asSwitchExpression, functionNode?.code.expressions[1], expression => {
-      expect(expression.cases.length).toBe(3);
 
-      expect(expression.cases[0].value?.toString()).toBe("6");
-      expect(expression.cases[0].expressions.length).toBe(1);
-      expect(expression.cases[0].expressions[0].toString()).toBe("(AssignmentExpression) temp = 666");
-
-      expect(expression.cases[1].value?.toString()).toBe("7");
-      expect(expression.cases[1].expressions.length).toBe(1);
-      expect(expression.cases[1].expressions[0].toString()).toBe("(AssignmentExpression) temp = 777");
-
-      expect(expression.cases[2].value).toBeNull();
-      expect(expression.cases[2].expressions.length).toBe(1);
-      expect(expression.cases[2].expressions[0].toString()).toBe("(AssignmentExpression) temp = 888");
-    });
+    Verify.model(functionNode, context => context
+      .collection(value => value.code.expressions, expressionContext => expressionContext
+        .length(3, "value.Code.Expressions")
+        .valueModelOfType<SwitchExpression>(1, "SwitchExpression", asSwitchExpression, switchExpression => switchExpression
+          .collection(expression => expression.cases, casesContext => casesContext
+            .length(3, "value.Code.Expressions[1].Cases")
+            .valueModel(0, checkCase("number: 6", "temp = 666"))
+            .valueModel(1, checkCase("number: 7", "temp = 777"))
+            .valueModel(2, checkCase(null, "temp = 888"))
+          )
+        )
+      )
+    );
   });
+
+  function checkCase(literal: string, assignment: string): (context: VerifyModelContext<CaseExpression>) => void {
+    return context => context
+      .areEqual(value => value.value != null ? value.value.toString() : null, literal)
+      .collection(value => value.expressions, expressionContext => expressionContext
+        .valueAt(0, value => value != null && value.toString() == assignment)
+      );
+  }
 });

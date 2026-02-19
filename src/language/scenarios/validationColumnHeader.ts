@@ -45,4 +45,8 @@ export class ValidationColumnHeader extends Node {
   public override getSymbol(): Symbol | null {
     return null;
   }
+
+  public override toString(): string {
+    return this.name.toString();
+  }
 }

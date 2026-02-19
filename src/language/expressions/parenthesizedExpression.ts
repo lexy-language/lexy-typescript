@@ -1,6 +1,5 @@
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {OperatorToken} from "../../parser/tokens/operatorToken";
@@ -13,6 +12,7 @@ import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfParenthesizedExpression(object: any): object is ParenthesizedExpression {
   return object?.nodeType == NodeType.ParenthesizedExpression;
@@ -33,7 +33,7 @@ export class ParenthesizedExpression extends Expression {
     this.expression = expression;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     const tokens = source.tokens;
     if (!ParenthesizedExpression.isValid(tokens)) {
       return newParseExpressionFailed("ParenthesizedExpression", `Not valid.`);
@@ -46,7 +46,7 @@ export class ParenthesizedExpression extends Expression {
 
     const expressionReference = new NodeReference();
     const innerExpressionTokens = tokens.tokensRange(1, matchingClosingParenthesis - 1);
-    const innerExpression = factory.parse(expressionReference, innerExpressionTokens, source.line);
+    const innerExpression = ExpressionFactory.parse(expressionReference, innerExpressionTokens, source.line);
     if (innerExpression.state != 'success') return innerExpression;
 
     const reference = source.createReference();

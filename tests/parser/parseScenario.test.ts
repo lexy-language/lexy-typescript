@@ -101,48 +101,72 @@ describe('ParseScenarioTests', () => {
 
     let {scenario} = await parseScenario(code);
 
-    expect(scenario.name).toBe(`ValidNumberIntAsParameter`);
-    if (scenario.functionNode == null) throw new Error("functionNode == null");
-
-    expect(scenario.functionNode.parameters.variables.length).toBe(2);
-    expect(scenario.functionNode.parameters.variables[0].name).toBe(`Value1`);
-    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, scenario.functionNode.parameters.variables[0].typeDeclaration, value =>
-      expect(value.typeName).toBe(`number`));
-
-    expect(scenario.functionNode.parameters.variables[0].defaultExpression.toString()).toBe(`123`);
-    expect(scenario.functionNode.parameters.variables[1].name).toBe(`Value2`);
-    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, scenario.functionNode.parameters.variables[1].typeDeclaration, value =>
-      expect(value.typeName).toBe(`number`));
-
-    expect(scenario.functionNode.parameters.variables[1].defaultExpression.toString()).toBe(`456`);
-    expect(scenario.functionNode.results.variables.length).toBe(2);
-    expect(scenario.functionNode.results.variables[0].name).toBe(`Result1`);
-    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, scenario.functionNode.results.variables[0].typeDeclaration, value =>
-      expect(value.typeName).toBe(`number`));
-
-    expect(scenario.functionNode.results.variables[0].defaultExpression).toBeNull();
-    expect(scenario.functionNode.results.variables[1].name).toBe(`Result2`);
-    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration, scenario.functionNode.results.variables[1].typeDeclaration, value =>
-      expect(value.typeName).toBe(`number`));
-
-    expect(scenario.functionNode.results.variables[1].defaultExpression).toBeNull();
-    expect(scenario.functionNode.code.expressions.length).toBe(2);
-    expect(scenario.functionNode.code.expressions[0].toString()).toBe(`(AssignmentExpression) Result1 = Value1`);
-    expect(scenario.functionNode.code.expressions[1].toString()).toBe(`(AssignmentExpression) Result2 = Value2`);
-
-    const parametersAssignments = scenario.parameters.allAssignments();
-    expect(parametersAssignments.length).toBe(2);
-    expect(parametersAssignments[0].variable.rootIdentifier).toBe(`Value1`);
-    expect(parametersAssignments[0].constantValue.value).toBe(987);
-    expect(parametersAssignments[1].variable.rootIdentifier).toBe(`Value2`);
-    expect(parametersAssignments[1].constantValue.value).toBe(654);
-
-    const resultsAssignments = scenario.results.allAssignments();
-    expect(resultsAssignments.length).toBe(2);
-    expect(resultsAssignments[0].variable.rootIdentifier).toBe(`Result1`);
-    expect(resultsAssignments[0].constantValue.value).toBe(123);
-    expect(resultsAssignments[1].variable.rootIdentifier).toBe(`Result2`);
-    expect(resultsAssignments[1].constantValue.value).toBe(456);
+    Verify.model(scenario, context => context
+      .areEqual(value => value.name, "ValidNumberIntAsParameter")
+      .isNotNull(value => value.functionNode, functionContext => functionContext
+        .collection(value => value.parameters.variables, variablesContext => variablesContext
+          .length(2, "value.Parameters.Variables")
+          .valueModel(0, itemContext => itemContext
+            .areEqual(item => item.name, "Value1")
+            .isOfType<ValueTypeDeclaration>(item => item.typeDeclaration, "ValueTypeDeclaration", asValueTypeDeclaration, valueTypeDeclarationContext => valueTypeDeclarationContext
+              .areEqual(valueTypeDeclaration => valueTypeDeclaration.typeName, "number")
+            )
+            .areEqual(item => item.defaultExpression.toString(), "number: 123")
+          )
+          .valueModel(1, itemContext => itemContext
+            .areEqual(item => item.name, "Value2")
+            .isOfType<ValueTypeDeclaration>(item => item.typeDeclaration, "ValueTypeDeclaration", asValueTypeDeclaration, valueTypeDeclaration => valueTypeDeclaration
+              .areEqual(valueTypeDeclaration => valueTypeDeclaration.typeName, "number")
+            )
+            .areEqual(item => item.defaultExpression.toString(), "number: 456")
+          )
+        )
+        .collection(value => value.results.variables, variablesContext => variablesContext
+          .length(2, "value.Results.Variables")
+          .valueModel(0, itemContext => itemContext
+            .areEqual(item => item.name, "Result1")
+            .isOfType<ValueTypeDeclaration>(item => item.typeDeclaration, "ValueTypeDeclaration", asValueTypeDeclaration, valueTypeDeclarationContext => valueTypeDeclarationContext
+              .areEqual(valueTypeDeclaration => valueTypeDeclaration.typeName, "number")
+            )
+            .isNull(item => item.defaultExpression)
+          )
+          .valueModel(1, itemContext => itemContext
+            .areEqual(item => item.name, "Result2")
+            .isOfType<ValueTypeDeclaration>(item => item.typeDeclaration, "ValueTypeDeclaration", asValueTypeDeclaration, valueTypeDeclaration => valueTypeDeclaration
+              .areEqual(valueTypeDeclaration => valueTypeDeclaration.typeName, "number")
+            )
+            .isNull(item => item.defaultExpression, "LiteralExpression: 456")
+          )
+        )
+      )
+      .collection(value => value.functionNode.code.expressions, variablesContext => variablesContext
+        .length(2, "value.Function.Code.Expressions")
+        .valueAt(0, value => value.toString() == "Result1 = Value1")
+        .valueAt(1, value => value.toString() == "Result2 = Value2")
+      )
+      .collection(value => scenario.parameters.allAssignments(), variablesContext => variablesContext
+        .length(2, "scenario.Parameters.AllAssignments")
+        .valueModel(0, itemContext => itemContext
+          .areEqual(value => value.variable.rootIdentifier, "Value1")
+          .areEqual(value => value.constantValue.value as number, 987)
+        )
+        .valueModel(1, itemContext => itemContext
+          .areEqual(value => value.variable.rootIdentifier, "Value2")
+          .areEqual(value => value.constantValue.value as number, 654)
+        )
+      )
+      .collection(value => scenario.results.allAssignments(), variablesContext => variablesContext
+        .length(2, "scenario.Results.AllAssignments")
+        .valueModel(0, itemContext => itemContext
+          .areEqual(value => value.variable.rootIdentifier, "Result1")
+          .areEqual(value => value.constantValue.value as number, 123)
+        )
+        .valueModel(1, itemContext => itemContext
+          .areEqual(value => value.variable.rootIdentifier, "Result2")
+          .areEqual(value => value.constantValue.value as number, 456)
+        )
+      )
+    );
   });
 
   it('testScenarioWithEmptyParametersAndResults', async () => {

@@ -14,6 +14,7 @@ import {LookUpRowFunction} from "./functions/lookUpRowFunction";
 import {SourceReference} from "../sourceReference";
 import {Symbol} from "../symbols/symbol";
 import {SymbolKind} from "../symbols/symbolKind";
+import {TableColumnType} from "./tableColumnType";
 
 export function instanceOfTableType(object: any): object is TableType {
   return object?.typeKind == TypeKind.TableType;
@@ -63,7 +64,7 @@ export class TableType extends ObjectType {
     }
 
     for (let column of this.table.header?.columns) {
-      let columnType = new GeneratedType(this.name, column.name, this.table, GeneratedTypeSource.TableColumn, []);
+      let columnType = new TableColumnType(this.name, column.name, this.table);
       members.push(new ObjectVariable(column.name, columnType));
     }
   }

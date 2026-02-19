@@ -1,9 +1,10 @@
 import type {IParserContext} from "./context/parserContext";
 import type {ITokenizer} from "./tokens/tokenizer";
 import type {IParsableNode} from "../language/parsableNode";
-import type {IExpressionFactory} from "../language/expressions/expressionFactory";
 import type {IFileSystem} from "../infrastructure/IFileSystem";
 import type {ILogger} from "../infrastructure/logger";
+import type {IFile} from "../infrastructure/file";
+import type {IProject} from "../infrastructure/project";
 
 import {ParserResult} from "./parserResult";
 import {ParsableNodeIndex} from "../language/parsableNodeIndex";
@@ -21,13 +22,15 @@ import {Assert} from "../infrastructure/assert";
 import {asComponentNode} from "../language/componentNode";
 import {StringSourceCodeDocument} from "./documents/stringSourceCodeDocument";
 import {ISourceCodeDocument} from "./documents/ISourceCodeDocument";
-import {DocumentSymbols, IDocumentSymbols} from "./symbols/documentSymbols";
+import {IDocumentSymbols} from "./symbols/documentSymbols";
+import {Project} from "../infrastructure/project";
+import {initializeExpressionFactory} from "../language/expressions/initializeExpressionFactory";
 
 export interface ILexyParser {
   parseCode(fileName: string, content: string[], options: ParseOptions | null): Promise<ParserResult>;
-  parseFile(fileName: string, options: ParseOptions | null): Promise<ParserResult>;
+  parseFile(file: IFile, options: ParseOptions | null): Promise<ParserResult>;
   parseFiles(fileNames: readonly string[], options: ParseOptions | null): Promise<ParserResult>;
-  parseDocuments(sourceCodeDocuments: readonly ISourceCodeDocument[], options: ParseOptions | null): Promise<ParserResult>;
+  parseDocuments(project: IProject, sourceCodeDocuments: readonly ISourceCodeDocument[], options: ParseOptions | null): Promise<ParserResult>;
 }
 
 export class LexyParser implements ILexyParser {
@@ -36,15 +39,15 @@ export class LexyParser implements ILexyParser {
   private readonly baseLogger: ILogger;
   private readonly fileSystem: IFileSystem;
   private readonly libraries: ILibraries;
-  private readonly expressionFactory: IExpressionFactory;
 
   constructor(baseLogger: ILogger, tokenizer: ITokenizer,
-              fileSystem: IFileSystem, expressionFactory: IExpressionFactory,
-              libraries: ILibraries) {
+              fileSystem: IFileSystem, libraries: ILibraries) {
+
+    initializeExpressionFactory();
+
     this.baseLogger = baseLogger;
     this.tokenizer = tokenizer;
     this.fileSystem = fileSystem;
-    this.expressionFactory = expressionFactory;
     this.libraries = Assert.notNull(libraries, "libraries");
   }
 
@@ -52,21 +55,25 @@ export class LexyParser implements ILexyParser {
 
     Assert.notNull(fileName, "fileName");
     Assert.notNull(content, "content");
+    Assert.notNull(options, "options");
 
     this.baseLogger.logInformation(`Parse code: ${fileName}`);
 
-    const document = new StringSourceCodeDocument(content, fileName);
-    return await this.parseDocuments([document], options);
+    const project = new Project(this.fileSystem);
+    const document = new StringSourceCodeDocument(content, project.file(fileName));
+    return await this.parseDocuments(project, [document], options);
   }
 
-  public async parseFile(fileName: string, options: ParseOptions | null): Promise<ParserResult> {
+  public async parseFile(file: IFile, options: ParseOptions | null): Promise<ParserResult> {
 
-    this.baseLogger.logInformation(`Parse file: ${fileName}`);
+    Assert.notNull(file, "file");
+    Assert.notNull(options, "options");
 
-    const fullPath = this.fileSystem.getFullPath(fileName);
-    const document = await this.fileSystem.createFileSourceDocument(fullPath);
+    this.baseLogger.logInformation(`Parse file: ${file.name}`);
+
+    const document = await this.fileSystem.createFileSourceDocument(file);
     try {
-      return await this.parseDocuments([document], options);
+      return await this.parseDocuments(file.project, [document], options);
     } catch (error) {
       document.dispose();
       throw error;
@@ -75,26 +82,32 @@ export class LexyParser implements ILexyParser {
 
   public async parseFiles(fileNames: readonly string[], options: ParseOptions | null): Promise<ParserResult> {
 
+    Assert.notNull(fileNames, "fileNames");
+    Assert.notNull(options, "options");
+
     this.baseLogger.logInformation(`Parse files: ${fileNames.join(", ")}`);
 
-    const documents = await this.fileSystem.createFileSourceDocuments(fileNames)
+    const project = new Project(this.fileSystem);
+    const files = fileNames.map(fileName => project.file(fileName));
+    const documents = await this.fileSystem.createFileSourceDocuments(files);
+
     try {
-      return await this.parseDocuments(documents.documents, options);
+      return await this.parseDocuments(project, documents.documents, options);
     } catch (error) {
       documents.dispose();
       throw error;
     }
   }
 
-  public async parseDocuments(sourceCodeDocuments: ISourceCodeDocument[], options: ParseOptions | null): Promise<ParserResult> {
+  public async parseDocuments(project: IProject, sourceCodeDocuments: readonly ISourceCodeDocument[], options: ParseOptions | null): Promise<ParserResult> {
 
     Assert.notNull(sourceCodeDocuments, "sourceCodeDocuments");
 
-    const context = new ParserContext(this.baseLogger, this.fileSystem, this.expressionFactory, this.libraries, options);
+    const context = new ParserContext(project, this.baseLogger, this.fileSystem, this.libraries, options);
 
     for (const sourceCodeDocument of sourceCodeDocuments) {
-      context.addFileIncluded(sourceCodeDocument.fullFileName);
-      context.setFileLineFilter(sourceCodeDocument.fullFileName);
+      context.addFileIncluded(sourceCodeDocument.file);
+      context.setFileLineFilter(sourceCodeDocument.file);
 
       await this.parseDocument(sourceCodeDocument, context);
     }
@@ -118,7 +131,7 @@ export class LexyParser implements ILexyParser {
 
     let currentIndent = 0;
     let nodesPerIndent = new ParsableNodeIndex(context.rootNode);
-    const symbols = context.symbols.document(sourceCodeDocument.fullFileName);
+    const symbols = context.symbols.document(sourceCodeDocument.file);
 
     while (sourceCodeDocument.hasMoreLines()) {
 
@@ -149,7 +162,7 @@ export class LexyParser implements ILexyParser {
 
     this.reset(context);
 
-    await this.loadIncludedFiles(context, sourceCodeDocument.fullFileName);
+    await this.loadIncludedFiles(sourceCodeDocument.file, context);
   }
 
   private getIndent(context: IParserContext, line: Line): {success: boolean, value: number} {
@@ -188,25 +201,25 @@ export class LexyParser implements ILexyParser {
     return true;
   }
 
-  private async loadIncludedFiles(context: IParserContext, parentFullFileName: string): Promise<void> {
+  private async loadIncludedFiles(parentFile: IFile, context: IParserContext): Promise<void> {
     let includes = context.rootNode.getDueIncludes();
     for (const include of includes) {
-      await this.includeFiles(context, parentFullFileName, include)
+      await this.includeFiles(parentFile, context, include)
     }
   }
 
-  private async includeFiles(context: IParserContext, parentFullFileName: string, include: Include): Promise<void> {
+  private async includeFiles(parentFile: IFile, context: IParserContext, include: Include): Promise<void> {
 
-    let fileName = await include.process(parentFullFileName, context);
-    if (fileName == null) return;
+    let file = await include.process(parentFile, context);
+    if (file == null) return;
 
-    if (context.isFileIncluded(fileName)) return;
+    if (context.isFileIncluded(file)) return;
 
-    context.logger.logInfo(`Parse file: ` + fileName);
+    context.logger.logInfo(`Parse file: ` + file);
 
-    context.addFileIncluded(fileName);
+    context.addFileIncluded(file);
 
-    const document = await this.fileSystem.createFileSourceDocument(fileName);
+    const document = await this.fileSystem.createFileSourceDocument(file);
     await this.parseDocument(document, context);
   }
 
@@ -240,7 +253,7 @@ export class LexyParser implements ILexyParser {
     if (currentNode == null) {
       throw new Error(`Current node can't be null. Line: ${line}`)
     }
-    let parseLineContext = new ParseLineContext(line, context.logger, documentSymbols, this.expressionFactory);
+    let parseLineContext = new ParseLineContext(line, context.logger, documentSymbols);
     currentNode.expandArea(line.endPosition);
 
     let node = currentNode.parse(parseLineContext);

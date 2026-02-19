@@ -90,22 +90,26 @@ export class EnumMember extends Node {
     if (this.valueLiteral == null) return;
 
     if (this.valueLiteral.numberValue < 0) {
-      context.logger.fail(this.reference, `Enum member value should not be < 0: ${this.valueLiteral}`);
+      context.logger.fail(this.reference, `Enum member value should not be < 0: ${this.valueLiteral.value}`);
     }
 
     if (this.valueLiteral.isDecimal()) {
-      context.logger.fail(this.reference, `Enum member value should not be decimal: ${this.valueLiteral}`);
+      context.logger.fail(this.reference, `Enum member value should not be decimal: ${this.valueLiteral.value}`);
     }
   }
 
   public override getSymbol(): Symbol {
+    return new Symbol(this.reference, `enum member: ${this.label()}`, "", SymbolKind.EnumMember);
+  }
+
+  private label(): string {
     const parentEnum = this.parent as EnumDefinition;
     return this.valueLiteral != null
-      ? new Symbol(this.reference, `enum member: ${parentEnum?.name}.${this.name} = ${this.valueLiteral}`, "", SymbolKind.EnumMember)
-      : new Symbol(this.reference, `enum member: ${parentEnum?.name}.${this.name}`, "", SymbolKind.EnumMember);
+      ? `${parentEnum?.name}.${this.name} = ${this.valueLiteral.value}`
+      : `${parentEnum?.name}.${this.name}`;
   }
 
   public override toString(): string {
-    return this.name;
+    return this.label();
   }
 }

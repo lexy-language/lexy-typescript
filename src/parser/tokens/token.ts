@@ -17,6 +17,8 @@ export interface IToken {
 
 export abstract class Token implements IToken {
 
+  private readonly endColumnValue: number | null;
+
   abstract tokenIsLiteral: boolean;
   abstract tokenType: TokenType;
   abstract value: string;
@@ -24,10 +26,12 @@ export abstract class Token implements IToken {
   public firstCharacter: TokenCharacter;
 
   public get endColumn(): number {
-    return this.firstCharacter.position + (this.value != null ? this.value.length - 1 : 0);
+    return this.endColumnValue
+        ?? this.firstCharacter.position + (this.value != null ? this.value.length - 1 : 0);
   }
 
-  protected constructor(firstCharacter: TokenCharacter) {
+  protected constructor(firstCharacter: TokenCharacter, endColumn: number | null = null) {
     this.firstCharacter = firstCharacter;
+    this.endColumnValue = endColumn;
   }
 }

@@ -4,10 +4,6 @@ import {createRunner} from "./createRunner";
 describe('runSingleSpecification', () => {
   it('specificFile',  async() => {
     const runner = createRunner();
-    await runner.run(`tests/lexy-language/Specifications/SystemFunctions/Extract.lexy`);
-    //runner.run(`tests/lexy-language/src/specifications/Isolate.lexy`);
-
-    //runner.run(`../laws/Specifications/ExecutionLogging/CallFunction.lexy`);
-    //runner.run(`../laws/Specifications/Scenario/UnknownParameterType.lexy`);
+    await runner.run(`lexy-language/Specifications/Function/Code.lexy`);
   });
 });

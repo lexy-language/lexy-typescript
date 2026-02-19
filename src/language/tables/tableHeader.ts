@@ -84,4 +84,8 @@ export class TableHeader extends Node {
   public override getSymbol(): Symbol | null {
     return null;
   }
+
+  public toString(): string {
+    return this.columns.length.toString();
+  }
 }

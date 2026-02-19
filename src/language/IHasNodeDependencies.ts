@@ -10,7 +10,7 @@ export function asHasNodeDependencies(object: any): IHasNodeDependencies | null 
    return instanceOfHasNodeDependencies(object) ? object as IHasNodeDependencies : null;
 }
 
-export interface IHasNodeDependencies extends INode {
+export interface IHasNodeDependencies {
    hasNodeDependencies: true;
    getDependencies(componentNodes: IComponentNodeList): ReadonlyArray<IComponentNode>;
 }

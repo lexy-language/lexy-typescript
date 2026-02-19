@@ -3,23 +3,22 @@ import type {ISourceCodeDocument} from "./ISourceCodeDocument";
 import {LineByLine} from "./lineByLine";
 import {Line} from "../line";
 import {Assert} from "../../infrastructure/assert";
+import {IFileSystem} from "../../infrastructure/IFileSystem";
+import {IFile} from "../../infrastructure/file";
 
 export class FileSourceDocument implements ISourceCodeDocument {
 
-  private readonly fileName: string;
   private lineByLine: LineByLine | null = null;
 
   private index: number = 0;
 
-  public get fullFileName(): string {
-    return this.fileName;
+  public readonly file: IFile;
+
+  constructor(file: IFile) {
+    this.file = Assert.notNull(file, "file");
   }
 
-  constructor(fileName: string) {
-    this.fileName = fileName;
-  }
-
-  public hasMoreLines(): boolean {
+public hasMoreLines(): boolean {
     const lineByLine = this.ensureOpen();
     return !lineByLine.isLast();
   }
@@ -32,7 +31,7 @@ export class FileSourceDocument implements ISourceCodeDocument {
     if (line == null) {
       throw new Error("No more lines.");
     }
-    return new Line(this.index++, line.toString(), this.fileName);
+    return new Line(this.index++, line.toString(), this.file);
   }
 
   public dispose(): void {
@@ -41,7 +40,7 @@ export class FileSourceDocument implements ISourceCodeDocument {
 
   private ensureOpen(): LineByLine {
     if (this.lineByLine == null) {
-      this.lineByLine = new LineByLine(this.fileName);
+      this.lineByLine = new LineByLine(this.file.fullPath);
     }
     return this.lineByLine;
   }

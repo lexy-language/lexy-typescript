@@ -96,4 +96,8 @@ export class AssignmentDefinition extends Node implements IAssignmentDefinition 
   public override getSymbol(): Symbol | null {
     return null;
   }
+
+  public override toString(): string {
+    return `${this.variable} = ${this.constantValue}`;
+  }
 }

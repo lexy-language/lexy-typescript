@@ -38,6 +38,6 @@ export class IncompleteMemberAccessToken extends Token implements ILiteralToken 
   }
 
   public toString(): string {
-    return this.value;
+    return "unknown: " + this.value;
   }
 }

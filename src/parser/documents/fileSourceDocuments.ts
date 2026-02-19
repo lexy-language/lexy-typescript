@@ -3,12 +3,13 @@ import type {IFileSystem} from "../../infrastructure/IFileSystem";
 import type {ISourceCodeDocuments} from "./ISourceCodeDocuments";
 
 import {Assert} from "../../infrastructure/assert";
+import {IFile} from "../../infrastructure/file";
 
 export class FileSourceDocuments implements ISourceCodeDocuments {
 
   private readonly documentsValue: ISourceCodeDocument[];
 
-  public get documents(): ISourceCodeDocument[] {
+  public get documents(): readonly ISourceCodeDocument[] {
     return this.documentsValue;
   }
 
@@ -16,15 +17,14 @@ export class FileSourceDocuments implements ISourceCodeDocuments {
     this.documentsValue = Assert.notNull(documents, "documents");
   }
 
-  public static async create(fileSystem: IFileSystem, fileNames: readonly string[]): Promise<ISourceCodeDocuments> {
+  public static async create(fileSystem: IFileSystem, files: readonly IFile[]): Promise<ISourceCodeDocuments> {
 
     Assert.notNull(fileSystem, "fileSystem");
-    Assert.notNull(fileNames, "fileNames");
+    Assert.notNull(files, "files");
 
     const documents = [];
-    for (const fileName of fileNames) {
-      const fullPath = fileSystem.getFullPath(fileName);
-      documents.push(await fileSystem.createFileSourceDocument(fullPath));
+    for (const file of files) {
+      documents.push(await fileSystem.createFileSourceDocument(file));
     }
 
     return new FileSourceDocuments(documents);

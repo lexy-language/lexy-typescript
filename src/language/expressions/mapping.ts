@@ -35,7 +35,7 @@ export class VariablesMapping  {
   private readonly mapping: ReadonlyArray<Mapping> = [];
 
   public readonly mappingType: GeneratedType;
-  public readonly values: ReadonlyArray<Mapping>;
+  public readonly values: readonly Mapping[];
 
   constructor(mappingType: GeneratedType, mapping: ReadonlyArray<Mapping>) {
     this.values = mapping;

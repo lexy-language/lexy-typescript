@@ -103,8 +103,9 @@ export class VerifyMultipleSuggestion {
       return;
     }
 
-    this.parentContext.isTrue(element.kind == assertion.kind, "Element kind not correct: " + element + "\n" + assertion.name + "\n" + assertionMessage);
-    this.parentContext.isTrue(element.description == assertion.description, "Element description not correct: " + element + "\n" + assertion.description + "\n" + assertionMessage);
+    this.parentContext
+      .isTrue(element.kind == assertion.kind, "Element kind not correct: " + element + "\n" + assertion.name + "\n" + assertionMessage)
+      .isTrue(element.description == assertion.description, "Element description not correct: " + element + "\n" + assertion.description + "\n" + assertionMessage);
   }
 
   private static format(suggestions: readonly Suggestion[]): string {
@@ -112,6 +113,6 @@ export class VerifyMultipleSuggestion {
     for (const suggestion of suggestions) {
       writer.push("  - " + suggestion);
     }
-    return writer.toString();
+    return writer.join("\n");
   }
 }

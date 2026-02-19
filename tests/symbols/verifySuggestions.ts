@@ -44,8 +44,8 @@ export class VerifySuggestions {
 
   private async getSuggestions(code: string, lineNumber: number, column: number): Promise<SuggestionsResult> {
 
-    const symbols = await getSymbols(`test.${this.index}.lexy`, code, true);
-    return symbols.symbols.getSuggestions(`test.${this.index}.lexy`, new Position(lineNumber, column));
+    const result = await getSymbols(`test.${this.index}.lexy`, code, true);
+    return result.symbols.getSuggestions(result.file, new Position(lineNumber, column));
   }
 
   private async checkSuggestion(code: string, lineNumber: number, column: number, kind: SymbolKind, name: string, description: string | null) {

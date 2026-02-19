@@ -7,13 +7,13 @@ import {createVariableClass} from "../renderers/renderVariableClass";
 import {CodeWriter} from "../codeWriter";
 
 export function createFunctionCode(node: Function): GeneratedType {
-    const functionNode = asFunction(node);
-    if (functionNode == null) throw new Error(`Component token not Function`);
+  const functionNode = asFunction(node);
+  if (functionNode == null) throw new Error(`Component token not Function`);
 
-    const codeWriter = new CodeWriter(renderExpression)
+  const codeWriter = new CodeWriter(renderExpression)
 
-    return createFunction(functionNode, codeWriter);
-  }
+  return createFunction(functionNode, codeWriter);
+}
 
 function createFunction(functionNode: Function, codeWriter: CodeWriter) {
 
@@ -47,7 +47,7 @@ function renderRunFunction(functionNode: Function, codeWriter: CodeWriter) {
 
   renderResults(codeWriter)
 
-  codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.setFileName("${functionNode.reference.fileName}");`)
+  codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.setFileName("${functionNode.reference.file.name}");`)
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.openScope("Execute: ${functionNode.name}", ${functionNode.reference.lineNumber});`)
   codeWriter.writeLine(`${LexyCodeConstants.contextVariable}.log("Parameters", ${functionNode.parameters?.reference.lineNumber}, ${LexyCodeConstants.parameterVariable});`)
   codeWriter.writeLine();

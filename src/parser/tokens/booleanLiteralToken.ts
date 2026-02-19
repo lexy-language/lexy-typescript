@@ -55,6 +55,6 @@ export class BooleanLiteralToken extends Token implements ILiteralToken {
   }
 
   public toString(): string {
-    return this.value;
+    return "boolean: " + this.value.toLocaleLowerCase();
   }
 }

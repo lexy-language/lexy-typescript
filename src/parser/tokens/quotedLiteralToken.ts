@@ -24,7 +24,10 @@ export function asQuotedLiteralToken(object: any): QuotedLiteralToken | null {
 
 export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
 
+  private static escapeCharacters = ['\\'.charCodeAt(0), '"'.charCodeAt(0)];
+
   private quoteClosed: boolean = false;
+  private escapeNext: boolean = false;
 
   public tokenIsLiteral: boolean = true;
   public tokenType = TokenType.QuotedLiteralToken;
@@ -48,6 +51,20 @@ export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
     let value = character.value;
     if (this.quoteClosed) throw new Error("No characters allowed after closing quote.");
 
+    if (this.escapeNext) {
+      if (QuotedLiteralToken.escapeCharacters.indexOf(value) < 0) {
+        return newParseTokenInvalidResult(`Invalid escape character at ${character.position}: ${value} '${String.fromCharCode(value)}'`);
+      }
+      this.appendValue(value);
+      this.escapeNext = false;
+      return newParseTokenInProgressResult();
+    }
+
+    if (value == TokenValues.Backslash) {
+      this.escapeNext = true;
+      return newParseTokenInProgressResult();
+    }
+
     if (value == TokenValues.Quote) {
       this.quoteClosed = true;
       return newParseTokenFinishedResult(true);
@@ -64,6 +81,6 @@ export class QuotedLiteralToken extends ParsableToken implements ILiteralToken {
   }
 
   public toString() {
-    return this.value;
+    return `string: "${this.value}"`;
   }
 }

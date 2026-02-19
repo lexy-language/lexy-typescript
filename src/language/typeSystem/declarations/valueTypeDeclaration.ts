@@ -42,4 +42,8 @@ export class ValueTypeDeclaration extends TypeDeclaration {
   public override getSymbol(): Symbol | null {
     return new Symbol(this.reference, `value type: ${this.type}`, "", SymbolKind.ValueType);
   }
+
+  public override label(): string {
+    return this.typeName;
+  }
 }

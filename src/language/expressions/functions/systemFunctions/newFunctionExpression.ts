@@ -15,7 +15,6 @@ import {ExpressionSource} from "../../expressionSource";
 import {SymbolKind} from "../../../symbols/symbolKind";
 import {Symbol} from "../../../symbols/symbol";
 import {NodeReference} from "../../../nodeReference";
-import {FillParametersFunctionState} from "./fillParametersFunctionExpression";
 
 export function instanceOfNewFunctionExpression(object: any): object is NewFunctionExpression {
   return object?.nodeType == NodeType.NewFunctionExpression;
@@ -48,7 +47,7 @@ export class NewFunctionExpression extends FunctionCallExpression implements IHa
   public readonly name: string = NewFunctionExpression.functionName;
 
   protected get functionHelp() {
-    return `${NewFunctionExpression.functionName} expects 1 argument (Function.Parameters)`;
+    return `${NewFunctionExpression.functionName} expects 1 argument new(Function.Parameters)`;
   }
 
   public valueExpression: Expression;

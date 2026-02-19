@@ -76,4 +76,8 @@ export class ValidationTable extends ParsableNode implements INodeWithName {
   public override getSymbol(): Symbol | null {
     return null;
   }
+
+  public override toString(): string {
+    return this.rows.length.toString();
+  }
 }

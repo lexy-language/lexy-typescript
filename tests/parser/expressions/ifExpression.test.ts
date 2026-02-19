@@ -2,6 +2,7 @@ import {parseNodes} from "../../parseFunctions";
 import {validateOfType} from "../../validateOfType";
 import {asIfExpression, IfExpression} from "../../../src/language/expressions/ifExpression";
 import {asAssignmentExpression, AssignmentExpression} from "../../../src/language/expressions/assignmentExpression";
+import {Verify} from "../../verify";
 
 describe('IfExpressionTests', () => {
   it('checkIfStatement', async () => {
@@ -20,12 +21,21 @@ describe('IfExpressionTests', () => {
     logger.assertNoErrors();
 
     const functionNode = nodes.getFunction("If");
-    expect(functionNode).not.toBeNull();
-    expect(functionNode?.code.expressions.length).toBe(3);
-    validateOfType<IfExpression>(asIfExpression, functionNode?.code.expressions[1], expression => {
-      expect(expression.trueExpressions.length).toBe(1);
-      validateOfType<AssignmentExpression>(asAssignmentExpression, expression.trueExpressions[0], assgnment =>
-        expect(assgnment.toString()).toBe("(AssignmentExpression) temp = 666"));
-    });
+
+    Verify.model(functionNode, context => context
+      .isNotNull(value => value, valueContext => valueContext
+        .collection(value => value.code.expressions, expressionsContext => expressionsContext
+          .length(3, "value.Code.Expressions")
+          .valueModelOfType<IfExpression>(1, "IfExpression", asIfExpression, ifExpressionContext => ifExpressionContext
+            .collection(value => value.trueExpressions, trueExpressionContext => trueExpressionContext
+              .length(1, "value.TrueExpressions")
+              .valueModelOfType<AssignmentExpression>(0, "AssignmentExpression", asAssignmentExpression, assignmentExpression => assignmentExpression
+                .areEqual(assignment => assignment.toString(), "temp = 666")
+              )
+            )
+          )
+        )
+      )
+    );
   });
 });

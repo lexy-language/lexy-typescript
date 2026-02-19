@@ -77,4 +77,8 @@ export class ValidationTableHeader extends Node {
   public override getSymbol(): Symbol | null {
     return null;
   }
+
+  public override toString(): string {
+    return this.columnsValue.length.toString();
+  }
 }

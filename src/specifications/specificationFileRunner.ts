@@ -12,6 +12,7 @@ import {ParserResult} from "../parser/parserResult";
 import {SourceReference} from "../language/sourceReference";
 import {Dependencies} from "../dependencyGraph/dependencies";
 import {Assert} from "../infrastructure/assert";
+import {IFile} from "../infrastructure/file";
 
 export interface ISpecificationFileRunner {
   scenarioRunners: ReadonlyArray<IScenarioRunner>;
@@ -23,9 +24,9 @@ export interface ISpecificationFileRunner {
 
 export class SpecificationFileRunner implements ISpecificationFileRunner {
 
+  private readonly file: IFile;
   private readonly compiler: ILexyCompiler;
   private readonly parser: ILexyParser;
-  private readonly fileName: string;
   private readonly runnerContext: ISpecificationRunnerContext;
   private readonly scenarioRunnersValue: Array<IScenarioRunner> = [];
 
@@ -35,8 +36,8 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     return [...this.scenarioRunnersValue]
   }
 
-  constructor(fileName: string, compiler: ILexyCompiler, parser: ILexyParser, runnerContext: ISpecificationRunnerContext) {
-    this.fileName = fileName;
+  constructor(file: IFile, compiler: ILexyCompiler, parser: ILexyParser, runnerContext: ISpecificationRunnerContext) {
+    this.file = file;
     this.compiler = compiler;
     this.parser = parser;
     this.runnerContext = runnerContext;
@@ -58,9 +59,9 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
 
   private async parse() {
     try {
-      return await this.parser.parseFile(this.fileName, {suppressException: true});
+      return await this.parser.parseFile(this.file, {suppressException: true});
     } catch (error: any) {
-      throw new Error("Error while parsing " + this.fileName + "\n" + error.stack + "\n--------------------------------------\n")
+      throw new Error("Error while parsing " + this.file. name + "\n" + error.stack + "\n--------------------------------------\n")
     }
   }
 
@@ -71,7 +72,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
 
     if (this.scenarioRunners.length == 0) return;
 
-    this.runnerContext.logGlobal(`Filename: ${this.fileName}`);
+    this.runnerContext.logGlobal(`Filename: ${this.file.name}`);
 
     this.scenarioRunners.forEach(runner => this.runScenario(runner));
   }
@@ -80,15 +81,15 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
     try {
       runner.run()
     } catch (error) {
-      throw new Error(`Error occurred while running: ${this.fileName}\n${error}`)
+      throw new Error(`Error occurred while running: ${this.file.name}\n${error}`)
     }
   }
 
   private createScenarioRunner(scenario: Scenario, componentNodes: ComponentNodeList, parserLogger: IParserLogger, dependencies: Dependencies) {
     try {
-      return new ScenarioRunner(this.fileName, this.compiler, componentNodes, scenario, this.runnerContext, parserLogger, dependencies);
+      return new ScenarioRunner(this.file.name, this.compiler, componentNodes, scenario, this.runnerContext, parserLogger, dependencies);
     } catch (error: any) {
-      throw new Error("Error occurred while create runner for: " + this.fileName + "\n" + error.stack);
+      throw new Error("Error occurred while create runner for: " + this.file.name + "\n" + error.stack);
     }
   }
 
@@ -106,7 +107,7 @@ export class SpecificationFileRunner implements ISpecificationFileRunner {
       const componentErrors = format(logger.errorComponentMessages(), 2);
       logger.fail(
         reference,
-        `${this.fileName} has component errors but no scenario that verifies expected component errors. Errors: ${componentErrors}`);
+        `${this.file.name} has component errors but no scenario that verifies expected component errors. Errors: ${componentErrors}`);
     }
   }
 }

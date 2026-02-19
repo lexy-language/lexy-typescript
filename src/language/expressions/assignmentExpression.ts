@@ -1,6 +1,5 @@
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {SourceReference} from "../sourceReference";
@@ -17,6 +16,7 @@ import {getReadVariableUsage} from "./getReadVariableUsage";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfAssignmentExpression(object: any): object is AssignmentExpression {
   return object?.nodeType == NodeType.AssignmentExpression;
@@ -40,16 +40,16 @@ export class AssignmentExpression extends Expression {
     this.assignment = assignment;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
 
     const expressionReference = new NodeReference();
     const tokens = source.tokens;
     if (!AssignmentExpression.isValid(tokens)) return newParseExpressionFailed("AssignmentExpression", `Invalid expression.`);
 
-    let variableExpression = factory.parse(expressionReference, tokens.tokensFromStart(1), source.line);
+    let variableExpression = ExpressionFactory.parse(expressionReference, tokens.tokensFromStart(1), source.line);
     if (variableExpression.state != 'success') return variableExpression;
 
-    let assignment = factory.parse(expressionReference, tokens.tokensFrom(2), source.line);
+    let assignment = ExpressionFactory.parse(expressionReference, tokens.tokensFrom(2), source.line);
     if (assignment.state != 'success') return assignment;
 
     let reference = source.createReference();

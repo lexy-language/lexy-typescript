@@ -6,6 +6,7 @@ import {Type} from "../type";
 import {asObjectFunction, ObjectFunction} from "./objectFunction";
 import {asObjectVariable, ObjectVariable} from "./objectVariable";
 import {any, firstOrDefault, ofType} from "../../../infrastructure/arrayFunctions";
+import {IHasNodeDependencies} from "../../IHasNodeDependencies";
 
 export function instanceOfObjectType(object: any): object is ObjectType {
   return !!object?.isObjectType;
@@ -15,11 +16,13 @@ export function asObjectType(object: any): ObjectType | null {
   return instanceOfObjectType(object) ? object as ObjectType : null;
 }
 
-export abstract class ObjectType extends Type {
+export abstract class ObjectType extends Type implements IHasNodeDependencies{
 
   private membersValue: IObjectMember[] | null;
 
+  public readonly hasNodeDependencies = true;
   public readonly isObjectType = true;
+
   public readonly name: string;
 
   public get members(): IObjectMember[] {
@@ -38,18 +41,6 @@ export abstract class ObjectType extends Type {
   public memberType(name: string): Type | null {
     let member = this.getMember(name);
     return member ? member.type : null;
-  }
-
-  public getVariables(): readonly ObjectVariable[] {
-   return ofType<ObjectVariable>(asObjectVariable, this.members);
-  }
-
-  public getFunctions(): readonly ObjectFunction[] {
-    return ofType<ObjectFunction>(asObjectFunction, this.members);
-  }
-
-  public getVariable(name: string) {
-   return asObjectVariable(this.getMember(name));
   }
 
   public getFunction(name: string) {

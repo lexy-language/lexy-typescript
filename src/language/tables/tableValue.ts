@@ -12,17 +12,18 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {TableSeparatorToken} from "../../parser/tokens/tableSeparatorToken";
 import {TokenType} from "../../parser/tokens/tokenType";
 import {asToken, Token} from "../../parser/tokens/token";
+import {ExpressionFactory} from "../expressions/expressionFactory";
 
 export class TableValue extends Node {
 
   private readonly index: number;
-  private readonly tableHeader: TableHeader;
+  private readonly tableHeader: TableHeader | null;
 
   public readonly expression: Expression
 
   public readonly nodeType = NodeType.TableValue;
 
-  constructor(index: number, expression: Expression, tableHeader: TableHeader, parentReference: NodeReference, reference: SourceReference) {
+  constructor(index: number, expression: Expression, tableHeader: TableHeader | null, parentReference: NodeReference, reference: SourceReference) {
     super(parentReference, reference);
     this.expression = expression;
     this.index = index;
@@ -34,6 +35,7 @@ export class TableValue extends Node {
   }
 
   protected override validate(context: IValidationContext): void {
+    if (!this.tableHeader) return;
     const column = this.tableHeader.getColumnByIndex(this.index);
     if (column == null) return;
     const actualType = this.expression.deriveType(context);
@@ -47,7 +49,7 @@ export class TableValue extends Node {
     return null;
   }
 
-  public static parse(context: IParseLineContext, tableHeader: TableHeader,
+  public static parse(context: IParseLineContext, tableHeader: TableHeader | null,
                       currentLineTokens: TokenList, parentReference: NodeReference,
                       tokenIndex: number, valueIndex: number) {
 
@@ -59,11 +61,11 @@ export class TableValue extends Node {
     if (notValid) return null;
 
     const valueReference = new NodeReference();
-    const reference = context.line.tokens.reference(tokenIndex);
-    const token = currentLineTokens.token<Token>(tokenIndex++, asToken);
+    const reference = context.line.tokens.reference(tokenIndex, 1);
+    const token = currentLineTokens.token<Token>(tokenIndex, asToken);
     if (token == null) return null;
 
-    const expression = context.expressionFactory.parse(valueReference, new TokenList(context.line, [token]), context.line);
+    const expression = ExpressionFactory.parse(valueReference, new TokenList(context.line, [token]), context.line);
     if (expression.state == "failed") {
       context.logger.fail(reference, expression.errorMessage);
       return null;
@@ -72,5 +74,9 @@ export class TableValue extends Node {
     let tableValue = new TableValue(valueIndex, expression.result, tableHeader, parentReference, reference);
     valueReference.setNode(tableValue);
     return tableValue;
+  }
+
+  public toString(): string {
+    return `[${this.index}]`;
   }
 }

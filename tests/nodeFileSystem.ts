@@ -6,6 +6,7 @@ import path from "path";
 import fs from "fs";
 import {FileSourceDocument} from "../src/parser/documents/fileSourceDocument";
 import {FileSourceDocuments} from "../src/parser/documents/fileSourceDocuments";
+import {IFile} from "../src/infrastructure/file";
 
 export class NodeFileSystem implements IFileSystem {
 
@@ -18,6 +19,15 @@ export class NodeFileSystem implements IFileSystem {
       fs.readFile(fileName, 'utf8', (error, value: string) => {
         if (error) return reject(error);
         resolve(value != null ? value.split('\n') : null);
+      })
+    });
+  }
+
+  async writeAllLines(fileName: string, data: string[]): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      fs.writeFile(fileName, data.join("\n"), (error) => {
+        if (error) return reject(error);
+        resolve();
       })
     });
   }
@@ -91,12 +101,12 @@ export class NodeFileSystem implements IFileSystem {
     return result.join("\n");
   }
 
-  async createFileSourceDocument(fullPath: string): Promise<ISourceCodeDocument> {
-    return new FileSourceDocument(fullPath);
+  async createFileSourceDocument(file: IFile): Promise<ISourceCodeDocument> {
+    return new FileSourceDocument(file);
   }
 
-  async createFileSourceDocuments(fileNames: readonly string[]): Promise<ISourceCodeDocuments> {
-    return await FileSourceDocuments.create(this, fileNames);
+  async createFileSourceDocuments(files: readonly IFile[]): Promise<ISourceCodeDocuments> {
+    return await FileSourceDocuments.create(this, files);
   }
 
   private addFolder(folder: string, result: any[]) {

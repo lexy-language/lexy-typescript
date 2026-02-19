@@ -5,5 +5,6 @@ export enum TypeKind {
   FunctionType = "FunctionType",
   ValueType = "ValueType",
   TableType = "TableType",
+  TableColumnType = "TableColumnType",
   VoidType = "VoidType",
 }

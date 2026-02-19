@@ -1,5 +1,3 @@
-import type {IExpressionFactory} from "../expressionFactory";
-
 import {Expression} from "../expression";
 import {ExpressionSource} from "../expressionSource";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "../parseExpressionResult";
@@ -24,6 +22,7 @@ import {IdentifierPath} from "../../identifierPath";
 import {LexyFunctionCallExpression} from "./lexyFunctionCallExpression";
 import {MemberFunctionCallExpression} from "./memberFunctionCallExpression";
 import {NodeReference} from "../../nodeReference";
+import {ExpressionFactory} from "../expressionFactory";
 
 export class FunctionCallExpressionParser {
 
@@ -33,7 +32,7 @@ export class FunctionCallExpressionParser {
     [ExtractResultsFunctionExpression.functionName]: ExtractResultsFunctionExpression.create,
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     const tokens = source.tokens;
     if (!FunctionCallExpression.isValid(tokens)) {
       return newParseExpressionFailed("FunctionCallExpression", `Not valid.`);
@@ -45,7 +44,7 @@ export class FunctionCallExpressionParser {
     }
 
     const functionCallReference = new NodeReference();
-    const argumentsTokenListResult = FunctionCallExpressionParser.getArgumentTokens(functionCallReference, source, factory, tokens, matchingClosingParenthesis);
+    const argumentsTokenListResult = FunctionCallExpressionParser.getArgumentTokens(functionCallReference, source, tokens, matchingClosingParenthesis);
     if (argumentsTokenListResult.state != "success") {
       return newParseExpressionFailed("FunctionCallExpression", argumentsTokenListResult.errorMessage);
     }
@@ -63,7 +62,7 @@ export class FunctionCallExpressionParser {
 
   private static getArgumentTokens(
     functionCallReference: NodeReference,
-    source: ExpressionSource, factory: IExpressionFactory,
+    source: ExpressionSource,
     tokens: TokenList, matchingClosingParenthesis: number): ParseExpressionsResult  {
     const innerExpressionTokens = tokens.tokensRange(2, matchingClosingParenthesis - 1);
     const argumentsTokenList = ArgumentList.parse(innerExpressionTokens);
@@ -73,7 +72,7 @@ export class FunctionCallExpressionParser {
 
     const argumentValues = new Array<Expression>();
     argumentsTokenList.result.forEach(argumentTokens => {
-      const argumentExpression = factory.parse(functionCallReference, argumentTokens, source.line);
+      const argumentExpression = ExpressionFactory.parse(functionCallReference, argumentTokens, source.line);
       if (argumentExpression.state != 'success') return newParseFunctionCallExpressionsFailed(argumentExpression.errorMessage);
 
       argumentValues.push(argumentExpression.result);

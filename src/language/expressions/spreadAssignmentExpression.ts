@@ -1,6 +1,5 @@
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {SourceReference} from "../sourceReference";
@@ -17,6 +16,8 @@ import {asGeneratedType} from "../typeSystem/objects/generatedType";
 import {ExtractResultsFunctionExpression} from "./functions/systemFunctions/extractResultsFunctionExpression";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfSpreadAssignmentExpression(object: any): object is SpreadAssignmentExpression {
   return object?.nodeType == NodeType.SpreadAssignmentExpression;
@@ -59,13 +60,13 @@ export class SpreadAssignmentExpression extends Expression {
     this.assignment = assignment;
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
 
     const tokens = source.tokens;
     if (!SpreadAssignmentExpression.isValid(tokens)) return newParseExpressionFailed("AssignmentExpression", `Invalid expression.`);
 
     const expressionReference = new NodeReference();
-    const assignment = factory.parse(expressionReference, tokens.tokensFrom(2), source.line);
+    const assignment = ExpressionFactory.parse(expressionReference, tokens.tokensFrom(2), source.line);
     if (assignment.state != 'success') return assignment;
 
     const reference = source.createReference();
@@ -109,6 +110,15 @@ export class SpreadAssignmentExpression extends Expression {
   }
 
   public override getSymbol(): Symbol | null {
-    return null;
+    if (this.state?.mapping == null) return null;
+    const builder: string[] = [];
+    for (let mapping of this.state.mapping.values) {
+      if (builder.length > 0) {
+        builder.push("\n");
+      }
+      builder.push(`- ${mapping.type} ${mapping.variableName} (from ${mapping.variableSource})`);
+    }
+    let variablesString = builder.join("");
+    return new Symbol(this.reference, "operator: spread", variablesString, SymbolKind.Operator);
   }
 }

@@ -1,3 +1,5 @@
+import type {IFile} from "../infrastructure/file";
+
 import {Position} from "./position";
 
 export class SourceReference {
@@ -6,15 +8,15 @@ export class SourceReference {
   public readonly column: number;
   public readonly endColumn: number;
 
-  public readonly fileName: string;
+  public readonly file: IFile;
 
   public get sortIndex(): string {
     const value = (this.lineNumber * 100000000 + this.column).toString();
-    return `${this.fileName}/${'0'.repeat(16 - value.toString().length)}${value}}`;
+    return `${this.file.name}/${'0'.repeat(16 - value.toString().length)}${value}}`;
   }
 
-  constructor(fileName: string, lineNumber: number, column: number, endColumn: number) {
-    this.fileName = fileName;
+  constructor(file: IFile, lineNumber: number, column: number, endColumn: number) {
+    this.file = file;
     this.lineNumber = lineNumber;
     this.column = column;
     this.endColumn = endColumn;
@@ -22,7 +24,7 @@ export class SourceReference {
 
   public toString(): string {
     const suffix = this.column != this.endColumn ? `-${this.endColumn}`: '';
-    return `${this.fileName} (${this.lineNumber}:${this.column}${suffix})`;
+    return `${this.file.name} (${this.lineNumber}:${this.column}${suffix})`;
   }
 
   public includes(position: Position): boolean {
@@ -35,7 +37,7 @@ export class SourceReference {
     return this.lineNumber == other.lineNumber
         && this.column == other.column
         && this.endColumn == other.endColumn
-        && this.fileName == other.fileName;
+        && this.file.equals(other.file);
   }
 }
 

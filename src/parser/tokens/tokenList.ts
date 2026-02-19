@@ -19,7 +19,7 @@ export class TokenList {
     return this.values.length;
   }
 
-  constructor(line: Line, values: Array<Token>) {
+  constructor(line: Line, values: Token []) {
     this.line = Assert.notNull(line, "line");
     this.values = values;
   }
@@ -141,6 +141,12 @@ export class TokenList {
     return this.values[tokenIndex].firstCharacter.position;
   }
 
+  public characterEndColumn(tokenIndex: number): number | null {
+    if (tokenIndex < 0 || tokenIndex >= this.values.length) return null;
+
+    return this.values[tokenIndex].endColumn;
+  }
+
   public lastColumn(): number {
     return this.values[this.values.length - 1].endColumn;
   }
@@ -167,7 +173,7 @@ export class TokenList {
     }
 
     let endColumn = numberOfTokens != null
-      ? this.characterColumn(tokenIndex + numberOfTokens)
+      ? this.characterEndColumn(tokenIndex + numberOfTokens - 1)
       : this.lastColumn() ;
     endColumn = endColumn == null ? this.line.content.length : endColumn + 1;
 
@@ -185,6 +191,6 @@ export class TokenList {
   }
 
   private createReference(column: number, endColumn: number) {
-    return new SourceReference(this.line.fileName ?? "runtime", this.line.index + 1, column, endColumn);
+    return new SourceReference(this.line.file, this.line.index + 1, column, endColumn);
   }
 }

@@ -4,6 +4,8 @@ import {
   asValueTypeDeclaration,
   ValueTypeDeclaration
 } from "../../src/language/typeSystem/declarations/valueTypeDeclaration";
+import {Verify} from "../verify";
+import {asAssignmentExpression, AssignmentExpression} from "../../src/language/expressions/assignmentExpression";
 
 describe('LexyParserTests', () => {
   it('testSimpleReturn', async () => {
@@ -14,14 +16,18 @@ describe('LexyParserTests', () => {
 
     const {functionNode} = await parseFunction(code);
 
-    expect(functionNode.name).toBe(`TestSimpleReturn`);
-    expect(functionNode.results.variables.length).toBe(1);
-    expect(functionNode.results.variables[0].name).toBe(`Result`);
-    validateOfType<ValueTypeDeclaration>(asValueTypeDeclaration,
-      functionNode.results.variables[0].typeDeclaration, type =>
-        expect(type.typeName).toBe(`number`));
-    expect(functionNode.code.expressions.length).toBe(1);
-    expect(functionNode.code.expressions[0].toString()).toBe(`(AssignmentExpression) Result = 777`);
+    Verify.model(functionNode, context => context
+      .areEqual(value => value.name, "TestSimpleReturn")
+      .collection(value => value.results.variables, variablesContext => variablesContext
+        .length(1, "value.Results.Variables")
+        .valueModel(0, itemContext => itemContext
+          .areEqual(item => item.name, "Result")
+          .isOfType<ValueTypeDeclaration>(item => item.typeDeclaration, "ValueTypeDeclaration", asValueTypeDeclaration, typeDeclarationContext => typeDeclarationContext
+            .areEqual(typeDeclaration => typeDeclaration.typeName, "number"))))
+      .collection(value => functionNode.code.expressions, variablesContext => variablesContext
+        .length(1, "function.Code.Expressions")
+        .valueModelOfType<AssignmentExpression>(0, "AssignmentExpression", asAssignmentExpression, itemContext => itemContext
+          .areEqual(item => item.toString(), "Result = 777"))));
   });
 
   it('testFunctionKeywords', async () => {

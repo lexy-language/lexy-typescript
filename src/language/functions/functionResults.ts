@@ -59,4 +59,8 @@ export class FunctionResults extends ParsableNode {
   public override getSymbol(): Symbol | null {
     return new Symbol(this.reference, "results", "function result variables", SymbolKind.Keyword);
   }
+
+  public override toString(): string {
+    return this.variablesValue.length.toString();
+  }
 }

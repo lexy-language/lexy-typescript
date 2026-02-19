@@ -76,4 +76,8 @@ export class ObjectAssignmentDefinition extends ParsableNode implements IAssignm
   public override getSymbol(): Symbol | null {
     return null;
   }
+
+  public toString() {
+    return this.variable.toString();
+  }
 }

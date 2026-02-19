@@ -2,10 +2,11 @@ import {TokenFactory} from "./tokenFactory";
 import {TokenList} from "../../src/parser/tokens/tokenList";
 import {validateStringLiteralToken} from "./tokenTestExtensions";
 import {Line} from "../../src/parser/line";
+import {TestFile} from "../testFile";
 
 describe('TokensListTests', () => {
   
-  const dummyLine = new Line(0, "", "");
+  const dummyLine = new Line(0, "", TestFile.instance);
 
   it('tokensFrom', async () => {
     let list = new TokenList(dummyLine, [

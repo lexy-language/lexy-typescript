@@ -16,7 +16,7 @@ import {Symbol} from "../symbols/symbol";
 
 export class TableRow extends Node {
 
-  private readonly valuesValue: Array<TableValue>;
+  private readonly valuesValue: readonly TableValue[];
   private readonly tableHeader: TableHeader;
 
   public readonly nodeType = NodeType.TableRow;
@@ -25,13 +25,13 @@ export class TableRow extends Node {
     return this.valuesValue;
   }
 
-  constructor(table: Table, values: TableValue[], reference: SourceReference) {
+  constructor(table: Table, values: readonly TableValue[], reference: SourceReference) {
     super(table, reference);
     this.valuesValue = Assert.notNull(values, "values");
     this.tableHeader = Assert.notNull(table.header, "header");
   }
 
-  public static parse(context: IParseLineContext, tableHeader: TableHeader, table: Table): TableRow | null {
+  public static parse(context: IParseLineContext, table: Table): TableRow | null {
     let tokenIndex = 0;
 
     if (!context.validateTokens("TableRow")
@@ -44,7 +44,7 @@ export class TableRow extends Node {
     const values = new Array<TableValue>();
     const currentLineTokens = context.line.tokens;
     while (++tokenIndex < currentLineTokens.length) {
-      const value = TableValue.parse(context, tableHeader, currentLineTokens, rowReference, tokenIndex++, values.length);
+      const value = TableValue.parse(context, table.header, currentLineTokens, rowReference, tokenIndex++, values.length);
       if (value == null) {
         return null;
       }
@@ -70,5 +70,8 @@ export class TableRow extends Node {
   public override getSymbol(): Symbol | null {
     return null;
   }
-}
 
+  public toString(): string {
+    return this.values.length.toString();
+  }
+}

@@ -20,7 +20,7 @@ import {Symbol} from "../../../symbols/symbol";
 import {SymbolKind} from "../../../symbols/symbolKind";
 
 export function instanceOfExtractResultsFunctionExpression(object: any): object is ExtractResultsFunctionExpression {
-  return object?.nodeType == NodeType.ExtractResultsFunction;
+  return object?.nodeType == NodeType.ExtractResultsFunctionExpression;
 }
 
 export function asExtractResultsFunctionExpression(object: any): ExtractResultsFunctionExpression | null {
@@ -46,7 +46,7 @@ export class ExtractResultsFunctionExpression extends FunctionCallExpression {
 
   private stateValue: ExtractResultsFunctionState | null = null;
 
-  public readonly nodeType = NodeType.ExtractResultsFunction;
+  public readonly nodeType = NodeType.ExtractResultsFunctionExpression;
 
   public functionResultVariable: string | null;
   public valueExpression: Expression;

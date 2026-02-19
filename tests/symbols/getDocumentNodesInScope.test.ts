@@ -33,10 +33,10 @@ function Example2
 
 describe('GetDocumentNodesInScopeTests', () => {
   it('functionNodes', async () => {
-    const symbols = await getSymbols("test.lexy", twoFunctionCode, true);
-    const documentSymbols = symbols.symbols.document("test.lexy");
 
+    const {documentSymbols} = await getSymbols("test.lexy", twoFunctionCode, true);
     const nodes = documentSymbols.getNodesInScope(new Position(8, 4));
+
     Verify.collection(nodes, _ => _
       .length(6, "nodes.length")
       .valueAt(0, node => {
@@ -52,10 +52,10 @@ describe('GetDocumentNodesInScopeTests', () => {
   });
 
   it('secondFunctionKeyword', async () => {
-    const symbols = await getSymbols("test.lexy", twoFunctionCode, true);
-    const documentSymbols = symbols.symbols.document("test.lexy");
 
+    const {documentSymbols} = await getSymbols("test.lexy", twoFunctionCode, true);
     const nodes = documentSymbols.getNodesInScope(new Position(20, 4));
+
     Verify.collection(nodes, _ => _
       .length(7, "nodes.length")
       .valueAt(0, node => {

@@ -28,8 +28,6 @@ export abstract class Expression extends Node {
 
   public toString(): string {
     const writer = new Array<string>();
-    writer.push(`(${this.nodeType}) `);
-
     for (let index = 0; index < this.source.tokens.length; index++) {
       let token = this.source.tokens.get(index);
       writer.push(token.value);

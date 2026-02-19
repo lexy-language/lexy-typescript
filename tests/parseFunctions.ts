@@ -14,6 +14,7 @@ import {ILibraries, Libraries} from "../src/functionLibraries/libraries";
 import {Dependencies} from "../src/dependencyGraph/dependencies";
 import {firstOrDefault} from "../src/infrastructure/arrayFunctions";
 import {LoggingConfiguration} from "./loggingConfiguration";
+import {TestFile} from "./testFile";
 
 export function createParser(libraries: ILibraries | null = null) {
 
@@ -22,25 +23,16 @@ export function createParser(libraries: ILibraries | null = null) {
   }
 
   const logger = LoggingConfiguration.getParserLogger();
-  const expressionFactory = new ExpressionFactory();
   const fileSystem = new NodeFileSystem();
   const tokenizer = new Tokenizer();
 
-  return new LexyParser(logger, tokenizer, fileSystem, expressionFactory, libraries);
-}
-
-export async function parseFile(fileName: string, libraries: ILibraries | null = null): Promise<{nodes: ComponentNodeList, logger: IParserLogger, dependencies: Dependencies}> {
-
-  const parser = createParser(libraries);
-  const result = await parser.parseFile(fileName, {suppressException: true});
-
-  return {nodes: result.componentNodes, logger: result.logger, dependencies: result.dependencies};
+  return new LexyParser(logger, tokenizer, fileSystem, libraries);
 }
 
 export async function parseLines(lines: string[], libraries: ILibraries | null = null): Promise<{nodes: ComponentNodeList, logger: IParserLogger, dependencies: Dependencies}> {
 
   const parser = createParser(libraries);
-  const result = await parser.parseCode(`tests.lexy`, lines, {suppressException: true});
+  const result = await parser.parseCode("tests.lexy", lines, {suppressException: true});
 
   return {nodes: result.componentNodes, logger: result.logger, dependencies: result.dependencies};
 }

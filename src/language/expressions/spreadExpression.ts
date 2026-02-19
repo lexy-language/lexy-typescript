@@ -1,7 +1,5 @@
-import type {ILiteralToken} from "../../parser/tokens/ILiteralToken";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {ExpressionSource} from "./expressionSource";
@@ -13,6 +11,7 @@ import {Type} from "../typeSystem/type";
 import {NodeType} from "../nodeType";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {SymbolKind} from "../symbols/symbolKind";
 
 export function instanceOfSpreadExpression(object: any): boolean {
   return object?.nodeType == NodeType.SpreadExpression;
@@ -30,7 +29,7 @@ export class SpreadExpression extends Expression {
     super(source, parentReference, reference);
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
 
     let tokens = source.tokens;
     if (!SpreadExpression.isValid(tokens)) return newParseExpressionFailed("SpreadExpression", `Invalid expression.`);
@@ -59,6 +58,6 @@ export class SpreadExpression extends Expression {
   }
 
   public override getSymbol(): Symbol | null {
-    return null;
+    return new Symbol(this.reference, "operator: spread", "", SymbolKind.Operator);
   }
 }

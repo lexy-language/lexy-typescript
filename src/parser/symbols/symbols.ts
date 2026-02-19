@@ -1,4 +1,7 @@
-import {INode} from "../../language/node";
+import type {IFile} from "../../infrastructure/file";
+import type {INode} from "../../language/node";
+import type {IObjectMember} from "../../language/typeSystem/objects/objectMember";
+
 import {VariableEntry} from "../../language/variableEntry";
 import {LexyScriptNode} from "../../language/lexyScriptNode";
 import {Assert} from "../../infrastructure/assert";
@@ -11,7 +14,6 @@ import {Token} from "../tokens/token";
 import {asMemberAccessToken} from "../tokens/memberAccessToken";
 import {firstOrDefault, where} from "../../infrastructure/arrayFunctions";
 import {SymbolKind} from "../../language/symbols/symbolKind";
-import {IObjectMember, ObjectMemberKind} from "../../language/typeSystem/objects/objectMember";
 import {IdentifierPath} from "../../language/identifierPath";
 import {asObjectType} from "../../language/typeSystem/objects/objectType";
 import {VariableSource} from "../../language/variableSource";
@@ -21,11 +23,11 @@ import {DocumentSymbols, IDocumentSymbols} from "./documentSymbols";
 import {asIncompleteMemberAccessToken} from "../tokens/incompleteMemberAccessToken";
 
 export interface ISymbols {
-  getDescription(fileName: string, position: Position): SymbolDescription | null;
-  getSignatures(fileName: string, position: Position): Signatures | null;
-  getSuggestions(fileName: string, position: Position): SuggestionsResult;
+  getDescription(file: IFile, position: Position): SymbolDescription | null;
+  getSignatures(file: IFile, position: Position): Signatures | null;
+  getSuggestions(file: IFile, position: Position): SuggestionsResult;
 
-  document(fullFileName: string): IDocumentSymbols;
+  document(file: IFile): IDocumentSymbols;
 
   addNodeVariables(node: INode, result: readonly VariableEntry[]): void;
 }
@@ -44,28 +46,28 @@ export class Symbols implements ISymbols {
     this.nodeVariables.set(node, result);
   }
 
-  public getDescription(fileName: string, position: Position): SymbolDescription | null {
-    const document = this.getDocumentSymbols(fileName);
+  public getDescription(file: IFile, position: Position): SymbolDescription | null {
+    const document = this.getDocumentSymbols(file);
     if (document == null) {
-      throw new Error(`Couldn't find document: ${fileName}`);
+      throw new Error(`Couldn't find document: ${file}`);
     }
 
     return document.getDescription(position);
   }
 
-  public getSignatures(fileName: string, position: Position): Signatures | null {
-    const document = this.getDocumentSymbols(fileName);
+  public getSignatures(file: IFile, position: Position): Signatures | null {
+    const document = this.getDocumentSymbols(file);
     if (document == null) {
-      throw new Error(`Couldn't find document: ${fileName}`);
+      throw new Error(`Couldn't find document: ${file}`);
     }
 
     return document.getSignatures(position);
   }
 
-  public getSuggestions(fileName: string, position: Position): SuggestionsResult {
-    const document = this.getDocumentSymbols(fileName);
+  public getSuggestions(file: IFile, position: Position): SuggestionsResult {
+    const document = this.getDocumentSymbols(file);
     if (document == null) {
-      throw new Error(`Couldn't find document: ${fileName}`);
+      throw new Error(`Couldn't find document: ${file}`);
     }
 
     const token = document.getToken(position);
@@ -104,18 +106,7 @@ export class Symbols implements ISymbols {
       return [];
     }
 
-    function mapDescription(member: IObjectMember) {
-      switch (member.kind) {
-        case ObjectMemberKind.Function:
-          return `function: ${member.type}`;
-        case ObjectMemberKind.Variable:
-          return `variable: ${member.type}`;
-        case ObjectMemberKind.NestedType:
-          return `type: ${member.type}`;
-      }
-    }
-
-    return members.map(member => new Suggestion(member.name, mapDescription(member), SymbolKind.ObjectVariable, member.type));
+    return members.map(member => new Suggestion(member.name, member.description(), SymbolKind.ObjectVariable, member.type));
   }
 
   private static getMembers(result: Suggestion[], parts: string[]): IObjectMember[] | null {
@@ -159,7 +150,7 @@ export class Symbols implements ISymbols {
     throw new Error();
   }
 
-  private addVariables(nodesInScope: INode[], result: Suggestion[]): void {
+  private addVariables(nodesInScope: readonly INode[], result: Suggestion[]): void {
 
     for (const node of nodesInScope) {
 
@@ -191,7 +182,7 @@ export class Symbols implements ISymbols {
     }
   }
 
-  private static addNodesSuggestions(nodes: INode[], suggestions: Suggestion[], position: Position): void {
+  private static addNodesSuggestions(nodes: readonly INode[], suggestions: Suggestion[], position: Position): void {
     for (let index = nodes.length - 1; index >= 0; index--) {
       const node = nodes[index];
       const nodeSuggestions = node.getSuggestions();
@@ -211,20 +202,21 @@ export class Symbols implements ISymbols {
     }
   }
 
-  private getDocumentSymbols(fileName: string): DocumentSymbols | null {
-    const value = this.symbols.get(fileName);
+  private getDocumentSymbols(file: IFile): DocumentSymbols | null {
+    const value = this.symbols.get(file.fullPath);
     return value != undefined ? value : null;
   }
 
-  public document(fullFileName: string): DocumentSymbols {
+  public document(file: IFile): IDocumentSymbols {
 
-    const value = this.symbols.get(fullFileName);
+    const fileFullPath = file.fullPath;
+    const value = this.symbols.get(fileFullPath);
     if (value != undefined) {
       return value;
     }
 
     const documentSymbols = new DocumentSymbols(this.lexyScriptNode);
-    this.symbols.set(fullFileName, documentSymbols);
+    this.symbols.set(fileFullPath, documentSymbols);
     return documentSymbols;
   }
 }

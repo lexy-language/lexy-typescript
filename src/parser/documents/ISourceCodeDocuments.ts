@@ -2,7 +2,7 @@ import {ISourceCodeDocument} from "./ISourceCodeDocument";
 
 export interface ISourceCodeDocuments {
 
-  get documents(): ISourceCodeDocument[];
+  get documents(): readonly ISourceCodeDocument[];
 
   dispose(): void;
 }

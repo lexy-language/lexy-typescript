@@ -87,6 +87,9 @@ export class TypeDefinition extends ComponentNode implements ITypeDefinition, IH
   public override getSymbol(): Symbol | null {
     const builder: string[] = [];
     for (const variable of this.variables) {
+      if (builder.length > 0) {
+        builder.push("\n");
+      }
       builder.push(`- ${variable.typeDeclaration} ${variable.name}`);
     }
     const variablesString = builder.join("");

@@ -2,7 +2,6 @@ import type {INode} from "../node";
 import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IParsableNode} from "../parsableNode";
-import type {IExpressionFactory} from "./expressionFactory";
 
 import {Expression} from "./expression";
 import {asCaseExpression, CaseExpression} from "./caseExpression";
@@ -18,6 +17,7 @@ import {NodeReference} from "../nodeReference";
 import {Suggestions} from "../symbols/suggestions";
 import {SuggestionEdit} from "../symbols/suggestionEdit";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfSwitchExpression(object: any): boolean {
   return object?.nodeType == NodeType.SwitchExpression;
@@ -29,26 +29,27 @@ export function asSwitchExpression(object: any): SwitchExpression | null {
 
 export class SwitchExpression extends Expression implements IParsableNode {
 
-  private readonly factory: IExpressionFactory;
+  private readonly casesValues: CaseExpression[] = [];
 
   public readonly isParsableNode = true;
   public readonly nodeType = NodeType.SwitchExpression;
 
   public conditionType: Type | null = null;
   public readonly condition: Expression;
-  public readonly cases: Array<CaseExpression> = [];
+
+  public get cases(): readonly CaseExpression[] {
+    return this.casesValues;
+  }
 
   constructor(condition: Expression, source: ExpressionSource,
-              reference: SourceReference, parentReference: NodeReference,
-              factory: IExpressionFactory) {
+              reference: SourceReference, parentReference: NodeReference) {
     super(source, parentReference, reference);
     this.condition = condition;
-    this.factory = factory;
   }
 
    public parse(context: IParseLineContext): IParsableNode {
      let line = context.line;
-     let expression = this.factory.parse(this, line.tokens, line);
+     let expression = ExpressionFactory.parse(this, line.tokens, line);
      if (expression.state != 'success') {
        context.logger.fail(line.tokens.allReference(), expression.errorMessage);
        return this;
@@ -56,7 +57,7 @@ export class SwitchExpression extends Expression implements IParsableNode {
 
      const caseExpression = asCaseExpression(expression.result);
      if (caseExpression != null) {
-       this.cases.push(caseExpression);
+       this.casesValues.push(caseExpression);
        return caseExpression;
      }
 
@@ -70,7 +71,7 @@ export class SwitchExpression extends Expression implements IParsableNode {
     return result;
   }
 
-   public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+   public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
      const tokens = source.tokens;
      if (!SwitchExpression.isValid(tokens)) return newParseExpressionFailed("SwitchExpression", `Not valid.`);
 
@@ -78,12 +79,12 @@ export class SwitchExpression extends Expression implements IParsableNode {
 
      const expressionReference = new NodeReference();
      const condition = tokens.tokensFrom(1);
-     const conditionExpression = factory.parse(expressionReference, condition, source.line);
+     const conditionExpression = ExpressionFactory.parse(expressionReference, condition, source.line);
      if (conditionExpression.state != 'success') return conditionExpression;
 
      const reference = source.createReference();
 
-     const expression = new SwitchExpression(conditionExpression.result, source, reference, parentReference, factory);
+     const expression = new SwitchExpression(conditionExpression.result, source, reference, parentReference);
      expressionReference.setNode(expression);
 
      return newParseExpressionSuccess(expression);

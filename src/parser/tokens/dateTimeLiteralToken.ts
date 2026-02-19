@@ -95,7 +95,6 @@ export class DateTimeLiteralToken extends ParsableToken implements ILiteralToken
       throw new Error("Invalid date: '" + dateFormat + "'. Model validation should prevent this.")
     }
     return dateValue;
-    /*  ;*/
   }
 
   private validateExact(value: number, match: number, indexes: number[]): ParseTokenResult | null {
@@ -122,6 +121,21 @@ export class DateTimeLiteralToken extends ParsableToken implements ILiteralToken
   }
 
   public toString() {
-    return this.dateTimeValue != null ? this.dateTimeValue.toISOString() : '';
+    return "date: " + DateTimeLiteralToken.formatDate(this.dateTimeValue);
+  }
+
+  public static formatDate(value: Date | null) {
+
+    function format(digits: number, number: number): string {
+      let result = number.toString();
+      while (result.length < digits) {
+        result = "0" + result;
+      }
+      return result;
+    }
+
+    if (value == null) return '';
+
+    return `${format(4, value.getFullYear())}-${format(2, value.getMonth() + 1)}-${format(2, value.getDate())}T${format(2, value.getHours())}:${format(2, value.getMinutes())}:${format(2, value.getSeconds())}`;
   }
 }

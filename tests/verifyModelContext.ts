@@ -1,6 +1,7 @@
 import {compileExpression} from "./compileExpression";
 import {Assert} from "../src";
 import {VerifyLogging} from "./verifyLogging";
+import {VerifyCollectionContext} from "./verifyCollectionContext";
 
 export type ModelPropertyHandler<TModel, TProperty> = (value: TModel) => TProperty;
 
@@ -12,6 +13,14 @@ export class VerifyModelContext<TModel> {
   constructor(model: TModel, logging: VerifyLogging) {
     this.model = Assert.notNull(model, "model");
     this.logging = Assert.notNull(logging, "logging");
+  }
+
+  public collection<TItem>(expression: ModelPropertyHandler<TModel, TItem>,
+                           handler: (context: VerifyCollectionContext<TItem>) => void): VerifyModelContext<TModel> {
+    const [value, message] = compileExpression(expression, this.model);
+    this.logging.appendLine("Collection: " + message);
+    handler(new VerifyCollectionContext<TItem>(value, this.logging));
+    return this;
   }
 
   public fail(message: string): VerifyModelContext<TModel> {
@@ -76,6 +85,18 @@ export class VerifyModelContext<TModel> {
     return this;
   }
 
+  public isOfType<TExpected>(expression: ModelPropertyHandler<TModel, object>, typeName: string, cast: (value: object) => TExpected, subContext: (context: VerifyModelContext<TExpected> | null) => void = null): VerifyModelContext<TModel> {
+    const [value, message] = compileExpression(expression, this.model);
+    const subInstance = cast(value);
+    const valid = subInstance != null;
+    if (valid) {
+      return this.inSubContext(subContext, subInstance);
+    }
+
+    this.logging.logAssert(false, message, `- isOfType<${typeName}> Failed: `);
+    return this;
+  }
+
   public countIs<T>(expression: ModelPropertyHandler<TModel, ReadonlyArray<T>>, expected: number): VerifyModelContext<TModel> {
     const [collection, message] = compileExpression(expression, this.model);
     let valid = collection.length == expected;
@@ -87,13 +108,6 @@ export class VerifyModelContext<TModel> {
     const [collection, message] = compileExpression(expression, this.model);
     let valid = collection.size == expected;
     this.logging.logAssert(valid, message, `- CountIs Failed '${collection.size}' != '${expected}': `);
-    return this;
-  }
-
-  public containsKey<TKey, TValue>(expression: ModelPropertyHandler<TModel, Map<TKey, TValue>>, key: TKey): VerifyModelContext<TModel> {
-    const [collection, message] = compileExpression(expression, this.model);
-    let valid = collection.has(key);
-    this.logging.logAssert(valid, message, `- containsKey Failed '${key}': `);
     return this;
   }
 
@@ -142,8 +156,10 @@ export class VerifyModelContext<TModel> {
     return this;
   }
 
-  private inSubContext<TSubModel>(subContext: (contxet: VerifyModelContext<TSubModel>) => void, value: TSubModel) {
-    this.logging.withIndentation(() => subContext(new VerifyModelContext<TSubModel>(value, this.logging)));
+  private inSubContext<TSubModel>(subContext: (context: VerifyModelContext<TSubModel>) => void, value: TSubModel) {
+    if (subContext != null) {
+      this.logging.withIndentation(() => subContext(new VerifyModelContext<TSubModel>(value, this.logging)));
+    }
     return this;
   }
 }

@@ -18,7 +18,7 @@ export class Parameters extends ParsableNode {
 
   private assignmentsValue: Array<IAssignmentDefinition> = [];
 
-  public nodeType = NodeType.ScenarioParameters;
+  public nodeType = NodeType.Parameters;
 
   constructor(parent: Scenario, reference: SourceReference) {
     super(new NodeReference(parent), reference);
@@ -49,5 +49,9 @@ export class Parameters extends ParsableNode {
 
   public override getSymbol(): Symbol {
     return new Symbol(this.reference, "parameters", "Scenario parameter variables used to execute the function", SymbolKind.Keyword);
+  }
+
+  public override toString(): string {
+    return this.assignmentsValue.length.toString();
   }
 }

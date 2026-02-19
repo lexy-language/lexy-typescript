@@ -104,6 +104,6 @@ export class NumberLiteralToken extends ParsableToken implements ILiteralToken {
   }
 
   public toString(): string {
-    return this.value;
+    return "number: " + this.value;
   }
 }

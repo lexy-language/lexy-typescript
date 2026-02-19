@@ -14,6 +14,7 @@ import {TokenList} from "../../parser/tokens/tokenList";
 import {Line} from "../../parser/line";
 import {asMemberAccessToken, MemberAccessToken} from "../../parser/tokens/memberAccessToken";
 import {asStringLiteralToken} from "../../parser/tokens/stringLiteralToken";
+import {ExpressionFactory} from "../expressions/expressionFactory";
 
 export type AssignmentDefinitionParserHandler = (context: IParseLineContext, parent: INode, parentVariable: IdentifierPath | null) => AssignmentDefinition | ObjectAssignmentDefinition | null;
 export type TokenIdentifierPath = {parts: string[], firstCharacter: TokenCharacter};
@@ -50,7 +51,7 @@ export class AssignmentDefinitionParser {
       return definition;
     }
 
-    const valueExpression = context.expressionFactory.parse(expressionReference, tokens.tokensFrom(assignmentIndex + 1), line);
+    const valueExpression = ExpressionFactory.parse(expressionReference, tokens.tokensFrom(assignmentIndex + 1), line);
     if (valueExpression.state == "failed") {
       context.logger.fail(reference, valueExpression.errorMessage);
       return null;
@@ -78,7 +79,7 @@ export class AssignmentDefinitionParser {
     if (parentVariable != null) {
       targetTokens = AssignmentDefinitionParser.addParentVariableAccessor(parentVariable, targetTokens);
     }
-    return  context.expressionFactory.parse(expressionReference, targetTokens, line);
+    return ExpressionFactory.parse(expressionReference, targetTokens, line);
   }
 
   private static addParentVariableAccessor(parentVariable: IdentifierPath, targetTokens: TokenList): TokenList {
@@ -89,7 +90,7 @@ export class AssignmentDefinitionParser {
     }
 
     const newPath = parentVariable.append(identifierPath.parts).fullPath();
-    const newToken = new MemberAccessToken(newPath, identifierPath.firstCharacter);
+    const newToken = new MemberAccessToken(newPath, identifierPath.firstCharacter, targetTokens.get(0).endColumn);
     return new TokenList(targetTokens.line, [newToken]);
   }
 

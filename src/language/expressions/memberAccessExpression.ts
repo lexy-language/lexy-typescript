@@ -1,7 +1,6 @@
 import type {IComponentNode} from "../componentNode";
 import type {INode} from "../node";
 import type {IValidationContext} from "../../parser/context/validationContext";
-import type {IExpressionFactory} from "./expressionFactory";
 import type {IHasNodeDependencies} from "../IHasNodeDependencies";
 import type {IHasVariableReference} from "./IHasVariableReference";
 import type {IComponentNodeList} from "../componentNodeList";
@@ -62,7 +61,7 @@ export class MemberAccessExpression extends Expression
     return componentNode != null ? [componentNode] : [];
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     let tokens = source.tokens;
     if (!MemberAccessExpression.isValid(tokens)) return newParseExpressionFailed("MemberAccessExpression", `Invalid expression.`);
 

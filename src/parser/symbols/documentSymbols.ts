@@ -1,4 +1,3 @@
-import type {IParsableNode} from "../../language/parsableNode";
 import type {INode} from "../../language/node";
 import type {IComponentNode} from "../../language/componentNode";
 
@@ -9,12 +8,19 @@ import {Signatures} from "../../language/symbols/signatures";
 import {Symbol} from "../../language/symbols/symbol";
 import {Token} from "../tokens/token";
 import {SymbolDescription} from "./SymbolDescription";
+import {NodesWalker} from "../../language/nodesWalker";
 
 type ReturnValue = {value: Symbol | null};
 
 export interface IDocumentSymbols {
   add(line: Line): void;
   addNode(componentNode: IComponentNode): void;
+
+  walkSymbols(symbolWalker: (node: INode, symbol: Symbol) => void): void;
+
+  getDescription(position: Position): SymbolDescription | null
+
+  getNodesInScope(position: Position): readonly INode[]
 }
 
 export class DocumentSymbols implements IDocumentSymbols {
@@ -35,7 +41,7 @@ export class DocumentSymbols implements IDocumentSymbols {
     return DocumentSymbols.mapSignatures(this.getNode(position));
   }
 
-  public addNode(parsedNode: IParsableNode): void {
+  public addNode(parsedNode: IComponentNode): void {
     this.nodes.push(parsedNode);
   }
 
@@ -47,6 +53,15 @@ export class DocumentSymbols implements IDocumentSymbols {
     Assert.true(line.index < this.lines.length, "Lines should be added sequentially");
 
     this.lines[line.index] = line;
+  }
+
+  public walkSymbols(symbolWalker: (node: INode, symbol: Symbol) => void) {
+    NodesWalker.walkNodes(this.nodes, node => {
+      const symbol = node.getSymbol();
+      if (symbol != null) {
+        symbolWalker(node, symbol);
+      }
+    });
   }
 
   private static mapDescription(symbol: Symbol | null): SymbolDescription | null {
@@ -92,7 +107,7 @@ export class DocumentSymbols implements IDocumentSymbols {
     return null;
   }
 
-  public getNodesInScope(position: Position ): INode[] {
+  public getNodesInScope(position: Position ): readonly INode[] {
     const nodesInScope: (INode[])[] = [];
     DocumentSymbols.getNodesInScopeNodes(position, this.nodes, nodesInScope);
 
@@ -103,8 +118,8 @@ export class DocumentSymbols implements IDocumentSymbols {
 
   private static flatten(nodesInScope: (INode[])[]): INode[] {
     const result: INode[] = [];
-    for (let level = 0; level < nodesInScope.length; level++) {
-      for (const node of nodesInScope[level]) {
+    for (const nodes of nodesInScope) {
+      for (const node of nodes) {
         result.push(node);
       }
     }

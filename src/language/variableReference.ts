@@ -6,6 +6,7 @@ import {Symbol} from "./symbols/symbol";
 import {SymbolKind} from "./symbols/symbolKind";
 import {instanceOfEnumType} from "./typeSystem/enumType";
 import {instanceOfGeneratedType} from "./typeSystem/objects/generatedType";
+import {Assert} from "../infrastructure/assert";
 
 export class VariableReference {
 
@@ -41,14 +42,11 @@ export class VariableReference {
     }
   }
 
-  private typeSymbol(): Symbol
-  {
+  private typeSymbol(): Symbol {
     if (instanceOfEnumType(this.type)) {
       return new Symbol(this.reference, `enum member: ${this.path}`, "", SymbolKind.EnumMember);
     }
-    return instanceOfGeneratedType(this.type)
-         ? new Symbol(this.reference, `type: ${this.path}`, "", SymbolKind.GeneratedType)
-         : new Symbol(this.reference, `variable: ${this.type} ${this.path}`, "", SymbolKind.Variable);
+    return Assert.notNull(this.type, "type").getSymbol(this.reference);
   }
 
   public toString(): string {

@@ -1,13 +1,11 @@
 import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {INode} from "../node";
-import type {IExpressionFactory} from "./expressionFactory";
 import type {IValidationContext} from "../../parser/context/validationContext";
 import type {IChildExpression, IParentExpression} from "./IChildExpression";
 
 import {Expression} from "./expression";
 import {asParsableNode, IParsableNode} from "../parsableNode";
 import {ExpressionList} from "./expressionList";
-import {asElseExpression, ElseExpression} from "./elseExpression";
 import {ExpressionSource} from "./expressionSource";
 import {SourceReference} from "../sourceReference";
 import {newParseExpressionFailed, newParseExpressionSuccess, ParseExpressionResult} from "./parseExpressionResult";
@@ -20,6 +18,7 @@ import {VariableUsage} from "./variableUsage";
 import {getReadVariableUsage} from "./getReadVariableUsage";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
+import {ExpressionFactory} from "./expressionFactory";
 
 export function instanceOfElseifExpression(object: any): object is ElseifExpression {
   return object?.nodeType == NodeType.ElseifExpression;
@@ -44,11 +43,10 @@ export class ElseifExpression extends Expression implements IParsableNode, IChil
   }
 
   constructor(condition: Expression, source: ExpressionSource,
-              parentReference: NodeReference, reference: SourceReference,
-              factory: IExpressionFactory) {
+              parentReference: NodeReference, reference: SourceReference) {
     super(source, parentReference, reference);
     this.condition = condition;
-    this.trueExpressionsValues = new ExpressionList(this, reference, factory);
+    this.trueExpressionsValues = new ExpressionList(this, reference);
   }
 
   public parse(context: IParseLineContext): IParsableNode {
@@ -62,7 +60,7 @@ export class ElseifExpression extends Expression implements IParsableNode, IChil
     return [this.condition, this.trueExpressionsValues];
   }
 
-  public static parse(source: ExpressionSource, parentReference: NodeReference, factory: IExpressionFactory): ParseExpressionResult {
+  public static parse(source: ExpressionSource, parentReference: NodeReference): ParseExpressionResult {
     let tokens = source.tokens;
     if (!ElseifExpression.isValid(tokens)) return newParseExpressionFailed("ElseifExpression", `Not valid.`);
 
@@ -70,12 +68,12 @@ export class ElseifExpression extends Expression implements IParsableNode, IChil
 
     const expressionReference = new NodeReference();
     const condition = tokens.tokensFrom(1);
-    const  conditionExpression = factory.parse(expressionReference, condition, source.line);
+    const  conditionExpression = ExpressionFactory.parse(expressionReference, condition, source.line);
     if (conditionExpression.state != 'success') return conditionExpression;
 
     const reference = source.createReference();
 
-    const expression = new ElseifExpression(conditionExpression.result, source, parentReference, reference, factory);
+    const expression = new ElseifExpression(conditionExpression.result, source, parentReference, reference);
     expressionReference.setNode(expression);
 
     return newParseExpressionSuccess(expression);

@@ -12,6 +12,7 @@ import {asObjectType} from "../objects/objectType";
 import {NodeReference} from "../../nodeReference";
 import {Symbol} from "../../symbols/symbol";
 import {SymbolKind} from "../../symbols/symbolKind";
+import {asHasNodeDependencies} from "../../IHasNodeDependencies";
 
 export function instanceOfObjectTypeDeclaration(object: any): boolean {
   return object?.nodeType == NodeType.ObjectTypeDeclaration;
@@ -35,14 +36,11 @@ export class ObjectTypeDeclaration extends TypeDeclaration implements IHasNodeDe
     this.typeName = typeName;
   }
 
-  public toString(): string {
-    return this.typeName;
-  }
-
   public getDependencies(componentNodes: IComponentNodeList): ReadonlyArray<IComponentNode> {
-    const objectType = asObjectType(this.getType(componentNodes));
-    if (objectType != null) {
-      return objectType.getDependencies(componentNodes);
+    const type = this.getType(componentNodes);
+    const hasNodeDependencies = asHasNodeDependencies(type);
+    if (hasNodeDependencies != null) {
+      return hasNodeDependencies.getDependencies(componentNodes);
     }
     return [];
   }
@@ -87,5 +85,13 @@ export class ObjectTypeDeclaration extends TypeDeclaration implements IHasNodeDe
   public override getSymbol(): Symbol | null {
     return this.type?.getSymbol(this.reference)
       ?? new Symbol(this.reference, "unknown", "", SymbolKind.Keyword);
+  }
+
+  public toString(): string {
+    return this.typeName;
+  }
+
+  public override label(): string {
+    return this.typeName;
   }
 }

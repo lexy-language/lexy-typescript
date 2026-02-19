@@ -20,4 +20,8 @@ export class ObjectNestedType implements IObjectMember {
     this.name = name;
     this.type = type;
   }
+
+  public description() {
+    return `type: ${this.type}`;
+  }
 }

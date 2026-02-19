@@ -24,7 +24,7 @@ export class EnumType extends ObjectType {
 
   public readonly typeKind = TypeKind.EnumType;
 
-  public enum: EnumDefinition;
+  public readonly enum: EnumDefinition;
 
   constructor(enumDefinition: EnumDefinition) {
     super(enumDefinition.name);

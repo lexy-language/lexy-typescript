@@ -6,6 +6,7 @@ import {Line} from "../parser/line";
 import {Keywords} from "../parser/Keywords";
 import {isNullOrEmpty} from "../infrastructure/validationFunctions";
 import {LexySourceDocument} from "../parser/lexySourceDocument";
+import {IFile} from "../infrastructure/file";
 
 export class IncludeState {
 
@@ -57,22 +58,24 @@ export class Include {
     return new Include(value, lineTokens.allReference());
   }
 
-  public async process(parentFullFileName: string, context: IParserContext): Promise<string | null> {
+  public async process(parentFile: IFile, context: IParserContext): Promise<IFile | null> {
+
     this.state.setProcessed();
+
     if (isNullOrEmpty(this.fileName)) {
       context.logger.fail(this.reference, `No include file name specified.`);
       return null;
     }
 
-    let directName = context.fileSystem.getDirectoryName(parentFullFileName);
-    let fullPath = context.fileSystem.getFullPath(directName);
-    let fullFileName = `${context.fileSystem.combine(fullPath, this.fileName)}.${LexySourceDocument.fileExtension}`;
+    const directName = context.fileSystem.getDirectoryName(parentFile.name);
+    const relativeFileName = `${context.fileSystem.combine(directName, this.fileName)}.${LexySourceDocument.fileExtension}`;
+    const file = context.project.file(relativeFileName);
 
-    if (! await context.fileSystem.fileExists(fullFileName)) {
+    if (!await context.fileSystem.fileExists(file.fullPath)) {
       context.logger.fail(this.reference, `Invalid include file name '${this.fileName}'`);
       return null;
     }
 
-    return fullFileName;
+    return file;
   }
 }

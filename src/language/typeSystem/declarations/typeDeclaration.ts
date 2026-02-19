@@ -1,5 +1,3 @@
-import type {IValidationContext} from "../../../parser/context/validationContext";
-
 import {Type} from "../type";
 import {SourceReference} from "../../sourceReference";
 import {Node} from "../../node"
@@ -24,5 +22,7 @@ export abstract class TypeDeclaration extends Node {
   public toString(): string {
     return this.type == null ? "unknown" : this.type.toString();
   }
+
+  public abstract label(): string;
 }
 

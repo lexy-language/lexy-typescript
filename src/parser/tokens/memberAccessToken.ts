@@ -37,8 +37,8 @@ export class MemberAccessToken extends Token implements ILiteralToken {
     return this.value;
   }
 
-  constructor(value: string, character: TokenCharacter) {
-    super(character);
+  constructor(value: string, character: TokenCharacter, endColumn: number | null = null) {
+    super(character, endColumn);
     this.value = value;
     this.parts = value.split(TokenValues.MemberAccessString);
   }
@@ -57,6 +57,6 @@ export class MemberAccessToken extends Token implements ILiteralToken {
   }
 
   public toString() {
-    return this.value;
+    return "string: " + this.value;
   }
 }

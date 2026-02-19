@@ -27,4 +27,8 @@ export abstract class ComponentNode extends ParsableNode implements IComponentNo
       super(parentReference, reference);
       this.name = name;
    }
+
+   public toString(): string {
+      return this.name;
+   }
 }

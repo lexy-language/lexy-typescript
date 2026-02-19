@@ -5,20 +5,21 @@ import {Expression} from "../expressions/expression";
 import {NodeType} from "../nodeType";
 import {SourceReference} from "../sourceReference";
 import {asLiteralExpression} from "../expressions/literalExpression";
-import {ValidationTableHeader} from "./validationTableHeader";
-import {asMemberAccessToken} from "../../parser/tokens/memberAccessToken";
 import {asMemberAccessExpression} from "../expressions/memberAccessExpression";
 import {NodeReference} from "../nodeReference";
 import {Symbol} from "../symbols/symbol";
 
 export class ValidationTableValue extends Node {
 
-  public readonly expression: Expression
+  private readonly index: number;
+
+  public readonly expression: Expression;
 
   public readonly nodeType = NodeType.ValidationTableValue;
 
-  constructor(expression: Expression, parentReference: NodeReference, reference: SourceReference) {
+  constructor(index: number, expression: Expression, parentReference: NodeReference, reference: SourceReference) {
     super(parentReference, reference);
+    this.index = index;
     this.expression = expression;
   }
 
@@ -42,5 +43,9 @@ export class ValidationTableValue extends Node {
 
   public override getSymbol(): Symbol | null {
     return null;
+  }
+
+  public override toString(): string {
+    return `[${this.index}]`;
   }
 }

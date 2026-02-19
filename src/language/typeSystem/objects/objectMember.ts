@@ -10,4 +10,6 @@ export interface IObjectMember {
    kind: ObjectMemberKind,
    name: string,
    type: Type | null,
+
+   description(): string | null;
 }

@@ -1,6 +1,5 @@
 import type {IComponentNode} from "../componentNode";
 import type {INode} from "../node";
-import type {IExpressionFactory} from "../expressions/expressionFactory";
 import type {IParseLineContext} from "../../parser/context/parseLineContext";
 import type {IParsableNode} from "../parsableNode";
 import type {IValidationContext} from "../../parser/context/validationContext";
@@ -79,10 +78,10 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
     return this.codeValue;
   };
 
-  constructor(name: string, nested: boolean, parentReference: NodeReference, reference: SourceReference, factory: IExpressionFactory) {
+  constructor(name: string, nested: boolean, parentReference: NodeReference, reference: SourceReference) {
     super(name, parentReference, reference);
     this.nested = nested;
-    this.codeValue = new FunctionCode(this, reference, factory);
+    this.codeValue = new FunctionCode(this, reference);
   }
 
   public createType(): Type {
@@ -113,8 +112,8 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
     return result;
   }
 
-  public static create(name: string, nested: boolean, parentReference: NodeReference, reference: SourceReference, factory: IExpressionFactory): Function {
-    return new Function(name, nested, parentReference, reference, factory);
+  public static create(name: string, nested: boolean, parentReference: NodeReference, reference: SourceReference): Function {
+    return new Function(name, nested, parentReference, reference);
   }
 
   public override parse(context: IParseLineContext): IParsableNode {
