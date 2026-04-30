@@ -1,5 +1,3 @@
-import {IncompleteMemberAccessToken} from "./incompleteMemberAccessToken";
-
 export enum TokenType {
   BooleanLiteralToken = 'BooleanLiteralToken',
   BuildLiteralToken = 'BuildLiteralToken',

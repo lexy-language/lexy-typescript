@@ -5,10 +5,7 @@ export function compileExpression<TValue, TReturn>(expression: (value: TValue) =
   return [value, message];
 }
 
-type ValueOf<T> = T[keyof T];
-
-function getExpressionPropertiesPath<T, V extends T[keyof T]>(expression: (x: T)=>V): ValueOf<{[K in keyof T]: T[K] extends V ? K : never}>;
-function getExpressionPropertiesPath(expression: (x: any)=>any): keyof any {
+function getExpressionPropertiesPath<TValue, TReturn>(expression: (value: TValue) => TReturn): string {
   let functionString = expression.toString();
   return functionString.slice(functionString.indexOf(">") + 2);
 }

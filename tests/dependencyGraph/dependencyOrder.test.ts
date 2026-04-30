@@ -1,5 +1,6 @@
 import buildDependencyGraph from "./buildDependencyGraph";
 import {Verify} from "../verify";
+import {NodeDependencies} from "../../src/dependencyGraph/dependencyNode"
 
 const nodeType = value => value.name;
 
@@ -25,7 +26,7 @@ enum EnumExample
 
     Verify.model(dependencies, _ => _
       .countMapIs(model => model.nodes, 3)
-      .containsKey(model => model.nodes, "TableExample", __ => __
+      .containsKey<string, NodeDependencies>(model => model.nodes, "TableExample", __ => __
         .areEqual(tableExample => tableExample.dependencies.size, 1)
         .containsKey(tableExample => tableExample.dependencies, "EnumExample")
         .areEqual(tableExample => tableExample.dependants.size, 1)
@@ -139,6 +140,27 @@ enum EnumExample
       .valuePropertyAtEquals(model => model.sortedNodes, 9, nodeType, "ValidateBuildOrderFunction")
       .valuePropertyAtEquals(model => model.sortedNodes, 10, nodeType, "ValidateBuildOrder")
       .countMapIs(model => model.circularReferences, 0)
+    );
+  });
+
+  it('circularFunction', async () => {
+    const dependencies = await buildDependencyGraph(`
+function NewFunction
+  SecondFunction()
+
+function SecondFunction
+  NewFunction()`, false);
+
+    Verify.model(dependencies, _ => _
+      .countMapIs(model => model.circularReferences, 2)
+      .containsKey(model => model.circularReferences, "NewFunction", __ => __
+        .areEqual(newFunction => newFunction.node.name, "NewFunction")
+        .areEqual(newFunction => newFunction.referencedNode.name, "SecondFunction")
+      )
+      .containsKey(model => model.circularReferences, "SecondFunction", __ => __
+        .areEqual(newFunction => newFunction.node.name, "SecondFunction")
+        .areEqual(newFunction => newFunction.referencedNode.name, "NewFunction")
+      )
     );
   });
 });

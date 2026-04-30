@@ -111,7 +111,7 @@ export class VerifyModelContext<TModel> {
     return this;
   }
 
-  public containsKey<TKey, TValue>(expression: ModelPropertyHandler<TModel, Map<TKey, TValue>>, key: TKey, subContext: ((context: VerifyModelContext<TModel>) => void) | null = null) {
+  public containsKey<TKey, TValue>(expression: ModelPropertyHandler<TModel, Map<TKey, TValue>>, key: TKey, subContext: ((context: VerifyModelContext<TValue>) => void) | null = null) {
     const [collection, message] = compileExpression(expression, this.model);
     let valid = collection.has(key);
     if (collection.has(key)) {

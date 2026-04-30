@@ -61,6 +61,7 @@ export class LexyParser implements ILexyParser {
 
     const project = new Project(this.fileSystem);
     const document = new StringSourceCodeDocument(content, project.file(fileName));
+
     return await this.parseDocuments(project, [document], options);
   }
 
@@ -89,8 +90,8 @@ export class LexyParser implements ILexyParser {
 
     const project = new Project(this.fileSystem);
     const files = fileNames.map(fileName => project.file(fileName));
-    const documents = await this.fileSystem.createFileSourceDocuments(files);
 
+    const documents = await this.fileSystem.createFileSourceDocuments(files);
     try {
       return await this.parseDocuments(project, documents.documents, options);
     } catch (error) {
@@ -143,7 +144,7 @@ export class LexyParser implements ILexyParser {
         continue;
       }
 
-      const indentResult = this.getIndent(context, line);
+      const indentResult = LexyParser.getIndent(context, line);
       if (!indentResult.success) continue;
       const indent = indentResult.value;
 
@@ -165,7 +166,7 @@ export class LexyParser implements ILexyParser {
     await this.loadIncludedFiles(sourceCodeDocument.file, context);
   }
 
-  private getIndent(context: IParserContext, line: Line): {success: boolean, value: number} {
+  private static getIndent(context: IParserContext, line: Line): {success: boolean, value: number} {
 
     if (line.isEmpty()) return {success: false, value: 0};
 
@@ -235,9 +236,9 @@ export class LexyParser implements ILexyParser {
     if (!dependencies.hasCircularReferences) return dependencies;
 
     for (const [key, circularReference] of dependencies.circularReferences) {
-      context.logger.setCurrentNode(circularReference);
-      context.logger.fail(circularReference.reference,
-        `Circular reference detected in: '${key}'`);
+      context.logger.setCurrentNode(circularReference.node);
+      context.logger.fail(circularReference.node.reference,
+        `Circular reference detected in '${key}': '${circularReference.referencedNode.name}'`);
     }
     return dependencies;
   }

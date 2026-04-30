@@ -5,12 +5,17 @@ import type {IComponentNodeList} from "../language/componentNodeList";
 import {asHasNodeDependencies} from "../language/IHasNodeDependencies";
 import {Assert} from "../infrastructure/assert";
 import {NodeDependencies} from "./dependencyNode";
+import {contains} from "../infrastructure/arrayFunctions"
 
+export interface CircularReference {
+  node: IComponentNode
+  referencedNode: IComponentNode
+}
 
 export class Dependencies {
 
   private readonly componentNodes: IComponentNodeList;
-  private readonly circularReferencesValue: Map<string, IComponentNode> = new Map();
+  private readonly circularReferencesValue: Map<string, CircularReference> = new Map();
   private readonly nodeDependencies: Map<string, NodeDependencies> = new Map();
 
   private readonly nodesToProcess: Map<string, IComponentNode> = new Map();
@@ -30,7 +35,7 @@ export class Dependencies {
     return this.nodeDependencies;
   }
 
-  public get circularReferences(): Map<string, IComponentNode> {
+  public get circularReferences(): Map<string, CircularReference> {
     return this.circularReferencesValue;
   }
 
@@ -140,22 +145,27 @@ export class Dependencies {
   private checkCircularDependencies(): void {
     for (const [key, value] of this.nodeDependencies) {
       if (this.circularReferencesValue.has(key)) continue;
-      if (this.isCircular(value, value)) {
-        this.circularReferencesValue.set(key, value.node);
+      const circularReference = this.isCircular(value.node, null, [value.name], value)
+      if (circularReference != null) {
+        this.circularReferencesValue.set(key, circularReference);
       }
     }
   }
 
-  private isCircular(node: NodeDependencies, dependant: NodeDependencies) {
-    for (const [key] of dependant.dependants) {
-      if (node.name == key) return true;
+  private isCircular(root: IComponentNode, referencedNode: IComponentNode | null, visited: string[], dependant: NodeDependencies): CircularReference | null {
+    for (const [key, node] of dependant.dependants) {
+      if (contains(visited, key)) {
+        return {node: root, referencedNode: referencedNode ?? root};
+      }
 
       let dependencyNodeDependencies = Assert.notNull(this.nodeDependencies.get(key), "dependencyNodeDependencies");
-      if (this.isCircular(node, dependencyNodeDependencies)) {
-        return true;
+      const visited1 = [...visited, key]
+      const reference = this.isCircular(root, referencedNode ?? node, visited1, dependencyNodeDependencies)
+      if (reference != null) {
+        return reference;
       }
     }
-    return false;
+    return null;
   }
 
   private flatten(dependencies: MapIterator<IComponentNode>): Array<IComponentNode> {
@@ -182,8 +192,7 @@ export class Dependencies {
 
     const result: Array<IComponentNode> = []
 
-    const nodesWithoutDependants = this.nodesWithoutDependants();
-    const processing: Array<string> = nodesWithoutDependants;
+    const processing: Array<string> = this.nodesWithoutDependants();
 
     while (processing.length > 0) {
       const nodeName = processing.shift() as string;
