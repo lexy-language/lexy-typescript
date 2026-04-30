@@ -10,7 +10,6 @@ import {LoggingConfiguration} from "../../loggingConfiguration";
 import {TrackLoggingCurrentNodeVisitor} from "../../../src/parser/TrackLoggingCurrentNodeVisitor";
 import {Symbols} from "../../../src/parser/symbols/symbols";
 import {LexyScriptNode} from "../../../src/language/lexyScriptNode";
-import {ExpressionFactory} from "../../../src/language/expressions/expressionFactory";
 import {Libraries} from "../../../src/functionLibraries/libraries";
 import {TestFile} from "../../testFile";
 
