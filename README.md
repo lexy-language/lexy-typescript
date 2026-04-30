@@ -18,6 +18,7 @@ Check [lexy-language](https://github.com/lexy-language/lexy-language) for more i
 - [ ] Packaging: publish npm package (use it on **lexy-editor**) from GitHub Actions (split compiler from runtime?)
 - [ ] Readme: Use /coverage/badges.svg from publish gh-page (once repo is public)
 - [ ] Code: verify new, extract, and fill functions work with custom types and table row types
+- [ ] Code: remove ignoreDeprecations tsc config
 
 # Implementations notes
 
