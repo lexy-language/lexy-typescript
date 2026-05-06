@@ -1,9 +1,9 @@
-import {SymbolKind} from "../../src/language/symbols/symbolKind";
-import {VerifyContext} from "../verifyContext";
-import {SuggestionsResult} from "../../src/parser/symbols/SuggestionsResult";
 import {Assert} from "../../src";
+import {SymbolKind} from "../../src/language/symbols/symbolKind";
+import {SuggestionsResult} from "../../src/parser/symbols/suggestionsResult";
 import {Suggestion} from "../../src/language/symbols/suggestion";
 import {firstOrDefault} from "../../src/infrastructure/arrayFunctions";
+import {VerifyContext} from "../verifyContext";
 
 class Assertion {
 

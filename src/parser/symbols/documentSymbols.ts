@@ -7,7 +7,7 @@ import {Position} from "../../language/position";
 import {Signatures} from "../../language/symbols/signatures";
 import {Symbol} from "../../language/symbols/symbol";
 import {Token} from "../tokens/token";
-import {SymbolDescription} from "./SymbolDescription";
+import {SymbolDescription} from "./symbolDescription";
 import {NodesWalker} from "../../language/nodesWalker";
 import {DocumentSymbol, SymbolReference} from "./documentSymbol"
 
@@ -179,13 +179,13 @@ export class DocumentSymbols implements IDocumentSymbols {
     return result;
   }
 
-  private addDocumentSymbolChildren(result: DocumentSymbol[], node: INode) {
+  private addDocumentSymbolChildren(result: DocumentSymbol[], node: INode): void {
     for (const child of node.getChildren()) {
       this.addDocumentSymbolChild(result, child)
     }
   }
 
-  private addDocumentSymbolChild(result: DocumentSymbol[], node: INode): DocumentSymbol {
+  private addDocumentSymbolChild(result: DocumentSymbol[], node: INode): void {
     const symbol = node.getSymbol();
     if (symbol == null) {
       this.addDocumentSymbolChildren(result, node);
