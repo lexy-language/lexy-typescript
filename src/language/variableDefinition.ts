@@ -163,7 +163,7 @@ export class VariableDefinition extends Node implements IHasNodeDependencies {
     return new Symbol(this.reference, label, "", kind);
   }
 
-  private label(): string {
+  public label(): string {
     const prefix = this.getPrefix();
     return `${prefix}: ${this.typeDeclaration} ${this.name}`;
   }

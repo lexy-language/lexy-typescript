@@ -12,15 +12,15 @@ export class Mapping {
   public reference: SourceReference;
 
   public variableName: string;
-   public type: Type;
-   public variableSource: VariableSource;
+  public type: Type;
+  public variableSource: VariableSource;
 
-   constructor(reference: SourceReference, variableName: string, type: Type, variableSource: VariableSource) {
-     this.reference = reference;
-     this.variableName = variableName;
-     this.type = type;
-     this.variableSource = variableSource;
-   }
+  constructor(reference: SourceReference, variableName: string, type: Type, variableSource: VariableSource) {
+    this.reference = reference;
+    this.variableName = variableName;
+    this.type = type;
+    this.variableSource = variableSource;
+  }
 }
 
 export function mapToUsedVariable(access: VariableAccess): (mapping: Mapping) => VariableUsage {

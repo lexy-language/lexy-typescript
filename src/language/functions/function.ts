@@ -40,6 +40,9 @@ import {Suggestions} from "../symbols/suggestions";
 import {Symbol} from "../symbols/symbol";
 import {SymbolKind} from "../symbols/symbolKind";
 import {VariableSource} from "../variableSource";
+import {Signatures} from "../symbols/signatures"
+import {Signature} from "../symbols/signature"
+import {SignatureParameter} from "../symbols/signatureParameter"
 
 export function instanceOfFunction(object: any) {
   return object?.nodeType == NodeType.Function;
@@ -270,7 +273,11 @@ export class Function extends ComponentNode implements IHasNodeDependencies, INe
   }
 
   public override getSymbol(): Symbol | null {
-    return new Symbol(this.reference, `function: ${this.name}`, "", SymbolKind.Function);
+    const parameters = this.parameters
+      ? this.parameters.variables.map(parameter => new SignatureParameter(parameter.name, parameter.label()))
+      : [];
+    const signature = new Signature(this.name, parameters);
+    return new Symbol(this.reference, `function: ${this.name}`, "", SymbolKind.Function, new Signatures([signature]));
   }
 
   public override getSuggestions(): readonly SuggestionEdit[] {

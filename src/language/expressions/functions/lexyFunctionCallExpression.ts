@@ -25,6 +25,10 @@ import {castType} from "../../../infrastructure/arrayFunctions";
 import {NodeReference} from "../../nodeReference";
 import {SymbolKind} from "../../symbols/symbolKind";
 import {Symbol} from "../../symbols/symbol";
+import {SignatureParameter} from "../../symbols/signatureParameter"
+import {Signature} from "../../symbols/signature"
+import {Signatures} from "../../symbols/signatures"
+import {FunctionParameters} from "../../functions/functionParameters"
 
 export function instanceOfLexyFunctionCallExpression(object: any): object is LexyFunctionCallExpression {
   return object?.nodeType == NodeType.LexyFunctionCallExpression;
@@ -38,15 +42,18 @@ export class LexyFunctionCallState {
 
   public parametersMapping: VariablesMapping | null;
   public parametersTypes: ReadonlyArray<Type> | null;
+  public signature: Signature
   public resultsObjectType: Type;
   public returnSingleResultsVariablesName: string | null;
 
   constructor(parametersMapping: VariablesMapping | null,
               parametersTypes: ReadonlyArray<Type> | null,
+              signature: Signature,
               resultsObjectType: Type,
               returnSingleResultsVariablesName: string | null) {
     this.parametersMapping = parametersMapping;
     this.parametersTypes = parametersTypes;
+    this.signature = signature;
     this.resultsObjectType = resultsObjectType;
     this.returnSingleResultsVariablesName = returnSingleResultsVariablesName;
   }
@@ -65,7 +72,7 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
 
   public get name(): string {
    return this.functionName;
-  };
+  }
 
   constructor(functionName: string, argumentValues: ReadonlyArray<Expression>, parentReference: NodeReference, source: ExpressionSource) {
     super(parentReference, source);
@@ -95,14 +102,22 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
 
     const parametersMapping = this.autoMapParameters(result, context);
     const parametersTypes = this.getParametersTypes(result);
+    const signature = this.getSignature(functionNode.parameters)
     const resultsObjectType = functionNode.getResultsType();
     const returnSingleResultsVariablesName = this.returnSingleResultsVariablesName(functionNode);
-    this.state = new LexyFunctionCallState(parametersMapping, parametersTypes, resultsObjectType, returnSingleResultsVariablesName);
+    this.state = new LexyFunctionCallState(parametersMapping, parametersTypes, signature, resultsObjectType, returnSingleResultsVariablesName);
   }
 
   private getParametersTypes(result: ValidateFunctionArgumentsResult) {
     const functionCall = asValidateFunctionArgumentsCallFunctionResult(result);
     return functionCall != null ? castType<Type>(functionCall.function.parametersTypes) : null;
+  }
+
+  private getSignature(parameters: FunctionParameters | null) {
+    const signatureParameters = parameters
+      ? parameters.variables.map(parameter => new SignatureParameter(parameter.name, parameter.label()))
+      : [];
+    return new Signature(this.name, signatureParameters);
   }
 
   private autoMapParameters(result: ValidateFunctionArgumentsResult, context: IValidationContext) {
@@ -153,6 +168,7 @@ export class LexyFunctionCallExpression extends FunctionCallExpression implement
   }
 
   public override getSymbol(): Symbol {
-    return new Symbol(this.reference, `function: ${this.name}`, "", SymbolKind.Function);
+    const signatures = this.state?.signature ? [this.state.signature] : [];
+    return new Symbol(this.reference, `function: ${this.name}`, "", SymbolKind.Function, new Signatures(signatures));
   }
 }

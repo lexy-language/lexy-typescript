@@ -158,7 +158,7 @@ export class Dependencies {
         return {node: root, referencedNode: referencedNode ?? root};
       }
 
-      let dependencyNodeDependencies = Assert.notNull(this.nodeDependencies.get(key), "dependencyNodeDependencies");
+      const dependencyNodeDependencies = Assert.notNull(this.nodeDependencies.get(key), "dependencyNodeDependencies");
       const visited1 = [...visited, key]
       const reference = this.isCircular(root, referencedNode ?? node, visited1, dependencyNodeDependencies)
       if (reference != null) {
