@@ -21,10 +21,9 @@ export class VerifyCollectionContext<TItem> {
 
   public valueAt(index: number , verify: (item: TItem) => boolean): VerifyCollectionContext<TItem> {
     const value = index >= 0 && index < this.model.length ? this.model[index] : null;
-    if (value != null)
-    {
+    if (value != null)  {
         let valid = verify(value);
-        this.logging.logAssert(valid, value.toString(), `- ValueAt[{index}] not as expected: `);
+        this.logging.logAssert(valid, value.toString(), `- ValueAt[${index}] not as expected: `);
         return this;
     }
 

@@ -190,8 +190,8 @@ describe('GetSymbolsTests', () => {
 
     let failed = false;
     for (let index = 0; index < expectedSymbolsLines.length; index++){
-      let expectedSymbolsLine = expectedSymbolsLines[index];
-      let expectedSymbol = ExpectedSymbol.parse(index, expectedSymbolsLine);
+      const expectedSymbolsLine = expectedSymbolsLines[index];
+      const expectedSymbol = ExpectedSymbol.parse(index, expectedSymbolsLine);
       if (expectedSymbol != null && !expectedSymbol.verify(documentSymbols, context)) {
         failed = true;
       }
@@ -213,7 +213,7 @@ describe('GetSymbolsTests', () => {
     const log: string[] = [];
     symbols.walkSymbols((node, symbol) => {
       const lineNumber = symbol.reference.lineNumber;
-      const column = getColumn(node, symbol);
+      const column = getRandomColumnNumberInSymbolRange(node, symbol);
       if (column == null) return;
 
       const label = symbol.name;
@@ -234,18 +234,18 @@ describe('GetSymbolsTests', () => {
     return  replaceAll(value, "\"", "\\\"");
   }
 
-  function getColumn(node: INode, symbol: Symbol): number | null {
+  function getRandomColumnNumberInSymbolRange(node: INode, symbol: Symbol): number | null {
     const range = new CodeRange(symbol);
-    subtractChildren(range, node.getChildren());
+    subtractChildrenRangeFromSymbolRange(range, node.getChildren());
     return range.random();
   }
 
-  function subtractChildren(range: CodeRange, children: INode[]) {
+  function subtractChildrenRangeFromSymbolRange(range: CodeRange, children: INode[]) {
     for (let child of children) {
       if (child.getSymbol() != null) {
         range.subtract(child.reference);
       }
-      subtractChildren(range, child.getChildren());
+      subtractChildrenRangeFromSymbolRange(range, child.getChildren());
     }
   }
 });

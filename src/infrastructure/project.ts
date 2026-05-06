@@ -18,8 +18,8 @@ export class Project implements IProject {
   constructor(fileSystem: IFileSystem, baseFolder: string | null = null) {
     this.fileSystem = Assert.notNull(fileSystem, "fileSystem");
     this.baseFolder = baseFolder
-      ? fileSystem.combine(fileSystem.currentFolder(), baseFolder)
-      : fileSystem.currentFolder();
+       ? fileSystem.combine(fileSystem.currentFolder(), baseFolder)
+       : fileSystem.currentFolder();
   }
 
   public file(name : string): IFile {

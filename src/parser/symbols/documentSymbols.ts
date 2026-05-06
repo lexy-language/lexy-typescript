@@ -9,6 +9,7 @@ import {Symbol} from "../../language/symbols/symbol";
 import {Token} from "../tokens/token";
 import {SymbolDescription} from "./SymbolDescription";
 import {NodesWalker} from "../../language/nodesWalker";
+import {DocumentSymbol, SymbolReference} from "./documentSymbol"
 
 type ReturnValue = {value: Symbol | null};
 
@@ -18,6 +19,7 @@ export interface IDocumentSymbols {
 
   walkSymbols(symbolWalker: (node: INode, symbol: Symbol) => void): void;
 
+  getSymbols(): DocumentSymbol[];
   getDescription(position: Position): SymbolDescription | null
 
   getNodesInScope(position: Position): readonly INode[]
@@ -38,7 +40,8 @@ export class DocumentSymbols implements IDocumentSymbols {
   }
 
   public getSignatures(position: Position ): Signatures | null {
-    return DocumentSymbols.mapSignatures(this.getNode(position));
+    const node = this.getNode(position);
+    return node == null ? null : node.signatures
   }
 
   public addNode(parsedNode: IComponentNode): void {
@@ -55,6 +58,10 @@ export class DocumentSymbols implements IDocumentSymbols {
     this.lines[line.index] = line;
   }
 
+  public getSymbols(): DocumentSymbol[] {
+    return this.nodes.map(node => this.getDocumentSymbol(node));
+  }
+
   public walkSymbols(symbolWalker: (node: INode, symbol: Symbol) => void) {
     NodesWalker.walkNodes(this.nodes, node => {
       const symbol = node.getSymbol();
@@ -69,22 +76,15 @@ export class DocumentSymbols implements IDocumentSymbols {
     return new SymbolDescription(symbol.name, symbol.description, symbol.kind);
   }
 
-  private static mapSignatures(symbol: Symbol | null): Signatures | null {
-    if (symbol == null) return null;
-    throw new Error("not implemented");
-  }
-
   private getNode(position: Position): Symbol | null {
     const previous: ReturnValue | null = {value: null};
     const symbol = DocumentSymbols.getSymbol(position, this.nodes, previous);
-    console.log(`>>>>>: (${position}) - ${symbol}`);
     return symbol?.value ?? previous.value;
   }
 
   private static getSymbol(position: Position, list: readonly INode[], previousSymbol: ReturnValue): ReturnValue | null {
 
     for (const node of list) {
-      //console.log(`Check: (${position}) between '${previousSymbol.value?.reference}' and '${node.reference}'`);
       if (node.reference.lineNumber > position.lineNumber) {
         return previousSymbol;
       }
@@ -161,5 +161,40 @@ export class DocumentSymbols implements IDocumentSymbols {
     Assert.notNull(line, `Couldn't find line: ${position.lineNumber} Lines: ${this.lines.length}`);
 
     return line.tokens.tokenAt(position.column);
+  }
+
+  private getDocumentSymbol(node: INode): DocumentSymbol {
+    const symbol = node.getSymbol();
+    if (symbol == null) {
+      throw new Error("Symbol expected for node: " + node.nodeType);
+    }
+    const symbolRange = new SymbolReference(symbol.reference.lineNumber, symbol.reference.column, symbol.reference.endColumn);
+    const children = this.getDocumentSymbolChildren(node);
+    return new DocumentSymbol(symbol.name, symbol.description, symbol.kind, symbolRange, children);
+  }
+
+  private getDocumentSymbolChildren(node: INode): DocumentSymbol[] {
+    const result: DocumentSymbol[] = []
+    this.addDocumentSymbolChildren(result, node)
+    return result;
+  }
+
+  private addDocumentSymbolChildren(result: DocumentSymbol[], node: INode) {
+    for (const child of node.getChildren()) {
+      this.addDocumentSymbolChild(result, child)
+    }
+  }
+
+  private addDocumentSymbolChild(result: DocumentSymbol[], node: INode): DocumentSymbol {
+    const symbol = node.getSymbol();
+    if (symbol == null) {
+      this.addDocumentSymbolChildren(result, node);
+      return;
+    }
+
+    const symbolRange = new SymbolReference(symbol.reference.lineNumber, symbol.reference.column, symbol.reference.endColumn);
+    const children = this.getDocumentSymbolChildren(node);
+    const documentSymbol = new DocumentSymbol(symbol.name, symbol.description, symbol.kind, symbolRange, children);
+    result.push(documentSymbol);
   }
 }

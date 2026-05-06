@@ -21,11 +21,13 @@ import {SuggestionEdit} from "../../language/symbols/suggestionEdit";
 import {SuggestionsScope} from "../../language/symbols/suggestionsScope";
 import {DocumentSymbols, IDocumentSymbols} from "./documentSymbols";
 import {asIncompleteMemberAccessToken} from "../tokens/incompleteMemberAccessToken";
+import {DocumentSymbol} from "./documentSymbol"
 
 export interface ISymbols {
   getDescription(file: IFile, position: Position): SymbolDescription | null;
   getSignatures(file: IFile, position: Position): Signatures | null;
   getSuggestions(file: IFile, position: Position): SuggestionsResult;
+  getSymbols(file: IFile): DocumentSymbol[];
 
   document(file: IFile): IDocumentSymbols;
 
@@ -64,12 +66,17 @@ export class Symbols implements ISymbols {
     return document.getSignatures(position);
   }
 
-  public getSuggestions(file: IFile, position: Position): SuggestionsResult {
+  public getSymbols(file: IFile): DocumentSymbol[] {
     const document = this.getDocumentSymbols(file);
     if (document == null) {
       throw new Error(`Couldn't find document: ${file}`);
     }
 
+    return document.getSymbols();
+  }
+
+  public getSuggestions(file: IFile, position: Position): SuggestionsResult {
+    const document = this.getDocumentSymbols(file);
     const token = document.getToken(position);
     if (token == null || token.value == "") {
       return new SuggestionsResult();
@@ -77,6 +84,7 @@ export class Symbols implements ISymbols {
 
     const nodesInScope = document.getNodesInScope(position);
     const result: Suggestion[] = [];
+    //todo: shameless AutoComplete todo
     //        result.AddRange(AddLocalVariables(document, position));
     //        result.AddRange(AddComponentsAndMembers(document, position));
     //        result.AddRange(AddLibraryFunctions(document, position));
@@ -202,9 +210,12 @@ export class Symbols implements ISymbols {
     }
   }
 
-  private getDocumentSymbols(file: IFile): DocumentSymbols | null {
+  private getDocumentSymbols(file: IFile): DocumentSymbols {
     const value = this.symbols.get(file.fullPath);
-    return value != undefined ? value : null;
+    if (value == undefined || value == null) {
+      throw new Error(`Couldn't find document: ${file}`);
+    }
+    return value;
   }
 
   public document(file: IFile): IDocumentSymbols {

@@ -1,4 +1,4 @@
-import {SymbolKind} from "../../language/symbols/symbolKind";
+import {SymbolKind} from "../../language/symbols/symbolKind"
 
 export class SymbolDescription {
 

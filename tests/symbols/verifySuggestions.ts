@@ -38,7 +38,7 @@ export class VerifySuggestions {
 
     const result = await this.getSuggestions(code, lineNumber, column);
 
-    let verifyMultipleSuggestion = new VerifyMultipleSuggestion(this.context, result, testHandler, this.index++);
+    const verifyMultipleSuggestion = new VerifyMultipleSuggestion(this.context, result, testHandler, this.index++);
     verifyMultipleSuggestion.verify();
   }
 
